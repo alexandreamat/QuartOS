@@ -1,16 +1,223 @@
-# QuartOS
+# Table of Contents
 
-## Backend Requirements
+- [Table of Contents](#table-of-contents)
+- [Project Structure](#project-structure)
+- [Backend Requirements](#backend-requirements)
+- [Frontend Requirements](#frontend-requirements)
+- [Backend local development](#backend-local-development)
+- [Backend local development, additional details](#backend-local-development-additional-details)
+  - [General workflow](#general-workflow)
+  - [Docker Compose Override](#docker-compose-override)
+  - [Backend tests](#backend-tests)
+    - [Local tests](#local-tests)
+    - [Test running stack](#test-running-stack)
+    - [Test Coverage](#test-coverage)
+  - [Live development with Python Jupyter Notebooks](#live-development-with-python-jupyter-notebooks)
+  - [Migrations](#migrations)
+  - [Development with Docker Toolbox](#development-with-docker-toolbox)
+  - [Development in `localhost` with a custom domain](#development-in-localhost-with-a-custom-domain)
+  - [Development with a custom IP](#development-with-a-custom-ip)
+  - [Change the development "domain"](#change-the-development-domain)
+- [Frontend development](#frontend-development)
+  - [Removing the frontend](#removing-the-frontend)
+- [Deployment](#deployment)
+  - [Traefik network](#traefik-network)
+  - [Persisting Docker named volumes](#persisting-docker-named-volumes)
+    - [Adding services with volumes](#adding-services-with-volumes)
+    - [`docker-auto-labels`](#docker-auto-labels)
+    - [(Optionally) adding labels manually](#optionally-adding-labels-manually)
+  - [Deploy to a Docker Swarm mode cluster](#deploy-to-a-docker-swarm-mode-cluster)
+    - [Deployment Technical Details](#deployment-technical-details)
+  - [Continuous Integration / Continuous Delivery](#continuous-integration--continuous-delivery)
+- [Docker Compose files and env vars](#docker-compose-files-and-env-vars)
+  - [The .env file](#the-env-file)
+- [URLs](#urls)
+  - [Production URLs](#production-urls)
+  - [Staging URLs](#staging-urls)
+  - [Development URLs](#development-urls)
+  - [Development with Docker Toolbox URLs](#development-with-docker-toolbox-urls)
+  - [Development with a custom IP URLs](#development-with-a-custom-ip-urls)
+  - [Development in localhost with a custom domain URLs](#development-in-localhost-with-a-custom-domain-urls)
+- [Project generation and updating, or re-generating](#project-generation-and-updating-or-re-generating)
+
+# Project Structure
+
+```
+QuartOS
+├── README.md                                               // Project description and instructions
+├── backend
+│   ├── app
+│   │   ├── alembic
+│   │   │   ├── README                                      // Description of Alembic migrations
+│   │   │   ├── env.py                                      // Alembic configuration file
+│   │   │   ├── script.py.mako                              // Alembic migration script template
+│   │   │   └── versions                                    // Folder containing database migration scripts
+│   │   │       └── d4867f3a4c0a_first_revision.py          // Sample database migration script
+│   │   ├── app
+│   │   │   ├── api
+│   │   │   │   ├── api_v1
+│   │   │   │   │   ├── api.py                              // FastAPI
+│   │   │   │   │   └── endpoints                           // Folder containing API endpoint files
+│   │   │   │   │       ├── items.py                        // Sample endpoint file for items
+│   │   │   │   │       ├── login.py                        // Sample endpoint file for login
+│   │   │   │   │       ├── users.py                        // Sample endpoint file for users
+│   │   │   │   │       └── utils.py                        // Utility functions used in the API endpoints
+│   │   │   │   └── deps.py                                 // FastAPI dependencies
+│   │   │   ├── backend_pre_start.py                        // Script to run before starting the backend app
+│   │   │   ├── celeryworker_pre_start.py                   // Script to run before starting the Celery worker
+│   │   │   ├── core                                        // Folder containing core modules
+│   │   │   │   ├── celery_app.py                           // Celery app configuration
+│   │   │   │   ├── config.py                               // App configuration
+│   │   │   │   └── security.py                             // Security related functions
+│   │   │   ├── crud                                        // Folder containing CRUD operations for the database models
+│   │   │   │   ├── base.py                                 // Base CRUD class
+│   │   │   │   ├── crud_item.py                            // CRUD operations for items
+│   │   │   │   └── crud_user.py                            // CRUD operations for users
+│   │   │   ├── db                                          // Folder containing database related scripts
+│   │   │   │   ├── base.py                                 // Base database class
+│   │   │   │   ├── base_class.py                           // Base class for database models
+│   │   │   │   ├── init_db.py                              // Script to initialize the database
+│   │   │   │   └── session.py                              // Database session class
+│   │   │   ├── email-templates                             // Folder containing email templates
+│   │   │   │   ├── build                                   // Folder containing compiled email templates
+│   │   │   │   │   ├── new_account.html                    // Template for new account email
+│   │   │   │   │   ├── reset_password.html                 // Template for reset password email
+│   │   │   │   │   └── test_email.html                     // Sample email template for testing purposes
+│   │   │   │   └── src                                     // Folder containing email template source files in MJML format
+│   │   │   │       ├── new_account.mjml                    // Source file for new account email template
+│   │   │   │       ├── reset_password.mjml                 // Source file for reset password email template
+│   │   │   │       └── test_email.mjml                     // Sample email template source file for testing purposes
+│   │   │   ├── initial_data.py                             // Script to add initial data to the database
+│   │   │   ├── main.py                                     // Main FastAPI application file
+│   │   │   ├── models                                      // Folder containing database models
+│   │   │   │   ├── item.py                                 // Item database model
+│   │   │   │   └── user.py                                 // User database model
+│   │   │   ├── schemas                                     // Folder containing Pydantic schema models used for validation
+│   │   │   │   ├── item.py                                 // Item Pydantic schema model
+│   │   │   │   ├── msg.py                                  // Generic message Pydantic schema model
+│   │   │   │   ├── token.py                                // Token Pydantic schema model
+│   │   │   │   └── user.py                                 // User Pydantic schema model
+│   │   │   ├── tests                                       // Folder containing tests
+│   │   │   │   ├── api                                     // Folder containing API tests
+│   │   │   │   │   └── api_v1                              // Folder containing tests for API v1 endpoints
+│   │   │   │   │       ├── test_celery.py                  // Celery tests
+│   │   │   │   │       ├── test_items.py                   // Item API endpoint tests
+│   │   │   │   │       ├── test_login.py                   // Login API endpoint tests
+│   │   │   │   │       └── test_users.py                   // User API endpoint tests
+│   │   │   │   ├── conftest.py                             // Configuration file for pytest
+│   │   │   │   ├── crud                                    // Folder containing tests for CRUD operations
+│   │   │   │   │   ├── test_item.py                        // Item CRUD operation tests
+│   │   │   │   │   └── test_user.py                        // User CRUD operation tests
+│   │   │   │   └── utils                                   // Folder containing utility function tests
+│   │   │   │       ├── item.py                             // Item utility function tests
+│   │   │   │       ├── user.py                             // User utility function tests
+│   │   │   │       └── utils.py                            // Generic utility function tests
+│   │   │   ├── tests_pre_start.py                          // Script to run before running tests
+│   │   │   ├── utils.py                                    // Generic utility functions used throughout the app
+│   │   │   └── worker.py                                   // Celery worker script
+│   │   ├── mypy.ini                                        // MyPy configuration file
+│   │   ├── prestart.sh                                     // Script to run before starting the backend app
+│   │   ├── pyproject.toml                                  // PEP 518 file containing app dependencies
+│   │   ├── scripts                                         // Folder containing shell scripts used for development
+│   │   │   ├── format-imports.sh                           // Shell script to format Python imports
+│   │   │   ├── format.sh                                   // Shell script to format Python code
+│   │   │   ├── lint.sh                                     // Shell script to run linters
+│   │   │   ├── test-cov-html.sh                            // Shell script to run tests and generate coverage report
+│   │   │   └── test.sh                                     // Shell script to run tests
+│   │   ├── tests-start.sh                                  // Script to start the tests
+│   │   └── worker-start.sh                                 // Script to start the Celery worker
+│   ├── backend.dockerfile                                  // Dockerfile for building the backend image
+│   └── celeryworker.dockerfile                             // Dockerfile for building the Celery worker image
+├── cookiecutter-config-file.yml                            // Configuration file for cookiecutter
+└── frontend                                                // Frontend directory
+    ├── Dockerfile                                          // Dockerfile for building the frontend image
+    ├── README.md                                           // README file for the frontend
+    ├── babel.config.js                                     // Babel configuration file
+    ├── nginx-backend-not-found.conf                        // NGINX configuration file for handling backend not found errors
+    ├── package.json                                        // NPM package configuration file
+    ├── public                                              // Public directory containing static files
+    │   ├── favicon.ico                                     // Favicon file
+    │   ├── img                                             // Image directory
+    │   │   └── icons                                       // Icon directory
+    │   │       ├── apple-touch-icon.png                    // Apple touch icon
+    │   │       └── safari-pinned-tab.svg                   // Safari pinned tab icon
+    │   ├── index.html                                      // HTML file for the app
+    │   ├── manifest.json                                   // Manifest file for the app
+    │   └── robots.txt                                      // Robots.txt file
+    ├── src                                                 // Source directory
+    │   ├── App.vue                                         // Main Vue app component
+    │   ├── api.ts                                          // File containing API request functions
+    │   ├── assets                                          // Asset directory
+    │   │   └── logo.png                                    // App logo
+    │   ├── component-hooks.ts                              // File containing component lifecycle hooks
+    │   ├── components                                      // Directory containing Vue components
+    │   │   ├── NotificationsManager.vue                    // Component for managing notifications
+    │   │   ├── RouterComponent.vue                         // Component for handling routing
+    │   │   └── UploadButton.vue                            // Component for uploading files
+    │   ├── env.ts                                          // File containing app environment variables
+    │   ├── interfaces                                      // Directory containing TypeScript interfaces
+    │   │   └── index.ts                                    // Index file for interfaces
+    │   ├── main.ts                                         // Main entry point for Vue app
+    │   ├── plugins                                         // Directory containing Vue plugins
+    │   │   ├── vee-validate.ts                             // VeeValidate plugin
+    │   │   └── vuetify.ts                                  // Vuetify plugin
+    │   ├── registerServiceWorker.ts                        // File for registering service worker
+    │   ├── router.ts                                       // Router configuration file
+    │   ├── shims-tsx.d.ts                                  // TypeScript shim for TSX files
+    │   ├── shims-vue.d.ts                                  // TypeScript shim for Vue files
+    │   ├── store                                           // Directory containing Vuex store files
+    │   │   ├── admin                                       // Directory containing Vuex files for admin data
+    │   │   │   ├── actions.ts                              // Vuex admin actions
+    │   │   │   ├── getters.ts                              // Vuex admin getters
+    │   │   │   ├── index.ts                                // Index file for admin Vuex store
+    │   │   │   ├── mutations.ts                            // Vuex admin mutations
+    │   │   │   └── state.ts                                // Vuex admin state
+    │   │   ├── index.ts                                    // Index file for Vuex store
+    │   │   ├── main                                        // Directory containing Vuex files for main app data
+    │   │   │   ├── actions.ts                              // Vuex main actions
+    │   │   │   ├── getters.ts                              // Vuex main getters
+    │   │   │   ├── index.ts                                // Index file for main Vuex store
+    │   │   │   ├── mutations.ts                            // Vuex main mutations
+    │   │   │   └── state.ts                                // Vuex main state
+    │   │   └── state.ts                                    // Vuex root state
+    │   ├── utils.ts                                        // File containing utility functions
+    │   └── views                                           // Directory containing Vue views
+    │       ├── Login.vue                                   // Login view
+    │       ├── PasswordRecovery.vue                        // Password recovery view
+    │       ├── ResetPassword.vue                           // Password reset view
+    │       └── main                                        // Directory containing main app views
+    │           ├── Dashboard.vue                           // Dashboard view
+    │           ├── Main.vue                                // Main app view
+    │           ├── Start.vue                               // Start view
+    │           ├── admin                                   // Directory containing admin views
+    │           │   ├── Admin.vue                           // Admin view
+    │           │   ├── AdminUsers.vue                      // Admin users view
+    │           │   ├── CreateUser.vue                      // Admin create user view
+    │           │   └── EditUser.vue                        // Admin edit user view
+    │           └── profile                                 // Directory containing user profile views
+    │               ├── UserProfile.vue                     // User profile view
+    │               ├── UserProfileEdit.vue                 // User profile edit view
+    │               └── UserProfileEditPassword.vue         // User profile password edit view
+    ├── tests                                               // Directory containing tests
+    │   └── unit                                            // Directory containing unit tests
+    │       └── upload-button.spec.ts                       // Unit test for UploadButton component
+    ├── tsconfig.json                                       // TypeScript configuration file
+    ├── tslint.json                                         // TSLint configuration file
+    └── vue.config.js                                       // Vue configuration file
+```
+
+
+# Backend Requirements
 
 * [Docker](https://www.docker.com/).
 * [Docker Compose](https://docs.docker.com/compose/install/).
 * [Poetry](https://python-poetry.org/) for Python package and environment management.
 
-## Frontend Requirements
+# Frontend Requirements
 
 * Node.js (with `npm`).
 
-## Backend local development
+# Backend local development
 
 * Start the stack with Docker Compose:
 
@@ -50,9 +257,9 @@ docker-compose logs backend
 
 If your Docker is not running in `localhost` (the URLs above wouldn't work) check the sections below on **Development with Docker Toolbox** and **Development with a custom IP**.
 
-## Backend local development, additional details
+# Backend local development, additional details
 
-### General workflow
+## General workflow
 
 By default, the dependencies are managed with [Poetry](https://python-poetry.org/), go there and install it.
 
@@ -76,7 +283,7 @@ Add and modify tasks to the Celery worker in `./backend/app/app/worker.py`.
 
 If you need to install any additional package to the worker, add it to the file `./backend/app/celeryworker.dockerfile`.
 
-### Docker Compose Override
+## Docker Compose Override
 
 During development, you can change Docker Compose settings that will only affect the local development environment, in the file `docker-compose.override.yml`.
 
@@ -130,7 +337,7 @@ Nevertheless, if it doesn't detect a change but a syntax error, it will just sto
 
 ...this previous detail is what makes it useful to have the container alive doing nothing and then, in a Bash session, make it run the live reload server.
 
-### Backend tests
+## Backend tests
 
 To test the backend run:
 
@@ -144,7 +351,7 @@ The tests run with Pytest, modify and add tests to `./backend/app/app/tests/`.
 
 If you use GitLab CI the tests will run automatically.
 
-#### Local tests
+### Local tests
 
 Start the stack with this command:
 
@@ -158,7 +365,7 @@ You can rerun the test on live code:
 docker-compose exec backend /app/tests-start.sh
 ```
 
-#### Test running stack
+### Test running stack
 
 If your stack is already up and you just want to run the tests, you can use:
 
@@ -174,7 +381,7 @@ For example, to stop on first error:
 docker-compose exec backend bash /app/tests-start.sh -x
 ```
 
-#### Test Coverage
+### Test Coverage
 
 Because the test scripts forward arguments to `pytest`, you can enable test coverage HTML report generation by passing `--cov-report=html`.
 
@@ -190,7 +397,7 @@ To run the tests in a running stack with coverage HTML reports:
 docker-compose exec backend bash /app/tests-start.sh --cov-report=html
 ```
 
-### Live development with Python Jupyter Notebooks
+## Live development with Python Jupyter Notebooks
 
 If you know about Python [Jupyter Notebooks](http://jupyter.org/), you can take advantage of them during local development.
 
@@ -231,7 +438,7 @@ http://localhost:8888/token=f20939a41524d021fbfc62b31be8ea4dd9232913476f4397
 
 You will have a full Jupyter Notebook running inside your container that has direct access to your database by the container name (`db`), etc. So, you can just run sections of your backend code directly, for example with [VS Code Python Jupyter Interactive Window](https://code.visualstudio.com/docs/python/jupyter-support-py) or [Hydrogen](https://github.com/nteract/hydrogen).
 
-### Migrations
+## Migrations
 
 As during local development your app directory is mounted as a volume inside the container, you can also run the migrations with `alembic` commands inside the container and the migration code will be in your app directory (instead of being only inside the container). So you can add it to your git repository.
 
@@ -273,7 +480,7 @@ $ alembic upgrade head
 
 If you don't want to start with the default models and want to remove them / modify them, from the beginning, without having any previous revision, you can remove the revision files (`.py` Python files) under `./backend/app/alembic/versions/`. And then create a first migration as described above.
 
-### Development with Docker Toolbox
+## Development with Docker Toolbox
 
 If you are using **Docker Toolbox** in Windows or macOS instead of **Docker for Windows** or **Docker for Mac**, Docker will be running in a VirtualBox Virtual Machine, and it will have a local IP different than `127.0.0.1`, which is the IP address for `localhost` in your machine.
 
@@ -289,7 +496,7 @@ After performing those steps you should be able to open: http://local.dockertool
 
 Check all the corresponding available URLs in the section at the end.
 
-### Development in `localhost` with a custom domain
+## Development in `localhost` with a custom domain
 
 You might want to use something different than `localhost` as the domain. For example, if you are having problems with cookies that need a subdomain, and Chrome is not allowing you to use `localhost`.
 
@@ -303,7 +510,7 @@ After performing those steps you should be able to open: http://localhost.tiango
 
 Check all the corresponding available URLs in the section at the end.
 
-### Development with a custom IP
+## Development with a custom IP
 
 If you are running Docker in an IP address different than `127.0.0.1` (`localhost`) and `192.168.99.100` (the default of Docker Toolbox), you will need to perform some additional steps. That will be the case if you are running a custom Virtual Machine, a secondary Docker Toolbox or your Docker is located in a different machine in your network.
 
@@ -334,7 +541,7 @@ After performing those steps you should be able to open: http://dev.quartos.com 
 
 Check all the corresponding available URLs in the section at the end.
 
-### Change the development "domain"
+## Change the development "domain"
 
 If you need to use your local stack with a different domain than `localhost`, you need to make sure the domain you use points to the IP where your stack is set up. See the different ways to achieve that in the sections above (i.e. using Docker Toolbox with `local.dockertoolbox.tiangolo.com`, using `localhost.tiangolo.com` or using `dev.quartos.com`).
 
@@ -376,7 +583,7 @@ docker-compose up -d
 
 and check all the corresponding available URLs in the section at the end.
 
-## Frontend development
+# Frontend development
 
 * Enter the `frontend` directory, install the NPM packages and start the live server using the `npm` scripts:
 
@@ -410,7 +617,7 @@ VUE_APP_ENV=development
 VUE_APP_ENV=staging
 ```
 
-### Removing the frontend
+## Removing the frontend
 
 If you are developing an API-only app and want to remove the frontend, you can do it easily:
 
@@ -430,7 +637,7 @@ If you want, you can also remove the `FRONTEND` environment variables from:
 
 But it would be only to clean them up, leaving them won't really have any effect either way.
 
-## Deployment
+# Deployment
 
 You can deploy the stack to a Docker Swarm mode cluster with a main Traefik proxy, set up using the ideas from <a href="https://dockerswarm.rocks" target="_blank">DockerSwarm.rocks</a>, to get automatic HTTPS certificates, etc.
 
@@ -438,7 +645,7 @@ And you can use CI (continuous integration) systems to do it automatically.
 
 But you have to configure a couple things first.
 
-### Traefik network
+## Traefik network
 
 This stack expects the public Traefik network to be named `traefik-public`, just as in the tutorials in <a href="https://dockerswarm.rocks" class="external-link" target="_blank">DockerSwarm.rocks</a>.
 
@@ -456,7 +663,7 @@ Change `traefik-public` to the name of the used Traefik network. And then update
 TRAEFIK_PUBLIC_NETWORK=traefik-public
 ```
 
-### Persisting Docker named volumes
+## Persisting Docker named volumes
 
 You need to make sure that each service (Docker container) that uses a volume is always deployed to the same Docker "node" in the cluster, that way it will preserve the data. Otherwise, it could be deployed to a different node each time, and each time the volume would be created in that new node before starting the service. As a result, it would look like your service was starting from scratch every time, losing all the previous data.
 
@@ -464,7 +671,7 @@ That's specially important for a service running a database. But the same proble
 
 To solve that, you can put constraints in the services that use one or more data volumes (like databases) to make them be deployed to a Docker node with a specific label. And of course, you need to have that label assigned to one (only one) of your nodes.
 
-#### Adding services with volumes
+### Adding services with volumes
 
 For each service that uses a volume (databases, services with uploaded files, etc) you should have a label constraint in your `docker-compose.yml` file.
 
@@ -512,7 +719,7 @@ If you add more volumes to your stack, you need to make sure you add the corresp
 
 Then you have to create those labels in some nodes in your Docker Swarm mode cluster. You can use `docker-auto-labels` to do it automatically.
 
-#### `docker-auto-labels`
+### `docker-auto-labels`
 
 You can use [`docker-auto-labels`](https://github.com/tiangolo/docker-auto-labels) to automatically read the placement constraint labels in your Docker stack (Docker Compose file) and assign them to a random Docker node in your Swarm mode cluster if those labels don't exist yet.
 
@@ -530,7 +737,7 @@ docker-auto-labels docker-stack.yml
 
 You can run that command every time you deploy, right before deploying, as it doesn't modify anything if the required labels already exist.
 
-#### (Optionally) adding labels manually
+### (Optionally) adding labels manually
 
 If you don't want to use `docker-auto-labels` or for any reason you want to manually assign the constraint labels to specific nodes in your Docker Swarm mode cluster, you can do the following:
 
@@ -564,7 +771,7 @@ docker node update --label-add quartos-com.app-db-data=true dog.example.com
 docker node update --label-add stag-quartos-com.app-db-data=true cat.example.com
 ```
 
-### Deploy to a Docker Swarm mode cluster
+## Deploy to a Docker Swarm mode cluster
 
 There are 3 steps:
 
@@ -623,7 +830,7 @@ bash ./scripts/deploy.sh
 
 If you change your mind and, for example, want to deploy everything to a different domain, you only have to change the `DOMAIN` environment variable in the previous commands. If you wanted to add a different version / environment of your stack, like "`preproduction`", you would only have to set `TAG=preproduction` in your command and update these other environment variables accordingly. And it would all work, that way you could have different environments and deployments of the same app in the same cluster.
 
-#### Deployment Technical Details
+### Deployment Technical Details
 
 Building and pushing is done with the `docker-compose.yml` file, using the `docker-compose` command. The file `docker-compose.yml` uses the file `.env` with default environment variables. And the scripts set some additional environment variables as well.
 
@@ -658,7 +865,7 @@ docker-auto-labels docker-stack.yml
 docker stack deploy -c docker-stack.yml --with-registry-auth "${STACK_NAME?Variable not set}"
 ```
 
-### Continuous Integration / Continuous Delivery
+## Continuous Integration / Continuous Delivery
 
 If you use GitLab CI, the included `.gitlab-ci.yml` can automatically deploy it. You may need to update it according to your GitLab configurations.
 
@@ -671,7 +878,7 @@ GitLab CI is configured assuming 2 environments following GitLab flow:
 
 If you need to add more environments, for example, you could imagine using a client-approved `preprod` branch, you can just copy the configurations in `.gitlab-ci.yml` for `stag` and rename the corresponding variables. The Docker Compose file and environment variables are configured to support as many environments as you need, so that you only need to modify `.gitlab-ci.yml` (or whichever CI system configuration you are using).
 
-## Docker Compose files and env vars
+# Docker Compose files and env vars
 
 There is a main `docker-compose.yml` file with all the configurations that apply to the whole stack, it is used automatically by `docker-compose`.
 
@@ -687,7 +894,7 @@ They are designed to have the minimum repetition of code and configurations, so 
 
 Also, if you want to have another deployment environment, say `preprod`, you just have to change environment variables, but you can keep using the same Docker Compose files.
 
-### The .env file
+## The .env file
 
 The `.env` file is the one that contains all your configurations, generated keys and passwords, etc.
 
@@ -695,11 +902,11 @@ Depending on your workflow, you could want to exclude it from Git, for example i
 
 One way to do it could be to add each environment variable to your CI/CD system, and updating the `docker-compose.yml` file to read that specific env var instead of reading the `.env` file.
 
-## URLs
+# URLs
 
 These are the URLs that will be used and generated by the project.
 
-### Production URLs
+## Production URLs
 
 Production URLs, from the branch `production`.
 
@@ -715,7 +922,7 @@ PGAdmin: https://pgadmin.quartos.com
 
 Flower: https://flower.quartos.com
 
-### Staging URLs
+## Staging URLs
 
 Staging URLs, from the branch `master`.
 
@@ -731,7 +938,7 @@ PGAdmin: https://pgadmin.stag.quartos.com
 
 Flower: https://flower.stag.quartos.com
 
-### Development URLs
+## Development URLs
 
 Development URLs, for local development.
 
@@ -749,7 +956,7 @@ Flower: http://localhost:5555
 
 Traefik UI: http://localhost:8090
 
-### Development with Docker Toolbox URLs
+## Development with Docker Toolbox URLs
 
 Development URLs, for local development.
 
@@ -767,7 +974,7 @@ Flower: http://local.dockertoolbox.tiangolo.com:5555
 
 Traefik UI: http://local.dockertoolbox.tiangolo.com:8090
 
-### Development with a custom IP URLs
+## Development with a custom IP URLs
 
 Development URLs, for local development.
 
@@ -785,7 +992,7 @@ Flower: http://dev.quartos.com:5555
 
 Traefik UI: http://dev.quartos.com:8090
 
-### Development in localhost with a custom domain URLs
+## Development in localhost with a custom domain URLs
 
 Development URLs, for local development.
 
@@ -803,7 +1010,7 @@ Flower: http://localhost.tiangolo.com:5555
 
 Traefik UI: http://localhost.tiangolo.com:8090
 
-## Project generation and updating, or re-generating
+# Project generation and updating, or re-generating
 
 This project was generated using https://github.com/tiangolo/full-stack-fastapi-postgresql with:
 
