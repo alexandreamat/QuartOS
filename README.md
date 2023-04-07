@@ -47,12 +47,6 @@ QuartOS
 ├── README.md                                               // Project description and instructions
 ├── backend
 │   ├── app
-│   │   ├── alembic
-│   │   │   ├── README                                      // Description of Alembic migrations
-│   │   │   ├── env.py                                      // Alembic configuration file
-│   │   │   ├── script.py.mako                              // Alembic migration script template
-│   │   │   └── versions                                    // Folder containing database migration scripts
-│   │   │       └── d4867f3a4c0a_first_revision.py          // Sample database migration script
 │   │   ├── app
 │   │   │   ├── api
 │   │   │   │   ├── api_v1
@@ -234,8 +228,6 @@ Backend, JSON based web API based on OpenAPI: http://localhost/api/
 Automatic interactive documentation with Swagger UI (from the OpenAPI backend): http://localhost/docs
 
 Alternative automatic documentation with ReDoc (from the OpenAPI backend): http://localhost/redoc
-
-PGAdmin, PostgreSQL web administration: http://localhost:5050
 
 Flower, administration of Celery tasks: http://localhost:5555
 
@@ -918,8 +910,6 @@ Automatic Interactive Docs (Swagger UI): https://quartos.com/docs
 
 Automatic Alternative Docs (ReDoc): https://quartos.com/redoc
 
-PGAdmin: https://pgadmin.quartos.com
-
 Flower: https://flower.quartos.com
 
 ## Staging URLs
@@ -934,8 +924,6 @@ Automatic Interactive Docs (Swagger UI): https://stag.quartos.com/docs
 
 Automatic Alternative Docs (ReDoc): https://stag.quartos.com/redoc
 
-PGAdmin: https://pgadmin.stag.quartos.com
-
 Flower: https://flower.stag.quartos.com
 
 ## Development URLs
@@ -949,8 +937,6 @@ Backend: http://localhost/api/
 Automatic Interactive Docs (Swagger UI): https://localhost/docs
 
 Automatic Alternative Docs (ReDoc): https://localhost/redoc
-
-PGAdmin: http://localhost:5050
 
 Flower: http://localhost:5555
 
@@ -968,8 +954,6 @@ Automatic Interactive Docs (Swagger UI): https://local.dockertoolbox.tiangolo.co
 
 Automatic Alternative Docs (ReDoc): https://local.dockertoolbox.tiangolo.com/redoc
 
-PGAdmin: http://local.dockertoolbox.tiangolo.com:5050
-
 Flower: http://local.dockertoolbox.tiangolo.com:5555
 
 Traefik UI: http://local.dockertoolbox.tiangolo.com:8090
@@ -986,8 +970,6 @@ Automatic Interactive Docs (Swagger UI): https://dev.quartos.com/docs
 
 Automatic Alternative Docs (ReDoc): https://dev.quartos.com/redoc
 
-PGAdmin: http://dev.quartos.com:5050
-
 Flower: http://dev.quartos.com:5555
 
 Traefik UI: http://dev.quartos.com:8090
@@ -1003,8 +985,6 @@ Backend: http://localhost.tiangolo.com/api/
 Automatic Interactive Docs (Swagger UI): https://localhost.tiangolo.com/docs
 
 Automatic Alternative Docs (ReDoc): https://localhost.tiangolo.com/redoc
-
-PGAdmin: http://localhost.tiangolo.com:5050
 
 Flower: http://localhost.tiangolo.com:5555
 
