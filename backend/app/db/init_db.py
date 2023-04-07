@@ -2,7 +2,9 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.core.config import settings
-from app.db import base  # noqa: F401
+from app.db import base
+from app.db.session import engine
+
 
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB
 # otherwise, SQL Alchemy might fail to initialize relationships properly
@@ -10,7 +12,7 @@ from app.db import base  # noqa: F401
 
 
 def init_db(db: Session) -> None:
-    Base.metadata.create_all(bind=engine)
+    base.Base.metadata.create_all(bind=engine)
 
     user = crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
