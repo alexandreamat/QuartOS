@@ -44,160 +44,157 @@
 
 ```
 QuartOS
-├── README.md                                               // Project description and instructions
+├── README.md                                          // Project description and instructions
 ├── backend
-│   ├── app
-│   │   ├── app
-│   │   │   ├── api
-│   │   │   │   ├── api_v1
-│   │   │   │   │   ├── api.py                              // FastAPI
-│   │   │   │   │   └── endpoints                           // Folder containing API endpoint files
-│   │   │   │   │       ├── items.py                        // Sample endpoint file for items
-│   │   │   │   │       ├── login.py                        // Sample endpoint file for login
-│   │   │   │   │       ├── users.py                        // Sample endpoint file for users
-│   │   │   │   │       └── utils.py                        // Utility functions used in the API endpoints
-│   │   │   │   └── deps.py                                 // FastAPI dependencies
-│   │   │   ├── backend_pre_start.py                        // Script to run before starting the backend app
-│   │   │   ├── celeryworker_pre_start.py                   // Script to run before starting the Celery worker
-│   │   │   ├── core                                        // Folder containing core modules
-│   │   │   │   ├── celery_app.py                           // Celery app configuration
-│   │   │   │   ├── config.py                               // App configuration
-│   │   │   │   └── security.py                             // Security related functions
-│   │   │   ├── crud                                        // Folder containing CRUD operations for the database models
-│   │   │   │   ├── base.py                                 // Base CRUD class
-│   │   │   │   ├── crud_item.py                            // CRUD operations for items
-│   │   │   │   └── crud_user.py                            // CRUD operations for users
-│   │   │   ├── db                                          // Folder containing database related scripts
-│   │   │   │   ├── base.py                                 // Base database class
-│   │   │   │   ├── base_class.py                           // Base class for database models
-│   │   │   │   ├── init_db.py                              // Script to initialize the database
-│   │   │   │   └── session.py                              // Database session class
-│   │   │   ├── email-templates                             // Folder containing email templates
-│   │   │   │   ├── build                                   // Folder containing compiled email templates
-│   │   │   │   │   ├── new_account.html                    // Template for new account email
-│   │   │   │   │   ├── reset_password.html                 // Template for reset password email
-│   │   │   │   │   └── test_email.html                     // Sample email template for testing purposes
-│   │   │   │   └── src                                     // Folder containing email template source files in MJML format
-│   │   │   │       ├── new_account.mjml                    // Source file for new account email template
-│   │   │   │       ├── reset_password.mjml                 // Source file for reset password email template
-│   │   │   │       └── test_email.mjml                     // Sample email template source file for testing purposes
-│   │   │   ├── initial_data.py                             // Script to add initial data to the database
-│   │   │   ├── main.py                                     // Main FastAPI application file
-│   │   │   ├── models                                      // Folder containing database models
-│   │   │   │   ├── item.py                                 // Item database model
-│   │   │   │   └── user.py                                 // User database model
-│   │   │   ├── schemas                                     // Folder containing Pydantic schema models used for validation
-│   │   │   │   ├── item.py                                 // Item Pydantic schema model
-│   │   │   │   ├── msg.py                                  // Generic message Pydantic schema model
-│   │   │   │   ├── token.py                                // Token Pydantic schema model
-│   │   │   │   └── user.py                                 // User Pydantic schema model
-│   │   │   ├── tests                                       // Folder containing tests
-│   │   │   │   ├── api                                     // Folder containing API tests
-│   │   │   │   │   └── api_v1                              // Folder containing tests for API v1 endpoints
-│   │   │   │   │       ├── test_celery.py                  // Celery tests
-│   │   │   │   │       ├── test_items.py                   // Item API endpoint tests
-│   │   │   │   │       ├── test_login.py                   // Login API endpoint tests
-│   │   │   │   │       └── test_users.py                   // User API endpoint tests
-│   │   │   │   ├── conftest.py                             // Configuration file for pytest
-│   │   │   │   ├── crud                                    // Folder containing tests for CRUD operations
-│   │   │   │   │   ├── test_item.py                        // Item CRUD operation tests
-│   │   │   │   │   └── test_user.py                        // User CRUD operation tests
-│   │   │   │   └── utils                                   // Folder containing utility function tests
-│   │   │   │       ├── item.py                             // Item utility function tests
-│   │   │   │       ├── user.py                             // User utility function tests
-│   │   │   │       └── utils.py                            // Generic utility function tests
-│   │   │   ├── tests_pre_start.py                          // Script to run before running tests
-│   │   │   ├── utils.py                                    // Generic utility functions used throughout the app
-│   │   │   └── worker.py                                   // Celery worker script
-│   │   ├── mypy.ini                                        // MyPy configuration file
-│   │   ├── prestart.sh                                     // Script to run before starting the backend app
-│   │   ├── pyproject.toml                                  // PEP 518 file containing app dependencies
-│   │   ├── scripts                                         // Folder containing shell scripts used for development
-│   │   │   ├── format-imports.sh                           // Shell script to format Python imports
-│   │   │   ├── format.sh                                   // Shell script to format Python code
-│   │   │   ├── lint.sh                                     // Shell script to run linters
-│   │   │   ├── test-cov-html.sh                            // Shell script to run tests and generate coverage report
-│   │   │   └── test.sh                                     // Shell script to run tests
-│   │   ├── tests-start.sh                                  // Script to start the tests
-│   │   └── worker-start.sh                                 // Script to start the Celery worker
-│   ├── backend.dockerfile                                  // Dockerfile for building the backend image
-│   └── celeryworker.dockerfile                             // Dockerfile for building the Celery worker image
-├── cookiecutter-config-file.yml                            // Configuration file for cookiecutter
-└── frontend                                                // Frontend directory
-    ├── Dockerfile                                          // Dockerfile for building the frontend image
-    ├── README.md                                           // README file for the frontend
-    ├── babel.config.js                                     // Babel configuration file
-    ├── nginx-backend-not-found.conf                        // NGINX configuration file for handling backend not found errors
-    ├── package.json                                        // NPM package configuration file
-    ├── public                                              // Public directory containing static files
-    │   ├── favicon.ico                                     // Favicon file
-    │   ├── img                                             // Image directory
-    │   │   └── icons                                       // Icon directory
-    │   │       ├── apple-touch-icon.png                    // Apple touch icon
-    │   │       └── safari-pinned-tab.svg                   // Safari pinned tab icon
-    │   ├── index.html                                      // HTML file for the app
-    │   ├── manifest.json                                   // Manifest file for the app
-    │   └── robots.txt                                      // Robots.txt file
-    ├── src                                                 // Source directory
-    │   ├── App.vue                                         // Main Vue app component
-    │   ├── api.ts                                          // File containing API request functions
-    │   ├── assets                                          // Asset directory
-    │   │   └── logo.png                                    // App logo
-    │   ├── component-hooks.ts                              // File containing component lifecycle hooks
-    │   ├── components                                      // Directory containing Vue components
-    │   │   ├── NotificationsManager.vue                    // Component for managing notifications
-    │   │   ├── RouterComponent.vue                         // Component for handling routing
-    │   │   └── UploadButton.vue                            // Component for uploading files
-    │   ├── env.ts                                          // File containing app environment variables
-    │   ├── interfaces                                      // Directory containing TypeScript interfaces
-    │   │   └── index.ts                                    // Index file for interfaces
-    │   ├── main.ts                                         // Main entry point for Vue app
-    │   ├── plugins                                         // Directory containing Vue plugins
-    │   │   ├── vee-validate.ts                             // VeeValidate plugin
-    │   │   └── vuetify.ts                                  // Vuetify plugin
-    │   ├── registerServiceWorker.ts                        // File for registering service worker
-    │   ├── router.ts                                       // Router configuration file
-    │   ├── shims-tsx.d.ts                                  // TypeScript shim for TSX files
-    │   ├── shims-vue.d.ts                                  // TypeScript shim for Vue files
-    │   ├── store                                           // Directory containing Vuex store files
-    │   │   ├── admin                                       // Directory containing Vuex files for admin data
-    │   │   │   ├── actions.ts                              // Vuex admin actions
-    │   │   │   ├── getters.ts                              // Vuex admin getters
-    │   │   │   ├── index.ts                                // Index file for admin Vuex store
-    │   │   │   ├── mutations.ts                            // Vuex admin mutations
-    │   │   │   └── state.ts                                // Vuex admin state
-    │   │   ├── index.ts                                    // Index file for Vuex store
-    │   │   ├── main                                        // Directory containing Vuex files for main app data
-    │   │   │   ├── actions.ts                              // Vuex main actions
-    │   │   │   ├── getters.ts                              // Vuex main getters
-    │   │   │   ├── index.ts                                // Index file for main Vuex store
-    │   │   │   ├── mutations.ts                            // Vuex main mutations
-    │   │   │   └── state.ts                                // Vuex main state
-    │   │   └── state.ts                                    // Vuex root state
-    │   ├── utils.ts                                        // File containing utility functions
-    │   └── views                                           // Directory containing Vue views
-    │       ├── Login.vue                                   // Login view
-    │       ├── PasswordRecovery.vue                        // Password recovery view
-    │       ├── ResetPassword.vue                           // Password reset view
-    │       └── main                                        // Directory containing main app views
-    │           ├── Dashboard.vue                           // Dashboard view
-    │           ├── Main.vue                                // Main app view
-    │           ├── Start.vue                               // Start view
-    │           ├── admin                                   // Directory containing admin views
-    │           │   ├── Admin.vue                           // Admin view
-    │           │   ├── AdminUsers.vue                      // Admin users view
-    │           │   ├── CreateUser.vue                      // Admin create user view
-    │           │   └── EditUser.vue                        // Admin edit user view
-    │           └── profile                                 // Directory containing user profile views
-    │               ├── UserProfile.vue                     // User profile view
-    │               ├── UserProfileEdit.vue                 // User profile edit view
-    │               └── UserProfileEditPassword.vue         // User profile password edit view
-    ├── tests                                               // Directory containing tests
-    │   └── unit                                            // Directory containing unit tests
-    │       └── upload-button.spec.ts                       // Unit test for UploadButton component
-    ├── tsconfig.json                                       // TypeScript configuration file
-    ├── tslint.json                                         // TSLint configuration file
-    └── vue.config.js                                       // Vue configuration file
+│   ├── app
+│   │   ├── api
+│   │   │   ├── api_v1
+│   │   │   │   ├── api.py                             // FastAPI
+│   │   │   │   └── endpoints                          // Folder containing API endpoint files
+│   │   │   │       ├── items.py                       // Sample endpoint file for items
+│   │   │   │       ├── login.py                       // Sample endpoint file for login
+│   │   │   │       ├── users.py                       // Sample endpoint file for users
+│   │   │   │       └── utils.py                       // Utility functions used in the API endpoints
+│   │   │   └── deps.py                                // FastAPI dependencies
+│   │   ├── backend_pre_start.py                       // Script to run before starting the backend app
+│   │   ├── celeryworker_pre_start.py                  // Script to run before starting the Celery worker
+│   │   ├── core                                       // Folder containing core modules
+│   │   │   ├── celery_app.py                          // Celery app configuration
+│   │   │   ├── config.py                              // App configuration
+│   │   │   └── security.py                            // Security related functions
+│   │   ├── crud                                       // Folder containing CRUD operations for the database models
+│   │   │   ├── base.py                                // Base CRUD class
+│   │   │   ├── crud_item.py                           // CRUD operations for items
+│   │   │   └── crud_user.py                           // CRUD operations for users
+│   │   ├── db                                         // Folder containing database related scripts
+│   │   │   ├── base.py                                // Base database class
+│   │   │   ├── base_class.py                          // Base class for database models
+│   │   │   ├── init_db.py                             // Script to initialize the database
+│   │   │   └── session.py                             // Database session class
+│   │   ├── email-templates                            // Folder containing email templates
+│   │   │   ├── build                                  // Folder containing compiled email templates
+│   │   │   │   ├── new_account.html                   // Template for new account email
+│   │   │   │   ├── reset_password.html                // Template for reset password email
+│   │   │   │   └── test_email.html                    // Sample email template for testing purposes
+│   │   │   └── src                                    // Folder containing email template source files in MJML format
+│   │   │       ├── new_account.mjml                   // Source file for new account email template
+│   │   │       ├── reset_password.mjml                // Source file for reset password email template
+│   │   │       └── test_email.mjml                    // Sample email template source file for testing purposes
+│   │   ├── initial_data.py                            // Script to add initial data to the database
+│   │   ├── main.py                                    // Main FastAPI application file
+│   │   ├── models                                     // Folder containing database models
+│   │   │   ├── item.py                                // Item database model
+│   │   │   └── user.py                                // User database model
+│   │   ├── schemas                                    // Folder containing Pydantic schema models used for validation
+│   │   │   ├── item.py                                // Item Pydantic schema model
+│   │   │   ├── msg.py                                 // Generic message Pydantic schema model
+│   │   │   ├── token.py                               // Token Pydantic schema model
+│   │   │   └── user.py                                // User Pydantic schema model
+│   │   ├── tests                                      // Folder containing tests
+│   │   │   ├── api                                    // Folder containing API tests
+│   │   │   │   └── api_v1                             // Folder containing tests for API v1 endpoints
+│   │   │   │       ├── test_celery.py                 // Celery tests
+│   │   │   │       ├── test_items.py                  // Item API endpoint tests
+│   │   │   │       ├── test_login.py                  // Login API endpoint tests
+│   │   │   │       └── test_users.py                  // User API endpoint tests
+│   │   │   ├── conftest.py                            // Configuration file for pytest
+│   │   │   ├── crud                                   // Folder containing tests for CRUD operations
+│   │   │   │   ├── test_item.py                       // Item CRUD operation tests
+│   │   │   │   └── test_user.py                       // User CRUD operation tests
+│   │   │   └── utils                                  // Folder containing utility function tests
+│   │   │       ├── item.py                            // Item utility function tests
+│   │   │       ├── user.py                            // User utility function tests
+│   │   │       └── utils.py                           // Generic utility function tests
+│   │   ├── tests_pre_start.py                         // Script to run before running tests
+│   │   ├── utils.py                                   // Generic utility functions used throughout the app
+│   │   └── worker.py                                  // Celery worker script
+│   ├── mypy.ini                                       // MyPy configuration file
+│   ├── prestart.sh                                    // Script to run before starting the backend app
+│   ├── pyproject.toml                                 // PEP 518 file containing app dependencies
+│   ├── scripts                                        // Folder containing shell scripts used for development
+│   │   ├── format-imports.sh                          // Shell script to format Python imports
+│   │   ├── format.sh                                  // Shell script to format Python code
+│   │   ├── lint.sh                                    // Shell script to run linters
+│   │   ├── test-cov-html.sh                           // Shell script to run tests and generate coverage report
+│   │   └── test.sh                                    // Shell script to run tests
+│   ├── tests-start.sh                                 // Script to start the tests
+│   └── worker-start.sh                                // Script to start the Celery worker
+├── cookiecutter-config-file.yml                       // Configuration file for cookiecutter
+└── frontend                                           // Frontend directory
+    ├── Dockerfile                                     // Dockerfile for building the frontend image
+    ├── README.md                                      // README file for the frontend
+    ├── babel.config.js                                // Babel configuration file
+    ├── nginx-backend-not-found.conf                   // NGINX configuration file for handling backend not found errors
+    ├── package.json                                   // NPM package configuration file
+    ├── public                                         // Public directory containing static files
+    │   ├── favicon.ico                                // Favicon file
+    │   ├── img                                        // Image directory
+    │   │   └── icons                                  // Icon directory
+    │   │       ├── apple-touch-icon.png               // Apple touch icon
+    │   │       └── safari-pinned-tab.svg              // Safari pinned tab icon
+    │   ├── index.html                                 // HTML file for the app
+    │   ├── manifest.json                              // Manifest file for the app
+    │   └── robots.txt                                 // Robots.txt file
+    ├── src                                            // Source directory
+    │   ├── App.vue                                    // Main Vue app component
+    │   ├── api.ts                                     // File containing API request functions
+    │   ├── assets                                     // Asset directory
+    │   │   └── logo.png                               // App logo
+    │   ├── component-hooks.ts                         // File containing component lifecycle hooks
+    │   ├── components                                 // Directory containing Vue components
+    │   │   ├── NotificationsManager.vue               // Component for managing notifications
+    │   │   ├── RouterComponent.vue                    // Component for handling routing
+    │   │   └── UploadButton.vue                       // Component for uploading files
+    │   ├── env.ts                                     // File containing app environment variables
+    │   ├── interfaces                                 // Directory containing TypeScript interfaces
+    │   │   └── index.ts                               // Index file for interfaces
+    │   ├── main.ts                                    // Main entry point for Vue app
+    │   ├── plugins                                    // Directory containing Vue plugins
+    │   │   ├── vee-validate.ts                        // VeeValidate plugin
+    │   │   └── vuetify.ts                             // Vuetify plugin
+    │   ├── registerServiceWorker.ts                   // File for registering service worker
+    │   ├── router.ts                                  // Router configuration file
+    │   ├── shims-tsx.d.ts                             // TypeScript shim for TSX files
+    │   ├── shims-vue.d.ts                             // TypeScript shim for Vue files
+    │   ├── store                                      // Directory containing Vuex store files
+    │   │   ├── admin                                  // Directory containing Vuex files for admin data
+    │   │   │   ├── actions.ts                         // Vuex admin actions
+    │   │   │   ├── getters.ts                         // Vuex admin getters
+    │   │   │   ├── index.ts                           // Index file for admin Vuex store
+    │   │   │   ├── mutations.ts                       // Vuex admin mutations
+    │   │   │   └── state.ts                           // Vuex admin state
+    │   │   ├── index.ts                               // Index file for Vuex store
+    │   │   ├── main                                   // Directory containing Vuex files for main app data
+    │   │   │   ├── actions.ts                         // Vuex main actions
+    │   │   │   ├── getters.ts                         // Vuex main getters
+    │   │   │   ├── index.ts                           // Index file for main Vuex store
+    │   │   │   ├── mutations.ts                       // Vuex main mutations
+    │   │   │   └── state.ts                           // Vuex main state
+    │   │   └── state.ts                               // Vuex root state
+    │   ├── utils.ts                                   // File containing utility functions
+    │   └── views                                      // Directory containing Vue views
+    │       ├── Login.vue                              // Login view
+    │       ├── PasswordRecovery.vue                   // Password recovery view
+    │       ├── ResetPassword.vue                      // Password reset view
+    │       └── main                                   // Directory containing main app views
+    │           ├── Dashboard.vue                      // Dashboard view
+    │           ├── Main.vue                           // Main app view
+    │           ├── Start.vue                          // Start view
+    │           ├── admin                              // Directory containing admin views
+    │           │   ├── Admin.vue                      // Admin view
+    │           │   ├── AdminUsers.vue                 // Admin users view
+    │           │   ├── CreateUser.vue                 // Admin create user view
+    │           │   └── EditUser.vue                   // Admin edit user view
+    │           └── profile                            // Directory containing user profile views
+    │               ├── UserProfile.vue                // User profile view
+    │               ├── UserProfileEdit.vue            // User profile edit view
+    │               └── UserProfileEditPassword.vue    // User profile password edit view
+    ├── tests                                          // Directory containing tests
+    │   └── unit                                       // Directory containing unit tests
+    │       └── upload-button.spec.ts                  // Unit test for UploadButton component
+    ├── tsconfig.json                                  // TypeScript configuration file
+    ├── tslint.json                                    // TSLint configuration file
+    └── vue.config.js                                  // Vue configuration file
 ```
 
 
