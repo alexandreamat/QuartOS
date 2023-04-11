@@ -1,19 +1,24 @@
-import '@babel/polyfill';
-// Import Component hooks before component definitions
-import './component-hooks';
-import Vue from 'vue';
-import './plugins/vuetify';
-import './plugins/vee-validate';
+import { createApp } from 'vue';
+import { createPinia } from 'pinia';
+
+import 'vuetify/styles/main.css';
+import { createVuetify } from 'vuetify';
+import * as components from 'vuetify/components';
+import * as directives from 'vuetify/directives';
+
 import App from './App.vue';
 import router from './router';
-import store from '@/store';
 import './registerServiceWorker';
-import 'vuetify/dist/vuetify.min.css';
 
-Vue.config.productionTip = false;
+const pinia = createPinia();
 
-new Vue({
-  router,
-  store,
-  render: (h) => h(App),
-}).$mount('#app');
+const vuetify = createVuetify({
+  components,
+  directives,
+});
+
+const app = createApp(App);
+app.use(vuetify);
+app.use(router);
+app.use(pinia);
+app.mount('#app', true);

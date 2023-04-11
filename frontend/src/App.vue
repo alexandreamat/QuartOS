@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <v-app>
-      <v-content v-if="loggedIn===null">
+      <v-content v-if="loggedIn === null">
         <v-container fill-height>
           <v-layout align-center justify-center>
             <v-flex>
@@ -14,30 +14,22 @@
         </v-container>
       </v-content>
       <router-view v-else />
-      <NotificationsManager></NotificationsManager>
+      <NotificationsManager />
     </v-app>
   </div>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+
 import NotificationsManager from '@/components/NotificationsManager.vue';
-import { readIsLoggedIn } from '@/store/main/getters';
-import { dispatchCheckLoggedIn } from '@/store/main/actions';
+import useMainStore from './stores/main';
 
-@Component({
-  components: {
-    NotificationsManager,
-  },
-})
-export default class App extends Vue {
+const mainStore = useMainStore();
 
-  get loggedIn() {
-    return readIsLoggedIn(this.$store);
-  }
+const loggedIn = computed(() => mainStore.isLoggedIn);
 
-  public async created() {
-    await dispatchCheckLoggedIn(this.$store);
-  }
-}
+onMounted(async () => {
+  await mainStore.checkLoggedIn();
+});
 </script>

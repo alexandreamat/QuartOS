@@ -5,12 +5,13 @@
         <v-flex xs12 sm8 md4>
           <v-card class="elevation-12">
             <v-toolbar dark color="primary">
-              <v-toolbar-title>{{appName}} - Password Recovery</v-toolbar-title>
+              <v-toolbar-title>{{ appName }} - Password Recovery</v-toolbar-title>
             </v-toolbar>
             <v-card-text>
               <p class="subheading">A password recovery email will be sent to the registered account</p>
               <v-form @keyup.enter="submit" v-model="valid" ref="form" @submit.prevent="" lazy-validation>
-                <v-text-field @keyup.enter="submit" label="Username" type="text" prepend-icon="person" v-model="username" v-validate="'required'" data-vv-name="username" :error-messages="errors.collect('username')" required></v-text-field>
+                <v-text-field @keyup.enter="submit" label="Username" type="text" prepend-icon="person" v-model="username"
+                  required></v-text-field>
               </v-form>
             </v-card-text>
             <v-card-actions>
@@ -27,26 +28,21 @@
   </v-content>
 </template>
 
-<script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+<script setup lang="ts">
+import { useRouter } from 'vue-router';
 import { appName } from '@/env';
-import { dispatchPasswordRecovery } from '@/store/main/actions';
+import useMainStore from '@/stores/main';
 
-@Component
-export default class Login extends Vue {
-  public valid = true;
-  public username: string = '';
-  public appName = appName;
+const valid = true;
+const username = '';
+const mainStore = useMainStore();
+const router = useRouter();
 
-  public cancel() {
-    this.$router.back();
-  }
+function cancel() {
+  router.back();
+}
 
-  public submit() {
-    dispatchPasswordRecovery(this.$store, { username: this.username });
-  }
+async function submit() {
+  await mainStore.passwordRecovery({ username });
 }
 </script>
-
-<style>
-</style>
