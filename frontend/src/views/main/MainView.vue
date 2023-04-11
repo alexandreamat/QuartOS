@@ -84,7 +84,7 @@
       <v-toolbar-title v-text="appName"></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-menu bottom left offset-y>
-        <v-btn slot="activator" icon>
+        <v-btn icon>
           <v-icon>more_vert</v-icon>
         </v-btn>
         <v-list>
@@ -112,71 +112,51 @@
     </v-content>
     <v-footer class="pa-3" fixed app>
       <v-spacer></v-spacer>
-      <span>&copy; {{appName}}</span>
+      <span>&copy; {{ appName }}</span>
     </v-footer>
   </div>
 </template>
 
-<script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
+<script setup lang="ts">
+import { computed } from 'vue';
+import { onBeforeRouteLeave, onBeforeRouteUpdate, RouteLocationNormalized } from 'vue-router';
 
 import { appName } from '@/env';
-import { readDashboardMiniDrawer, readDashboardShowDrawer, readHasAdminAccess } from '@/store/main/getters';
-import { commitSetDashboardShowDrawer, commitSetDashboardMiniDrawer } from '@/store/main/mutations';
-import { dispatchUserLogOut } from '@/store/main/actions';
+import useMainStore from '@/stores/main';
 
-const routeGuardMain = async (to, from, next) => {
+const mainStore = useMainStore();
+
+async function routeGuardMain(to: RouteLocationNormalized) {
   if (to.path === '/main') {
-    next('/main/dashboard');
-  } else {
-    next();
+    return '/main/dashboard';
   }
-};
+  return '';
+}
 
-@Component
-export default class Main extends Vue {
-  public appName = appName;
+onBeforeRouteLeave((to) => routeGuardMain(to));
 
-  public beforeRouteEnter(to, from, next) {
-    routeGuardMain(to, from, next);
-  }
+onBeforeRouteUpdate((to) => routeGuardMain(to));
 
-  public beforeRouteUpdate(to, from, next) {
-    routeGuardMain(to, from, next);
-  }
+const miniDrawer = computed(() => mainStore.dashboardMiniDrawer);
 
-  get miniDrawer() {
-    return readDashboardMiniDrawer(this.$store);
-  }
+const showDrawer = computed({
+  get: () => mainStore.dashboardShowDrawer,
+  set: (value: boolean) => {
+    mainStore.dashboardShowDrawer = value;
+  },
+});
 
-  get showDrawer() {
-    return readDashboardShowDrawer(this.$store);
-  }
+function switchShowDrawer() {
+  mainStore.dashboardShowDrawer = !mainStore.dashboardShowDrawer;
+}
 
-  set showDrawer(value) {
-    commitSetDashboardShowDrawer(this.$store, value);
-  }
+function switchMiniDrawer() {
+  mainStore.dashboardMiniDrawer = !mainStore.dashboardMiniDrawer;
+}
 
-  public switchShowDrawer() {
-    commitSetDashboardShowDrawer(
-      this.$store,
-      !readDashboardShowDrawer(this.$store),
-    );
-  }
+const hasAdminAccess = computed(() => mainStore.hasAdminAccess);
 
-  public switchMiniDrawer() {
-    commitSetDashboardMiniDrawer(
-      this.$store,
-      !readDashboardMiniDrawer(this.$store),
-    );
-  }
-
-  public get hasAdminAccess() {
-    return readHasAdminAccess(this.$store);
-  }
-
-  public async logout() {
-    await dispatchUserLogOut(this.$store);
-  }
+async function logout() {
+  await mainStore.userLogOut();
 }
 </script>
