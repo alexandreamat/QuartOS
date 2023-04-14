@@ -1,0 +1,3 @@
+[submodule "money-tracker"]
+	path = money-tracker
+	url = git@github.com:alexandreamat/money-tracker.git
