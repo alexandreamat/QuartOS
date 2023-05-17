@@ -14,7 +14,7 @@ from app.db.session import engine
 def init_db(db: Session) -> None:
     base.Base.metadata.create_all(bind=engine)
 
-    user = crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
+    user = crud.user._select_by_email(db, email=settings.FIRST_SUPERUSER)
     if not user:
         user_in = schemas.UserCreate(
             email=settings.FIRST_SUPERUSER,

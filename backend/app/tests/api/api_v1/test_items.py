@@ -10,14 +10,16 @@ def test_create_item(
 ) -> None:
     data = {"title": "Foo", "description": "Fighters"}
     response = client.post(
-        f"{settings.API_V1_STR}/items/", headers=superuser_token_headers, json=data,
+        f"{settings.API_V1_STR}/items/",
+        headers=superuser_token_headers,
+        json=data,
     )
     assert response.status_code == 200
     content = response.json()
     assert content["title"] == data["title"]
     assert content["description"] == data["description"]
     assert "id" in content
-    assert "owner_id" in content
+    assert "user_id" in content
 
 
 def test_read_item(
@@ -25,11 +27,12 @@ def test_read_item(
 ) -> None:
     item = create_random_item(db)
     response = client.get(
-        f"{settings.API_V1_STR}/items/{item.id}", headers=superuser_token_headers,
+        f"{settings.API_V1_STR}/items/{item.id}",
+        headers=superuser_token_headers,
     )
     assert response.status_code == 200
     content = response.json()
     assert content["title"] == item.title
     assert content["description"] == item.description
     assert content["id"] == item.id
-    assert content["owner_id"] == item.owner_id
+    assert content["user_id"] == item.user_id
