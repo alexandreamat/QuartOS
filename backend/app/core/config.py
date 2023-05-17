@@ -21,7 +21,7 @@ class Settings(BaseSettings):
             return None
         return v
 
-    SQLALCHEMY_DATABASE_URI: Optional[str] = None
+    SQLALCHEMY_DATABASE_URI: str
 
     SMTP_TLS: bool = True
     SMTP_PORT: Optional[int] = None
