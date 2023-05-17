@@ -1,13 +1,11 @@
-from typing import Annotated
-
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from starlette import status
-from pydantic import EmailStr
 
 from app import crud, models, schemas
-from app.api import deps
+
+from . import deps
 
 router = APIRouter()
 
@@ -83,7 +81,7 @@ def update_user(
 
 
 @router.post("/")
-def create(
+def create_user(
     *,
     db: Session = Depends(deps.get_db),
     user: schemas.UserCreate,

@@ -8,8 +8,7 @@ from sqlalchemy.exc import NoResultFound
 from starlette import status
 from jose.exceptions import JWTError
 
-from app import crud, models, schemas
-from app.api import deps
+from app import crud, schemas
 from app.core import security
 from app.core.config import settings
 from app.core.security import get_password_hash
@@ -18,6 +17,8 @@ from app.utils import (
     send_reset_password_email,
     verify_password_reset_token,
 )
+
+from . import deps
 
 router = APIRouter()
 
