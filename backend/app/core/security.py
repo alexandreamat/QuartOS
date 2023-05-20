@@ -1,9 +1,7 @@
 import hashlib
 from datetime import datetime, timedelta
-from typing import Union, Optional
 
-from fastapi import HTTPException
-from starlette import status
+from fastapi import HTTPException, status
 from jose import jwt
 
 from app.core.config import settings
