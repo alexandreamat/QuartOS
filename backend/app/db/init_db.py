@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 
 from app import crud, schemas
 from app.core.config import settings
-from app.db import base
+from app.db.base import Base
 from app.db.session import engine
 
 
@@ -12,13 +13,14 @@ from app.db.session import engine
 
 
 def init_db(db: Session) -> None:
-    base.Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
 
-    user = crud.user._select_by_email(db, email=settings.FIRST_SUPERUSER)
-    if not user:
+    try:
+        crud.user._select_by_email(db, email=settings.FIRST_SUPERUSER)
+    except NoResultFound:
         user_in = schemas.UserCreate(
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             is_superuser=True,
         )
-        user = crud.user.create(db, obj_in=user_in)  # noqa: F841
+        crud.user.create(db, new_schema_obj=user_in)
