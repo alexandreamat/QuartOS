@@ -1,7 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, NoResultFound
-from starlette import status
 
 from app import crud, models, schemas
 
@@ -11,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("/me")
-def read_user_me(
+def read_me(
     db: Session = Depends(deps.get_db),
     current_user: schemas.UserRead = Depends(deps.get_current_user),
 ) -> schemas.UserRead:
@@ -22,7 +21,7 @@ def read_user_me(
 
 
 @router.put("/me")
-def update_user_me(
+def update_me(
     *,
     db: Session = Depends(deps.get_db),
     current_user: schemas.UserRead = Depends(deps.get_current_user),
@@ -42,7 +41,7 @@ def update_user_me(
 
 
 @router.get("/{id}")
-def read_user_by_id(
+def read(
     id: int,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_superuser),
@@ -60,7 +59,7 @@ def read_user_by_id(
 
 
 @router.put("/{id}")
-def update_user(
+def update(
     *,
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_superuser),
@@ -81,7 +80,7 @@ def update_user(
 
 
 @router.post("/")
-def create_user(
+def create(
     *,
     db: Session = Depends(deps.get_db),
     user: schemas.UserCreate,
@@ -101,7 +100,7 @@ def create_user(
 
 
 @router.get("/")
-def read_users(
+def read_many(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_superuser),
     skip: int = 0,
@@ -115,7 +114,7 @@ def read_users(
 
 
 @router.post("/open")
-def create_user_open(
+def create_open(
     *,
     db: Session = Depends(deps.get_db),
     user: schemas.UserCreate,
