@@ -1,7 +1,6 @@
 from .institution import (
     InstitutionRead,
     InstitutionCreate,
-    InstitutionInDB,
     InstitutionUpdate,
 )
 from .msg import Msg
@@ -18,6 +17,5 @@ __all__ = [
     "UserUpdate",
     "InstitutionRead",
     "InstitutionCreate",
-    "InstitutionInDB",
     "InstitutionUpdate",
 ]

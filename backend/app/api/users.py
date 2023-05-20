@@ -44,7 +44,7 @@ def update_me(
 def read(
     id: int,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_superuser),
+    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
 ) -> schemas.UserRead:
     """
     Get a specific user by id.
