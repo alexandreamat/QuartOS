@@ -1,11 +1,10 @@
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
-from starlette import status
 from jose.exceptions import JWTError
 
 from app import crud, schemas
@@ -24,7 +23,7 @@ router = APIRouter()
 
 
 @router.post("/login/access-token")
-def login_access_token(
+def login(
     db: Session = Depends(deps.get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> schemas.Token:
@@ -50,7 +49,7 @@ def login_access_token(
 
 
 @router.post("/login/test-token")
-def test_token(
+def test(
     current_user: schemas.UserRead = Depends(deps.get_current_user),
 ) -> schemas.UserRead:
     """
@@ -60,7 +59,7 @@ def test_token(
 
 
 @router.post("/password-recovery/{email}")
-def recover_password(
+def recover(
     email: str,
     db: Session = Depends(deps.get_db),
 ) -> schemas.Msg:
@@ -82,7 +81,7 @@ def recover_password(
 
 
 @router.post("/reset-password/")
-def reset_password(
+def reset(
     token: Annotated[str, Body(...)],
     new_password: Annotated[str, Body(...)],
     db: Session = Depends(deps.get_db),

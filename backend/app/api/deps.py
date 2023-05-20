@@ -6,7 +6,6 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
-from starlette import status
 
 from app import crud, schemas
 from app.core import security
