@@ -1,8 +1,6 @@
-from typing import Optional
-
 from pydantic import BaseModel, EmailStr
 
-from .base import DBBaseModel
+from .base import OrmBase
 
 
 class UserBase(BaseModel):
@@ -10,11 +8,8 @@ class UserBase(BaseModel):
     full_name: str | None
 
 
-class UserInDBBase(UserBase, DBBaseModel):
+class UserInDBBase(UserBase, OrmBase):
     is_superuser: bool = False
-
-    class Config:
-        orm_mode = True
 
 
 class UserInDB(UserInDBBase):

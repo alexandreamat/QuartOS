@@ -8,11 +8,11 @@ from pydantic import BaseModel
 from sqlalchemy.exc import NoResultFound
 
 from app.db.base_class import Base
-from app.schemas.base import DBBaseModel
+from app.schemas.base import OrmBase
 
 ModelType = TypeVar("ModelType", bound=Base)
 SchemaCreateType = TypeVar("SchemaCreateType", bound=BaseModel)
-SchemaReadType = TypeVar("SchemaReadType", bound=DBBaseModel)
+SchemaReadType = TypeVar("SchemaReadType", bound=OrmBase)
 SchemaUpdateType = TypeVar("SchemaUpdateType", bound=BaseModel)
 
 
@@ -42,11 +42,11 @@ class CRUDBase(
             raise NoResultFound
         return db_obj
 
-    def _insert_or_update(self, db: Session, db_obj: ModelType) -> SchemaReadType:
+    def _insert_or_update(self, db: Session, db_obj: ModelType) -> ModelType:
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-        return self.schema_read.from_orm(db_obj)
+        return db_obj
 
     def read(self, db: Session, id: int) -> SchemaReadType:
         return self.schema_read.from_orm(self._select(db, id))

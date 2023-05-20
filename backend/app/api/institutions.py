@@ -81,14 +81,14 @@ def create(
     *,
     db: Session = Depends(deps.get_db),
     institution: schemas.InstitutionCreate,
-    current_user: models.User = Depends(deps.get_current_user),
+    current_user: schemas.UserRead = Depends(deps.get_current_user),
 ) -> schemas.InstitutionRead:
     """
     Create new institution.
     """
-    return crud.institution.create(
-        db=db, new_schema_obj=institution, user_id=current_user.id
-    )
+    institution_out = crud.institution.read_or_create(db, institution)
+    crud.user.update_institutions(db, current_user.id, institution_out)
+    return institution_out
 
 
 @router.get("/")
