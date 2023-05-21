@@ -1,11 +1,10 @@
 from .institution import (
     InstitutionRead,
-    InstitutionCreate,
-    InstitutionUpdate,
+    InstitutionWrite,
 )
 from .token import Token, TokenPayload
 from .base import OrmBase
-from .user import UserRead, UserCreate, UserInDB, UserUpdate
+from .user import UserRead, UserWrite, UserInDB
 
 
 __all__ = [
@@ -13,10 +12,8 @@ __all__ = [
     "TokenPayload",
     "OrmBase",
     "UserRead",
-    "UserCreate",
+    "UserWrite",
     "UserInDB",
-    "UserUpdate",
     "InstitutionRead",
-    "InstitutionCreate",
-    "InstitutionUpdate",
+    "InstitutionWrite",
 ]

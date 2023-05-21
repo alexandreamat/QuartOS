@@ -266,9 +266,5 @@ class InstitutionRead(InstitutionBase, OrmBase):
     ...
 
 
-class InstitutionCreate(InstitutionBase):
-    ...
-
-
-class InstitutionUpdate(InstitutionBase):
+class InstitutionWrite(InstitutionBase):
     ...

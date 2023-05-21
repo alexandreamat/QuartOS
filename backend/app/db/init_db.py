@@ -16,9 +16,9 @@ def init_db(db: Session) -> None:
     Base.metadata.create_all(bind=engine)
 
     try:
-        crud.user._select_by_email(db, email=settings.FIRST_SUPERUSER)
+        crud.user.read_by_email(db, email=settings.FIRST_SUPERUSER)
     except NoResultFound:
-        user_in = schemas.UserCreate(
+        user_in = schemas.UserWrite(
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             is_superuser=True,

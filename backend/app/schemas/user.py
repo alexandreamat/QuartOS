@@ -16,13 +16,9 @@ class UserInDB(UserInDBBase):
     hashed_password: str
 
 
-class UserCreate(UserBase):
-    password: str
-
-
 class UserRead(UserInDBBase):
     ...
 
 
-class UserUpdate(UserBase):
+class UserWrite(UserBase):
     password: str
