@@ -1,6 +1,5 @@
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
+from typing import Generic, Type, TypeVar
 
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -53,7 +52,7 @@ class CRUDBase(
 
     def read_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
-    ) -> List[SchemaReadType]:
+    ) -> list[SchemaReadType]:
         return [
             self.schema_read.from_orm(s)
             for s in db.query(self.model).offset(skip).limit(limit).all()
