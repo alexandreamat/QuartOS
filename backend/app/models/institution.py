@@ -9,10 +9,6 @@ import pycountry
 
 from app.models.base import Base
 
-from .user_institution_link import links
-
-from app import schemas
-
 
 country_codes = (country.alpha_2 for country in pycountry.countries)
 
