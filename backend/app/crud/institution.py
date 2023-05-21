@@ -8,7 +8,7 @@ def create(
     new_schema_obj: schemas.InstitutionWrite,
 ) -> schemas.InstitutionRead:
     db_obj_in = models.Institution.from_schema(new_schema_obj)
-    db_obj_out = models.Institution.create(db, db_obj_in)
+    db_obj_out = models.Institution.create_or_update(db, db_obj_in)
     return schemas.InstitutionRead.from_orm(db_obj_out)
 
 
