@@ -25,7 +25,7 @@ def update_me(
     *,
     db: Session = Depends(deps.get_db),
     current_user: schemas.UserRead = Depends(deps.get_current_user),
-    user: schemas.UserUpdate,
+    user: schemas.UserWrite,
 ) -> schemas.UserRead:
     """
     Update own user.
@@ -64,7 +64,7 @@ def update(
     db: Session = Depends(deps.get_db),
     current_user: schemas.UserRead = Depends(deps.get_current_superuser),
     id: int,
-    user: schemas.UserUpdate,
+    user: schemas.UserWrite,
 ) -> schemas.UserRead:
     """
     Update a user.
@@ -83,7 +83,7 @@ def update(
 def create(
     *,
     db: Session = Depends(deps.get_db),
-    user: schemas.UserCreate,
+    user: schemas.UserWrite,
     current_user: schemas.UserRead = Depends(deps.get_current_superuser),
 ) -> schemas.UserRead:
     """
@@ -109,15 +109,14 @@ def read_many(
     """
     Retrieve users.
     """
-    users = crud.user.read_multi(db, skip=skip, limit=limit)
-    return users
+    return crud.user.read_many(db, skip=skip, limit=limit)
 
 
 @router.post("/open")
 def create_open(
     *,
     db: Session = Depends(deps.get_db),
-    user: schemas.UserCreate,
+    user: schemas.UserWrite,
 ) -> schemas.UserRead:
     """
     Create new user without the need to be logged in.

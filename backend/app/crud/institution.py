@@ -1,42 +1,37 @@
-from typing import List
-
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app import models, schemas
 
-from . import CRUDBase
+
+def create(
+    db: Session,
+    new_schema_obj: schemas.InstitutionWrite,
+) -> schemas.InstitutionRead:
+    db_obj_in = models.Institution.from_schema(new_schema_obj)
+    db_obj_out = models.Institution.create(db, db_obj_in)
+    return schemas.InstitutionRead.from_orm(db_obj_out)
 
 
-class CRUDInstitution(
-    CRUDBase[
-        models.Institution,
-        schemas.InstitutionCreate,
-        schemas.InstitutionRead,
-        schemas.InstitutionUpdate,
+def read(db: Session, id: int) -> schemas.InstitutionRead:
+    return schemas.InstitutionRead.from_orm(models.Institution.read(db, id))
+
+
+def read_many(
+    db: Session, skip: int = 0, limit: int = 100
+) -> list[schemas.InstitutionRead]:
+    return [
+        schemas.InstitutionRead.from_orm(s)
+        for s in models.Institution.read_many(db, skip, limit)
     ]
-):
-    def create(
-        self,
-        db: Session,
-        new_schema_obj: schemas.InstitutionCreate,
-    ) -> schemas.InstitutionRead:
-        db_obj_in = models.Institution(**new_schema_obj.dict())
-        db_obj_out = self._insert_or_update(db, db_obj_in)
-        return schemas.InstitutionRead.from_orm(db_obj_out)
-
-    def read_or_create(
-        self, db: Session, new_schema_obj: schemas.InstitutionCreate
-    ) -> schemas.InstitutionRead:
-        db_obj = (
-            db.query(models.Institution)
-            .filter(models.Institution.name == new_schema_obj.name)
-            .filter(models.Institution.country_code == new_schema_obj.country_code)
-            .first()
-        )
-        if db_obj:
-            return schemas.InstitutionRead.from_orm(db_obj)
-        return self.create(db, new_schema_obj=new_schema_obj)
 
 
-institution = CRUDInstitution(models.Institution, schemas.InstitutionRead)
+def update(
+    db: Session, id: int, new_schema_obj: schemas.InstitutionWrite
+) -> schemas.InstitutionRead:
+    db_obj_in = models.Institution.from_schema(new_schema_obj)
+    db_obj_out = models.Institution.update(db, id, db_obj_in)
+    return schemas.InstitutionRead.from_orm(db_obj_out)
+
+
+def delete(db: Session, id: int) -> None:
+    models.Institution.delete(db, id)

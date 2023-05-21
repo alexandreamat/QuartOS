@@ -94,5 +94,5 @@ def reset(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="The user with this username does not exist in the system.",
         )
-    user_in = schemas.UserUpdate(**curr_user.dict(), password=new_password)
+    user_in = schemas.UserWrite(**curr_user.dict(), password=new_password)
     crud.user.update(db, curr_user.id, user_in)

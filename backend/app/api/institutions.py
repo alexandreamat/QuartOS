@@ -12,14 +12,13 @@ router = APIRouter()
 def create(
     *,
     db: Session = Depends(deps.get_db),
-    institution: schemas.InstitutionCreate,
-    current_user: schemas.UserRead = Depends(deps.get_current_user),
+    institution: schemas.InstitutionWrite,
+    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
 ) -> schemas.InstitutionRead:
     """
     Create new institution.
     """
-    institution_out = crud.institution.create(db, institution)
-    return institution_out
+    return crud.institution.create(db, institution)
 
 
 @router.get("/{id}")
@@ -32,12 +31,11 @@ def read(
     Get institution by ID.
     """
     try:
-        institution = crud.institution.read(db, id=id)
+        return crud.institution.read(db, id=id)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
         )
-    return institution
 
 
 @router.get("/")
@@ -47,7 +45,7 @@ def read_many(
     """
     Retrieve institutions.
     """
-    return crud.institution.read_multi(db)
+    return crud.institution.read_many(db)
 
 
 @router.put("/{id}")
@@ -56,18 +54,17 @@ def update(
     db: Session = Depends(deps.get_db),
     current_user: schemas.UserRead = Depends(deps.get_current_superuser),
     id: int,
-    institution: schemas.InstitutionUpdate,
+    institution: schemas.InstitutionWrite,
 ) -> schemas.InstitutionRead:
     """
     Update an institution.
     """
     try:
-        institution_out = crud.institution.update(db, id=id, new_schema_obj=institution)
+        return crud.institution.update(db, id=id, new_schema_obj=institution)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
         )
-    return institution_out
 
 
 @router.delete("/{id}")
@@ -76,14 +73,13 @@ def delete(
     db: Session = Depends(deps.get_db),
     id: int,
     current_user: schemas.UserRead = Depends(deps.get_current_superuser),
-) -> schemas.InstitutionRead:
+) -> None:
     """
     Delete an institution.
     """
     try:
-        institution = crud.institution.delete(db, id=id)
+        crud.institution.delete(db, id=id)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
         )
-    return institution
