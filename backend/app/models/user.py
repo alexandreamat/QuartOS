@@ -10,7 +10,6 @@ from app.core.security import get_password_hash, verify_password
 
 from app.models.base import Base
 
-from .user_institution_link import user_institution_links
 
 if TYPE_CHECKING:
     from .institution import Institution  # noqa: F401
@@ -21,8 +20,9 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_superuser = Column(Boolean(), default=False)
+
     institutions: Mapped[list["Institution"]] = relationship(
-        "Institution", secondary=user_institution_links
+        "Institution", secondary="user_institution_links"
     )
 
     @classmethod
