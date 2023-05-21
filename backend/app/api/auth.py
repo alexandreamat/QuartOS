@@ -10,7 +10,6 @@ from jose.exceptions import JWTError
 from app import crud, schemas
 from app.core import security
 from app.core.config import settings
-from app.core.security import get_password_hash
 from app.utils import (
     generate_password_reset_token,
     send_reset_password_email,
@@ -22,7 +21,7 @@ from . import deps
 router = APIRouter()
 
 
-@router.post("/login/access-token")
+@router.post("/login")
 def login(
     db: Session = Depends(deps.get_db),
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -30,11 +29,15 @@ def login(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
+    print("login")
     try:
+        print("login")
         user = crud.user.authenticate(
             db, email=form_data.username, password=form_data.password
         )
+        print(user)
     except NoResultFound:
+        print("oops")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect email or password",
@@ -48,21 +51,11 @@ def login(
     )
 
 
-@router.post("/login/test-token")
-def test(
-    current_user: schemas.UserRead = Depends(deps.get_current_user),
-) -> schemas.UserRead:
-    """
-    Test access token
-    """
-    return current_user
-
-
-@router.post("/password-recovery/{email}")
+@router.post("/recover-password/{email}")
 def recover(
     email: str,
     db: Session = Depends(deps.get_db),
-) -> schemas.Msg:
+) -> None:
     """
     Password Recovery
     """
@@ -77,7 +70,6 @@ def recover(
     send_reset_password_email(
         email_to=user.email, email=email, token=password_reset_token
     )
-    return schemas.Msg(msg="Password recovery email sent")
 
 
 @router.post("/reset-password/")
@@ -85,7 +77,7 @@ def reset(
     token: Annotated[str, Body(...)],
     new_password: Annotated[str, Body(...)],
     db: Session = Depends(deps.get_db),
-) -> schemas.Msg:
+) -> None:
     """
     Reset password
     """
@@ -104,4 +96,3 @@ def reset(
         )
     user_in = schemas.UserUpdate(**curr_user.dict(), password=new_password)
     crud.user.update(db, curr_user.id, user_in)
-    return schemas.Msg(msg="Password updated successfully")

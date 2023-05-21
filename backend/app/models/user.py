@@ -13,11 +13,11 @@ if TYPE_CHECKING:
 
 
 class User(Base):
-    id: int = Column(Integer, primary_key=True, index=True)
-    full_name: str | None = Column(String, index=True)
-    email: str = Column(String, unique=True, index=True, nullable=False)
-    hashed_password: str = Column(String, nullable=False)
-    is_superuser: bool = Column(Boolean(), default=False)
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String, index=True)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_superuser = Column(Boolean(), default=False)
     institutions: Mapped[list["Institution"]] = relationship(
         "Institution", secondary=links
     )

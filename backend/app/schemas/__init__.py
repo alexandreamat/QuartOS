@@ -3,14 +3,15 @@ from .institution import (
     InstitutionCreate,
     InstitutionUpdate,
 )
-from .msg import Msg
 from .token import Token, TokenPayload
+from .base import OrmBase
 from .user import UserRead, UserCreate, UserInDB, UserUpdate
 
+
 __all__ = [
-    "Msg",
     "Token",
     "TokenPayload",
+    "OrmBase",
     "UserRead",
     "UserCreate",
     "UserInDB",

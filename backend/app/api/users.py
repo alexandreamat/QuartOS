@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from app import crud, models, schemas
+from app import crud, schemas
 
 from . import deps
 
@@ -62,7 +62,7 @@ def read(
 def update(
     *,
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_superuser),
+    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
     id: int,
     user: schemas.UserUpdate,
 ) -> schemas.UserRead:
@@ -84,7 +84,7 @@ def create(
     *,
     db: Session = Depends(deps.get_db),
     user: schemas.UserCreate,
-    current_user: models.User = Depends(deps.get_current_superuser),
+    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
 ) -> schemas.UserRead:
     """
     Create new user.
@@ -102,7 +102,7 @@ def create(
 @router.get("/")
 def read_many(
     db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_superuser),
+    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
     skip: int = 0,
     limit: int = 100,
 ) -> list[schemas.UserRead]:
