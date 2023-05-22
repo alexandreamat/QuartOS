@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from app import crud, schemas
@@ -10,10 +9,7 @@ router = APIRouter()
 
 
 @router.get("/me")
-def read_me(
-    db: Session = Depends(deps.get_db),
-    current_user: schemas.UserRead = Depends(deps.get_current_user),
-) -> schemas.UserRead:
+def read_me(db: deps.DBSession, current_user: deps.CurrentUser) -> schemas.UserRead:
     """
     Get current user.
     """
@@ -22,10 +18,7 @@ def read_me(
 
 @router.put("/me")
 def update_me(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: schemas.UserRead = Depends(deps.get_current_user),
-    user: schemas.UserWrite,
+    db: deps.DBSession, current_user: deps.CurrentUser, user: schemas.UserWrite
 ) -> schemas.UserRead:
     """
     Update own user.
@@ -42,9 +35,7 @@ def update_me(
 
 @router.get("/{id}")
 def read(
-    id: int,
-    db: Session = Depends(deps.get_db),
-    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
+    id: int, db: deps.DBSession, current_user: deps.CurrentSuperuser
 ) -> schemas.UserRead:
     """
     Get a specific user by id.
@@ -60,9 +51,8 @@ def read(
 
 @router.put("/{id}")
 def update(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
+    db: deps.DBSession,
+    current_user: deps.CurrentSuperuser,
     id: int,
     user: schemas.UserWrite,
 ) -> schemas.UserRead:
@@ -81,10 +71,7 @@ def update(
 
 @router.post("/")
 def create(
-    *,
-    db: Session = Depends(deps.get_db),
-    user: schemas.UserWrite,
-    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
+    db: deps.DBSession, current_user: deps.CurrentSuperuser, user: schemas.UserWrite
 ) -> schemas.UserRead:
     """
     Create new user.
@@ -101,8 +88,8 @@ def create(
 
 @router.get("/")
 def read_many(
-    db: Session = Depends(deps.get_db),
-    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
+    db: deps.DBSession,
+    current_user: deps.CurrentSuperuser,
     skip: int = 0,
     limit: int = 100,
 ) -> list[schemas.UserRead]:
@@ -113,11 +100,7 @@ def read_many(
 
 
 @router.post("/open")
-def create_open(
-    *,
-    db: Session = Depends(deps.get_db),
-    user: schemas.UserWrite,
-) -> schemas.UserRead:
+def create_open(db: deps.DBSession, user: schemas.UserWrite) -> schemas.UserRead:
     """
     Create new user without the need to be logged in.
     """

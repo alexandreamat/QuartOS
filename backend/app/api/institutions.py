@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 from app import schemas, crud
 
@@ -10,10 +9,9 @@ router = APIRouter()
 
 @router.post("/")
 def create(
-    *,
-    db: Session = Depends(deps.get_db),
+    db: deps.DBSession,
+    current_user: deps.CurrentSuperuser,
     institution: schemas.InstitutionWrite,
-    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
 ) -> schemas.InstitutionRead:
     """
     Create new institution.
@@ -22,11 +20,7 @@ def create(
 
 
 @router.get("/{id}")
-def read(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-) -> schemas.InstitutionRead:
+def read(db: deps.DBSession, id: int) -> schemas.InstitutionRead:
     """
     Get institution by ID.
     """
@@ -39,9 +33,7 @@ def read(
 
 
 @router.get("/")
-def read_many(
-    db: Session = Depends(deps.get_db),
-) -> list[schemas.InstitutionRead]:
+def read_many(db: deps.DBSession) -> list[schemas.InstitutionRead]:
     """
     Retrieve institutions.
     """
@@ -50,9 +42,8 @@ def read_many(
 
 @router.put("/{id}")
 def update(
-    *,
-    db: Session = Depends(deps.get_db),
-    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
+    db: deps.DBSession,
+    current_user: deps.CurrentSuperuser,
     id: int,
     institution: schemas.InstitutionWrite,
 ) -> schemas.InstitutionRead:
@@ -69,10 +60,9 @@ def update(
 
 @router.delete("/{id}")
 def delete(
-    *,
-    db: Session = Depends(deps.get_db),
+    db: deps.DBSession,
+    current_user: deps.CurrentSuperuser,
     id: int,
-    current_user: schemas.UserRead = Depends(deps.get_current_superuser),
 ) -> None:
     """
     Delete an institution.
