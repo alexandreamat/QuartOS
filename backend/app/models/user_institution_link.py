@@ -13,11 +13,15 @@ if TYPE_CHECKING:
 
 
 class UserInstitutionLink(Base):
-    user_id = Column(Integer, ForeignKey("user.id"), primary_key=True)
-    institution_id = Column(Integer, ForeignKey("institution.id"), primary_key=True)
+    __tablename__ = "user_institution_links"
 
-    user: Mapped[User] = relationship(User, back_populates="institutions")
-    institution: Mapped[Institution] = relationship(Institution, back_populates="users")
+    user_id = Column(Integer, ForeignKey("users.id"))
+    institution_id = Column(Integer, ForeignKey("institutions.id"))
+
+    user: Mapped[User] = relationship(User, back_populates="institution_links")
+    institution: Mapped[Institution] = relationship(
+        Institution, back_populates="user_links"
+    )
     accounts: Mapped[list["Account"]] = relationship(
         "Account", back_populates="user_institution_link"
     )

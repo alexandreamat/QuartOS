@@ -1,6 +1,6 @@
 from typing import TypeVar, Type
 
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy import Column, Integer
@@ -13,12 +13,7 @@ ModelType = TypeVar("ModelType", bound="Base")
 
 @as_declarative()
 class Base:
-    __name__: str
     id = Column(Integer, primary_key=True, index=True)
-
-    @declared_attr
-    def __tablename__(cls) -> str:
-        return cls.__name__.lower()
 
     @classmethod
     def from_schema(cls: Type[ModelType], schema_obj: BaseModel) -> ModelType:

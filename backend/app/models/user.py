@@ -12,18 +12,25 @@ from app.models.base import Base
 
 
 if TYPE_CHECKING:
-    from .institution import Institution  # noqa: F401
+    from . import Account
+    from . import UserInstitutionLink
 
 
 class User(Base):
+    __tablename__ = "users"
+
     full_name = Column(String, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     is_superuser = Column(Boolean(), default=False)
 
-    institutions: Mapped[list["Institution"]] = relationship(
-        "Institution", secondary="user_institution_links"
+    institution_links: Mapped[list["UserInstitutionLink"]] = relationship(
+        "UserInstitutionLink", back_populates="user"
     )
+
+    @property
+    def accounts(self) -> Mapped[list["Account"]]:
+        return [a for l in self.institution_links for a in l.accounts]
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
