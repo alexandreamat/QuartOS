@@ -3,7 +3,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 from jose.exceptions import JWTError
 
@@ -23,21 +22,16 @@ router = APIRouter()
 
 @router.post("/login")
 def login(
-    db: Session = Depends(deps.get_db),
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: deps.DBSession, form_data: OAuth2PasswordRequestForm = Depends()
 ) -> schemas.Token:
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    print("login")
     try:
-        print("login")
         user = crud.user.authenticate(
             db, email=form_data.username, password=form_data.password
         )
-        print(user)
     except NoResultFound:
-        print("oops")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect email or password",
@@ -52,10 +46,7 @@ def login(
 
 
 @router.post("/recover-password/{email}")
-def recover(
-    email: str,
-    db: Session = Depends(deps.get_db),
-) -> None:
+def recover(email: str, db: deps.DBSession) -> None:
     """
     Password Recovery
     """
@@ -74,9 +65,9 @@ def recover(
 
 @router.post("/reset-password/")
 def reset(
+    db: deps.DBSession,
     token: Annotated[str, Body(...)],
     new_password: Annotated[str, Body(...)],
-    db: Session = Depends(deps.get_db),
 ) -> None:
     """
     Reset password

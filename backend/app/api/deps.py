@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -24,8 +24,7 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def get_current_user(
-    db: Session = Depends(get_db),
-    token: str = Depends(reusable_oauth2),
+    db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
 ) -> schemas.UserRead:
     try:
         payload = jwt.decode(
@@ -55,3 +54,8 @@ def get_current_superuser(
             detail="The user doesn't have enough privileges",
         )
     return current_user
+
+
+DBSession = Annotated[Session, Depends(get_db)]
+CurrentSuperuser = Annotated[schemas.UserRead, Depends(get_current_superuser)]
+CurrentUser = Annotated[schemas.UserRead, Depends(get_current_user)]
