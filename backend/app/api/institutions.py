@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
-from app import schemas, crud
+from app import schemas
+from app.crud.institution import CRUDInstitution
 
 from . import deps
 
@@ -16,7 +17,7 @@ def create(
     """
     Create new institution.
     """
-    return crud.institution.create(db, institution)
+    return CRUDInstitution.create(db, institution)
 
 
 @router.get("/{id}")
@@ -25,7 +26,7 @@ def read(db: deps.DBSession, id: int) -> schemas.InstitutionRead:
     Get institution by ID.
     """
     try:
-        return crud.institution.read(db, id=id)
+        return CRUDInstitution.read(db, id=id)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
@@ -37,7 +38,7 @@ def read_many(db: deps.DBSession) -> list[schemas.InstitutionRead]:
     """
     Retrieve institutions.
     """
-    return crud.institution.read_many(db)
+    return CRUDInstitution.read_many(db)
 
 
 @router.put("/{id}")
@@ -51,7 +52,7 @@ def update(
     Update an institution.
     """
     try:
-        return crud.institution.update(db, id=id, new_schema_obj=institution)
+        return CRUDInstitution.update(db, id=id, new_schema_obj=institution)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
@@ -68,7 +69,7 @@ def delete(
     Delete an institution.
     """
     try:
-        crud.institution.delete(db, id=id)
+        CRUDInstitution.delete(db, id=id)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"

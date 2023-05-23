@@ -6,7 +6,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import NoResultFound
 from jose.exceptions import JWTError
 
-from app import crud, schemas
+from app import schemas
+from app.crud.user import CRUDUser
 from app.core import security
 from app.core.config import settings
 from app.utils import (
@@ -28,7 +29,7 @@ def login(
     OAuth2 compatible token login, get an access token for future requests
     """
     try:
-        user = crud.user.authenticate(
+        user = CRUDUser.authenticate(
             db, email=form_data.username, password=form_data.password
         )
     except NoResultFound:
@@ -51,7 +52,7 @@ def recover(email: str, db: deps.DBSession) -> None:
     Password Recovery
     """
     try:
-        user = crud.user.read_by_email(db, email=email)
+        user = CRUDUser.read_by_email(db, email=email)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_BAD_REQUEST,
@@ -79,11 +80,11 @@ def reset(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
         )
     try:
-        curr_user = crud.user.read_by_email(db, email=email)
+        curr_user = CRUDUser.read_by_email(db, email=email)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="The user with this username does not exist in the system.",
         )
     user_in = schemas.UserWrite(**curr_user.dict(), password=new_password)
-    crud.user.update(db, curr_user.id, user_in)
+    CRUDUser.update(db, curr_user.id, user_in)

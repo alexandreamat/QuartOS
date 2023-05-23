@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from app import crud, schemas
+from app import schemas
+from app.crud.user import CRUDUser
 
 from . import deps
 
@@ -24,7 +25,7 @@ def update_me(
     Update own user.
     """
     try:
-        user_out = crud.user.update(db, id=current_user.id, new_schema_obj=user)
+        user_out = CRUDUser.update(db, id=current_user.id, new_schema_obj=user)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -41,7 +42,7 @@ def read(
     Get a specific user by id.
     """
     try:
-        return crud.user.read(db, id=id)
+        return CRUDUser.read(db, id=id)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -60,7 +61,7 @@ def update(
     Update a user.
     """
     try:
-        user_out = crud.user.update(db, id=id, new_schema_obj=user)
+        user_out = CRUDUser.update(db, id=id, new_schema_obj=user)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -77,7 +78,7 @@ def create(
     Create new user.
     """
     try:
-        user_out = crud.user.create(db, new_schema_obj=user)
+        user_out = CRUDUser.create(db, new_schema_obj=user)
     except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_202_ACCEPTED,
@@ -96,7 +97,7 @@ def read_many(
     """
     Retrieve users.
     """
-    return crud.user.read_many(db, skip=skip, limit=limit)
+    return CRUDUser.read_many(db, skip=skip, limit=limit)
 
 
 @router.post("/open")
@@ -105,7 +106,7 @@ def create_open(db: deps.DBSession, user: schemas.UserWrite) -> schemas.UserRead
     Create new user without the need to be logged in.
     """
     try:
-        user_out = crud.user.create(db, new_schema_obj=user)
+        user_out = CRUDUser.create(db, new_schema_obj=user)
     except IntegrityError:
         raise HTTPException(
             status_code=400,

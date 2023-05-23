@@ -7,7 +7,8 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 
-from app import crud, schemas
+from app import schemas
+from app.crud.user import CRUDUser
 from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -37,7 +38,7 @@ def get_current_user(
             detail="Could not validate credentials",
         )
     try:
-        user = crud.user.read(db, id=token_data.sub)
+        user = CRUDUser.read(db, id=token_data.sub)
     except NoResultFound:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
