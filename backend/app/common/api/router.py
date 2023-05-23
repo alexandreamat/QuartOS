@@ -1,6 +1,13 @@
 from fastapi import APIRouter
 
-from app.features import auth, user, institution, userinstitutionlink
+from app.features import (
+    auth,
+    user,
+    institution,
+    userinstitutionlink,
+    account,
+    transaction,
+)
 
 from . import utils
 
@@ -12,7 +19,8 @@ api_router.include_router(
 )
 api_router.include_router(
     userinstitutionlink.api.router,
-    prefix="/user-institution-links",
-    tags=["user-institution-links"],
+    prefix="/institution-links",
+    tags=["institution-links"],
 )
+api_router.include_router(account.api.router, prefix="/account", tags=["account"])
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])

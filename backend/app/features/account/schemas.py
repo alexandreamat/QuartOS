@@ -1,16 +1,18 @@
 from pydantic import BaseModel
 
-from app.features.institution.schemas import InstitutionRead
 from app.common.schemas import OrmBase
 
 
-class InstitutionUserLinkBase(BaseModel):
-    client_id: str
+class AccountBase(BaseModel):
+    currency: str
+    type: str
+    number: str
+    user_institution_link_id: int
 
 
-class InstitutionUserLinkRead(InstitutionUserLinkBase, OrmBase):
-    institution: InstitutionRead
+class AccountRead(AccountBase, OrmBase):
+    ...
 
 
-class InstitutionUserLinkWrite(InstitutionUserLinkBase):
-    institution_id: int
+class AccountWrite(AccountBase):
+    ...

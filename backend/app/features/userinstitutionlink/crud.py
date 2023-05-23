@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.common.crud import CRUDBase
 
-from app.features import user
+from app.features import user, institution
 from . import model, schemas
 
 
@@ -21,7 +21,16 @@ class CRUDUserInstitutionLink(
         cls, db: Session, user_id: int
     ) -> list[schemas.UserInstitutionLinkRead]:
         db_user = user.model.User.read(db, user_id)
-        return [
-            schemas.UserInstitutionLinkRead.from_orm(obj)
-            for obj in db_user.institution_links
-        ]
+        return [cls.read_schema_type.from_orm(obj) for obj in db_user.institution_links]
+
+    @classmethod
+    def read_user(cls, db: Session, id: int) -> user.schemas.UserRead:
+        return user.schemas.UserRead.from_orm(cls.model_type.read_user(db, id))
+
+    @classmethod
+    def read_institution(
+        cls, db: Session, id: int
+    ) -> institution.schemas.InstitutionRead:
+        return institution.schemas.InstitutionRead.from_orm(
+            cls.model_type.read_institution(db, id)
+        )
