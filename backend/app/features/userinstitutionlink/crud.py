@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.common.crud import CRUDBase
 
+from app.features import user
 from . import model, schemas
 
 
@@ -19,9 +20,8 @@ class CRUDUserInstitutionLink(
     def read_many_by_user(
         cls, db: Session, user_id: int
     ) -> list[schemas.UserInstitutionLinkRead]:
+        db_user = user.model.User.read(db, user_id)
         return [
             schemas.UserInstitutionLinkRead.from_orm(obj)
-            for obj in db.query(model.UserInstitutionLink)
-            .filter(model.UserInstitutionLink.user_id == user_id)
-            .all()
+            for obj in db_user.institution_links
         ]
