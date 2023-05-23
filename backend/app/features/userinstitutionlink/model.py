@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, Integer, ForeignKey, String
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import relationship, Mapped, Session
 
 from app.common.models import Base
 from app.features.institution.model import Institution
@@ -22,6 +22,9 @@ class UserInstitutionLink(Base):
     institution: Mapped[Institution] = relationship(
         Institution, back_populates="user_links"
     )
-    # accounts: Mapped[list["Account"]] = relationship(
-    #     "Account", back_populates="user_institution_link"
-    # )
+
+    @classmethod
+    def read_many_by_user(
+        cls, db: Session, user_id: int
+    ) -> list["UserInstitutionLink"]:
+        return db.query(cls).filter(cls.user_id == user_id).all()
