@@ -5,18 +5,15 @@ from app.common.schemas import OrmBase
 
 class UserBase(BaseModel):
     email: EmailStr
-    full_name: str | None
+    full_name: str
+    is_superuser: bool
 
 
-class UserInDBBase(UserBase, OrmBase):
-    is_superuser: bool = False
-
-
-class UserInDB(UserInDBBase):
+class UserInDB(UserBase, OrmBase):
     hashed_password: str
 
 
-class UserRead(UserInDBBase):
+class UserRead(UserBase, OrmBase):
     ...
 
 

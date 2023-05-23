@@ -1,8 +1,16 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from app.common.api.deps import CurrentUser, CurrentSuperuser, DBSession
+from app.db.session import DBSession
+from app.features.userinstitutionlink.schemas import (
+    UserInstitutionLinkRead,
+    UserInstitutionLinkWrite,
+    UserInstitutionLinkDB,
+)
+from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
+from app.features.institution.crud import CRUDInstitution
 
+from .deps import CurrentUser, CurrentSuperuser
 from .crud import CRUDUser
 from .schemas import UserRead, UserWrite
 
@@ -104,3 +112,18 @@ def create_open(db: DBSession, user: UserWrite) -> UserRead:
             detail="The user with this username already exists in the system",
         )
     return user_out
+
+
+@router.post("users/{id}/institution-links")
+def create_institution_link(
+    db: DBSession,
+    current_user: CurrentSuperuser,
+    id: int,
+    institution_link: UserInstitutionLinkWrite,
+) -> UserInstitutionLinkRead:
+    user = CRUDUser.read(db, id)
+    institution = CRUDInstitution.read(db, id)
+    user_institution_link = UserInstitutionLinkDB(
+        **institution_link.dict(), user_id=user.id, institution_id=institution.id
+    )
+    return CRUDUserInstitutionLink.create(db, user_institution_link)

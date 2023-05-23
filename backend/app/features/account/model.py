@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, Mapped
 
-from app.features.userinstitutionlinks.model import UserInstitutionLink
+from app.features.userinstitutionlink.model import UserInstitutionLink
 from app.common.models import Base
 
 

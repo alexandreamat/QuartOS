@@ -8,7 +8,7 @@ from app.core.security import verify_password
 from app.common.models import Base
 
 if TYPE_CHECKING:
-    from app.features.userinstitutionlinks.model import UserInstitutionLink
+    from app.features.userinstitutionlink.model import UserInstitutionLink
 
 
 class User(Base):
@@ -17,7 +17,7 @@ class User(Base):
     full_name = Column(String, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    is_superuser = Column(Boolean(), default=False, nullable=False)
+    is_superuser = Column(Boolean(), nullable=False)
 
     institution_links: Mapped[list["UserInstitutionLink"]] = relationship(
         "UserInstitutionLink", back_populates="user"
