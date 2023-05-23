@@ -22,9 +22,3 @@ class UserInstitutionLink(Base):
     institution: Mapped[Institution] = relationship(
         Institution, back_populates="user_links"
     )
-
-    @classmethod
-    def read_many_by_user(
-        cls, db: Session, user_id: int
-    ) -> list["UserInstitutionLink"]:
-        return db.query(cls).filter(cls.user_id == user_id).all()
