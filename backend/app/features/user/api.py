@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from app.common.api import deps
+from app.common.api.deps import CurrentUser, CurrentSuperuser, DBSession
 
 from .crud import CRUDUser
 from .schemas import UserRead, UserWrite
@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("/me")
-def read_me(db: deps.DBSession, current_user: deps.CurrentUser) -> UserRead:
+def read_me(db: DBSession, current_user: CurrentUser) -> UserRead:
     """
     Get current user.
     """
@@ -18,9 +18,7 @@ def read_me(db: deps.DBSession, current_user: deps.CurrentUser) -> UserRead:
 
 
 @router.put("/me")
-def update_me(
-    db: deps.DBSession, current_user: deps.CurrentUser, user: UserWrite
-) -> UserRead:
+def update_me(db: DBSession, current_user: CurrentUser, user: UserWrite) -> UserRead:
     """
     Update own user.
     """
@@ -35,7 +33,7 @@ def update_me(
 
 
 @router.get("/{id}")
-def read(id: int, db: deps.DBSession, current_user: deps.CurrentSuperuser) -> UserRead:
+def read(id: int, db: DBSession, current_user: CurrentSuperuser) -> UserRead:
     """
     Get a specific user by id.
     """
@@ -50,7 +48,7 @@ def read(id: int, db: deps.DBSession, current_user: deps.CurrentSuperuser) -> Us
 
 @router.put("/{id}")
 def update(
-    db: deps.DBSession, current_user: deps.CurrentSuperuser, id: int, user: UserWrite
+    db: DBSession, current_user: CurrentSuperuser, id: int, user: UserWrite
 ) -> UserRead:
     """
     Update a user.
@@ -66,9 +64,7 @@ def update(
 
 
 @router.post("/")
-def create(
-    db: deps.DBSession, current_user: deps.CurrentSuperuser, user: UserWrite
-) -> UserRead:
+def create(db: DBSession, current_user: CurrentSuperuser, user: UserWrite) -> UserRead:
     """
     Create new user.
     """
@@ -84,8 +80,8 @@ def create(
 
 @router.get("/")
 def read_many(
-    db: deps.DBSession,
-    current_user: deps.CurrentSuperuser,
+    db: DBSession,
+    current_user: CurrentSuperuser,
     skip: int = 0,
     limit: int = 100,
 ) -> list[UserRead]:
@@ -96,7 +92,7 @@ def read_many(
 
 
 @router.post("/open")
-def create_open(db: deps.DBSession, user: UserWrite) -> UserRead:
+def create_open(db: DBSession, user: UserWrite) -> UserRead:
     """
     Create new user without the need to be logged in.
     """
