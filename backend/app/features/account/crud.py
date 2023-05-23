@@ -18,14 +18,14 @@ class CRUDAccount(
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.schemas.UserRead:
-        return user.schemas.UserRead.from_orm(cls.model_type.read_user(db, id))
+        return user.schemas.UserRead.from_orm(cls.model_type.read(db, id).user)
 
     @classmethod
     def read_institution(
         cls, db: Session, id: int
     ) -> institution.schemas.InstitutionRead:
         return institution.schemas.InstitutionRead.from_orm(
-            cls.model_type.read_institution(db, id)
+            cls.model_type.read(db, id).institution
         )
 
     @classmethod
