@@ -17,7 +17,7 @@ country_codes = (country.alpha_2 for country in pycountry.countries)
 class Institution(Base):
     __tablename__ = "institutions"
 
-    name = Column(String)
+    name = Column(String, nullable=False)
     country_code = Column(String, nullable=False)
 
     user_links: Mapped[list["UserInstitutionLink"]] = relationship(
