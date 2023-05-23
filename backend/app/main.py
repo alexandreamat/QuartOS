@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 
-from app.api.api import api_router
-from app.core.config import settings
-
 from app import initial_data
+from app.core.config import settings
+from app.common.api.router import api_router
 
 initial_data.main()
 
