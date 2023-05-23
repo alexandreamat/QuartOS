@@ -3,7 +3,7 @@ from typing import Generic, Type, TypeVar
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from app.common import models, schemas
+from . import models, schemas
 
 ModelType = TypeVar("ModelType", bound=models.Base)
 WriteSchemaType = TypeVar("WriteSchemaType", bound=BaseModel)

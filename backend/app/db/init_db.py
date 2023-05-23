@@ -2,11 +2,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 
 from app.core.config import settings
-from app.db.base import Base
-from app.db.session import engine
-
 from app.features.user.crud import CRUDUser
 from app.features.user import schemas
+
+from .base import Base
+from .session import engine
 
 
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB

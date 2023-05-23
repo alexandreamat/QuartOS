@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Column, String, CheckConstraint
 from sqlalchemy.orm import Mapped, relationship
-
 import pycountry
 
 from app.common.models import Base

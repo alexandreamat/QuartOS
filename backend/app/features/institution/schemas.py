@@ -1,8 +1,5 @@
-from typing import TYPE_CHECKING
-
 from pydantic import BaseModel
 from typing import Literal
-
 
 from app.common.schemas import OrmBase
 

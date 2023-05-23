@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException, status
 from jose import jwt
 
-from app.core.config import settings
+from .config import settings
 
 
 ALGORITHM = "HS256"
