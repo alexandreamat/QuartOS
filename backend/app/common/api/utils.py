@@ -4,7 +4,7 @@ from pydantic.networks import EmailStr
 from app.core.celery_app import celery_app
 from app.utils import send_test_email
 
-from . import deps
+from app.features.user import deps
 
 router = APIRouter()
 

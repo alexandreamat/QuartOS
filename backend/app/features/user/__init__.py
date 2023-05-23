@@ -1,1 +1,1 @@
-from . import api, crud, model, schemas
+from . import api, crud, model, schemas, deps

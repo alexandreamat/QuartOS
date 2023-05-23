@@ -3,7 +3,7 @@ from sqlalchemy.exc import NoResultFound
 
 from app.core.config import settings
 from app.features.user.crud import CRUDUser
-from app.features.user import schemas
+from app.features.user.schemas import UserWrite
 
 from .base import Base
 from .session import engine
@@ -20,7 +20,7 @@ def init_db(db: Session) -> None:
     try:
         CRUDUser.read_by_email(db, email=settings.FIRST_SUPERUSER)
     except NoResultFound:
-        user_in = schemas.UserWrite(
+        user_in = UserWrite(
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             full_name=settings.FIRST_SUPERUSER_FULL_NAME,
