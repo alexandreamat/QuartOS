@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
-from app.common.api.deps import CurrentSuperuser, DBSession
+from app.db.session import DBSession
+from app.features.user.deps import CurrentSuperuser
 
 from .crud import CRUDInstitution
 from .schemas import InstitutionRead, InstitutionWrite

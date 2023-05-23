@@ -1,7 +1,6 @@
 from app.common.crud import CRUDBase
 
-from . import schemas
-from . import model
+from . import schemas, model
 
 
 class CRUDInstitution(
