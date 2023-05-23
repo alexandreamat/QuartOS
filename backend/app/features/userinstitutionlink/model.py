@@ -7,8 +7,8 @@ from app.common.models import Base
 from app.features.institution.model import Institution
 from app.features.user.model import User
 
-# if TYPE_CHECKING:
-# from app.features.account.model import Account
+if TYPE_CHECKING:
+    from app.features.account.model import Account
 
 
 class UserInstitutionLink(Base):
@@ -22,3 +22,14 @@ class UserInstitutionLink(Base):
     institution: Mapped[Institution] = relationship(
         Institution, back_populates="user_links"
     )
+    accounts: Mapped[list["Account"]] = relationship(
+        "Account", back_populates="user_institution_link"
+    )
+
+    @classmethod
+    def read_user(cls, db: Session, id: int) -> User:
+        return cls.read(db, id).user
+
+    @classmethod
+    def read_institution(cls, db: Session, id: int) -> Institution:
+        return cls.read(db, id).institution
