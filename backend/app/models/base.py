@@ -13,7 +13,7 @@ ModelType = TypeVar("ModelType", bound="Base")
 
 @as_declarative()
 class Base:
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
 
     @classmethod
     def from_schema(cls: Type[ModelType], schema_obj: BaseModel) -> ModelType:

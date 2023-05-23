@@ -28,10 +28,6 @@ class User(Base):
         "UserInstitutionLink", back_populates="user"
     )
 
-    @property
-    def accounts(self) -> Mapped[list["Account"]]:
-        return [a for l in self.institution_links for a in l.accounts]
-
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
         db_user = db.query(cls).filter(cls.email == email).first()

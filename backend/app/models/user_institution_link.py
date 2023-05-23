@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 class UserInstitutionLink(Base):
     __tablename__ = "user_institution_links"
 
-    user_id = Column(Integer, ForeignKey("users.id"))
-    institution_id = Column(Integer, ForeignKey("institutions.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    institution_id = Column(Integer, ForeignKey("institutions.id"), nullable=False)
 
     user: Mapped[User] = relationship(User, back_populates="institution_links")
     institution: Mapped[Institution] = relationship(
