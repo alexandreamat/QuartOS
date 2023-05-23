@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 class User(Base):
     __tablename__ = "users"
 
-    full_name = Column(String, index=True)
+    full_name = Column(String, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    is_superuser = Column(Boolean(), default=False)
+    is_superuser = Column(Boolean(), default=False, nullable=False)
 
     institution_links: Mapped[list["UserInstitutionLink"]] = relationship(
         "UserInstitutionLink", back_populates="user"
