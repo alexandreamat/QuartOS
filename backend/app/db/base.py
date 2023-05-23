@@ -1,5 +1,5 @@
-from app.models.base import Base
-from app.models.institution import Institution
-from app.models.user import User
+from app.common.models import Base
+from app.features.institution.model import Institution
+from app.features.user.model import User
 
 __all__ = ["Base", "Institution", "User"]
