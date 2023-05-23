@@ -25,11 +25,3 @@ class UserInstitutionLink(Base):
     accounts: Mapped[list["Account"]] = relationship(
         "Account", back_populates="user_institution_link"
     )
-
-    @classmethod
-    def read_user(cls, db: Session, id: int) -> User:
-        return cls.read(db, id).user
-
-    @classmethod
-    def read_institution(cls, db: Session, id: int) -> Institution:
-        return cls.read(db, id).institution
