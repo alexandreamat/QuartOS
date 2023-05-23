@@ -32,15 +32,3 @@ class Transaction(Base):
     @property
     def user_institution_link(self) -> UserInstitutionLink:
         return self.account.user_institution_link
-
-    @classmethod
-    def read_user(cls, db: Session, id: int) -> User:
-        return cls.read(db, id).user
-
-    @classmethod
-    def read_institution(cls, db: Session, id: int) -> Institution:
-        return cls.read(db, id).institution
-
-    @classmethod
-    def read_user_institution_link(cls, db: Session, id: int) -> UserInstitutionLink:
-        return cls.read(db, id).user_institution_link
