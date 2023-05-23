@@ -37,7 +37,7 @@ def create(
 @router.get("/{id}")
 def read(db: DBSession, current_user: CurrentUser, id: int) -> UserInstitutionLinkRead:
     institution_link = CRUDUserInstitutionLink.read(db, id)
-    if institution_link.user.id != current_user.id:
+    if institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
     return institution_link
 
@@ -57,7 +57,7 @@ def update(
     institution_link: UserInstitutionLinkWrite,
 ) -> UserInstitutionLinkRead:
     curr_institution_link = CRUDUserInstitutionLink.read(db, id)
-    if curr_institution_link.user.id != current_user.id:
+    if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
     new_institution_link = UserInstitutionLinkDB(
         **institution_link.dict(), user_id=current_user.id

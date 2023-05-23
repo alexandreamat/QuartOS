@@ -9,7 +9,7 @@ class CRUDUserInstitutionLink(
     CRUDBase[
         model.UserInstitutionLink,
         schemas.UserInstitutionLinkRead,
-        schemas.UserInstitutionLinkWrite,
+        schemas.UserInstitutionLinkDB,
     ]
 ):
     model_type = model.UserInstitutionLink
