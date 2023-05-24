@@ -26,7 +26,6 @@ def verify_password(plain_password: str, hashed_password: str) -> None:
     if not get_password_hash(plain_password) == hashed_password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication failed",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
