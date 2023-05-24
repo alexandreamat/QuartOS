@@ -10,8 +10,8 @@ from app.features.institution.crud import CRUDInstitution
 from .crud import CRUDUserInstitutionLink
 from .schemas import (
     UserInstitutionLinkRead,
+    InstitutionLinkWrite,
     UserInstitutionLinkWrite,
-    UserInstitutionLinkDB,
 )
 
 router = APIRouter()
@@ -21,13 +21,13 @@ router = APIRouter()
 def create(
     db: DBSession,
     current_user: CurrentUser,
-    institution_link: UserInstitutionLinkWrite,
+    institution_link: InstitutionLinkWrite,
 ) -> UserInstitutionLinkRead:
     try:
         CRUDInstitution.read(db, institution_link.institution_id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
-    user_institution_link = UserInstitutionLinkDB(
+    user_institution_link = UserInstitutionLinkWrite(
         **institution_link.dict(),
         user_id=current_user.id,
     )
@@ -54,12 +54,12 @@ def update(
     db: DBSession,
     current_user: CurrentUser,
     id: int,
-    institution_link: UserInstitutionLinkWrite,
+    institution_link: InstitutionLinkWrite,
 ) -> UserInstitutionLinkRead:
     curr_institution_link = CRUDUserInstitutionLink.read(db, id)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
-    new_institution_link = UserInstitutionLinkDB(
+    new_institution_link = UserInstitutionLinkWrite(
         **institution_link.dict(), user_id=current_user.id
     )
     try:

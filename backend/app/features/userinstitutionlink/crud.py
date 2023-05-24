@@ -9,12 +9,12 @@ class CRUDUserInstitutionLink(
     CRUDBase[
         model.UserInstitutionLink,
         schemas.UserInstitutionLinkRead,
-        schemas.UserInstitutionLinkDB,
+        schemas.UserInstitutionLinkWrite,
     ]
 ):
     model_type = model.UserInstitutionLink
     read_schema_type = schemas.UserInstitutionLinkRead
-    write_schema_type = schemas.UserInstitutionLinkDB
+    write_schema_type = schemas.UserInstitutionLinkWrite
 
     @classmethod
     def read_many_by_user(
