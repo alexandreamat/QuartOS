@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from app.database.session import DBSession
 from app.features.userinstitutionlink.schemas import (
     UserInstitutionLinkRead,
-    UserInstitutionLinkWrite,
+    InstitutionLinkWrite,
 )
 from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 from app.features.institution.crud import CRUDInstitution

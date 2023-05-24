@@ -13,27 +13,40 @@ from .crud import CRUDUser
 
 
 @pytest.fixture
-def superuser_read() -> UserRead:
-    return UserRead(
-        id=1, email="admin@quartos.com", full_name="Admin", is_superuser=True
+def superuser_write() -> UserWrite:
+    return UserWrite(
+        email="admin@quartos.com",
+        full_name="Admin",
+        is_superuser=True,
+        password="supersupersecret",
     )
 
 
 @pytest.fixture
-def user_read() -> UserRead:
-    return UserRead(
-        id=2, email="john@quartos.com", full_name="John Smith", is_superuser=False
+def user_write() -> UserWrite:
+    return UserWrite(
+        email="john@quartos.com",
+        full_name="John Smith",
+        is_superuser=False,
+        password="supersecret",
     )
 
 
 @pytest.fixture
-def superuser_write(superuser_read: UserRead) -> UserWrite:
-    return UserWrite(**superuser_read.dict(), password="supersupersecret")
+def users_db(db: Session, user_write: UserWrite, superuser_write: UserWrite) -> Session:
+    CRUDUser.create(db, user_write)
+    CRUDUser.create(db, superuser_write)
+    return db
 
 
 @pytest.fixture
-def user_write(user_read: UserRead) -> UserWrite:
-    return UserWrite(**user_read.dict(), password="supersecret")
+def superuser_read(users_db: Session) -> UserRead:
+    return CRUDUser.read_by_email(users_db, "admin@quartos.com")
+
+
+@pytest.fixture
+def user_read(users_db: Session) -> UserRead:
+    return CRUDUser.read_by_email(users_db, "john@quartos.com")
 
 
 @pytest.fixture
@@ -57,13 +70,6 @@ def user_client(
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def user_db(db: Session, user_write: UserWrite, superuser_write: UserWrite) -> Session:
-    CRUDUser.create(db, user_write)
-    CRUDUser.create(db, superuser_write)
-    return db
-
-
 def test_signup(client: TestClient, db: Session) -> None:
     user = UserWrite(
         email="test@example.com",
@@ -80,7 +86,7 @@ def test_signup(client: TestClient, db: Session) -> None:
     assert data["is_superuser"] == False
 
 
-def test_read_me(user_client: TestClient, user_db: Session) -> None:
+def test_read_me(user_client: TestClient, users_db: Session) -> None:
     response = user_client.get("api/users/me")
     assert response.status_code == 200
     data = response.json()
@@ -90,14 +96,14 @@ def test_read_me(user_client: TestClient, user_db: Session) -> None:
     assert data["is_superuser"] == False
 
 
-def test_superuser_read(superuser_client: TestClient, user_db: Session) -> None:
+def test_superuser_read(superuser_client: TestClient, users_db: Session) -> None:
     response = superuser_client.get("/api/users/1")
     assert response.status_code == 200
     response = superuser_client.get("/api/users/2")
     assert response.status_code == 200
 
 
-def test_user_read(user_client: TestClient, user_db: Session) -> None:
+def test_user_read(user_client: TestClient, users_db: Session) -> None:
     response = user_client.get("/api/users/2")
     assert response.status_code == 403
     response = user_client.get("/api/users/1")

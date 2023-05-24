@@ -12,9 +12,11 @@ class UserInstitutionLinkRead(InstitutionUserLinkBase, OrmBase):
     user_id: int
 
 
-class UserInstitutionLinkWrite(InstitutionUserLinkBase):
+class InstitutionLinkWrite(InstitutionUserLinkBase):
+    """Assumes current user"""
+
     ...
 
 
-class UserInstitutionLinkDB(UserInstitutionLinkWrite):
+class UserInstitutionLinkWrite(InstitutionLinkWrite):
     user_id: int
