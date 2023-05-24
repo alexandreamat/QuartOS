@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
-from app.db.session import DBSession
+from app.database.session import DBSession
 from app.features.user.deps import CurrentSuperuser
 
 from .crud import CRUDInstitution
@@ -28,9 +28,7 @@ def read(db: DBSession, id: int) -> InstitutionRead:
     try:
         return CRUDInstitution.read(db, id=id)
     except NoResultFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
 @router.get("/")
@@ -54,9 +52,7 @@ def update(
     try:
         return CRUDInstitution.update(db, id=id, new_schema_obj=institution)
     except NoResultFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
 
 @router.delete("/{id}")
@@ -67,6 +63,4 @@ def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
     try:
         CRUDInstitution.delete(db, id=id)
     except NoResultFound:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Institution not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)

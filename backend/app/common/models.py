@@ -1,7 +1,6 @@
 from typing import TypeVar, Type
 
-from sqlalchemy.ext.declarative import as_declarative
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, as_declarative
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy import Column, Integer
 from fastapi.encoders import jsonable_encoder

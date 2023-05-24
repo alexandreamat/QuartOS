@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
 from app.features.user.deps import CurrentUser
-from app.db.session import DBSession
+from app.database.session import DBSession
 
 from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 
