@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from app.database.session import DBSession
+from app.database.deps import DBSession
 from app.features.userinstitutionlink.schemas import (
     UserInstitutionLinkRead,
     InstitutionLinkWrite,

@@ -5,16 +5,21 @@ from app.core.config import settings
 from app.features.user.crud import CRUDUser
 from app.features.user.schemas import UserWrite
 
-from .base import Base
-from .session import engine
+# 1. Import base model
+from app.common.models import Base
 
+# 2. Import inheritors of the base model
+from app.features.institution.model import Institution
+from app.features.user.model import User
+from app.features.userinstitutionlink.model import UserInstitutionLink
+from app.features.account.model import Account
+from app.features.transaction.model import Transaction
 
-# make sure all SQL Alchemy models are imported (app.database.base) before initializing DB
-# otherwise, SQL Alchemy might fail to initialize relationships properly
-# for more details: https://github.com/tiangolo/full-stack-fastapi-postgresql/issues/28
+from .deps import engine
 
 
 def init_db(db: Session) -> None:
+    # 3. Retrieve inheritors from base through metadata
     Base.metadata.create_all(bind=engine)
 
     try:

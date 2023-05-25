@@ -8,9 +8,14 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-from app.database.base import Base
+from app.common.models import Base
+from app.features.institution.model import Institution
+from app.features.user.model import User
+from app.features.userinstitutionlink.model import UserInstitutionLink
+from app.features.account.model import Account
+from app.features.transaction.model import Transaction
 
-from app.database.session import get_db
+from app.database.deps import get_db
 
 
 @pytest.fixture
