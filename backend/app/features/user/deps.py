@@ -6,7 +6,7 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.exc import NoResultFound
 
-from app.database.session import DBSession
+from app.database.deps import DBSession
 from app.core import security
 from app.core.config import settings
 from app.features.user.crud import CRUDUser

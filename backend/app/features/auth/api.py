@@ -13,7 +13,7 @@ from app.utils import (
     send_reset_password_email,
     verify_password_reset_token,
 )
-from app.database.session import DBSession
+from app.database.deps import DBSession
 from app.features.user.crud import CRUDUser
 from app.features.user.schemas import UserWrite
 
