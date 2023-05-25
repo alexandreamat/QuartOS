@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from app.features.user.deps import CurrentUser
 from app.database.session import DBSession
@@ -38,7 +38,7 @@ def create(
 def read(db: DBSession, current_user: CurrentUser, id: int) -> UserInstitutionLinkRead:
     institution_link = CRUDUserInstitutionLink.read(db, id)
     if institution_link.user_id != current_user.id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     return institution_link
 
 
@@ -56,13 +56,27 @@ def update(
     id: int,
     institution_link: InstitutionLinkWrite,
 ) -> UserInstitutionLinkRead:
-    curr_institution_link = CRUDUserInstitutionLink.read(db, id)
+    try:
+        curr_institution_link = CRUDUserInstitutionLink.read(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
     if curr_institution_link.user_id != current_user.id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     new_institution_link = UserInstitutionLinkWrite(
         **institution_link.dict(), user_id=current_user.id
     )
     try:
         return CRUDUserInstitutionLink.update(db, id, new_institution_link)
+    except IntegrityError:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+
+
+@router.delete("/{id}")
+def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
+    try:
+        curr_institution_link = CRUDUserInstitutionLink.read(db, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
+    if curr_institution_link.user_id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    CRUDUserInstitutionLink.delete(db, id)
