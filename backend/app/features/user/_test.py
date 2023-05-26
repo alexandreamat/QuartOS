@@ -1,7 +1,7 @@
 from typing import Generator
 from fastapi.testclient import TestClient
 import pytest
-from sqlalchemy.orm import Session
+from sqlmodel import Session
 from app.features.user.deps import get_current_user
 from app.features.user.schemas import UserRead
 from app.main import app

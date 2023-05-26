@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
+from sqlmodel import Session
 
 from app.features.user.schemas import UserRead, UserWrite
 from app.features.user.crud import CRUDUser

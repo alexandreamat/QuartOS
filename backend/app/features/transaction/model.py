@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.orm import relationship, Mapped, Session
+from sqlmodel import Field, DateTime, Relationship
 
 from app.common.models import Base
 from app.features.userinstitutionlink.model import UserInstitutionLink
@@ -7,28 +6,22 @@ from app.features.user.model import User
 from app.features.institution.model import Institution
 from app.features.account.model import Account
 
+from .schemas import TransactionBase
 
-class Transaction(Base):
-    __tablename__ = "transactions"
 
-    amount = Column(Integer, nullable=False)
-    timestamp = Column(DateTime, nullable=False)
-    description = Column(String, nullable=False)
-    currency = Column(String, nullable=False)
-    category = Column(String, nullable=False)
+class Transaction(TransactionBase, Base, table=True):
+    account_id: int = Field(foreign_key="account.id")
 
-    account_id = Column(Integer, ForeignKey("accounts.id"), nullable=False)
-
-    account: Mapped[Account] = relationship(Account, back_populates="transactions")
+    account: Account = Relationship(back_populates="transactions")
 
     @property
     def user(self) -> User:
-        return self.account.user_institution_link.user
+        return self.account.userinstitutionlink.user
 
     @property
     def institution(self) -> Institution:
-        return self.account.user_institution_link.institution
+        return self.account.userinstitutionlink.institution
 
     @property
     def user_institution_link(self) -> UserInstitutionLink:
-        return self.account.user_institution_link
+        return self.account.userinstitutionlink

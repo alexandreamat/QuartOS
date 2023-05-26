@@ -1,31 +1,26 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, Column, String
-from sqlalchemy.orm import relationship, Mapped, Session
+from sqlmodel import Relationship, Session, select
 from sqlalchemy.exc import NoResultFound
 
 from app.core.security import verify_password
 from app.common.models import Base
 
+from .schemas import UserBase
+
+
 if TYPE_CHECKING:
     from app.features.userinstitutionlink.model import UserInstitutionLink
 
 
-class User(Base):
-    __tablename__ = "users"
+class User(UserBase, Base, table=True):
+    hashed_password: str
 
-    full_name = Column(String, index=True, nullable=False)
-    email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    is_superuser = Column(Boolean(), nullable=False)
-
-    institution_links: Mapped[list["UserInstitutionLink"]] = relationship(
-        "UserInstitutionLink", back_populates="user"
-    )
+    institution_links: list["UserInstitutionLink"] = Relationship(back_populates="user")
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
-        db_user = db.query(cls).filter(cls.email == email).first()
+        db_user = db.exec(select(cls).where(cls.email == email)).first()
         if not db_user:
             raise NoResultFound
         return db_user

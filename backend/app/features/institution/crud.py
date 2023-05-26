@@ -6,6 +6,6 @@ from . import schemas, model
 class CRUDInstitution(
     CRUDBase[model.Institution, schemas.InstitutionRead, schemas.InstitutionWrite]
 ):
-    model_type = model.Institution
-    read_schema_type = schemas.InstitutionRead
-    write_schema_type = schemas.InstitutionWrite
+    db_model_type = model.Institution
+    read_model_type = schemas.InstitutionRead
+    write_model_type = schemas.InstitutionWrite

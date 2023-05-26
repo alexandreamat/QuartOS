@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session
+# 1. Import base model
+from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
 from app.core.config import settings
@@ -20,7 +21,7 @@ from .deps import engine
 
 def init_db(db: Session) -> None:
     # 3. Retrieve inheritors from base through metadata
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(engine)
 
     try:
         CRUDUser.read_by_email(db, email=settings.FIRST_SUPERUSER)

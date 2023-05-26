@@ -2,7 +2,7 @@ from typing import Generator
 
 import pytest
 from sqlalchemy import create_engine, event
-from sqlalchemy.orm import Session
+from sqlmodel import Session
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 

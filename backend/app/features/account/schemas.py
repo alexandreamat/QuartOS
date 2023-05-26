@@ -1,16 +1,16 @@
-from pydantic import BaseModel
+from sqlmodel import SQLModel
 
-from app.common.schemas import OrmBase
+from app.common.models import Base
 
 
-class AccountBase(BaseModel):
+class AccountBase(SQLModel):
     currency: str
     type: str
     number: str
     user_institution_link_id: int
 
 
-class AccountRead(AccountBase, OrmBase):
+class AccountRead(AccountBase, Base):
     ...
 
 

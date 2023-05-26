@@ -79,4 +79,4 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
-    CRUDUserInstitutionLink.delete(db, id)
+    return CRUDUserInstitutionLink.delete(db, id)
