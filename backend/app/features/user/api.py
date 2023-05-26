@@ -5,7 +5,7 @@ from app.database.deps import DBSession
 
 from .deps import CurrentUser, CurrentSuperuser
 from .crud import CRUDUser
-from .schemas import UserRead, UserWrite
+from .models import UserRead, UserWrite
 
 router = APIRouter()
 

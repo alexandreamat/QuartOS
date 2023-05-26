@@ -1,14 +1,17 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import TYPE_CHECKING
 
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
 from app.features.user.deps import CurrentUser
 from app.database.deps import DBSession
 
-from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 
 from .crud import CRUDAccount
-from .schemas import AccountRead, AccountWrite
+from .models import AccountRead, AccountWrite
+
+if TYPE_CHECKING:
+    from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 
 router = APIRouter()
 

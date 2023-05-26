@@ -1,11 +1,11 @@
 from app.common.crud import CRUDBase
 
-from . import schemas, model
+from . import models
 
 
 class CRUDInstitution(
-    CRUDBase[model.Institution, schemas.InstitutionRead, schemas.InstitutionWrite]
+    CRUDBase[models.Institution, models.InstitutionRead, models.InstitutionWrite]
 ):
-    db_model_type = model.Institution
-    read_model_type = schemas.InstitutionRead
-    write_model_type = schemas.InstitutionWrite
+    db_model_type = models.Institution
+    read_model_type = models.InstitutionRead
+    write_model_type = models.InstitutionWrite

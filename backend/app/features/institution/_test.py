@@ -11,7 +11,7 @@ from app.features.user._test import (
 
 from app._test import client, db
 
-from .schemas import InstitutionRead, InstitutionWrite
+from .models import InstitutionRead, InstitutionWrite
 from .crud import CRUDInstitution
 
 

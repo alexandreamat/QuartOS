@@ -8,7 +8,7 @@ from app.database.deps import DBSession
 from app.features.institution.crud import CRUDInstitution
 
 from .crud import CRUDUserInstitutionLink
-from .schemas import (
+from .models import (
     UserInstitutionLinkRead,
     InstitutionLinkWrite,
     UserInstitutionLinkWrite,

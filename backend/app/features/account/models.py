@@ -1,16 +1,29 @@
 from typing import TYPE_CHECKING
 
-from sqlmodel import Relationship, Field
+from sqlmodel import Field, Relationship, SQLModel
 
 from app.common.models import Base
-from app.features.userinstitutionlink.model import UserInstitutionLink
-from app.features.user.model import User
-from app.features.institution.model import Institution
-
-from .schemas import AccountBase
+from app.features.institution.models import Institution
+from app.features.user.models import User
+from app.features.userinstitutionlink.models import UserInstitutionLink
 
 if TYPE_CHECKING:
-    from app.features.transaction.model import Transaction
+    from app.features.transaction.models import Transaction
+
+
+class AccountBase(SQLModel):
+    currency: str
+    type: str
+    number: str
+    user_institution_link_id: int
+
+
+class AccountRead(AccountBase, Base):
+    ...
+
+
+class AccountWrite(AccountBase):
+    ...
 
 
 class Account(Base, AccountBase, table=True):
