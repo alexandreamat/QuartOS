@@ -1,6 +1,10 @@
-from sqlmodel import SQLModel
+from typing import TYPE_CHECKING
+from sqlmodel import Relationship, SQLModel
 
 from app.common.models import Base
+
+if TYPE_CHECKING:
+    from app.features.userinstitutionlink.models import UserInstitutionLink
 
 
 class InstitutionBase(SQLModel):
@@ -265,3 +269,7 @@ class InstitutionRead(InstitutionBase, Base):
 
 class InstitutionWrite(InstitutionBase):
     ...
+
+
+class Institution(InstitutionBase, Base, table=True):
+    user_links: list["UserInstitutionLink"] = Relationship(back_populates="institution")

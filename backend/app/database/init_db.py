@@ -4,17 +4,17 @@ from sqlalchemy.exc import NoResultFound
 
 from app.core.config import settings
 from app.features.user.crud import CRUDUser
-from app.features.user.schemas import UserWrite
+from app.features.user.models import UserWrite
 
 # 1. Import base model
 from app.common.models import Base
 
 # 2. Import inheritors of the base model
-from app.features.institution.model import Institution
-from app.features.user.model import User
-from app.features.userinstitutionlink.model import UserInstitutionLink
-from app.features.account.model import Account
-from app.features.transaction.model import Transaction
+from app.features.institution.models import Institution
+from app.features.user.models import User
+from app.features.userinstitutionlink.models import UserInstitutionLink
+from app.features.account.models import Account
+from app.features.transaction.models import Transaction
 
 from .deps import engine
 

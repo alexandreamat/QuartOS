@@ -3,12 +3,12 @@ from fastapi.testclient import TestClient
 import pytest
 from sqlmodel import Session
 from app.features.user.deps import get_current_user
-from app.features.user.schemas import UserRead
+from app.features.user.models import UserRead
 from app.main import app
 
 from app._test import db, client
 
-from .schemas import UserWrite
+from .models import UserWrite
 from .crud import CRUDUser
 
 

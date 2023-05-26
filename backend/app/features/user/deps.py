@@ -10,8 +10,8 @@ from app.database.deps import DBSession
 from app.core import security
 from app.core.config import settings
 from app.features.user.crud import CRUDUser
-from app.features.user.schemas import UserRead
-from app.features.auth.schemas import TokenPayload
+from app.features.user.models import UserRead
+from app.features.auth.models import TokenPayload
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_STR}/login")
 

@@ -3,8 +3,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.schemas import UserRead
-from app.features.institution.schemas import InstitutionRead
+from app.features.user.models import UserRead
+from app.features.institution.models import InstitutionRead
 
 from app._test import client, db
 from app.features.user._test import (
@@ -22,13 +22,13 @@ from app.features.institution._test import (
     institutions_write,
 )
 
-from .schemas import (
+from .models import (
     UserInstitutionLinkWrite,
     UserInstitutionLinkRead,
     InstitutionLinkWrite,
+    UserInstitutionLink,
 )
 from .crud import CRUDUserInstitutionLink
-from .model import UserInstitutionLink
 
 
 @pytest.fixture

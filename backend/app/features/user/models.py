@@ -1,16 +1,28 @@
 from typing import TYPE_CHECKING
-
-from sqlmodel import Relationship, Session, select
+from pydantic import EmailStr
 from sqlalchemy.exc import NoResultFound
 
-from app.core.security import verify_password
+from sqlmodel import Relationship, SQLModel, Session, select
+
 from app.common.models import Base
-
-from .schemas import UserBase
-
+from app.core.security import verify_password
 
 if TYPE_CHECKING:
-    from app.features.userinstitutionlink.model import UserInstitutionLink
+    from app.features.userinstitutionlink.models import UserInstitutionLink
+
+
+class UserBase(SQLModel):
+    email: EmailStr
+    full_name: str
+    is_superuser: bool
+
+
+class UserRead(UserBase, Base):
+    ...
+
+
+class UserWrite(UserBase):
+    password: str
 
 
 class User(UserBase, Base, table=True):

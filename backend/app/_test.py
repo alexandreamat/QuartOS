@@ -9,11 +9,11 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 from app.common.models import Base
-from app.features.institution.model import Institution
-from app.features.user.model import User
-from app.features.userinstitutionlink.model import UserInstitutionLink
-from app.features.account.model import Account
-from app.features.transaction.model import Transaction
+from app.features.institution.models import Institution
+from app.features.user.models import User
+from app.features.userinstitutionlink.models import UserInstitutionLink
+from app.features.account.models import Account
+from app.features.transaction.models import Transaction
 
 from app.database.deps import get_db
 

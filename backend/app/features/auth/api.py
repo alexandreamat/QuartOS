@@ -15,9 +15,9 @@ from app.utils import (
 )
 from app.database.deps import DBSession
 from app.features.user.crud import CRUDUser
-from app.features.user.schemas import UserWrite
+from app.features.user.models import UserWrite
 
-from .schemas import Token
+from .models import Token
 
 router = APIRouter()
 

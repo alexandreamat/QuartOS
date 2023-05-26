@@ -3,8 +3,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.schemas import UserRead
-from app.features.institution.schemas import InstitutionRead
+from app.features.user.models import UserRead
+from app.features.institution.models import InstitutionRead
 
 from app._test import client, db
 from app.features.user._test import (
@@ -27,12 +27,12 @@ from app.features.institution._test import (
     institutions_write,
 )
 
-from .schemas import (
+from .models import (
     AccountWrite,
     AccountRead,
 )
 from .crud import CRUDAccount
-from .model import Account
+from .models import Account
 
 
 @pytest.fixture
