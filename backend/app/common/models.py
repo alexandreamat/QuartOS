@@ -54,3 +54,4 @@ class Base:
     def delete(cls: Type[ModelType], db: Session, id: int) -> None:
         obj = cls.read(db, id)
         db.delete(obj)
+        db.commit()
