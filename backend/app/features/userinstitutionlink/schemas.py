@@ -1,14 +1,14 @@
-from pydantic import BaseModel
+from sqlmodel import SQLModel
 
-from app.common.schemas import OrmBase
+from app.common.models import Base
 
 
-class InstitutionUserLinkBase(BaseModel):
+class InstitutionUserLinkBase(SQLModel):
     client_id: str
     institution_id: int
 
 
-class UserInstitutionLinkRead(InstitutionUserLinkBase, OrmBase):
+class UserInstitutionLinkRead(InstitutionUserLinkBase, Base):
     user_id: int
 
 

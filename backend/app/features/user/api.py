@@ -2,12 +2,6 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from app.database.deps import DBSession
-from app.features.userinstitutionlink.schemas import (
-    UserInstitutionLinkRead,
-    InstitutionLinkWrite,
-)
-from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
-from app.features.institution.crud import CRUDInstitution
 
 from .deps import CurrentUser, CurrentSuperuser
 from .crud import CRUDUser
@@ -93,3 +87,10 @@ def read_many(
     Retrieve users.
     """
     return CRUDUser.read_many(db, skip=skip, limit=limit)
+
+
+@router.delete("/{id}")
+def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
+    if current_user.id == id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+    CRUDUser.delete(db, id)

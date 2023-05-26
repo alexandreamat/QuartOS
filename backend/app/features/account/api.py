@@ -64,3 +64,18 @@ def update(
     if user.id != current_user.id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
     return CRUDAccount.update(db, id, account)
+
+
+@router.delete("/{id}")
+def delete(
+    db: DBSession,
+    current_user: CurrentUser,
+    id: int,
+) -> None:
+    try:
+        user = CRUDAccount.read_user(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    if user.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    return CRUDAccount.delete(db, id)

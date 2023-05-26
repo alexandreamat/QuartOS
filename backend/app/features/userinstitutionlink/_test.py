@@ -1,6 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
+from sqlmodel import Session
+from sqlalchemy.exc import NoResultFound
 
 from app.features.user.schemas import UserRead
 from app.features.institution.schemas import InstitutionRead
@@ -181,11 +182,13 @@ def test_delete(
     user_institution_links_db: Session,
     user_institution_links_read: list[UserInstitutionLinkRead],
 ) -> None:
-    response = user_client.delete(
-        f"/api/institution-links/{user_institution_links_read[0].id}",
-    )
+    id = user_institution_links_read[0].id
+    response = user_client.delete(f"/api/institution-links/{id}")
     assert response.status_code == 200
     assert not response.json()
+
+    with pytest.raises(NoResultFound):
+        CRUDUserInstitutionLink.read(user_institution_links_db, id)
 
     response = user_client.delete(
         f"/api/institution-links/{user_institution_links_read[-1].id}",

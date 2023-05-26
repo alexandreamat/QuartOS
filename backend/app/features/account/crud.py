@@ -1,7 +1,9 @@
-from sqlalchemy.orm import Session
+from sqlmodel import Session
+
 from app.common.crud import CRUDBase
 
 from app.features import userinstitutionlink, user, institution
+
 from . import model, schemas
 
 
@@ -12,20 +14,20 @@ class CRUDAccount(
         schemas.AccountWrite,
     ]
 ):
-    model_type = model.Account
-    read_schema_type = schemas.AccountRead
-    write_schema_type = schemas.AccountWrite
+    db_model_type = model.Account
+    read_model_type = schemas.AccountRead
+    write_model_type = schemas.AccountWrite
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.schemas.UserRead:
-        return user.schemas.UserRead.from_orm(cls.model_type.read(db, id).user)
+        return user.schemas.UserRead.from_orm(cls.db_model_type.read(db, id).user)
 
     @classmethod
     def read_institution(
         cls, db: Session, id: int
     ) -> institution.schemas.InstitutionRead:
         return institution.schemas.InstitutionRead.from_orm(
-            cls.model_type.read(db, id).institution
+            cls.db_model_type.read(db, id).institution
         )
 
     @classmethod
@@ -35,13 +37,13 @@ class CRUDAccount(
         l = userinstitutionlink.model.UserInstitutionLink.read(
             db, user_institution_link
         )
-        return [cls.read_schema_type.from_orm(a) for a in l.accounts]
+        return [cls.read_model_type.from_orm(a) for a in l.accounts]
 
     @classmethod
     def read_many_by_user(cls, db: Session, user_id: int) -> list[schemas.AccountRead]:
         db_user = user.model.User.read(db, user_id)
         return [
-            cls.read_schema_type.from_orm(a)
+            cls.read_model_type.from_orm(a)
             for l in db_user.institution_links
             for a in l.accounts
         ]

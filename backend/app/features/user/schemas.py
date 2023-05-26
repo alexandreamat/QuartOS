@@ -1,19 +1,17 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr
 
-from app.common.schemas import OrmBase
+from sqlmodel import SQLModel
+
+from app.common.models import Base
 
 
-class UserBase(BaseModel):
+class UserBase(SQLModel):
     email: EmailStr
     full_name: str
     is_superuser: bool
 
 
-class UserInDB(UserBase, OrmBase):
-    hashed_password: str
-
-
-class UserRead(UserBase, OrmBase):
+class UserRead(UserBase, Base):
     ...
 
 

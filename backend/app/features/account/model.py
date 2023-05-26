@@ -1,39 +1,30 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship, Mapped, Session
+from sqlmodel import Relationship, Field
 
 from app.common.models import Base
 from app.features.userinstitutionlink.model import UserInstitutionLink
 from app.features.user.model import User
 from app.features.institution.model import Institution
 
+from .schemas import AccountBase
+
 if TYPE_CHECKING:
     from app.features.transaction.model import Transaction
 
 
-class Account(Base):
-    __tablename__ = "accounts"
-
-    number = Column(String, nullable=False)
-    currency = Column(String, nullable=False)
-    type = Column(String, nullable=False)
-
-    user_institution_link_id = Column(
-        Integer, ForeignKey("user_institution_links.id"), nullable=False
+class Account(Base, AccountBase, table=True):
+    user_institution_link_id: int = Field(
+        foreign_key="userinstitutionlink.id", nullable=False
     )
 
-    user_institution_link: Mapped[UserInstitutionLink] = relationship(
-        UserInstitutionLink, back_populates="accounts"
-    )
-    transactions: Mapped[list["Transaction"]] = relationship(
-        "Transaction", back_populates="account"
-    )
+    userinstitutionlink: UserInstitutionLink = Relationship(back_populates="accounts")
+    transactions: list["Transaction"] = Relationship(back_populates="account")
 
     @property
     def user(self) -> User:
-        return self.user_institution_link.user
+        return self.userinstitutionlink.user
 
     @property
     def institution(self) -> Institution:
-        return self.user_institution_link.institution
+        return self.userinstitutionlink.institution

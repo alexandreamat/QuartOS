@@ -22,5 +22,5 @@ api_router.include_router(
     prefix="/institution-links",
     tags=["institution-links"],
 )
-api_router.include_router(account.api.router, prefix="/account", tags=["account"])
+api_router.include_router(account.api.router, prefix="/accounts", tags=["account"])
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
