@@ -1,21 +1,21 @@
 from sqlmodel import Session
 from app.common.crud import CRUDBase
 
-from app.features import user, institution
+from app.features import user, institution, userinstitutionlink
 
-from . import models
+from .models import Account, AccountRead, AccountWrite
 
 
 class CRUDAccount(
     CRUDBase[
-        models.Account,
-        models.AccountRead,
-        models.AccountWrite,
+        Account,
+        AccountRead,
+        AccountWrite,
     ]
 ):
-    db_model_type = models.Account
-    read_model_type = models.AccountRead
-    write_model_type = models.AccountWrite
+    db_model_type = Account
+    read_model_type = AccountRead
+    write_model_type = AccountWrite
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserRead:
@@ -32,13 +32,15 @@ class CRUDAccount(
     @classmethod
     def read_many_by_institution_link(
         cls, db: Session, user_institution_link: int
-    ) -> list[models.AccountRead]:
-        l = models.UserInstitutionLink.read(db, user_institution_link)
+    ) -> list[AccountRead]:
+        l = userinstitutionlink.models.UserInstitutionLink.read(
+            db, user_institution_link
+        )
         return [cls.read_model_type.from_orm(a) for a in l.accounts]
 
     @classmethod
-    def read_many_by_user(cls, db: Session, user_id: int) -> list[models.AccountRead]:
-        db_user = models.User.read(db, user_id)
+    def read_many_by_user(cls, db: Session, user_id: int) -> list[AccountRead]:
+        db_user = user.models.User.read(db, user_id)
         return [
             cls.read_model_type.from_orm(a)
             for l in db_user.institution_links
