@@ -27,12 +27,14 @@ class InstitutionLinkWrite(InstitutionUserLinkBase):
 
 class UserInstitutionLinkWrite(InstitutionLinkWrite):
     user_id: int
+    access_token: str | None
 
 
 class UserInstitutionLink(Base, table=True):
     user_id: int = Field(foreign_key="user.id")
     institution_id: int = Field(foreign_key="institution.id")
     client_id: str
+    access_token: str | None
 
     user: User = Relationship(back_populates="institution_links")
     institution: Institution = Relationship(back_populates="user_links")

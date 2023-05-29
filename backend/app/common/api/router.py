@@ -7,11 +7,13 @@ from app.features import (
     userinstitutionlink,
     account,
     transaction,
+    plaid,
 )
 
 from . import utils
 
 api_router = APIRouter()
+
 api_router.include_router(auth.api.router, prefix="/auth", tags=["auth"])
 api_router.include_router(user.api.router, prefix="/users", tags=["users"])
 api_router.include_router(
@@ -27,3 +29,8 @@ api_router.include_router(
     transaction.api.router, prefix="/transactions", tags=["transactions"]
 )
 api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
+api_router.include_router(
+    plaid.api.router,
+    prefix="/plaid",
+    tags=["plaid", "institution-links", "institutions", "accounts"],
+)
