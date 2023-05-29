@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, HTTPException, status
 
 from sqlalchemy.exc import NoResultFound, IntegrityError
@@ -13,6 +16,10 @@ from .models import (
     InstitutionLinkWrite,
     UserInstitutionLinkWrite,
 )
+from app.features.account.crud import CRUDAccount
+
+# if TYPE_CHECKING:
+from app.features.account.models import AccountRead
 
 router = APIRouter()
 
@@ -34,9 +41,23 @@ def create(
     return CRUDUserInstitutionLink.create(db, user_institution_link)
 
 
+@router.get("/{id}/accounts")
+def read_accounts(
+    db: DBSession, current_user: CurrentUser, id: int
+) -> list[AccountRead]:
+    try:
+        institution_link = CRUDUserInstitutionLink.read(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    return CRUDAccount.read_many_by_institution_link(db, institution_link.id)
+
+
 @router.get("/{id}")
 def read(db: DBSession, current_user: CurrentUser, id: int) -> UserInstitutionLinkRead:
-    institution_link = CRUDUserInstitutionLink.read(db, id)
+    try:
+        institution_link = CRUDUserInstitutionLink.read(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
     if institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return institution_link

@@ -10,8 +10,7 @@ from app.database.deps import DBSession
 from .crud import CRUDAccount
 from .models import AccountRead, AccountWrite
 
-if TYPE_CHECKING:
-    from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
+from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 
 router = APIRouter()
 
@@ -27,7 +26,7 @@ def create(
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDAccount.create(db, account)
 
 
@@ -38,7 +37,7 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> AccountRead:
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if CRUDAccount.read_user(db, account.id).id != current_user.id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     return account
 
 
@@ -59,13 +58,13 @@ def update(
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     try:
         user = CRUDUserInstitutionLink.read_user(db, account.user_institution_link_id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDAccount.update(db, id, account)
 
 
