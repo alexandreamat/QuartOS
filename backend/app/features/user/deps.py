@@ -13,7 +13,7 @@ from app.features.user.crud import CRUDUser
 from app.features.user.models import UserRead
 from app.features.auth.models import TokenPayload
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_STR}/login")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_STR}/auth/login")
 
 
 def get_current_user(db: DBSession, token: str = Depends(reusable_oauth2)) -> UserRead:

@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
-from sqlmodel import Relationship, SQLModel
+
+from sqlmodel import Relationship, SQLModel, Session, select
+from sqlalchemy.exc import NoResultFound
 
 from app.common.models import Base
 
@@ -273,3 +275,10 @@ class InstitutionWrite(InstitutionBase):
 
 class Institution(InstitutionBase, Base, table=True):
     user_links: list["UserInstitutionLink"] = Relationship(back_populates="institution")
+
+    @classmethod
+    def read_by_name(cls, db: Session, name: str) -> "Institution":
+        obj = db.exec(select(cls).where(cls.name == name)).first()
+        if not obj:
+            raise NoResultFound
+        return obj

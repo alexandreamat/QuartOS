@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from decimal import Decimal
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -16,6 +17,8 @@ class AccountBase(SQLModel):
     type: str
     number: str
     user_institution_link_id: int
+    balance: Decimal
+    plaid_id: str | None
 
 
 class AccountRead(AccountBase, Base):
