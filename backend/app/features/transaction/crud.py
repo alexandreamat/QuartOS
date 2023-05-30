@@ -70,3 +70,7 @@ class CRUDTransaction(
     ) -> list[TransactionRead]:
         a = account.models.Account.read(db, account_id)
         return [cls.read_model_type.from_orm(t) for t in a.transactions]
+
+    @classmethod
+    def is_synced(cls, db: Session, id: int) -> bool:
+        return cls.db_model_type.read(db, id).is_synced

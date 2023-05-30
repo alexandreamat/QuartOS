@@ -39,3 +39,7 @@ class UserInstitutionLink(Base, table=True):
     user: User = Relationship(back_populates="institution_links")
     institution: Institution = Relationship(back_populates="user_links")
     accounts: list["Account"] = Relationship(back_populates="userinstitutionlink")
+
+    @property
+    def is_synced(self) -> bool:
+        return self.access_token != None

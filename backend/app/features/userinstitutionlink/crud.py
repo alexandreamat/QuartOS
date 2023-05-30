@@ -34,3 +34,7 @@ class CRUDUserInstitutionLink(
         return institution.models.InstitutionRead.from_orm(
             cls.db_model_type.read(db, id).institution
         )
+
+    @classmethod
+    def is_synced(cls, db: Session, id: int) -> bool:
+        return cls.db_model_type.read(db, id).is_synced

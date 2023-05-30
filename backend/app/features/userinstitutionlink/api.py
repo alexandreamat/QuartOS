@@ -83,6 +83,8 @@ def update(
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
+    if CRUDUserInstitutionLink.is_synced(db, id):
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     new_institution_link = UserInstitutionLinkWrite(
         **institution_link.dict(), user_id=current_user.id
     )

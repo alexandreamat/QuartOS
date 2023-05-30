@@ -27,6 +27,8 @@ def create(
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if user.id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
+    if CRUDUserInstitutionLink.is_synced(db, account.user_institution_link_id):
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDAccount.create(db, account)
 
 
@@ -59,6 +61,8 @@ def update(
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if user.id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
+    if CRUDAccount.is_synced(db, id):
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
     try:
         user = CRUDUserInstitutionLink.read_user(db, account.user_institution_link_id)
     except NoResultFound:
@@ -79,5 +83,7 @@ def delete(
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if user.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    if CRUDAccount.is_synced(db, id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDAccount.delete(db, id)

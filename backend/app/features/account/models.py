@@ -44,3 +44,7 @@ class Account(Base, AccountBase, table=True):
     @property
     def institution(self) -> Institution:
         return self.userinstitutionlink.institution
+
+    @property
+    def is_synced(self) -> bool:
+        return self.userinstitutionlink.is_synced
