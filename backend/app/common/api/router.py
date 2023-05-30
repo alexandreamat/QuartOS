@@ -12,25 +12,34 @@ from app.features import (
 
 from . import utils
 
+AUTH = "auth"
+USERS = "users"
+INSTITUTIONS = "institutions"
+INSTITUTION_LINKS = "institution-links"
+ACCOUNTS = "accounts"
+TRANSACTIONS = "transactions"
+UTILS = "utils"
+PLAID = "plaid"
+
 api_router = APIRouter()
 
-api_router.include_router(auth.api.router, prefix="/auth", tags=["auth"])
-api_router.include_router(user.api.router, prefix="/users", tags=["users"])
+api_router.include_router(auth.api.router, prefix=f"/{AUTH}", tags=[AUTH])
+api_router.include_router(user.api.router, prefix=f"/{USERS}", tags=[USERS])
 api_router.include_router(
-    institution.api.router, prefix="/institutions", tags=["institutions"]
+    institution.api.router, prefix=f"/{INSTITUTIONS}", tags=[INSTITUTIONS]
 )
 api_router.include_router(
     userinstitutionlink.api.router,
-    prefix="/institution-links",
-    tags=["institution-links"],
+    prefix=f"/{INSTITUTION_LINKS}",
+    tags=[INSTITUTION_LINKS],
 )
-api_router.include_router(account.api.router, prefix="/accounts", tags=["account"])
+api_router.include_router(account.api.router, prefix=f"/{ACCOUNTS}", tags=[ACCOUNTS])
 api_router.include_router(
-    transaction.api.router, prefix="/transactions", tags=["transactions"]
+    transaction.api.router, prefix=f"/{TRANSACTIONS}", tags=[TRANSACTIONS]
 )
-api_router.include_router(utils.router, prefix="/utils", tags=["utils"])
+api_router.include_router(utils.router, prefix=f"/{UTILS}", tags=[UTILS])
 api_router.include_router(
     plaid.api.router,
-    prefix="/plaid",
-    tags=["plaid", "institution-links", "institutions", "accounts"],
+    prefix=f"/{PLAID}",
+    tags=[PLAID, INSTITUTION_LINKS, INSTITUTIONS, ACCOUNTS],
 )
