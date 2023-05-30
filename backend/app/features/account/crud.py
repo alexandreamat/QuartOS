@@ -46,3 +46,7 @@ class CRUDAccount(
             for l in db_user.institution_links
             for a in l.accounts
         ]
+
+    @classmethod
+    def is_synced(cls, db: Session, id: int) -> bool:
+        return cls.db_model_type.read(db, id).is_synced

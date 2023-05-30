@@ -42,3 +42,7 @@ class Transaction(TransactionBase, Base, table=True):
     @property
     def user_institution_link(self) -> UserInstitutionLink:
         return self.account.userinstitutionlink
+
+    @property
+    def is_synced(self) -> bool:
+        return self.account.is_synced
