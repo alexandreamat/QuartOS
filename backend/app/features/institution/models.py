@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class InstitutionBase(SQLModel):
     name: str
     country_code: str
-    url: HttpUrl
+    url: HttpUrl | None
 
     @validator("country_code")
     def country_code_must_exist(cls, value: str) -> str:
@@ -28,10 +28,10 @@ class InstitutionRead(InstitutionBase, Base):
 
 
 class InstitutionWrite(InstitutionBase):
-    ...
+    url: HttpUrl
 
 
-class InstitutionSync(InstitutionWrite):
+class InstitutionSync(InstitutionBase):
     plaid_id: str
 
 

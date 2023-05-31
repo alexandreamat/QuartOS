@@ -44,7 +44,7 @@ def set_public_token(
             name=institution.name,
             country_code=institution.country_codes[0].value,
             plaid_id=institution.institution_id,
-            url=institution.url,
+            url=institution.url if hasattr(institution, "url") else None,
         )
         db_institution_out = CRUDInstitution.sync(db, db_institution_in)
     user_institution_link_in = UserInstitutionLinkSync(
