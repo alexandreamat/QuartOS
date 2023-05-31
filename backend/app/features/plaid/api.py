@@ -62,7 +62,7 @@ def set_public_token(
         account_in = AccountSync(
             mask=account.mask,
             name=account.name,
-            currency=account.balances.iso_currency_code,
+            currency_code=account.balances.iso_currency_code,
             type=account.type.value,
             user_institution_link_id=user_institution_link_out.id,
             plaid_id=account.account_id,

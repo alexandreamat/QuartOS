@@ -2,7 +2,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
 from decimal import Decimal
 
-from app.common.models import Base
+from app.common.models import Base, CurrencyCode
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -13,7 +13,7 @@ class TransactionBase(SQLModel):
     amount: Decimal
     timestamp: datetime
     description: str
-    currency: str
+    currency_code: CurrencyCode
     category: str
     account_id: int
 
