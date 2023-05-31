@@ -17,6 +17,7 @@ class InstitutionUserLinkBase(SQLModel):
 
 class UserInstitutionLinkRead(InstitutionUserLinkBase, Base):
     user_id: int
+    is_synced: bool
 
 
 class InstitutionLinkWrite(InstitutionUserLinkBase):
@@ -31,7 +32,7 @@ class UserInstitutionLinkWrite(InstitutionLinkWrite):
     user_id: int
 
 
-class UserInstitutionLinkSync(InstitutionLinkWrite):
+class UserInstitutionLinkSync(UserInstitutionLinkWrite):
     access_token: str
 
 
