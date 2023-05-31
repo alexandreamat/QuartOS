@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
-
+from pydantic import BaseModel
 from app.common.models import Base
 from app.features.institution.models import Institution
 from app.features.user.models import User
@@ -20,20 +20,24 @@ class UserInstitutionLinkRead(InstitutionUserLinkBase, Base):
 
 
 class InstitutionLinkWrite(InstitutionUserLinkBase):
-    """Assumes current user"""
+    """Assumes current user, for API client usage"""
 
     ...
 
 
 class UserInstitutionLinkWrite(InstitutionLinkWrite):
+    """In model proper, for internal usage"""
+
     user_id: int
-    access_token: str | None
 
 
-class UserInstitutionLink(Base, table=True):
+class UserInstitutionLinkSync(InstitutionLinkWrite):
+    access_token: str
+
+
+class UserInstitutionLink(Base, InstitutionUserLinkBase, table=True):
     user_id: int = Field(foreign_key="user.id")
     institution_id: int = Field(foreign_key="institution.id")
-    client_id: str
     access_token: str | None
 
     user: User = Relationship(back_populates="institution_links")

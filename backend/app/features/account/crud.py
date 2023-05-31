@@ -1,9 +1,9 @@
 from sqlmodel import Session
-from app.common.crud import CRUDBase
+from app.common.crud import CRUDBase, CRUDSyncable
 
 from app.features import user, institution, userinstitutionlink
 
-from .models import Account, AccountRead, AccountWrite
+from .models import Account, AccountRead, AccountWrite, AccountSync
 
 
 class CRUDAccount(
@@ -11,7 +11,12 @@ class CRUDAccount(
         Account,
         AccountRead,
         AccountWrite,
-    ]
+    ],
+    CRUDSyncable[
+        Account,
+        AccountRead,
+        AccountSync,
+    ],
 ):
     db_model_type = Account
     read_model_type = AccountRead

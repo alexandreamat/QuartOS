@@ -6,6 +6,7 @@ from . import models
 
 DBModelType = TypeVar("DBModelType", bound=models.Base)
 WriteModelType = TypeVar("WriteModelType", bound=SQLModel)
+SyncModelType = TypeVar("SyncModelType", bound=SQLModel)
 ReadModelType = TypeVar("ReadModelType", bound=models.Base)
 
 
@@ -52,3 +53,18 @@ class CRUDBase(Generic[DBModelType, ReadModelType, WriteModelType]):
     @classmethod
     def delete(cls, db: Session, id: int) -> None:
         cls.db_model_type.delete(db, id)
+
+
+class CRUDSyncable(Generic[DBModelType, ReadModelType, SyncModelType]):
+    db_model_type: Type[DBModelType]
+    read_model_type: Type[ReadModelType]
+
+    @classmethod
+    def sync(cls, db: Session, obj: SyncModelType) -> ReadModelType:
+        db_obj_in = cls.db_model_type(**obj.dict())
+        db_obj_out = cls.db_model_type.create_or_update(db, db_obj_in)
+        return cls.read_model_type.from_orm(db_obj_out)
+
+    @classmethod
+    def is_synced(cls, db: Session, id: int) -> bool:
+        return cls.db_model_type.read(db, id).is_synced

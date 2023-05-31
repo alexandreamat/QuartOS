@@ -48,30 +48,35 @@ def accounts_write(
             type="savings",
             user_id=user_read.id,
             user_institution_link_id=user_institution_links_read[0].id,
+            balance=123.12,
         ),
         AccountWrite(
             currency="USD",
             number="222",
             type="checking",
             user_institution_link_id=user_institution_links_read[1].id,
+            balance=123.12,
         ),
         AccountWrite(
             currency="GBP",
             number="aaa",
             type="debit",
             user_institution_link_id=user_institution_links_read[2].id,
+            balance=123.12,
         ),
         AccountWrite(
             currency="NTD",
             number="bbb",
             type="credit",
             user_institution_link_id=user_institution_links_read[0].id,
+            balance=123.12,
         ),
         AccountWrite(
             currency="HKD",
             number="999",
             type="savings",
             user_institution_link_id=user_institution_links_read[1].id,
+            balance=123.12,
         ),
     ]
 
