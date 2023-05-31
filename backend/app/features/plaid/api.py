@@ -44,6 +44,7 @@ def set_public_token(
             name=institution.name,
             country_code=institution.country_codes[0].value,
             plaid_id=institution.institution_id,
+            url=institution.url,
         )
         db_institution_out = CRUDInstitution.sync(db, db_institution_in)
     user_institution_link_in = UserInstitutionLinkSync(
@@ -59,9 +60,10 @@ def set_public_token(
     accounts = get_accounts(access_token)
     for account in accounts:
         account_in = AccountSync(
+            mask=account.mask,
+            name=account.name,
             currency=account.balances.iso_currency_code,
             type=account.type.value,
-            number=account.name,
             user_institution_link_id=user_institution_link_out.id,
             plaid_id=account.account_id,
             balance=account.balances.current,
