@@ -72,7 +72,7 @@ def accounts_write(
         ),
         AccountWrite(
             name="Credit Account",
-            currency_code="NTD",
+            currency_code="TWD",
             number="bbb",
             type="credit",
             user_institution_link_id=user_institution_links_read[0].id,
