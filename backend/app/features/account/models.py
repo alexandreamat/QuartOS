@@ -18,7 +18,6 @@ class AccountBase(SQLModel):
     number: str
     user_institution_link_id: int
     balance: Decimal
-    plaid_id: str | None
 
 
 class AccountRead(AccountBase, Base):
@@ -29,6 +28,10 @@ class AccountWrite(AccountBase):
     ...
 
 
+class AccountSync(AccountBase):
+    plaid_id: str
+
+
 class Account(Base, AccountBase, table=True):
     user_institution_link_id: int = Field(
         foreign_key="userinstitutionlink.id", nullable=False
@@ -36,6 +39,7 @@ class Account(Base, AccountBase, table=True):
 
     userinstitutionlink: UserInstitutionLink = Relationship(back_populates="accounts")
     transactions: list["Transaction"] = Relationship(back_populates="account")
+    plaid_id: str | None = Field(unique=True)
 
     @property
     def user(self) -> User:

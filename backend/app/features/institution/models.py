@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlmodel import Relationship, SQLModel, Session, select
+from sqlmodel import Relationship, SQLModel, Session, select, Field
 from sqlalchemy.exc import NoResultFound
 
 from app.common.models import Base
@@ -273,12 +273,17 @@ class InstitutionWrite(InstitutionBase):
     ...
 
 
+class InstitutionSync(InstitutionWrite):
+    plaid_id: str
+
+
 class Institution(InstitutionBase, Base, table=True):
     user_links: list["UserInstitutionLink"] = Relationship(back_populates="institution")
+    plaid_id: str | None = Field(unique=True)
 
     @classmethod
-    def read_by_name(cls, db: Session, name: str) -> "Institution":
-        obj = db.exec(select(cls).where(cls.name == name)).first()
+    def read_by_plaid_id(cls, db: Session, plaid_id: str) -> "Institution":
+        obj = db.exec(select(cls).where(cls.plaid_id == plaid_id)).first()
         if not obj:
             raise NoResultFound
         return obj

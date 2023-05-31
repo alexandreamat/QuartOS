@@ -1,20 +1,21 @@
 from sqlmodel import Session
-from app.common.crud import CRUDBase
+from app.common.crud import CRUDBase, CRUDSyncable
 
 from app.features import user, institution
 from .models import (
     UserInstitutionLink,
     UserInstitutionLinkRead,
     UserInstitutionLinkWrite,
+    UserInstitutionLinkSync,
 )
 
 
 class CRUDUserInstitutionLink(
-    CRUDBase[UserInstitutionLink, UserInstitutionLinkRead, UserInstitutionLinkWrite]
+    CRUDBase[UserInstitutionLink, UserInstitutionLinkRead, UserInstitutionLinkWrite],
+    CRUDSyncable[UserInstitutionLink, UserInstitutionLinkRead, UserInstitutionLinkSync],
 ):
     db_model_type = UserInstitutionLink
     read_model_type = UserInstitutionLinkRead
-    write_model_type = UserInstitutionLinkWrite
 
     @classmethod
     def read_many_by_user(
@@ -34,7 +35,3 @@ class CRUDUserInstitutionLink(
         return institution.models.InstitutionRead.from_orm(
             cls.db_model_type.read(db, id).institution
         )
-
-    @classmethod
-    def is_synced(cls, db: Session, id: int) -> bool:
-        return cls.db_model_type.read(db, id).is_synced

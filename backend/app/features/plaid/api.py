@@ -4,9 +4,9 @@ from sqlalchemy.exc import NoResultFound
 from app.database.deps import DBSession
 from app.features.user.deps import CurrentUser
 
-from app.features.userinstitutionlink.models import UserInstitutionLinkWrite
-from app.features.institution.models import InstitutionWrite
-from app.features.account.models import AccountWrite
+from app.features.userinstitutionlink.models import UserInstitutionLinkSync
+from app.features.institution.models import InstitutionSync
+from app.features.account.models import AccountSync
 from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 from app.features.institution.crud import CRUDInstitution
 from app.features.account.crud import CRUDAccount
@@ -36,25 +36,29 @@ def set_public_token(
     institution_id: str = item.institution_id
     institution = get_institution(institution_id)
     try:
-        db_institution_out = CRUDInstitution.read_by_name(db, institution.name)
-    except NoResultFound:
-        db_institution_in = InstitutionWrite(
-            name=institution.name, country_code=institution.country_codes[0].value
+        db_institution_out = CRUDInstitution.read_by_plaid_id(
+            db, institution.institution_id
         )
-        db_institution_out = CRUDInstitution.create(db, db_institution_in)
-    user_institution_link_in = UserInstitutionLinkWrite(
+    except NoResultFound:
+        db_institution_in = InstitutionSync(
+            name=institution.name,
+            country_code=institution.country_codes[0].value,
+            plaid_id=institution.institution_id,
+        )
+        db_institution_out = CRUDInstitution.sync(db, db_institution_in)
+    user_institution_link_in = UserInstitutionLinkSync(
         client_id=item.item_id,
         institution_id=db_institution_out.id,
         user_id=current_user.id,
         access_token=access_token,
     )
-    user_institution_link_out = CRUDUserInstitutionLink.create(
+    user_institution_link_out = CRUDUserInstitutionLink.sync(
         db, user_institution_link_in
     )
 
     accounts = get_accounts(access_token)
     for account in accounts:
-        account_in = AccountWrite(
+        account_in = AccountSync(
             currency=account.balances.iso_currency_code,
             type=account.type.value,
             number=account.name,
@@ -62,4 +66,4 @@ def set_public_token(
             plaid_id=account.account_id,
             balance=account.balances.current,
         )
-        CRUDAccount.create(db, account_in)
+        CRUDAccount.sync(db, account_in)
