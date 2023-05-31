@@ -44,7 +44,7 @@ def accounts_write(
     return [
         AccountWrite(
             name="Savings Account",
-            currency="EUR",
+            currency_code="EUR",
             number="111",
             type="depository",
             user_id=user_read.id,
@@ -54,7 +54,7 @@ def accounts_write(
         ),
         AccountWrite(
             name="Checking Account",
-            currency="USD",
+            currency_code="USD",
             number="222",
             type="investment",
             user_institution_link_id=user_institution_links_read[1].id,
@@ -63,7 +63,7 @@ def accounts_write(
         ),
         AccountWrite(
             name="Debit Account",
-            currency="GBP",
+            currency_code="GBP",
             number="aaa",
             type="loan",
             user_institution_link_id=user_institution_links_read[2].id,
@@ -72,7 +72,7 @@ def accounts_write(
         ),
         AccountWrite(
             name="Credit Account",
-            currency="NTD",
+            currency_code="NTD",
             number="bbb",
             type="credit",
             user_institution_link_id=user_institution_links_read[0].id,
@@ -81,7 +81,7 @@ def accounts_write(
         ),
         AccountWrite(
             name="Savings Account",
-            currency="HKD",
+            currency_code="HKD",
             number="999",
             type="depository",
             user_institution_link_id=user_institution_links_read[1].id,

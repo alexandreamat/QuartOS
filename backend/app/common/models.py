@@ -1,5 +1,6 @@
-from typing import TypeVar, Type
+from typing import TypeVar, Type, Any, Generator, Callable
 
+import pycountry
 from sqlmodel import Session, SQLModel, Field
 from sqlalchemy.exc import NoResultFound
 from fastapi.encoders import jsonable_encoder
@@ -48,3 +49,19 @@ class Base(SQLModel):
         obj = cls.read(db, id)
         db.delete(obj)
         db.commit()
+
+
+class CurrencyCode(str):
+    @classmethod
+    def __get_validators__(
+        cls,
+    ) -> Generator[Callable[[Any], str], None, None]:
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v: Any) -> str:
+        if not isinstance(v, str):
+            raise TypeError("string required")
+        if v not in [currency.alpha_3 for currency in pycountry.currencies]:
+            raise ValueError("Invalid currency code")
+        return v

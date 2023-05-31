@@ -3,8 +3,10 @@ from decimal import Decimal
 from enum import Enum
 
 from sqlmodel import Field, Relationship, SQLModel
+from pydantic import validator
+import pycountry
 
-from app.common.models import Base
+from app.common.models import Base, CurrencyCode
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -23,12 +25,18 @@ class Type(str, Enum):
 
 
 class AccountBase(SQLModel):
-    currency: str
+    currency_code: CurrencyCode
     type: Type
     user_institution_link_id: int
     balance: Decimal
     name: str
     mask: str
+
+    @validator("currency_code")
+    def currency_code_must_exist(cls, value: str) -> str:
+        if value not in [currency.alpha_3 for currency in pycountry.currencies]:
+            raise ValueError("Invalid currency code")
+        return value
 
 
 class AccountRead(AccountBase, Base):
