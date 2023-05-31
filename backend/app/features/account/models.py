@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from decimal import Decimal
+from enum import Enum
 
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -12,12 +13,22 @@ if TYPE_CHECKING:
     from app.features.transaction.models import Transaction
 
 
+class Type(str, Enum):
+    INVESTMENT = "investment"
+    CREDIT = "credit"
+    DEPOSITORY = "depository"
+    LOAN = "loan"
+    BROKERAGE = "brokerage"
+    OTHER = "other"
+
+
 class AccountBase(SQLModel):
     currency: str
-    type: str
-    number: str
+    type: Type
     user_institution_link_id: int
     balance: Decimal
+    name: str
+    mask: str
 
 
 class AccountRead(AccountBase, Base):
