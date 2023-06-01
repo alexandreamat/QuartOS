@@ -4,7 +4,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
 from decimal import Decimal
 
-from app.common.models import IdentifiableBase, CurrencyCode
+from app.common.models import IdentifiableBase, CurrencyCode, PlaidBase, PlaidMaybeMixin
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -43,10 +43,6 @@ class __TransactionBase(SQLModel):
     code: TransactionCode
 
 
-class __TransactionPlaidMixin(SQLModel):
-    plaid_id: str
-
-
 class TransactionApiOut(__TransactionBase, IdentifiableBase):
     ...
 
@@ -55,18 +51,16 @@ class TransactionApiIn(__TransactionBase):
     ...
 
 
-class TransactionPlaidIn(__TransactionBase, __TransactionPlaidMixin):
+class TransactionPlaidIn(__TransactionBase, PlaidBase):
     ...
 
 
-class TransactionPlaidOut(__TransactionBase, __TransactionPlaidMixin, IdentifiableBase):
+class TransactionPlaidOut(__TransactionBase, PlaidBase, IdentifiableBase):
     ...
 
 
-class Transaction(__TransactionBase, IdentifiableBase, table=True):
+class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=True):
     account_id: int = Field(foreign_key="account.id")
-    plaid_id: str | None = Field(unique=True)
-
     account: Account = Relationship(back_populates="transactions")
 
     @property

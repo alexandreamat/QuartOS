@@ -1,5 +1,8 @@
 import os
 
+from pydantic import BaseModel
+
+
 import plaid
 from plaid.api.plaid_api import PlaidApi
 from plaid.model.products import Products
@@ -24,6 +27,7 @@ from plaid.model.item import Item
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 from plaid.model.account_base import AccountBase
+from plaid.model.transaction import Transaction
 
 
 from app.features.institution.models import InstitutionPlaidIn, InstitutionPlaidOut
@@ -64,6 +68,14 @@ products = [Products(p) for p in PLAID_PRODUCTS]
 country_codes = [CountryCode(cc) for cc in PLAID_COUNTRY_CODES]
 
 
+class TransactionsSyncResult(BaseModel):
+    added: list[TransactionPlaidIn]
+    modified: list[TransactionPlaidIn]
+    removed: list[int]
+    new_cursor: str
+    has_more: bool
+
+
 def create_link_token(user_id: int) -> str:
     request = LinkTokenCreateRequest(
         products=products,
@@ -94,7 +106,7 @@ def get_user_institution_link(
     item: Item = response.item
     institution_id: str = item.institution_id
     user_institution_link_in = UserInstitutionLinkPlaidIn(
-        client_id=item.item_id,
+        plaid_id=item.item_id,
         institution_id=institution.id,
         user_id=current_user.id,
         access_token=access_token,
@@ -136,14 +148,46 @@ def get_accounts(
     ]
 
 
-# def sync_transactions(
-#     access_token: str, cursor: str | None = None
-# ) -> TransactionsSyncResponse:
-#     request = TransactionsSyncRequest(
-#         access_token=access_token,
-#         cursor=cursor,
-#     )
-#     response: TransactionsSyncResponse = client.transactions_sync(request)
-#     return response
-
-#     # database.apply_updates(item_id, added, modified, removed, cursor)
+def sync_transactions(
+    user_institution_link: UserInstitutionLinkPlaidOut,
+    accounts: dict[str, AccountPlaidOut],
+) -> TransactionsSyncResult:
+    request = TransactionsSyncRequest(
+        access_token=user_institution_link.access_token,
+        cursor=user_institution_link.cursor,
+    )
+    response: TransactionsSyncResponse = client.transactions_sync(request)
+    return TransactionsSyncResult(
+        added=[
+            TransactionPlaidIn(
+                account_id=accounts[transaction.account_id].id,
+                amount=transaction.amount,
+                currency_code=getattr(transaction, "iso_currency_code", None),
+                name=transaction.name,
+                plaid_id=transaction.transaction_id,
+                datetime=getattr(transaction, "datetime", None),
+                payment_channel=transaction.payment_channel,
+                code=transaction.transaction_code,
+            )
+            for transaction in response.added
+        ],
+        modified=[
+            TransactionPlaidIn(
+                account_id=accounts[transaction.account_id].id,
+                amount=transaction.amount,
+                currency_code=getattr(transaction, "iso_currency_code", None),
+                name=transaction.name,
+                plaid_id=transaction.transaction_id,
+                datetime=getattr(transaction, "datetime", None),
+                payment_channel=transaction.payment_channel,
+                code=transaction.transaction_code,
+            )
+            for transaction in response.modified
+        ],
+        removed=[
+            removed_transaction.transaction_id
+            for removed_transaction in response.removed
+        ],
+        new_cursor=response.new_cursor,
+        has_more=response.has_more,
+    )

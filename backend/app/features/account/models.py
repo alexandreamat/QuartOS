@@ -6,7 +6,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from pydantic import validator
 import pycountry
 
-from app.common.models import IdentifiableBase, CurrencyCode
+from app.common.models import IdentifiableBase, CurrencyCode, PlaidBase, PlaidMaybeMixin
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -39,10 +39,6 @@ class __AccountBase(SQLModel):
         return value
 
 
-class __AccountPlaidMixin(SQLModel):
-    plaid_id: str
-
-
 class AccountApiOut(__AccountBase, IdentifiableBase):
     ...
 
@@ -51,22 +47,21 @@ class AccountApiIn(__AccountBase):
     ...
 
 
-class AccountPlaidIn(__AccountBase, __AccountPlaidMixin):
+class AccountPlaidIn(__AccountBase, PlaidBase):
     ...
 
 
-class AccountPlaidOut(__AccountBase, __AccountPlaidMixin, IdentifiableBase):
+class AccountPlaidOut(__AccountBase, PlaidBase, IdentifiableBase):
     ...
 
 
-class Account(__AccountBase, IdentifiableBase, table=True):
+class Account(__AccountBase, IdentifiableBase, PlaidMaybeMixin, table=True):
     user_institution_link_id: int = Field(
         foreign_key="userinstitutionlink.id", nullable=False
     )
 
     userinstitutionlink: UserInstitutionLink = Relationship(back_populates="accounts")
     transactions: list["Transaction"] = Relationship(back_populates="account")
-    plaid_id: str | None = Field(unique=True)
 
     @property
     def user(self) -> User:

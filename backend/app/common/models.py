@@ -1,12 +1,13 @@
 from typing import TypeVar, Type, Any, Generator, Callable
 
 import pycountry
-from sqlmodel import Session, SQLModel, Field
+from sqlmodel import Session, SQLModel, Field, select
 from sqlalchemy.exc import NoResultFound
 from fastapi.encoders import jsonable_encoder
 
 
-ModelType = TypeVar("ModelType", bound="IdentifiableMixin")
+ModelType = TypeVar("ModelType", bound="IdentifiableBase")
+PlaidModelType = TypeVar("PlaidModelType", bound="PlaidMaybeMixin")
 
 
 class IdentifiableBase(SQLModel):
@@ -49,6 +50,23 @@ class IdentifiableBase(SQLModel):
         obj = cls.read(db, id)
         db.delete(obj)
         db.commit()
+
+
+class PlaidBase(SQLModel):
+    plaid_id: str = Field(unique=True)
+
+
+class PlaidMaybeMixin(SQLModel):
+    plaid_id: str | None = Field(unique=True)
+
+    @classmethod
+    def read_by_plaid_id(
+        cls: Type[PlaidModelType], db: Session, plaid_id: str
+    ) -> PlaidModelType:
+        obj = db.exec(select(cls).where(cls.plaid_id == plaid_id)).first()
+        if not obj:
+            raise NoResultFound
+        return obj
 
 
 class CurrencyCode(str):

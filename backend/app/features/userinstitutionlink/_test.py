@@ -39,27 +39,22 @@ def user_institution_links_write(
 ) -> list[UserInstitutionLinkApiIn]:
     return [
         UserInstitutionLinkApiIn(
-            client_id="123",
             user_id=user_read.id,
             institution_id=institutions_read[0].id,
         ),
         UserInstitutionLinkApiIn(
-            client_id="456",
             user_id=user_read.id,
             institution_id=institutions_read[1].id,
         ),
         UserInstitutionLinkApiIn(
-            client_id="678",
             user_id=user_read.id,
             institution_id=institutions_read[2].id,
         ),
         UserInstitutionLinkApiIn(
-            client_id="abc",
             user_id=superuser_read.id,
             institution_id=institutions_read[0].id,
         ),
         UserInstitutionLinkApiIn(
-            client_id="xyz",
             user_id=superuser_read.id,
             institution_id=institutions_read[1].id,
         ),
@@ -91,7 +86,6 @@ def test_create(
     response = user_client.post(
         "/api/institution-links/",
         json=InstitutionLinkApiIn(
-            client_id=user_institution_links_write[0].client_id,
             institution_id=user_institution_links_write[0].institution_id,
         ).dict(),
     )
@@ -99,11 +93,10 @@ def test_create(
     data = response.json()
     assert data["user_id"] == user_read.id
     assert data["institution_id"] == user_institution_links_write[0].institution_id
-    assert data["client_id"] == user_institution_links_write[0].client_id
 
     response = user_client.post(
         "/api/institution-links/",
-        json=InstitutionLinkApiIn(client_id="123", institution_id=123).dict(),
+        json=InstitutionLinkApiIn(institution_id=123).dict(),
     )
     assert response.status_code == 404
 
@@ -122,7 +115,6 @@ def test_read(
     assert data["id"] == user_institution_links_read[0].id
     assert data["user_id"] == user_institution_links_read[0].user_id
     assert data["institution_id"] == user_institution_links_read[0].institution_id
-    assert data["client_id"] == user_institution_links_read[0].client_id
 
     response = user_client.get(
         f"/api/institution-links/{user_institution_links_read[4].id}"
@@ -149,18 +141,15 @@ def test_update(
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[0].id}",
         json=InstitutionLinkApiIn(
-            client_id="444333",
             institution_id=user_institution_links_read[0].institution_id,
         ).dict(),
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["client_id"] == "444333"
 
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[0].id}",
         json=InstitutionLinkApiIn(
-            client_id="444333",
             institution_id=99,
         ).dict(),
     )
@@ -170,7 +159,6 @@ def test_update(
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[-1].id}",
         json=InstitutionLinkApiIn(
-            client_id="444333",
             institution_id=user_institution_links_read[-1].institution_id,
         ).dict(),
     )
