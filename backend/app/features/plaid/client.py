@@ -10,6 +10,8 @@ from plaid.model.item_get_response import ItemGetResponse
 from plaid.model.institutions_get_by_id_request import InstitutionsGetByIdRequest
 from plaid.model.institutions_get_by_id_response import InstitutionsGetByIdResponse
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from plaid.model.item_public_token_exchange_request import (
     ItemPublicTokenExchangeRequest,
 )
@@ -23,6 +25,15 @@ from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 from plaid.model.account_base import AccountBase
 
+
+from app.features.institution.models import InstitutionPlaidIn, InstitutionPlaidOut
+from app.features.account.models import AccountPlaidIn, AccountPlaidOut
+from app.features.transaction.models import TransactionPlaidIn, TransactionPlaidOut
+from app.features.user.models import UserApiOut, UserApiIn
+from app.features.userinstitutionlink.models import (
+    UserInstitutionLinkPlaidIn,
+    UserInstitutionLinkPlaidOut,
+)
 
 PLAID_CLIENT_ID = os.environ["PLAID_CLIENT_ID"]
 PLAID_SECRET = os.environ["PLAID_SECRET"]
@@ -75,22 +86,64 @@ def exchange_public_token(public_token: str) -> str:
     return access_token
 
 
-def get_item(access_token: str) -> Item:
+def get_user_institution_link(
+    access_token: str, current_user: UserApiOut, institution: InstitutionPlaidOut
+) -> UserInstitutionLinkPlaidIn:
     request = ItemGetRequest(access_token=access_token)
     response: ItemGetResponse = client.item_get(request)
-    return response.item
+    item: Item = response.item
+    institution_id: str = item.institution_id
+    user_institution_link_in = UserInstitutionLinkPlaidIn(
+        client_id=item.item_id,
+        institution_id=institution.id,
+        user_id=current_user.id,
+        access_token=access_token,
+    )
+    return user_institution_link_in
 
 
-def get_institution(institution_id: str) -> Institution:
+def get_institution(plaid_id: str) -> InstitutionPlaidIn:
     request = InstitutionsGetByIdRequest(
-        institution_id=institution_id, country_codes=country_codes
+        institution_id=plaid_id, country_codes=country_codes
     )
     response: InstitutionsGetByIdResponse = client.institutions_get_by_id(request)
-    return response.institution
+    institution: Institution = response.institution
+    return InstitutionPlaidIn(
+        name=institution.name,
+        country_code=institution.country_codes[0].value,
+        plaid_id=institution.institution_id,
+        url=institution.url if hasattr(institution, "url") else None,
+    )
 
 
-def get_accounts(access_token: str) -> list[AccountBase]:
-    request = AccountsGetRequest(access_token=access_token)
+def get_accounts(
+    user_institution_link: UserInstitutionLinkPlaidOut,
+) -> list[AccountPlaidIn]:
+    request = AccountsGetRequest(access_token=user_institution_link.access_token)
     response: AccountsGetResponse = client.accounts_get(request)
     accounts: list[AccountBase] = response.accounts
-    return accounts
+    return [
+        AccountPlaidIn(
+            mask=account.mask,
+            name=account.name,
+            currency_code=account.balances.iso_currency_code,
+            type=account.type.value,
+            user_institution_link_id=user_institution_link.id,
+            plaid_id=account.account_id,
+            balance=account.balances.current,
+        )
+        for account in accounts
+    ]
+
+
+# def sync_transactions(
+#     access_token: str, cursor: str | None = None
+# ) -> TransactionsSyncResponse:
+#     request = TransactionsSyncRequest(
+#         access_token=access_token,
+#         cursor=cursor,
+#     )
+#     response: TransactionsSyncResponse = client.transactions_sync(request)
+#     return response
+
+#     # database.apply_updates(item_id, added, modified, removed, cursor)

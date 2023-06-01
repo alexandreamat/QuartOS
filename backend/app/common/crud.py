@@ -4,67 +4,65 @@ from sqlmodel import Session, SQLModel
 
 from . import models
 
-DBModelType = TypeVar("DBModelType", bound=models.Base)
-WriteModelType = TypeVar("WriteModelType", bound=SQLModel)
-SyncModelType = TypeVar("SyncModelType", bound=SQLModel)
-ReadModelType = TypeVar("ReadModelType", bound=models.Base)
+DBModelType = TypeVar("DBModelType", bound=models.IdentifiableBase)
+ApiInModel = TypeVar("ApiInModel", bound=SQLModel)
+ApiOutModel = TypeVar("ApiOutModel", bound=models.IdentifiableBase)
+PlaidInModel = TypeVar("PlaidInModel", bound=SQLModel)
+PlaidOutModel = TypeVar("PlaidOutModel", bound=models.IdentifiableBase)
 
 
-class CRUDBase(Generic[DBModelType, ReadModelType, WriteModelType]):
-    db_model_type: Type[DBModelType]
-    read_model_type: Type[ReadModelType]
-    write_model_type: Type[WriteModelType]
+class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
+    db_model: Type[DBModelType]
+    api_out_model: Type[ApiOutModel]
 
     @classmethod
-    def db_obj_from_schema(cls, obj_in: WriteModelType) -> DBModelType:
-        return cls.db_model_type(**obj_in.dict())
+    def db_obj_from_schema(cls, obj_in: ApiInModel) -> DBModelType:
+        return cls.db_model(**obj_in.dict())
 
     @classmethod
     def create(
         cls,
         db: Session,
-        new_schema_obj: WriteModelType,
-    ) -> ReadModelType:
+        new_schema_obj: ApiInModel,
+    ) -> ApiOutModel:
         db_obj_in = cls.db_obj_from_schema(new_schema_obj)
-        db_obj_out = cls.db_model_type.create_or_update(db, db_obj_in)
-        return cls.read_model_type.from_orm(db_obj_out)
+        db_obj_out = cls.db_model.create_or_update(db, db_obj_in)
+        return cls.api_out_model.from_orm(db_obj_out)
 
     @classmethod
-    def read(cls, db: Session, id: int) -> ReadModelType:
-        return cls.read_model_type.from_orm(cls.db_model_type.read(db, id))
+    def read(cls, db: Session, id: int) -> ApiOutModel:
+        return cls.api_out_model.from_orm(cls.db_model.read(db, id))
 
     @classmethod
     def read_many(
         cls, db: Session, skip: int = 0, limit: int = 100
-    ) -> list[ReadModelType]:
+    ) -> list[ApiOutModel]:
         return [
-            cls.read_model_type.from_orm(s)
-            for s in cls.db_model_type.read_many(db, skip, limit)
+            cls.api_out_model.from_orm(s)
+            for s in cls.db_model.read_many(db, skip, limit)
         ]
 
     @classmethod
-    def update(
-        cls, db: Session, id: int, new_schema_obj: WriteModelType
-    ) -> ReadModelType:
+    def update(cls, db: Session, id: int, new_schema_obj: ApiInModel) -> ApiOutModel:
         db_obj_in = cls.db_obj_from_schema(new_schema_obj)
-        db_obj_out = cls.db_model_type.update(db, id, db_obj_in)
-        return cls.read_model_type.from_orm(db_obj_out)
+        db_obj_out = cls.db_model.update(db, id, db_obj_in)
+        return cls.api_out_model.from_orm(db_obj_out)
 
     @classmethod
     def delete(cls, db: Session, id: int) -> None:
-        cls.db_model_type.delete(db, id)
+        cls.db_model.delete(db, id)
 
 
-class CRUDSyncable(Generic[DBModelType, ReadModelType, SyncModelType]):
-    db_model_type: Type[DBModelType]
-    read_model_type: Type[ReadModelType]
+class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
+    db_model: Type[DBModelType]
+    plaid_out_model: Type[PlaidOutModel]
 
     @classmethod
-    def sync(cls, db: Session, obj: SyncModelType) -> ReadModelType:
-        db_obj_in = cls.db_model_type(**obj.dict())
-        db_obj_out = cls.db_model_type.create_or_update(db, db_obj_in)
-        return cls.read_model_type.from_orm(db_obj_out)
+    def sync(cls, db: Session, obj: PlaidInModel) -> PlaidOutModel:
+        db_obj_in = cls.db_model(**obj.dict())
+        db_obj_out = cls.db_model.create_or_update(db, db_obj_in)
+        return cls.plaid_out_model.from_orm(db_obj_out)
 
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
-        return cls.db_model_type.read(db, id).is_synced
+        return cls.db_model.read(db, id).is_synced

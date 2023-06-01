@@ -12,34 +12,34 @@ from app.features.user._test import (
 
 from app._test import client, db
 
-from .models import InstitutionRead, InstitutionWrite
+from .models import InstitutionApiOut, InstitutionApiIn
 from .crud import CRUDInstitution
 
 
 @pytest.fixture
-def institutions_write() -> list[InstitutionWrite]:
+def institutions_write() -> list[InstitutionApiIn]:
     return [
-        InstitutionWrite(
+        InstitutionApiIn(
             name="Hello Bank", country_code="AD", url="https://www.hello.com"
         ),
-        InstitutionWrite(
+        InstitutionApiIn(
             name="World Bank", country_code="GB", url="https://www.worldbank.com"
         ),
-        InstitutionWrite(
+        InstitutionApiIn(
             name="Mega Bank", country_code="TW", url="https://www.mega.com"
         ),
     ]
 
 
 @pytest.fixture
-def institutions_db(db: Session, institutions_write: list[InstitutionWrite]) -> Session:
+def institutions_db(db: Session, institutions_write: list[InstitutionApiIn]) -> Session:
     for i in institutions_write:
         CRUDInstitution.create(db, i)
     return db
 
 
 @pytest.fixture
-def institutions_read(institutions_db: Session) -> list[InstitutionRead]:
+def institutions_read(institutions_db: Session) -> list[InstitutionApiOut]:
     return CRUDInstitution.read_many(institutions_db)
 
 
@@ -56,7 +56,7 @@ def test_read(client: TestClient, institutions_db: Session) -> None:
 def test_create(superuser_client: TestClient, institutions_db: Session) -> None:
     response = superuser_client.post(
         "/api/institutions/",
-        json=InstitutionWrite(
+        json=InstitutionApiIn(
             name="The Best Bank", country_code="ES", url="http://bestbank.eu"
         ).dict(),
     )
@@ -64,6 +64,6 @@ def test_create(superuser_client: TestClient, institutions_db: Session) -> None:
     data = response.json()
     assert isinstance(data, dict)
     with pytest.raises(ValidationError):
-        InstitutionWrite(
+        InstitutionApiIn(
             name="The Best Bank", country_code="NEVERLAND", url="http://bestbank.eu"
         )

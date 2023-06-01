@@ -12,14 +12,14 @@ from app.features.institution.crud import CRUDInstitution
 
 from .crud import CRUDUserInstitutionLink
 from .models import (
-    UserInstitutionLinkRead,
-    InstitutionLinkWrite,
-    UserInstitutionLinkWrite,
+    UserInstitutionLinkApiOut,
+    InstitutionLinkApiIn,
+    UserInstitutionLinkApiIn,
 )
 from app.features.account.crud import CRUDAccount
 
 # if TYPE_CHECKING:
-from app.features.account.models import AccountRead
+from app.features.account.models import AccountApiOut
 
 router = APIRouter()
 
@@ -28,13 +28,13 @@ router = APIRouter()
 def create(
     db: DBSession,
     current_user: CurrentUser,
-    institution_link: InstitutionLinkWrite,
-) -> UserInstitutionLinkRead:
+    institution_link: InstitutionLinkApiIn,
+) -> UserInstitutionLinkApiOut:
     try:
         CRUDInstitution.read(db, institution_link.institution_id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
-    user_institution_link = UserInstitutionLinkWrite(
+    user_institution_link = UserInstitutionLinkApiIn(
         **institution_link.dict(),
         user_id=current_user.id,
     )
@@ -44,7 +44,7 @@ def create(
 @router.get("/{id}/accounts")
 def read_accounts(
     db: DBSession, current_user: CurrentUser, id: int
-) -> list[AccountRead]:
+) -> list[AccountApiOut]:
     try:
         institution_link = CRUDUserInstitutionLink.read(db, id)
     except NoResultFound:
@@ -53,7 +53,9 @@ def read_accounts(
 
 
 @router.get("/{id}")
-def read(db: DBSession, current_user: CurrentUser, id: int) -> UserInstitutionLinkRead:
+def read(
+    db: DBSession, current_user: CurrentUser, id: int
+) -> UserInstitutionLinkApiOut:
     try:
         institution_link = CRUDUserInstitutionLink.read(db, id)
     except NoResultFound:
@@ -66,7 +68,7 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> UserInstitutionLi
 @router.get("/")
 def read_many(
     db: DBSession, current_user: CurrentUser
-) -> list[UserInstitutionLinkRead]:
+) -> list[UserInstitutionLinkApiOut]:
     return CRUDUserInstitutionLink.read_many_by_user(db, current_user.id)
 
 
@@ -75,8 +77,8 @@ def update(
     db: DBSession,
     current_user: CurrentUser,
     id: int,
-    institution_link: InstitutionLinkWrite,
-) -> UserInstitutionLinkRead:
+    institution_link: InstitutionLinkApiIn,
+) -> UserInstitutionLinkApiOut:
     try:
         curr_institution_link = CRUDUserInstitutionLink.read(db, id)
     except NoResultFound:
@@ -85,7 +87,7 @@ def update(
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     if CRUDUserInstitutionLink.is_synced(db, id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
-    new_institution_link = UserInstitutionLinkWrite(
+    new_institution_link = UserInstitutionLinkApiIn(
         **institution_link.dict(), user_id=current_user.id
     )
     try:

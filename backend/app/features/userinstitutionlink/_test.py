@@ -3,8 +3,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.models import UserRead
-from app.features.institution.models import InstitutionRead
+from app.features.user.models import UserApiOut
+from app.features.institution.models import InstitutionApiOut
 
 from app._test import client, db
 from app.features.user._test import (
@@ -23,9 +23,9 @@ from app.features.institution._test import (
 )
 
 from .models import (
-    UserInstitutionLinkWrite,
-    UserInstitutionLinkRead,
-    InstitutionLinkWrite,
+    UserInstitutionLinkApiIn,
+    UserInstitutionLinkApiOut,
+    InstitutionLinkApiIn,
     UserInstitutionLink,
 )
 from .crud import CRUDUserInstitutionLink
@@ -33,32 +33,32 @@ from .crud import CRUDUserInstitutionLink
 
 @pytest.fixture
 def user_institution_links_write(
-    user_read: UserRead,
-    superuser_read: UserRead,
-    institutions_read: list[InstitutionRead],
-) -> list[UserInstitutionLinkWrite]:
+    user_read: UserApiOut,
+    superuser_read: UserApiOut,
+    institutions_read: list[InstitutionApiOut],
+) -> list[UserInstitutionLinkApiIn]:
     return [
-        UserInstitutionLinkWrite(
+        UserInstitutionLinkApiIn(
             client_id="123",
             user_id=user_read.id,
             institution_id=institutions_read[0].id,
         ),
-        UserInstitutionLinkWrite(
+        UserInstitutionLinkApiIn(
             client_id="456",
             user_id=user_read.id,
             institution_id=institutions_read[1].id,
         ),
-        UserInstitutionLinkWrite(
+        UserInstitutionLinkApiIn(
             client_id="678",
             user_id=user_read.id,
             institution_id=institutions_read[2].id,
         ),
-        UserInstitutionLinkWrite(
+        UserInstitutionLinkApiIn(
             client_id="abc",
             user_id=superuser_read.id,
             institution_id=institutions_read[0].id,
         ),
-        UserInstitutionLinkWrite(
+        UserInstitutionLinkApiIn(
             client_id="xyz",
             user_id=superuser_read.id,
             institution_id=institutions_read[1].id,
@@ -68,7 +68,7 @@ def user_institution_links_write(
 
 @pytest.fixture
 def user_institution_links_db(
-    db: Session, user_institution_links_write: list[UserInstitutionLinkWrite]
+    db: Session, user_institution_links_write: list[UserInstitutionLinkApiIn]
 ) -> Session:
     for l in user_institution_links_write:
         CRUDUserInstitutionLink.create(db, l)
@@ -78,19 +78,19 @@ def user_institution_links_db(
 @pytest.fixture
 def user_institution_links_read(
     user_institution_links_db: Session,
-) -> list[UserInstitutionLinkRead]:
+) -> list[UserInstitutionLinkApiOut]:
     return CRUDUserInstitutionLink.read_many(user_institution_links_db)
 
 
 def test_create(
     institutions_db: Session,
     user_client: TestClient,
-    user_read: UserRead,
-    user_institution_links_write: list[UserInstitutionLinkWrite],
+    user_read: UserApiOut,
+    user_institution_links_write: list[UserInstitutionLinkApiIn],
 ) -> None:
     response = user_client.post(
         "/api/institution-links/",
-        json=InstitutionLinkWrite(
+        json=InstitutionLinkApiIn(
             client_id=user_institution_links_write[0].client_id,
             institution_id=user_institution_links_write[0].institution_id,
         ).dict(),
@@ -103,16 +103,16 @@ def test_create(
 
     response = user_client.post(
         "/api/institution-links/",
-        json=InstitutionLinkWrite(client_id="123", institution_id=123).dict(),
+        json=InstitutionLinkApiIn(client_id="123", institution_id=123).dict(),
     )
     assert response.status_code == 404
 
 
 def test_read(
     user_client: TestClient,
-    user_read: UserRead,
+    user_read: UserApiOut,
     user_institution_links_db: Session,
-    user_institution_links_read: list[UserInstitutionLinkRead],
+    user_institution_links_read: list[UserInstitutionLinkApiOut],
 ) -> None:
     response = user_client.get(
         f"/api/institution-links/{user_institution_links_read[0].id}"
@@ -144,11 +144,11 @@ def test_read_many(
 def test_update(
     user_client: TestClient,
     user_institution_links_db: Session,
-    user_institution_links_read: list[UserInstitutionLinkRead],
+    user_institution_links_read: list[UserInstitutionLinkApiOut],
 ) -> None:
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[0].id}",
-        json=InstitutionLinkWrite(
+        json=InstitutionLinkApiIn(
             client_id="444333",
             institution_id=user_institution_links_read[0].institution_id,
         ).dict(),
@@ -159,7 +159,7 @@ def test_update(
 
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[0].id}",
-        json=InstitutionLinkWrite(
+        json=InstitutionLinkApiIn(
             client_id="444333",
             institution_id=99,
         ).dict(),
@@ -169,7 +169,7 @@ def test_update(
 
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[-1].id}",
-        json=InstitutionLinkWrite(
+        json=InstitutionLinkApiIn(
             client_id="444333",
             institution_id=user_institution_links_read[-1].institution_id,
         ).dict(),
@@ -180,7 +180,7 @@ def test_update(
 def test_delete(
     user_client: TestClient,
     user_institution_links_db: Session,
-    user_institution_links_read: list[UserInstitutionLinkRead],
+    user_institution_links_read: list[UserInstitutionLinkApiOut],
 ) -> None:
     id = user_institution_links_read[0].id
     response = user_client.delete(f"/api/institution-links/{id}")

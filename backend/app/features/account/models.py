@@ -6,7 +6,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from pydantic import validator
 import pycountry
 
-from app.common.models import Base, CurrencyCode
+from app.common.models import IdentifiableBase, CurrencyCode
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from app.features.transaction.models import Transaction
 
 
-class Type(str, Enum):
+class AccountType(str, Enum):
     INVESTMENT = "investment"
     CREDIT = "credit"
     DEPOSITORY = "depository"
@@ -24,9 +24,9 @@ class Type(str, Enum):
     OTHER = "other"
 
 
-class AccountBase(SQLModel):
+class __AccountBase(SQLModel):
     currency_code: CurrencyCode
-    type: Type
+    type: AccountType
     user_institution_link_id: int
     balance: Decimal
     name: str
@@ -39,19 +39,27 @@ class AccountBase(SQLModel):
         return value
 
 
-class AccountRead(AccountBase, Base):
-    ...
-
-
-class AccountWrite(AccountBase):
-    ...
-
-
-class AccountSync(AccountBase):
+class __AccountPlaidMixin(SQLModel):
     plaid_id: str
 
 
-class Account(Base, AccountBase, table=True):
+class AccountApiOut(__AccountBase, IdentifiableBase):
+    ...
+
+
+class AccountApiIn(__AccountBase):
+    ...
+
+
+class AccountPlaidIn(__AccountBase, __AccountPlaidMixin):
+    ...
+
+
+class AccountPlaidOut(__AccountBase, __AccountPlaidMixin, IdentifiableBase):
+    ...
+
+
+class Account(__AccountBase, IdentifiableBase, table=True):
     user_institution_link_id: int = Field(
         foreign_key="userinstitutionlink.id", nullable=False
     )

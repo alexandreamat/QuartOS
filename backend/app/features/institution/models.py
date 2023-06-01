@@ -5,13 +5,13 @@ from sqlmodel import Relationship, SQLModel, Session, select, Field
 from sqlalchemy.exc import NoResultFound
 import pycountry
 
-from app.common.models import Base
+from app.common.models import IdentifiableBase
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink.models import UserInstitutionLink
 
 
-class InstitutionBase(SQLModel):
+class __InstitutionBase(SQLModel):
     name: str
     country_code: str
     url: HttpUrl | None
@@ -23,19 +23,27 @@ class InstitutionBase(SQLModel):
         return value
 
 
-class InstitutionRead(InstitutionBase, Base):
-    ...
-
-
-class InstitutionWrite(InstitutionBase):
-    url: HttpUrl
-
-
-class InstitutionSync(InstitutionBase):
+class __InstitutionPlaidMixin(SQLModel):
     plaid_id: str
 
 
-class Institution(InstitutionBase, Base, table=True):
+class InstitutionApiOut(__InstitutionBase, IdentifiableBase):
+    ...
+
+
+class InstitutionApiIn(__InstitutionBase):
+    url: HttpUrl
+
+
+class InstitutionPlaidOut(__InstitutionBase, __InstitutionPlaidMixin, IdentifiableBase):
+    ...
+
+
+class InstitutionPlaidIn(__InstitutionBase, __InstitutionPlaidMixin):
+    ...
+
+
+class Institution(__InstitutionBase, IdentifiableBase, table=True):
     user_links: list["UserInstitutionLink"] = Relationship(back_populates="institution")
     plaid_id: str | None = Field(unique=True)
 

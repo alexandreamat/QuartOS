@@ -3,8 +3,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.models import UserRead
-from app.features.institution.models import InstitutionRead
+from app.features.user.models import UserApiOut
+from app.features.institution.models import InstitutionApiOut
 
 from app._test import client, db
 from app.features.user._test import (
@@ -27,22 +27,19 @@ from app.features.institution._test import (
     institutions_write,
 )
 
-from .models import (
-    AccountWrite,
-    AccountRead,
-)
+from .models import AccountApiIn, AccountApiOut
 from .crud import CRUDAccount
 from .models import Account
 
 
 @pytest.fixture
 def accounts_write(
-    user_read: UserRead,
-    superuser_read: UserRead,
-    user_institution_links_read: list[InstitutionRead],
-) -> list[AccountWrite]:
+    user_read: UserApiOut,
+    superuser_read: UserApiOut,
+    user_institution_links_read: list[InstitutionApiOut],
+) -> list[AccountApiIn]:
     return [
-        AccountWrite(
+        AccountApiIn(
             name="Savings Account",
             currency_code="EUR",
             number="111",
@@ -52,7 +49,7 @@ def accounts_write(
             balance=123.12,
             mask="1111",
         ),
-        AccountWrite(
+        AccountApiIn(
             name="Checking Account",
             currency_code="USD",
             number="222",
@@ -61,7 +58,7 @@ def accounts_write(
             balance=123.12,
             mask="2222",
         ),
-        AccountWrite(
+        AccountApiIn(
             name="Debit Account",
             currency_code="GBP",
             number="aaa",
@@ -70,7 +67,7 @@ def accounts_write(
             balance=123.12,
             mask="3333",
         ),
-        AccountWrite(
+        AccountApiIn(
             name="Credit Account",
             currency_code="TWD",
             number="bbb",
@@ -79,7 +76,7 @@ def accounts_write(
             balance=123.12,
             mask="4444",
         ),
-        AccountWrite(
+        AccountApiIn(
             name="Savings Account",
             currency_code="HKD",
             number="999",
@@ -92,7 +89,7 @@ def accounts_write(
 
 
 @pytest.fixture
-def accounts_db(db: Session, accounts_write: list[AccountWrite]) -> Session:
+def accounts_db(db: Session, accounts_write: list[AccountApiIn]) -> Session:
     for l in accounts_write:
         CRUDAccount.create(db, l)
     return db
@@ -101,7 +98,7 @@ def accounts_db(db: Session, accounts_write: list[AccountWrite]) -> Session:
 @pytest.fixture
 def accounts_read(
     accounts_db: Session,
-) -> list[AccountRead]:
+) -> list[AccountApiOut]:
     return CRUDAccount.read_many(accounts_db)
 
 

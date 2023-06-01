@@ -10,13 +10,15 @@ from app.database.deps import DBSession
 from app.core import security
 from app.core.config import settings
 from app.features.user.crud import CRUDUser
-from app.features.user.models import UserRead
+from app.features.user.models import UserApiOut
 from app.features.auth.models import TokenPayload
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_STR}/auth/login")
 
 
-def get_current_user(db: DBSession, token: str = Depends(reusable_oauth2)) -> UserRead:
+def get_current_user(
+    db: DBSession, token: str = Depends(reusable_oauth2)
+) -> UserApiOut:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
@@ -31,13 +33,13 @@ def get_current_user(db: DBSession, token: str = Depends(reusable_oauth2)) -> Us
     return user
 
 
-CurrentUser = Annotated[UserRead, Depends(get_current_user)]
+CurrentUser = Annotated[UserApiOut, Depends(get_current_user)]
 
 
-def get_current_superuser(current_user: CurrentUser) -> UserRead:
+def get_current_superuser(current_user: CurrentUser) -> UserApiOut:
     if not current_user.is_superuser:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
     return current_user
 
 
-CurrentSuperuser = Annotated[UserRead, Depends(get_current_superuser)]
+CurrentSuperuser = Annotated[UserApiOut, Depends(get_current_superuser)]

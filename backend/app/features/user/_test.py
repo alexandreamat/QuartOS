@@ -3,18 +3,18 @@ from fastapi.testclient import TestClient
 import pytest
 from sqlmodel import Session
 from app.features.user.deps import get_current_user
-from app.features.user.models import UserRead
+from app.features.user.models import UserApiOut
 from app.main import app
 
 from app._test import db, client
 
-from .models import UserWrite
+from .models import UserApiIn
 from .crud import CRUDUser
 
 
 @pytest.fixture
-def superuser_write() -> UserWrite:
-    return UserWrite(
+def superuser_write() -> UserApiIn:
+    return UserApiIn(
         email="admin@quartos.com",
         full_name="Admin",
         is_superuser=True,
@@ -23,8 +23,8 @@ def superuser_write() -> UserWrite:
 
 
 @pytest.fixture
-def user_write() -> UserWrite:
-    return UserWrite(
+def user_write() -> UserApiIn:
+    return UserApiIn(
         email="john@quartos.com",
         full_name="John Smith",
         is_superuser=False,
@@ -33,25 +33,25 @@ def user_write() -> UserWrite:
 
 
 @pytest.fixture
-def users_db(db: Session, user_write: UserWrite, superuser_write: UserWrite) -> Session:
+def users_db(db: Session, user_write: UserApiIn, superuser_write: UserApiIn) -> Session:
     CRUDUser.create(db, user_write)
     CRUDUser.create(db, superuser_write)
     return db
 
 
 @pytest.fixture
-def superuser_read(users_db: Session) -> UserRead:
+def superuser_read(users_db: Session) -> UserApiOut:
     return CRUDUser.read_by_email(users_db, "admin@quartos.com")
 
 
 @pytest.fixture
-def user_read(users_db: Session) -> UserRead:
+def user_read(users_db: Session) -> UserApiOut:
     return CRUDUser.read_by_email(users_db, "john@quartos.com")
 
 
 @pytest.fixture
 def superuser_client(
-    db: Session, client: TestClient, superuser_read: UserRead
+    db: Session, client: TestClient, superuser_read: UserApiOut
 ) -> Generator[TestClient, None, None]:
     print(superuser_read)
     app.dependency_overrides[get_current_user] = lambda: superuser_read
@@ -62,7 +62,7 @@ def superuser_client(
 
 @pytest.fixture
 def user_client(
-    db: Session, client: TestClient, user_read: UserRead
+    db: Session, client: TestClient, user_read: UserApiOut
 ) -> Generator[TestClient, None, None]:
     app.dependency_overrides[get_current_user] = lambda: user_read
     client = TestClient(app)
@@ -71,7 +71,7 @@ def user_client(
 
 
 def test_signup(client: TestClient, db: Session) -> None:
-    user = UserWrite(
+    user = UserApiIn(
         email="test@example.com",
         password="supersecretpassword",
         full_name="Test User",

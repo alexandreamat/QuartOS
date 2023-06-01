@@ -5,13 +5,13 @@ from app.database.deps import DBSession
 
 from .deps import CurrentUser, CurrentSuperuser
 from .crud import CRUDUser
-from .models import UserRead, UserWrite
+from .models import UserApiOut, UserApiIn
 
 router = APIRouter()
 
 
 @router.post("/signup")
-def signup(db: DBSession, user: UserWrite) -> UserRead:
+def signup(db: DBSession, user: UserApiIn) -> UserApiOut:
     """
     Create new user without the need to be logged in.
     """
@@ -24,7 +24,7 @@ def signup(db: DBSession, user: UserWrite) -> UserRead:
 
 
 @router.get("/me")
-def read_me(db: DBSession, current_user: CurrentUser) -> UserRead:
+def read_me(db: DBSession, current_user: CurrentUser) -> UserApiOut:
     """
     Get current user.
     """
@@ -32,7 +32,7 @@ def read_me(db: DBSession, current_user: CurrentUser) -> UserRead:
 
 
 @router.put("/me")
-def update_me(db: DBSession, current_user: CurrentUser, user: UserWrite) -> UserRead:
+def update_me(db: DBSession, current_user: CurrentUser, user: UserApiIn) -> UserApiOut:
     """
     Update own user.
     """
@@ -40,7 +40,7 @@ def update_me(db: DBSession, current_user: CurrentUser, user: UserWrite) -> User
 
 
 @router.get("/{id}")
-def read(id: int, db: DBSession, current_user: CurrentSuperuser) -> UserRead:
+def read(id: int, db: DBSession, current_user: CurrentSuperuser) -> UserApiOut:
     """
     Get a specific user by id.
     """
@@ -52,8 +52,8 @@ def read(id: int, db: DBSession, current_user: CurrentSuperuser) -> UserRead:
 
 @router.put("/{id}")
 def update(
-    db: DBSession, current_user: CurrentSuperuser, id: int, user: UserWrite
-) -> UserRead:
+    db: DBSession, current_user: CurrentSuperuser, id: int, user: UserApiIn
+) -> UserApiOut:
     """
     Update a user.
     """
@@ -65,7 +65,9 @@ def update(
 
 
 @router.post("/")
-def create(db: DBSession, current_user: CurrentSuperuser, user: UserWrite) -> UserRead:
+def create(
+    db: DBSession, current_user: CurrentSuperuser, user: UserApiIn
+) -> UserApiOut:
     """
     Create new user.
     """
@@ -82,7 +84,7 @@ def read_many(
     current_user: CurrentSuperuser,
     skip: int = 0,
     limit: int = 100,
-) -> list[UserRead]:
+) -> list[UserApiOut]:
     """
     Retrieve users.
     """

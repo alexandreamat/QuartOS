@@ -4,10 +4,10 @@ from sqlalchemy.exc import NoResultFound
 
 from app.core.config import settings
 from app.features.user.crud import CRUDUser
-from app.features.user.models import UserWrite
+from app.features.user.models import UserApiIn
 
 # 1. Import base model
-from app.common.models import Base
+from app.common.models import IdentifiableBase
 
 # 2. Import inheritors of the base model
 from app.features.institution.models import Institution
@@ -21,12 +21,12 @@ from .deps import engine
 
 def init_db(db: Session) -> None:
     # 3. Retrieve inheritors from base through metadata
-    Base.metadata.create_all(engine)
+    IdentifiableBase.metadata.create_all(engine)
 
     try:
         CRUDUser.read_by_email(db, email=settings.FIRST_SUPERUSER)
     except NoResultFound:
-        user_in = UserWrite(
+        user_in = UserApiIn(
             email=settings.FIRST_SUPERUSER,
             password=settings.FIRST_SUPERUSER_PASSWORD,
             full_name=settings.FIRST_SUPERUSER_FULL_NAME,
