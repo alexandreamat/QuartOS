@@ -8,9 +8,7 @@ from app.core.config import settings
 
 
 connect_args = {"check_same_thread": False}
-engine = create_engine(
-    settings.SQLALCHEMY_DATABASE_URI, echo=True, connect_args=connect_args
-)
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI, connect_args=connect_args)
 event.listen(engine, "connect", lambda c, _: c.execute("pragma foreign_keys=ON"))
 
 

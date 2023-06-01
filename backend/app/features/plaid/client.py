@@ -111,6 +111,7 @@ def get_user_institution_link(
         institution_id=institution.id,
         user_id=current_user.id,
         access_token=access_token,
+        plaid_metadata=item.to_str(),
     )
     return user_institution_link_in
 
@@ -126,6 +127,7 @@ def get_institution(plaid_id: str) -> InstitutionPlaidIn:
         country_code=institution.country_codes[0].value,
         plaid_id=institution.institution_id,
         url=institution.url if hasattr(institution, "url") else None,
+        plaid_metadata=institution.to_str(),
     )
 
 
@@ -144,6 +146,7 @@ def get_accounts(
             user_institution_link_id=user_institution_link.id,
             plaid_id=account.account_id,
             balance=account.balances.current,
+            plaid_metadata=account.to_str(),
         )
         for account in accounts
     ]
@@ -153,7 +156,7 @@ def create_transaction_plaid_in(
     transaction: Transaction,
     accounts: dict[str, AccountPlaidOut],
 ) -> TransactionPlaidIn:
-    print(transaction)
+    print(transaction.transaction_id)
     return TransactionPlaidIn(
         account_id=accounts[transaction.account_id].id,
         amount=transaction.amount,
@@ -165,6 +168,7 @@ def create_transaction_plaid_in(
         or datetime.datetime.combine(transaction.date, datetime.time()),
         payment_channel=transaction.payment_channel,
         code=transaction.transaction_code,
+        plaid_metadata=transaction.to_str(),
     )
 
 

@@ -1,6 +1,8 @@
+import json
 from typing import TypeVar, Type, Any, Generator, Callable
 
 import pycountry
+from pydantic import validator
 from sqlmodel import Session, SQLModel, Field, select
 from sqlalchemy.exc import NoResultFound
 from fastapi.encoders import jsonable_encoder
@@ -54,10 +56,12 @@ class IdentifiableBase(SQLModel):
 
 class PlaidBase(SQLModel):
     plaid_id: str = Field(unique=True)
+    plaid_metadata: str
 
 
 class PlaidMaybeMixin(SQLModel):
     plaid_id: str | None = Field(unique=True)
+    plaid_metadata: str | None
 
     @classmethod
     def read_by_plaid_id(
