@@ -61,7 +61,10 @@ class Account(__AccountBase, IdentifiableBase, PlaidMaybeMixin, table=True):
     )
 
     userinstitutionlink: UserInstitutionLink = Relationship(back_populates="accounts")
-    transactions: list["Transaction"] = Relationship(back_populates="account")
+    transactions: list["Transaction"] = Relationship(
+        back_populates="account",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
 
     @property
     def user(self) -> User:

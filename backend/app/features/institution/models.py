@@ -40,4 +40,7 @@ class InstitutionPlaidIn(__InstitutionBase, PlaidBase):
 
 
 class Institution(__InstitutionBase, IdentifiableBase, PlaidMaybeMixin, table=True):
-    user_links: list["UserInstitutionLink"] = Relationship(back_populates="institution")
+    user_links: list["UserInstitutionLink"] = Relationship(
+        back_populates="institution",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )

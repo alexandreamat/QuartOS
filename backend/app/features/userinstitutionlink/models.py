@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
-from app.common.models import IdentifiableBase, PlaidBase
+from app.common.models import IdentifiableBase, PlaidBase, PlaidMaybeMixin
 from app.features.institution.models import Institution
 from app.features.user.models import User
 
@@ -54,7 +54,9 @@ class UserInstitutionLinkPlaidOut(
     ...
 
 
-class UserInstitutionLink(__InstitutionLinkBase, IdentifiableBase, table=True):
+class UserInstitutionLink(
+    __InstitutionLinkBase, IdentifiableBase, PlaidMaybeMixin, table=True
+):
     user_id: int = Field(foreign_key="user.id")
     institution_id: int = Field(foreign_key="institution.id")
     access_token: str | None
@@ -62,7 +64,10 @@ class UserInstitutionLink(__InstitutionLinkBase, IdentifiableBase, table=True):
 
     user: User = Relationship(back_populates="institution_links")
     institution: Institution = Relationship(back_populates="user_links")
-    accounts: list["Account"] = Relationship(back_populates="userinstitutionlink")
+    accounts: list["Account"] = Relationship(
+        back_populates="userinstitutionlink",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
 
     @property
     def is_synced(self) -> bool:
