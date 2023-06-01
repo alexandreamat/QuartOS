@@ -35,12 +35,12 @@ class TransactionCode(str, Enum):
 
 class __TransactionBase(SQLModel):
     amount: Decimal
-    datetime: datetime
+    datetime: datetime | None
     name: str
     currency_code: CurrencyCode
     account_id: int
     payment_channel: PaymentChannel
-    code: TransactionCode
+    code: TransactionCode | None
 
 
 class TransactionApiOut(__TransactionBase, IdentifiableBase):
@@ -48,7 +48,8 @@ class TransactionApiOut(__TransactionBase, IdentifiableBase):
 
 
 class TransactionApiIn(__TransactionBase):
-    ...
+    datetime: datetime
+    code: TransactionCode
 
 
 class TransactionPlaidIn(__TransactionBase, PlaidBase):

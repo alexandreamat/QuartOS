@@ -59,9 +59,21 @@ def set_public_token(
         for account_in in accounts_in
     }
     # 4. Create transactions
-    sync_result = sync_transactions(user_institution_link_out, accounts_out)
-    for transaction in sync_result.added:
-        CRUDTransaction.sync(db, transaction)
-    for transaction_in in sync_result.modified:
-        db_transaction = CRUDTransaction.read_by_plaid_id(db, transaction_in.plaid_id)
-        CRUDTransaction.resync(db, db_transaction.id, transaction_in)
+    has_more = True
+    while has_more:
+        sync_result = sync_transactions(user_institution_link_out, accounts_out)
+        for transaction in sync_result.added:
+            CRUDTransaction.sync(db, transaction)
+        for transaction_in in sync_result.modified:
+            db_transaction = CRUDTransaction.read_by_plaid_id(
+                db, transaction_in.plaid_id
+            )
+            CRUDTransaction.resync(db, db_transaction.id, transaction_in)
+        for plaid_id in sync_result.removed:
+            db_transaction = CRUDTransaction.read_by_plaid_id(db, plaid_id)
+            CRUDTransaction.delete(db, db_transaction.id)
+        user_institution_link_in.cursor = sync_result.new_cursor
+        CRUDUserInstitutionLink.resync(
+            db, user_institution_link_out.id, user_institution_link_in
+        )
+        has_more = sync_result.has_more

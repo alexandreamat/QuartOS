@@ -28,7 +28,10 @@ class UserApiIn(__UserBase):
 class User(__UserBase, IdentifiableBase, table=True):
     hashed_password: str
 
-    institution_links: list["UserInstitutionLink"] = Relationship(back_populates="user")
+    institution_links: list["UserInstitutionLink"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":

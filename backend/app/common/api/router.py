@@ -41,5 +41,5 @@ api_router.include_router(utils.router, prefix=f"/{UTILS}", tags=[UTILS])
 api_router.include_router(
     plaid.api.router,
     prefix=f"/{PLAID}",
-    tags=[PLAID, INSTITUTION_LINKS, INSTITUTIONS, ACCOUNTS],
+    tags=[PLAID, INSTITUTION_LINKS, INSTITUTIONS, ACCOUNTS, TRANSACTIONS],
 )

@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from pydantic import BaseModel
 
@@ -71,7 +72,7 @@ country_codes = [CountryCode(cc) for cc in PLAID_COUNTRY_CODES]
 class TransactionsSyncResult(BaseModel):
     added: list[TransactionPlaidIn]
     modified: list[TransactionPlaidIn]
-    removed: list[int]
+    removed: list[str]
     new_cursor: str
     has_more: bool
 
@@ -148,46 +149,52 @@ def get_accounts(
     ]
 
 
+def create_transaction_plaid_in(
+    transaction: Transaction,
+    accounts: dict[str, AccountPlaidOut],
+) -> TransactionPlaidIn:
+    print(transaction)
+    return TransactionPlaidIn(
+        account_id=accounts[transaction.account_id].id,
+        amount=transaction.amount,
+        currency_code=getattr(transaction, "iso_currency_code", None)
+        or transaction.unofficial_currency_code,
+        name=getattr(transaction, "merchant_name", None) or transaction.name,
+        plaid_id=transaction.transaction_id,
+        datetime=getattr(transaction, "datetime", None)
+        or datetime.datetime.combine(transaction.date, datetime.time()),
+        payment_channel=transaction.payment_channel,
+        code=transaction.transaction_code,
+    )
+
+
 def sync_transactions(
     user_institution_link: UserInstitutionLinkPlaidOut,
     accounts: dict[str, AccountPlaidOut],
 ) -> TransactionsSyncResult:
-    request = TransactionsSyncRequest(
-        access_token=user_institution_link.access_token,
-        cursor=user_institution_link.cursor,
-    )
+    if user_institution_link.cursor:
+        request = TransactionsSyncRequest(
+            access_token=user_institution_link.access_token,
+            cursor=user_institution_link.cursor,
+        )
+    else:
+        request = TransactionsSyncRequest(
+            access_token=user_institution_link.access_token,
+        )
     response: TransactionsSyncResponse = client.transactions_sync(request)
     return TransactionsSyncResult(
         added=[
-            TransactionPlaidIn(
-                account_id=accounts[transaction.account_id].id,
-                amount=transaction.amount,
-                currency_code=getattr(transaction, "iso_currency_code", None),
-                name=transaction.name,
-                plaid_id=transaction.transaction_id,
-                datetime=getattr(transaction, "datetime", None),
-                payment_channel=transaction.payment_channel,
-                code=transaction.transaction_code,
-            )
+            create_transaction_plaid_in(transaction, accounts)
             for transaction in response.added
         ],
         modified=[
-            TransactionPlaidIn(
-                account_id=accounts[transaction.account_id].id,
-                amount=transaction.amount,
-                currency_code=getattr(transaction, "iso_currency_code", None),
-                name=transaction.name,
-                plaid_id=transaction.transaction_id,
-                datetime=getattr(transaction, "datetime", None),
-                payment_channel=transaction.payment_channel,
-                code=transaction.transaction_code,
-            )
+            create_transaction_plaid_in(transaction, accounts)
             for transaction in response.modified
         ],
         removed=[
             removed_transaction.transaction_id
             for removed_transaction in response.removed
         ],
-        new_cursor=response.new_cursor,
+        new_cursor=response.next_cursor,
         has_more=response.has_more,
     )
