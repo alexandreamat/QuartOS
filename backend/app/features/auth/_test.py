@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from app.features.user.models import UserWrite
+from app.features.user.models import UserApiIn
 from app.features.user.crud import CRUDUser
 from app._test import client, db
 
@@ -9,7 +9,7 @@ from app._test import client, db
 def test_login(client: TestClient, db: Session) -> None:
     CRUDUser.create(
         db,
-        UserWrite(
+        UserApiIn(
             email="test@example.com",
             password="supersecretpassword",
             full_name="Test User",

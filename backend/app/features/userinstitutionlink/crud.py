@@ -4,34 +4,38 @@ from app.common.crud import CRUDBase, CRUDSyncable
 from app.features import user, institution
 from .models import (
     UserInstitutionLink,
-    UserInstitutionLinkRead,
-    UserInstitutionLinkWrite,
-    UserInstitutionLinkSync,
+    UserInstitutionLinkApiOut,
+    UserInstitutionLinkApiIn,
+    UserInstitutionLinkPlaidIn,
+    UserInstitutionLinkPlaidOut,
 )
 
 
 class CRUDUserInstitutionLink(
-    CRUDBase[UserInstitutionLink, UserInstitutionLinkRead, UserInstitutionLinkWrite],
-    CRUDSyncable[UserInstitutionLink, UserInstitutionLinkRead, UserInstitutionLinkSync],
+    CRUDBase[UserInstitutionLink, UserInstitutionLinkApiOut, UserInstitutionLinkApiIn],
+    CRUDSyncable[
+        UserInstitutionLink, UserInstitutionLinkPlaidOut, UserInstitutionLinkPlaidIn
+    ],
 ):
-    db_model_type = UserInstitutionLink
-    read_model_type = UserInstitutionLinkRead
+    db_model = UserInstitutionLink
+    api_out_model = UserInstitutionLinkApiOut
+    plaid_out_model = UserInstitutionLinkPlaidOut
 
     @classmethod
     def read_many_by_user(
         cls, db: Session, user_id: int
-    ) -> list[UserInstitutionLinkRead]:
+    ) -> list[UserInstitutionLinkApiOut]:
         db_user = user.models.User.read(db, user_id)
-        return [cls.read_model_type.from_orm(obj) for obj in db_user.institution_links]
+        return [cls.api_out_model.from_orm(obj) for obj in db_user.institution_links]
 
     @classmethod
-    def read_user(cls, db: Session, id: int) -> user.models.UserRead:
-        return user.models.UserRead.from_orm(cls.db_model_type.read(db, id).user)
+    def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
+        return user.models.UserApiOut.from_orm(cls.db_model.read(db, id).user)
 
     @classmethod
     def read_institution(
         cls, db: Session, id: int
-    ) -> institution.models.InstitutionRead:
-        return institution.models.InstitutionRead.from_orm(
-            cls.db_model_type.read(db, id).institution
+    ) -> institution.models.InstitutionApiOut:
+        return institution.models.InstitutionApiOut.from_orm(
+            cls.db_model.read(db, id).institution
         )

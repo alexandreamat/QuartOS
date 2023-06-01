@@ -6,7 +6,7 @@ from app.database.deps import DBSession
 
 
 from .crud import CRUDTransaction
-from .models import TransactionRead, TransactionWrite
+from .models import TransactionApiOut, TransactionApiIn
 
 from app.features.account.crud import CRUDAccount
 
@@ -17,8 +17,8 @@ router = APIRouter()
 def create(
     db: DBSession,
     current_user: CurrentUser,
-    transaction: TransactionWrite,
-) -> TransactionRead:
+    transaction: TransactionApiIn,
+) -> TransactionApiOut:
     try:
         user = CRUDAccount.read_user(db, transaction.account_id)
     except NoResultFound:
@@ -31,7 +31,7 @@ def create(
 
 
 @router.get("/{id}")
-def read(db: DBSession, current_user: CurrentUser, id: int) -> TransactionRead:
+def read(db: DBSession, current_user: CurrentUser, id: int) -> TransactionApiOut:
     try:
         transaction = CRUDTransaction.read(db, id)
     except NoResultFound:
@@ -42,7 +42,7 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> TransactionRead:
 
 
 @router.get("/")
-def read_many(db: DBSession, current_user: CurrentUser) -> list[TransactionRead]:
+def read_many(db: DBSession, current_user: CurrentUser) -> list[TransactionApiOut]:
     return CRUDTransaction.read_many_by_user(db, current_user.id)
 
 
@@ -51,8 +51,8 @@ def update(
     db: DBSession,
     current_user: CurrentUser,
     id: int,
-    transaction: TransactionWrite,
-) -> TransactionRead:
+    transaction: TransactionApiIn,
+) -> TransactionApiOut:
     try:
         user = CRUDTransaction.read_user(db, id)
     except NoResultFound:

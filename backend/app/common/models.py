@@ -6,10 +6,10 @@ from sqlalchemy.exc import NoResultFound
 from fastapi.encoders import jsonable_encoder
 
 
-ModelType = TypeVar("ModelType", bound="Base")
+ModelType = TypeVar("ModelType", bound="IdentifiableMixin")
 
 
-class Base(SQLModel):
+class IdentifiableBase(SQLModel):
     id: int = Field(primary_key=True)
 
     @classmethod

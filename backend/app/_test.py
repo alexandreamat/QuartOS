@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.main import app
 
-from app.common.models import Base
+from app.common.models import IdentifiableBase
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -24,7 +24,7 @@ def db() -> Generator[Session, None, None]:
         "sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     event.listen(engine, "connect", lambda c, _: c.execute("pragma foreign_keys=ON"))
-    Base.metadata.create_all(engine)
+    IdentifiableBase.metadata.create_all(engine)
 
     with Session(engine) as session:
         yield session

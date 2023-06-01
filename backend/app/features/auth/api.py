@@ -15,7 +15,7 @@ from app.utils import (
 )
 from app.database.deps import DBSession
 from app.features.user.crud import CRUDUser
-from app.features.user.models import UserWrite
+from app.features.user.models import UserApiIn
 
 from .models import Token
 
@@ -74,5 +74,5 @@ def reset(
         curr_user = CRUDUser.read_by_email(db, email=email)
     except NoResultFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    user_in = UserWrite(**curr_user.dict(), password=new_password)
+    user_in = UserApiIn(**curr_user.dict(), password=new_password)
     CRUDUser.update(db, curr_user.id, user_in)

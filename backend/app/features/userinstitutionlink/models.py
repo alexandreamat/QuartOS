@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
-from pydantic import BaseModel
-from app.common.models import Base
+from app.common.models import IdentifiableBase
 from app.features.institution.models import Institution
 from app.features.user.models import User
 
@@ -10,33 +9,50 @@ if TYPE_CHECKING:
     from app.features.account.models import Account
 
 
-class InstitutionUserLinkBase(SQLModel):
+class __InstitutionLinkBase(SQLModel):
     client_id: str
     institution_id: int
 
 
-class UserInstitutionLinkRead(InstitutionUserLinkBase, Base):
+class __UserLinkBase(SQLModel):
     user_id: int
-    is_synced: bool
 
 
-class InstitutionLinkWrite(InstitutionUserLinkBase):
+class __UserInstitutionLinkBase(__InstitutionLinkBase, __UserLinkBase):
+    ...
+
+
+class __UserInstitutionLinkPlaid(SQLModel):
+    access_token: str
+
+
+class InstitutionLinkApiIn(__InstitutionLinkBase):
     """Assumes current user, for API client usage"""
 
     ...
 
 
-class UserInstitutionLinkWrite(InstitutionLinkWrite):
+class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, IdentifiableBase):
+    is_synced: bool
+
+
+class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
     """In model proper, for internal usage"""
 
-    user_id: int
+    ...
 
 
-class UserInstitutionLinkSync(UserInstitutionLinkWrite):
-    access_token: str
+class UserInstitutionLinkPlaidIn(__UserInstitutionLinkBase, __UserInstitutionLinkPlaid):
+    ...
 
 
-class UserInstitutionLink(Base, InstitutionUserLinkBase, table=True):
+class UserInstitutionLinkPlaidOut(
+    __UserInstitutionLinkBase, __UserInstitutionLinkPlaid, IdentifiableBase
+):
+    ...
+
+
+class UserInstitutionLink(__InstitutionLinkBase, IdentifiableBase, table=True):
     user_id: int = Field(foreign_key="user.id")
     institution_id: int = Field(foreign_key="institution.id")
     access_token: str | None
@@ -44,6 +60,7 @@ class UserInstitutionLink(Base, InstitutionUserLinkBase, table=True):
     user: User = Relationship(back_populates="institution_links")
     institution: Institution = Relationship(back_populates="user_links")
     accounts: list["Account"] = Relationship(back_populates="userinstitutionlink")
+    cursor: str | None
 
     @property
     def is_synced(self) -> bool:

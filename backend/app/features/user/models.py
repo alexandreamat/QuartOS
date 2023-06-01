@@ -4,28 +4,28 @@ from sqlalchemy.exc import NoResultFound
 
 from sqlmodel import Relationship, SQLModel, Session, select
 
-from app.common.models import Base
+from app.common.models import IdentifiableBase
 from app.core.security import verify_password
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink.models import UserInstitutionLink
 
 
-class UserBase(SQLModel):
+class __UserBase(SQLModel):
     email: EmailStr
     full_name: str
     is_superuser: bool
 
 
-class UserRead(UserBase, Base):
+class UserApiOut(__UserBase, IdentifiableBase):
     ...
 
 
-class UserWrite(UserBase):
+class UserApiIn(__UserBase):
     password: str
 
 
-class User(UserBase, Base, table=True):
+class User(__UserBase, IdentifiableBase, table=True):
     hashed_password: str
 
     institution_links: list["UserInstitutionLink"] = Relationship(back_populates="user")

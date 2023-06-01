@@ -8,7 +8,7 @@ from app.database.deps import DBSession
 
 
 from .crud import CRUDAccount
-from .models import AccountRead, AccountWrite
+from .models import AccountApiOut, AccountApiIn
 
 from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 
@@ -19,8 +19,8 @@ router = APIRouter()
 def create(
     db: DBSession,
     current_user: CurrentUser,
-    account: AccountWrite,
-) -> AccountRead:
+    account: AccountApiIn,
+) -> AccountApiOut:
     try:
         user = CRUDUserInstitutionLink.read_user(db, account.user_institution_link_id)
     except NoResultFound:
@@ -33,7 +33,7 @@ def create(
 
 
 @router.get("/{id}")
-def read(db: DBSession, current_user: CurrentUser, id: int) -> AccountRead:
+def read(db: DBSession, current_user: CurrentUser, id: int) -> AccountApiOut:
     try:
         account = CRUDAccount.read(db, id)
     except NoResultFound:
@@ -44,7 +44,7 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> AccountRead:
 
 
 @router.get("/")
-def read_many(db: DBSession, current_user: CurrentUser) -> list[AccountRead]:
+def read_many(db: DBSession, current_user: CurrentUser) -> list[AccountApiOut]:
     return CRUDAccount.read_many_by_user(db, current_user.id)
 
 
@@ -53,8 +53,8 @@ def update(
     db: DBSession,
     current_user: CurrentUser,
     id: int,
-    account: AccountWrite,
-) -> AccountRead:
+    account: AccountApiIn,
+) -> AccountApiOut:
     try:
         user = CRUDAccount.read_user(db, id)
     except NoResultFound:

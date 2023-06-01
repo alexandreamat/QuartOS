@@ -4,7 +4,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
 from decimal import Decimal
 
-from app.common.models import Base, CurrencyCode
+from app.common.models import IdentifiableBase, CurrencyCode
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -17,7 +17,7 @@ class PaymentChannel(str, Enum):
     OTHER = "other"
 
 
-class Code(str, Enum):
+class TransactionCode(str, Enum):
     ADJUSTMENT = "adjustment"
     ATM = "atm"
     BANK_CHARGE = "bank charge"
@@ -33,29 +33,37 @@ class Code(str, Enum):
     NULL = "null"
 
 
-class TransactionBase(SQLModel):
+class __TransactionBase(SQLModel):
     amount: Decimal
     datetime: datetime
     name: str
     currency_code: CurrencyCode
     account_id: int
     payment_channel: PaymentChannel
-    code: Code
+    code: TransactionCode
 
 
-class TransactionRead(TransactionBase, Base):
-    ...
-
-
-class TransactionWrite(TransactionBase):
-    ...
-
-
-class TransactionSync(TransactionWrite):
+class __TransactionPlaidMixin(SQLModel):
     plaid_id: str
 
 
-class Transaction(TransactionBase, Base, table=True):
+class TransactionApiOut(__TransactionBase, IdentifiableBase):
+    ...
+
+
+class TransactionApiIn(__TransactionBase):
+    ...
+
+
+class TransactionPlaidIn(__TransactionBase, __TransactionPlaidMixin):
+    ...
+
+
+class TransactionPlaidOut(__TransactionBase, __TransactionPlaidMixin, IdentifiableBase):
+    ...
+
+
+class Transaction(__TransactionBase, IdentifiableBase, table=True):
     account_id: int = Field(foreign_key="account.id")
     plaid_id: str | None = Field(unique=True)
 

@@ -5,15 +5,15 @@ from app.database.deps import DBSession
 from app.features.user.deps import CurrentSuperuser
 
 from .crud import CRUDInstitution
-from .models import InstitutionRead, InstitutionWrite
+from .models import InstitutionApiOut, InstitutionApiIn
 
 router = APIRouter()
 
 
 @router.post("/")
 def create(
-    db: DBSession, current_user: CurrentSuperuser, institution: InstitutionWrite
-) -> InstitutionRead:
+    db: DBSession, current_user: CurrentSuperuser, institution: InstitutionApiIn
+) -> InstitutionApiOut:
     """
     Create new institution.
     """
@@ -21,7 +21,7 @@ def create(
 
 
 @router.get("/{id}")
-def read(db: DBSession, id: int) -> InstitutionRead:
+def read(db: DBSession, id: int) -> InstitutionApiOut:
     """
     Get institution by ID.
     """
@@ -32,7 +32,7 @@ def read(db: DBSession, id: int) -> InstitutionRead:
 
 
 @router.get("/")
-def read_many(db: DBSession) -> list[InstitutionRead]:
+def read_many(db: DBSession) -> list[InstitutionApiOut]:
     """
     Retrieve institutions.
     """
@@ -44,8 +44,8 @@ def update(
     db: DBSession,
     current_user: CurrentSuperuser,
     id: int,
-    institution: InstitutionWrite,
-) -> InstitutionRead:
+    institution: InstitutionApiIn,
+) -> InstitutionApiOut:
     """
     Update an institution.
     """
