@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
-from app.common.models import IdentifiableBase
+from app.common.models import IdentifiableBase, PlaidBase
 from app.features.institution.models import Institution
 from app.features.user.models import User
 
@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 
 
 class __InstitutionLinkBase(SQLModel):
-    client_id: str
     institution_id: int
 
 
@@ -22,8 +21,9 @@ class __UserInstitutionLinkBase(__InstitutionLinkBase, __UserLinkBase):
     ...
 
 
-class __UserInstitutionLinkPlaid(SQLModel):
+class __UserInstitutionLinkPlaidMixin(PlaidBase):
     access_token: str
+    cursor: str | None
 
 
 class InstitutionLinkApiIn(__InstitutionLinkBase):
@@ -42,12 +42,14 @@ class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
     ...
 
 
-class UserInstitutionLinkPlaidIn(__UserInstitutionLinkBase, __UserInstitutionLinkPlaid):
+class UserInstitutionLinkPlaidIn(
+    __UserInstitutionLinkBase, __UserInstitutionLinkPlaidMixin
+):
     ...
 
 
 class UserInstitutionLinkPlaidOut(
-    __UserInstitutionLinkBase, __UserInstitutionLinkPlaid, IdentifiableBase
+    __UserInstitutionLinkBase, __UserInstitutionLinkPlaidMixin, IdentifiableBase
 ):
     ...
 
@@ -56,11 +58,11 @@ class UserInstitutionLink(__InstitutionLinkBase, IdentifiableBase, table=True):
     user_id: int = Field(foreign_key="user.id")
     institution_id: int = Field(foreign_key="institution.id")
     access_token: str | None
+    cursor: str | None
 
     user: User = Relationship(back_populates="institution_links")
     institution: Institution = Relationship(back_populates="user_links")
     accounts: list["Account"] = Relationship(back_populates="userinstitutionlink")
-    cursor: str | None
 
     @property
     def is_synced(self) -> bool:

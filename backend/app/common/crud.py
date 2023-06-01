@@ -7,7 +7,7 @@ from . import models
 DBModelType = TypeVar("DBModelType", bound=models.IdentifiableBase)
 ApiInModel = TypeVar("ApiInModel", bound=SQLModel)
 ApiOutModel = TypeVar("ApiOutModel", bound=models.IdentifiableBase)
-PlaidInModel = TypeVar("PlaidInModel", bound=SQLModel)
+PlaidInModel = TypeVar("PlaidInModel", bound=models.PlaidBase)
 PlaidOutModel = TypeVar("PlaidOutModel", bound=models.IdentifiableBase)
 
 
@@ -64,5 +64,15 @@ class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
         return cls.plaid_out_model.from_orm(db_obj_out)
 
     @classmethod
+    def resync(cls, db: Session, id: int, obj: PlaidInModel) -> PlaidOutModel:
+        db_obj_in = cls.db_model(**obj.dict())
+        db_obj_out = cls.db_model.update(db, id, db_obj_in)
+        return cls.plaid_out_model.from_orm(db_obj_out)
+
+    @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
         return cls.db_model.read(db, id).is_synced
+
+    @classmethod
+    def read_by_plaid_id(cls, db: Session, name: str) -> PlaidOutModel:
+        return cls.plaid_out_model.from_orm(cls.db_model.read_by_plaid_id(db, name))
