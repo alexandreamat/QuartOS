@@ -2,18 +2,13 @@ from fastapi import APIRouter
 
 from sqlalchemy.exc import NoResultFound
 from app.database.deps import DBSession
+from app.features.plaid.utils import sync_transactions
 from app.features.user.deps import CurrentUser
-
-from app.features.userinstitutionlink.models import (
-    UserInstitutionLinkPlaidIn,
-    UserInstitutionLinkPlaidOut,
-)
 
 
 from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 from app.features.institution.crud import CRUDInstitution
 from app.features.account.crud import CRUDAccount
-from app.features.transaction.crud import CRUDTransaction
 
 from .client import (
     create_link_token,
@@ -21,7 +16,6 @@ from .client import (
     get_user_institution_link,
     get_institution,
     get_accounts,
-    sync_transactions,
 )
 
 router = APIRouter()
@@ -54,26 +48,7 @@ def set_public_token(
     )
     # 3. Create accounts
     accounts_in = get_accounts(user_institution_link_out)
-    accounts_out = {
-        account_in.plaid_id: CRUDAccount.sync(db, account_in)
-        for account_in in accounts_in
-    }
+    for account_in in accounts_in:
+        CRUDAccount.sync(db, account_in)
     # 4. Create transactions
-    has_more = True
-    while has_more:
-        sync_result = sync_transactions(user_institution_link_out, accounts_out)
-        for transaction in sync_result.added:
-            CRUDTransaction.sync(db, transaction)
-        for transaction_in in sync_result.modified:
-            db_transaction = CRUDTransaction.read_by_plaid_id(
-                db, transaction_in.plaid_id
-            )
-            CRUDTransaction.resync(db, db_transaction.id, transaction_in)
-        for plaid_id in sync_result.removed:
-            db_transaction = CRUDTransaction.read_by_plaid_id(db, plaid_id)
-            CRUDTransaction.delete(db, db_transaction.id)
-        user_institution_link_in.cursor = sync_result.new_cursor
-        CRUDUserInstitutionLink.resync(
-            db, user_institution_link_out.id, user_institution_link_in
-        )
-        has_more = sync_result.has_more
+    sync_transactions(db, user_institution_link_out)

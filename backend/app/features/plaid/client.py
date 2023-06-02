@@ -172,7 +172,7 @@ def create_transaction_plaid_in(
     )
 
 
-def sync_transactions(
+def get_transaction_changes(
     user_institution_link: UserInstitutionLinkPlaidOut,
     accounts: dict[str, AccountPlaidOut],
 ) -> TransactionsSyncResult:

@@ -38,16 +38,6 @@ class IdentifiableBase(SQLModel):
         return db.query(cls).offset(skip).limit(limit).all()
 
     @classmethod
-    def update(
-        cls: Type[ModelType], db: Session, id: int, obj_in: ModelType
-    ) -> ModelType:
-        db_user_in = cls.read(db, id)
-        for key, value in jsonable_encoder(obj_in).items():
-            setattr(db_user_in, key, value)
-        db_user_out = cls.create_or_update(db, db_user_in)
-        return db_user_out
-
-    @classmethod
     def delete(cls: Type[ModelType], db: Session, id: int) -> None:
         obj = cls.read(db, id)
         db.delete(obj)

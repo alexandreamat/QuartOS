@@ -42,8 +42,13 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> TransactionApiOut
 
 
 @router.get("/")
-def read_many(db: DBSession, current_user: CurrentUser) -> list[TransactionApiOut]:
-    return CRUDTransaction.read_many_by_user(db, current_user.id)
+def read_many(
+    db: DBSession,
+    current_user: CurrentUser,
+    page: int = 1,
+    per_page: int = 0,
+) -> list[TransactionApiOut]:
+    return CRUDTransaction.read_many_by_user(db, current_user.id, page, per_page)
 
 
 @router.put("/{id}")
