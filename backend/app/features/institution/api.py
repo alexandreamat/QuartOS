@@ -50,7 +50,7 @@ def update(
     Update an institution.
     """
     try:
-        return CRUDInstitution.update(db, id=id, new_schema_obj=institution)
+        return CRUDInstitution.update(db, id, institution)
     except NoResultFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 

@@ -1,4 +1,5 @@
 from sqlmodel import Session
+from sqlalchemy import desc
 
 from app.common.crud import CRUDBase, CRUDSyncable
 from app.features import account, userinstitutionlink, institution, user
@@ -56,14 +57,29 @@ class CRUDTransaction(
         ]
 
     @classmethod
-    def read_many_by_user(cls, db: Session, user_id: int) -> list[TransactionApiOut]:
-        u = user.models.User.read(db, user_id)
-        return [
-            cls.api_out_model.from_orm(t)
-            for l in u.institution_links
-            for a in l.accounts
-            for t in a.transactions
-        ]
+    def read_many_by_user(
+        cls, db: Session, user_id: int, page: int, per_page: int
+    ) -> list[TransactionApiOut]:
+        offset = (page - 1) * per_page if page and per_page else 0
+
+        query = (
+            db.query(Transaction)
+            .join(
+                account.models.Account,
+                userinstitutionlink.models.UserInstitutionLink,
+                user.models.User,
+            )
+            .filter(user.models.User.id == user_id)
+            .order_by(desc(Transaction.datetime))
+        )
+
+        if per_page:
+            offset = (page - 1) * per_page
+            query = query.offset(offset).limit(per_page)
+
+        transactions = query.all()
+
+        return [cls.api_out_model.from_orm(t) for t in transactions]
 
     @classmethod
     def read_many_by_account(

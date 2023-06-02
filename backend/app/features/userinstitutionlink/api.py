@@ -17,8 +17,8 @@ from .models import (
     UserInstitutionLinkApiIn,
 )
 from app.features.account.crud import CRUDAccount
+from app.features.plaid.utils import sync_transactions
 
-# if TYPE_CHECKING:
 from app.features.account.models import AccountApiOut
 
 router = APIRouter()
@@ -105,3 +105,14 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDUserInstitutionLink.delete(db, id)
+
+
+@router.post("/{id}/sync")
+def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
+    try:
+        curr_institution_link = CRUDUserInstitutionLink.read_plaid(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    if curr_institution_link.user_id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    sync_transactions(db, curr_institution_link)

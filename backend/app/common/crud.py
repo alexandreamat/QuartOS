@@ -1,6 +1,7 @@
 from typing import Generic, Type, TypeVar
 
 from sqlmodel import Session, SQLModel
+from fastapi.encoders import jsonable_encoder
 
 from . import models
 
@@ -43,9 +44,11 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
         ]
 
     @classmethod
-    def update(cls, db: Session, id: int, new_schema_obj: ApiInModel) -> ApiOutModel:
-        db_obj_in = cls.db_obj_from_schema(new_schema_obj)
-        db_obj_out = cls.db_model.update(db, id, db_obj_in)
+    def update(cls, db: Session, id: int, new_obj: ApiInModel) -> ApiOutModel:
+        db_obj = cls.db_model.read(db, id)
+        for key, value in jsonable_encoder(new_obj).items():
+            setattr(db_obj, key, value)
+        db_obj_out = cls.db_model.create_or_update(db, db_obj)
         return cls.api_out_model.from_orm(db_obj_out)
 
     @classmethod
@@ -76,3 +79,16 @@ class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
     @classmethod
     def read_by_plaid_id(cls, db: Session, name: str) -> PlaidOutModel:
         return cls.plaid_out_model.from_orm(cls.db_model.read_by_plaid_id(db, name))
+
+    @classmethod
+    def read_many_plaid(
+        cls, db: Session, skip: int = 0, limit: int = 100
+    ) -> list[PlaidOutModel]:
+        return [
+            cls.plaid_out_model.from_orm(s)
+            for s in cls.db_model.read_many(db, skip, limit)
+        ]
+
+    @classmethod
+    def read_plaid(cls, db: Session, id: int) -> PlaidOutModel:
+        return cls.plaid_out_model.from_orm(cls.db_model.read(db, id))
