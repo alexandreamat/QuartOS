@@ -77,3 +77,16 @@ class CurrencyCode(str):
         if v not in [currency.alpha_3 for currency in pycountry.currencies]:
             raise ValueError("Invalid currency code")
         return v
+
+
+class CodeSnippet(str):
+    @classmethod
+    def __get_validators__(
+        cls,
+    ) -> Generator[Callable[[Any], str], None, None]:
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v: str) -> str:
+        exec(f"def deserialize_field(row): return {v}")
+        return v
