@@ -17,17 +17,20 @@ router = APIRouter()
 def create(
     db: DBSession,
     current_user: CurrentUser,
-    transaction: TransactionApiIn,
-) -> TransactionApiOut:
-    try:
-        user = CRUDAccount.read_user(db, transaction.account_id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
-    if CRUDAccount.is_synced(db, transaction.account_id):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-    if user.id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-    return CRUDTransaction.create(db, transaction)
+    transactions: list[TransactionApiIn],
+) -> list[TransactionApiOut]:
+    results = []
+    for transaction in transactions:
+        try:
+            user = CRUDAccount.read_user(db, transaction.account_id)
+        except NoResultFound:
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
+        if CRUDAccount.is_synced(db, transaction.account_id):
+            raise HTTPException(status.HTTP_403_FORBIDDEN)
+        if user.id != current_user.id:
+            raise HTTPException(status.HTTP_403_FORBIDDEN)
+        results.append(CRUDTransaction.create(db, transaction))
+    return results
 
 
 @router.get("/{id}")
