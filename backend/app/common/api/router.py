@@ -7,12 +7,14 @@ from app.features import (
     userinstitutionlink,
     account,
     transaction,
+    transactiondeserialiser,
     plaid,
 )
 
 from . import utils
 
 AUTH = "auth"
+TRANSACTION_DESERIALISERS = "transaction-deserialisers"
 USERS = "users"
 INSTITUTIONS = "institutions"
 INSTITUTION_LINKS = "institution-links"
@@ -24,6 +26,11 @@ PLAID = "plaid"
 api_router = APIRouter()
 
 api_router.include_router(auth.api.router, prefix=f"/{AUTH}", tags=[AUTH])
+api_router.include_router(
+    transactiondeserialiser.api.router,
+    prefix=f"/{TRANSACTION_DESERIALISERS}",
+    tags=[TRANSACTION_DESERIALISERS],
+)
 api_router.include_router(user.api.router, prefix=f"/{USERS}", tags=[USERS])
 api_router.include_router(
     institution.api.router, prefix=f"/{INSTITUTIONS}", tags=[INSTITUTIONS]
