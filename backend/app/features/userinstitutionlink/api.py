@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+import urllib3
 from fastapi import APIRouter, HTTPException, status
 
 from sqlalchemy.exc import NoResultFound, IntegrityError
@@ -115,4 +116,7 @@ def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
-    sync_transactions(db, curr_institution_link)
+    try:
+        sync_transactions(db, curr_institution_link)
+    except urllib3.exceptions.ReadTimeoutError:
+        raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
