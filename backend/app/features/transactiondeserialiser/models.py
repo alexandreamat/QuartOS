@@ -11,12 +11,15 @@ from sqlmodel import Relationship
 
 
 class __TransactionDeserialiserBase(SQLModel):
-    amount: CodeSnippet
-    datetime: CodeSnippet
-    name: CodeSnippet
-    currency_code: CodeSnippet
-    payment_channel: CodeSnippet
-    code: CodeSnippet
+    module_name: str
+    amount_deserialiser: CodeSnippet
+    datetime_deserialiser: CodeSnippet
+    name_deserialiser: CodeSnippet
+    currency_code_deserialiser: CodeSnippet
+    payment_channel_deserialiser: CodeSnippet
+    code_deserialiser: CodeSnippet
+    skip_rows: int
+    columns: int
 
 
 class TransactionDeserialiserApiIn(__TransactionDeserialiserBase):

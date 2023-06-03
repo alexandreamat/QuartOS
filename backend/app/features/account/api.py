@@ -61,9 +61,10 @@ def upload_transactions_sheet(
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     if CRUDAccount.is_synced(db, id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
+    deserialiser = CRUDAccount.read_transaction_deserialiser(db, id)
     try:
         text_file = file.file.read().decode().splitlines()
-        return transaction.utils.create_instances_from_csv(text_file, id)
+        return transaction.utils.create_instances_from_csv(deserialiser, text_file, id)
     except Exception as e:
         exc_message = getattr(e, "message", str(e))
         error_message = f"{type(e).__name__}: {exc_message}"
