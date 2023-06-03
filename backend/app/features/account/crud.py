@@ -47,12 +47,21 @@ class CRUDAccount(
 
     @classmethod
     def read_many_by_institution_link(
-        cls, db: Session, user_institution_link: int
+        cls, db: Session, user_institution_link_id: int
     ) -> list[AccountApiOut]:
         l = userinstitutionlink.models.UserInstitutionLink.read(
-            db, user_institution_link
+            db, user_institution_link_id
         )
         return [cls.api_out_model.from_orm(a) for a in l.accounts]
+
+    @classmethod
+    def read_many_by_institution_link_plaid(
+        cls, db: Session, user_institution_link_id: int
+    ) -> list[AccountPlaidOut]:
+        l = userinstitutionlink.models.UserInstitutionLink.read(
+            db, user_institution_link_id
+        )
+        return [cls.plaid_out_model.from_orm(a) for a in l.accounts]
 
     @classmethod
     def read_many_by_user(cls, db: Session, user_id: int) -> list[AccountApiOut]:
