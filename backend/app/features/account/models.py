@@ -10,6 +10,7 @@ from app.common.models import IdentifiableBase, CurrencyCode, PlaidBase, PlaidMa
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
+from app.features.transactiondeserialiser.models import TransactionDeserialiser
 
 if TYPE_CHECKING:
     from app.features.transaction.models import Transaction
@@ -73,6 +74,10 @@ class Account(__AccountBase, IdentifiableBase, PlaidMaybeMixin, table=True):
     @property
     def institution(self) -> Institution:
         return self.userinstitutionlink.institution
+
+    @property
+    def transaction_deserialiser(self) -> TransactionDeserialiser | None:
+        return self.userinstitutionlink.institution.transactiondeserialiser
 
     @property
     def is_synced(self) -> bool:

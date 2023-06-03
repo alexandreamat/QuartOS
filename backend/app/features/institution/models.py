@@ -48,6 +48,6 @@ class Institution(__InstitutionBase, IdentifiableBase, PlaidMaybeMixin, table=Tr
         back_populates="institution",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
-    transactiondeserialiser: TransactionDeserialiser = Relationship(
+    transactiondeserialiser: TransactionDeserialiser | None = Relationship(
         back_populates="institutions"
     )

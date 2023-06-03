@@ -7,17 +7,7 @@ from typing import Iterable
 
 from .models import TransactionApiIn
 
-deserializer_templates = {
-    "amount": 'Decimal(row[8].replace(",", "") or 0) - Decimal(row[9].replace(",", "") or 0)',
-    "datetime": 'datetime.strptime(row[0], "%Y-%m-%d")',
-    "name": 'f"{row[1]}: {row[2]}"',
-    "currency_code": '{"人民币": "CNY"}[row[10]]',
-    "payment_channel": '{"消费": "in store", "退货": "in store", "支付宝提现": "online", "金融付款": "online", "退款": "in store"}.get(row[1], "other")',
-    "code": '{"消费": "purchase", "退货": "adjustment", "利息": "interest", "转账": "transfer", "跨境费": "bank charge", "费": "bank charge", "ATM取款": "atm", "支付宝提现": "cash", "金融付款": "bill payment", "异地费": "bank charge", "反费": "adjustment", "取消费": "bank charge", "账务调整": "adjustment", "退款": "adjustment"}.get(row[1], "null")',
-}
-
-skip_lines = 7
-columns_length = 14
+from app.features.transactiondeserialiser.models import TransactionDeserialiserApiOut
 
 
 def sanitise_row(row: list[str]) -> None:
@@ -26,18 +16,23 @@ def sanitise_row(row: list[str]) -> None:
 
 
 def create_instances_from_csv(
-    file: Iterable[str], account_id: int
+    deserialiser: TransactionDeserialiserApiOut, file: Iterable[str], account_id: int
 ) -> list[TransactionApiIn]:
     instances = []
     deserializers = {}
-    for field, code in deserializer_templates.items():
-        exec(f"def deserialize_{field}(row): return {code}")
-        deserializers[field] = locals()[f"deserialize_{field}"]
+    for field, value in vars(deserialiser).items():
+        if "_deserialiser" not in field:
+            continue
+        field_name = field.replace("_deserialiser", "")
+        function_name = f"deserialize_{field_name}"
+        snippet = getattr(deserialiser, field)
+        exec(f"def {function_name}(row): return {snippet}")
+        deserializers[field_name] = locals()[function_name]
     reader = csv.reader(file)
-    for _ in range(skip_lines):
+    for _ in range(deserialiser.skip_rows):
         next(reader)
     for row in reader:
-        if len(row) != columns_length:
+        if len(row) != deserialiser.columns:
             break
         sanitise_row(row)
         deserialized_row = {

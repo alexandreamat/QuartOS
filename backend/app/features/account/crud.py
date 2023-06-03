@@ -1,7 +1,9 @@
 from sqlmodel import Session
 from app.common.crud import CRUDBase, CRUDSyncable
 
-from app.features import user, institution, userinstitutionlink
+from sqlalchemy.exc import NoResultFound
+
+from app.features import user, institution, userinstitutionlink, transactiondeserialiser
 
 from .models import (
     Account,
@@ -30,6 +32,17 @@ class CRUDAccount(
     ) -> institution.models.InstitutionApiOut:
         return institution.models.InstitutionApiOut.from_orm(
             cls.db_model.read(db, id).institution
+        )
+
+    @classmethod
+    def read_transaction_deserialiser(
+        cls, db: Session, id: int
+    ) -> transactiondeserialiser.models.TransactionDeserialiserApiOut:
+        db_deserialiser = cls.db_model.read(db, id).transaction_deserialiser
+        if not db_deserialiser:
+            raise NoResultFound
+        return transactiondeserialiser.models.TransactionDeserialiserApiOut.from_orm(
+            db_deserialiser
         )
 
     @classmethod
