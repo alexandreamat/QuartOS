@@ -25,6 +25,7 @@ def sync_transactions(
     }
     has_more = True
     while has_more:
+        # TODO: Make this atomic
         sync_result = get_transaction_changes(user_institution_link, accounts)
         for transaction in sync_result.added:
             CRUDTransaction.sync(db, transaction)
