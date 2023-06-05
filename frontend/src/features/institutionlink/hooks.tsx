@@ -58,6 +58,8 @@ export function useInstitutionLinkOptions() {
     isLoading: institutionLinksQuery.isLoading,
     isError: institutionLinksQuery.isError,
     isSuccess: institutionLinksQuery.isSuccess,
-    error: institutionLinksQuery.error,
+    error: institutionLinksQuery.isError
+      ? renderErrorMessage(institutionLinksQuery.error)
+      : undefined,
   };
 }

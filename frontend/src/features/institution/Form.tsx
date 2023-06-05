@@ -7,6 +7,7 @@ import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import FormTextInput from "components/FormTextInput";
 import FormDropdownInput from "components/FormDropdownInput";
+import { useTransactionDeserialiserOptions } from "features/transactiondeserialiser/hooks";
 
 registerLocale(require("i18n-iso-countries/langs/en.json"));
 
@@ -27,19 +28,9 @@ export default function InstitutionForm(props: {
   const url = useFormField("");
   const transactionDeserialiserId = useFormField(0, true);
 
+  const transactionDeserialiserOptions = useTransactionDeserialiserOptions();
+
   const fields = [name, countryCode, url, transactionDeserialiserId];
-
-  const transactionDeserialisers =
-    api.endpoints.readManyApiTransactionDeserialisersGet.useQuery();
-
-  const transactionDeserialiserOptions =
-    transactionDeserialisers.data?.map((deserialiser) => {
-      return {
-        key: deserialiser.id,
-        value: deserialiser.id,
-        text: deserialiser.module_name,
-      };
-    }) || [];
 
   const [createInstitution, createInstitutionResult] =
     api.endpoints.createApiInstitutionsPost.useMutation();
@@ -112,7 +103,9 @@ export default function InstitutionForm(props: {
       <FormDropdownInput
         optional
         label="Transaction deserialiser"
-        options={transactionDeserialiserOptions}
+        options={transactionDeserialiserOptions.data || []}
+        error={transactionDeserialiserOptions.isError}
+        loading={transactionDeserialiserOptions.isLoading}
         field={transactionDeserialiserId}
       />
       {fields.some((field) => field.isError) && (
