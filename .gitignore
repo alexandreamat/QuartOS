@@ -14,5 +14,4 @@ node_modules
 .DS_Store
 
 my-app
-money-tracker
-money-tracker*
+.db
