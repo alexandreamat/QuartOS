@@ -1,17 +1,29 @@
 import { useEffect, useState } from "react";
-import { Table, Loader, Flag, FlagNameValues } from "semantic-ui-react";
+import {
+  Table,
+  Loader,
+  Flag,
+  FlagNameValues,
+  Button,
+  Icon,
+  Dropdown,
+  DropdownProps,
+  Menu,
+} from "semantic-ui-react";
 import AccountForm from "./Form";
 import { AccountApiOut, InstitutionApiOut, api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import TableHeader from "components/TableHeader";
-import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 import LoadableCell from "components/LoadableCell";
 import { useLocation } from "react-router-dom";
 import ActionButton from "components/ActionButton";
-import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
+import {
+  useInstitutionLinkOptions,
+  useInstitutionLinkQueries,
+} from "features/institutionlink/hooks";
 
 function InstitutionCell(props: { institution: InstitutionApiOut }) {
   return (
@@ -86,7 +98,6 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
 
 function AccountsTable(props: {
   data: AccountApiOut[];
-  onCreate: () => void;
   onEdit: (account: AccountApiOut) => void;
 }) {
   return (
@@ -104,7 +115,6 @@ function AccountsTable(props: {
           />
         ))}
       </Table.Body>
-      <TableFooter onCreate={props.onCreate} columns={8} />
     </Table>
   );
 }
@@ -118,15 +128,17 @@ export default function Accounts() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const modalParam = params.get("modal") === "true";
-  const institutionIdParam = params.get("institutionLinkId");
+  const institutionIdParam = Number(params.get("institutionLinkId"));
+
+  const [institutionId, setInstitutionId] = useState(institutionIdParam || 0);
 
   useEffect(() => {
     setIsModalOpen(modalParam);
   }, [modalParam]);
 
-  const accountsQuery = institutionIdParam
+  const accountsQuery = institutionId
     ? api.endpoints.readAccountsApiInstitutionLinksIdAccountsGet.useQuery(
-        Number(institutionIdParam)
+        institutionId
       )
     : api.endpoints.readManyApiAccountsGet.useQuery();
 
@@ -145,18 +157,46 @@ export default function Accounts() {
     setIsModalOpen(false);
   };
 
+  const institutionLinkQueries = useInstitutionLinkOptions();
+
   if (accountsQuery.isLoading) return <Loader active size="huge" />;
 
   if (accountsQuery.isError) console.error(accountsQuery.originalArgs);
 
   return (
     <>
+      <Menu borderless>
+        <Menu.Item>
+          <Button primary onClick={handleCreate}>
+            Create New
+          </Button>
+        </Menu.Item>
+        <Menu.Item>
+          <Dropdown
+            icon="filter"
+            labeled
+            className="icon"
+            button
+            placeholder="Filter by institution"
+            search
+            selection
+            value={institutionId}
+            control={Dropdown}
+            options={institutionLinkQueries.data || []}
+            onChange={(
+              event: React.SyntheticEvent<HTMLElement>,
+              data: DropdownProps
+            ) => setInstitutionId(data.value as number)}
+          />
+        </Menu.Item>
+        {institutionId !== 0 && (
+          <Menu.Item fitted onClick={() => setInstitutionId(0)}>
+            <Icon name="close" />
+          </Menu.Item>
+        )}
+      </Menu>
       {accountsQuery.data?.length ? (
-        <AccountsTable
-          data={accountsQuery.data}
-          onCreate={handleCreate}
-          onEdit={handleEdit}
-        />
+        <AccountsTable data={accountsQuery.data} onEdit={handleEdit} />
       ) : (
         <EmptyTablePlaceholder onCreate={handleCreate} />
       )}
