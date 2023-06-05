@@ -145,17 +145,16 @@ export default function AccountForm(props: {
           content="All fields are required!"
         />
       )}
-      {(createAccountResult.isError || updateAccountResult.isError) && (
+      {createAccountResult.isError && (
         <Message negative>
           <Message.Header> There's been an error</Message.Header>
-          <p>
-            {createAccountResult.error &&
-              renderErrorMessage(createAccountResult.error)}
-          </p>
-          <p>
-            {updateAccountResult.error &&
-              renderErrorMessage(updateAccountResult.error)}
-          </p>
+          {renderErrorMessage(createAccountResult.error)}
+        </Message>
+      )}
+      {updateAccountResult.isError && (
+        <Message negative>
+          <Message.Header> There's been an error</Message.Header>
+          {renderErrorMessage(updateAccountResult.error)}
         </Message>
       )}
     </FormModal>

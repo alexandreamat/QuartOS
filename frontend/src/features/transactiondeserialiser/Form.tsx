@@ -132,18 +132,16 @@ export default function TransactionDeserialiserForm(props: {
               content="All fields are required!"
             />
           )}
-          {(createTransactionDeserialiserResult.isError ||
-            updateTransactionDeserialiserResult.isError) && (
+          {createTransactionDeserialiserResult.isError && (
             <Message negative>
               <Message.Header>There's been an error</Message.Header>
-              <p>
-                {createTransactionDeserialiserResult.error &&
-                  renderErrorMessage(createTransactionDeserialiserResult.error)}
-              </p>
-              <p>
-                {updateTransactionDeserialiserResult.error &&
-                  renderErrorMessage(updateTransactionDeserialiserResult.error)}
-              </p>
+              {renderErrorMessage(createTransactionDeserialiserResult.error)}
+            </Message>
+          )}
+          {updateTransactionDeserialiserResult.isError && (
+            <Message negative>
+              <Message.Header>There's been an error</Message.Header>
+              {renderErrorMessage(updateTransactionDeserialiserResult.error)}
             </Message>
           )}
         </Form>
