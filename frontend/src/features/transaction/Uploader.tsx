@@ -33,7 +33,7 @@ export default function Uploader(props: {
 
   const institutionLinkOptions =
     institutionLinksQuery.data?.map((link) => {
-      const content = <InstitutionLinkOption link={link} />;
+      const content = <InstitutionLinkOption institutionLink={link} />;
       return {
         key: link.id,
         value: link.id,

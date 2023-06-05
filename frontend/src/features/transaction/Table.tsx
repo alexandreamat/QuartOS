@@ -1,5 +1,4 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
-import useAccountQueries from "./hooks";
 import { Icon, Table } from "semantic-ui-react";
 import LoadableCell from "components/LoadableCell";
 import EditCell from "components/EditCell";
@@ -7,6 +6,7 @@ import DeleteCell from "components/DeleteCell";
 import TableHeader from "components/TableHeader";
 import { renderErrorMessage } from "utils/error";
 import { format } from "date-fns";
+import { useAccountQueries } from "features/account/hooks";
 
 function TransactionRow(
   props:

@@ -16,14 +16,8 @@ import FormDateTimeInput from "components/FormDateTimeInput";
 import FormTextInput from "components/FormTextInput";
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDropdownInput from "components/FormDropdownInput";
-
-function InstitutionLinkOption({ link }: { link: UserInstitutionLinkApiOut }) {
-  const { data: institution } = api.endpoints.readApiInstitutionsIdGet.useQuery(
-    link.institution_id
-  );
-
-  return <>{institution?.name}</>;
-}
+import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
+import { useAccountOptions } from "features/account/hooks";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
@@ -86,6 +80,9 @@ export default function TransactionForm(props: {
     text: option,
   }));
 
+  const institutionLinkOptions = useInstitutionLinkOptions();
+  const accountOptions = useAccountOptions(institutionLinkId.value);
+
   useEffect(() => {
     if (!props.transaction) return;
     amountStr.set(props.transaction.amount.toFixed(2));
@@ -103,51 +100,15 @@ export default function TransactionForm(props: {
       institutionLinkId.set(accountQuery.data.user_institution_link_id);
   }, [props.transaction, accountQuery]);
 
-  const institutionLinksQuery =
-    api.endpoints.readManyApiInstitutionLinksGet.useQuery();
-
-  const institutionLinkQuery =
-    api.endpoints.readApiInstitutionLinksIdGet.useQuery(
-      institutionLinkId.value || skipToken
-    );
-  const accountsQuery =
-    api.endpoints.readAccountsApiInstitutionLinksIdAccountsGet.useQuery(
-      institutionLinkQuery.data?.id || skipToken
-    );
-
-  const institutionLinkOptions =
-    institutionLinksQuery.data?.map((link) => {
-      const content = <InstitutionLinkOption link={link} />;
-      return {
-        key: link.id,
-        value: link.id,
-        content: content,
-        text: content,
-      };
-    }) || [];
-
-  const accountOptions =
-    accountsQuery.data?.map((account) => {
-      return {
-        key: account.id,
-        value: account.id,
-        text: "··· " + account.mask,
-      };
-    }) || [];
-
   useEffect(() => {
-    if (accountOptions.length === 1) accountId.set(accountOptions[0].key);
-  }, [accountOptions]);
+    if (accountOptions.data?.length === 1)
+      accountId.set(accountOptions.data[0].key);
+  }, [accountOptions.data]);
 
   const [createTransaction, createTransactionResult] =
     api.endpoints.createApiTransactionsPost.useMutation();
   const [updateTransaction, updateTransactionResult] =
     api.endpoints.updateApiTransactionsIdPut.useMutation();
-
-  if (createTransactionResult.error)
-    console.error(createTransactionResult.originalArgs);
-  if (updateTransactionResult.error)
-    console.error(updateTransactionResult.originalArgs);
 
   const handleClose = () => {
     fields.forEach((field) => field.reset());
@@ -177,6 +138,7 @@ export default function TransactionForm(props: {
       } catch (error) {
         console.error(error);
         console.error(updateTransactionResult.error);
+        console.error(updateTransactionResult.originalArgs);
         return;
       }
     } else {
@@ -185,6 +147,7 @@ export default function TransactionForm(props: {
       } catch (error) {
         console.error(error);
         console.error(createTransactionResult.error);
+        console.error(createTransactionResult.originalArgs);
         return;
       }
     }
@@ -201,16 +164,16 @@ export default function TransactionForm(props: {
       <FormDropdownInput
         label="Institution"
         field={institutionLinkId}
-        options={institutionLinkOptions}
-        loading={institutionLinksQuery.isLoading}
-        error={institutionLinksQuery.isError}
+        options={institutionLinkOptions.data || []}
+        loading={institutionLinkOptions.isLoading}
+        error={institutionLinkOptions.isError}
       />
       <FormDropdownInput
         label="Account"
         field={accountId}
-        options={accountOptions}
-        loading={accountsQuery.isLoading}
-        error={accountsQuery.isError}
+        options={accountOptions.data || []}
+        loading={accountOptions.isLoading}
+        error={accountOptions.isError}
       />
       <FormCurrencyInput
         label="Amount"
