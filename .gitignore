@@ -4,3 +4,15 @@ docker-stack.yml
 __pycache__
 app.egg-info
 
+# ide
+.idea
+
+# dependencies
+node_modules
+
+# misc
+.DS_Store
+
+my-app
+money-tracker
+money-tracker*
