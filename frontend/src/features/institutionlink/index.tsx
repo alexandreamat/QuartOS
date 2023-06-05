@@ -76,7 +76,6 @@ function InstitutionLinkRow(props: {
           disabled={!props.institutionLink.is_synced}
           loading={syncLinkResult.isLoading}
           icon="sync"
-          content="Sync"
           onClick={async () => await handleSync(props.institutionLink)}
         />
       </Table.Cell>
@@ -84,10 +83,21 @@ function InstitutionLinkRow(props: {
         <ActionButton
           disabled={props.institutionLink.is_synced}
           icon="credit card"
-          content="Add Accounts"
+          content="Add"
           onClick={() =>
             navigate(
               `/accounts?modal=true&institutionLinkId=${props.institutionLink.id}`
+            )
+          }
+        />
+      </Table.Cell>
+      <Table.Cell collapsing>
+        <ActionButton
+          icon="credit card"
+          content="View"
+          onClick={() =>
+            navigate(
+              `/accounts?modal=false&institutionLinkId=${props.institutionLink.id}`
             )
           }
         />
@@ -146,7 +156,7 @@ export default function InstitutionsLinks() {
     data: UserInstitutionLinkApiOut[];
   }) => (
     <Table>
-      <TableHeader headers={["Institution", "Website"]} actions={4} />
+      <TableHeader headers={["Institution", "Website"]} actions={5} />
       <Table.Body>
         {props.data.map((institutionLink) => (
           <InstitutionLinkRow
@@ -155,7 +165,7 @@ export default function InstitutionsLinks() {
           />
         ))}
       </Table.Body>
-      <TableFooter columns={6} onCreate={handleCreate} />
+      <TableFooter columns={7} onCreate={handleCreate} />
     </Table>
   );
 

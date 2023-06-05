@@ -93,7 +93,7 @@ function AccountsTable(props: {
     <Table>
       <TableHeader
         headers={["Name", "Number", "Type", "Currency", "Institution"]}
-        actions={2}
+        actions={3}
       />
       <Table.Body>
         {props.data.map((account, index) => (
@@ -104,7 +104,7 @@ function AccountsTable(props: {
           />
         ))}
       </Table.Body>
-      <TableFooter onCreate={props.onCreate} columns={7} />
+      <TableFooter onCreate={props.onCreate} columns={8} />
     </Table>
   );
 }
@@ -118,12 +118,17 @@ export default function Accounts() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const modalParam = params.get("modal") === "true";
+  const institutionIdParam = params.get("institutionLinkId");
 
   useEffect(() => {
     setIsModalOpen(modalParam);
   }, [modalParam]);
 
-  const accountsQuery = api.endpoints.readManyApiAccountsGet.useQuery();
+  const accountsQuery = institutionIdParam
+    ? api.endpoints.readAccountsApiInstitutionLinksIdAccountsGet.useQuery(
+        Number(institutionIdParam)
+      )
+    : api.endpoints.readManyApiAccountsGet.useQuery();
 
   const handleCreate = () => {
     setSelectedAccount(undefined);
