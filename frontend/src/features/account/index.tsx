@@ -9,9 +9,9 @@ import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 import LoadableCell from "components/LoadableCell";
-import useInstitutionLinkQueries from "./hooks";
 import { useLocation } from "react-router-dom";
 import ActionButton from "components/ActionButton";
+import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 
 function InstitutionCell(props: { institution: InstitutionApiOut }) {
   return (
