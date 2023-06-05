@@ -96,18 +96,16 @@ export default function InstitutionLinkForm(props: {
           content="All fields are required!"
         />
       )}
-      {(createInstitutionLinkResult.isError ||
-        updateInstitutionLinkResult.isError) && (
+      {createInstitutionLinkResult.isError && (
         <Message negative>
           <Message.Header> There's been an error</Message.Header>
-          <p>
-            {createInstitutionLinkResult.error &&
-              renderErrorMessage(createInstitutionLinkResult.error)}
-          </p>
-          <p>
-            {updateInstitutionLinkResult.error &&
-              renderErrorMessage(updateInstitutionLinkResult.error)}
-          </p>
+          {renderErrorMessage(createInstitutionLinkResult.error)}
+        </Message>
+      )}
+      {updateInstitutionLinkResult.isError && (
+        <Message negative>
+          <Message.Header> There's been an error</Message.Header>
+          {renderErrorMessage(updateInstitutionLinkResult.error)}
         </Message>
       )}
     </FormModal>

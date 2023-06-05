@@ -196,17 +196,16 @@ export default function TransactionForm(props: {
           content="All fields are required!"
         />
       )}
-      {(createTransactionResult.isError || updateTransactionResult.isError) && (
+      {createTransactionResult.isError && (
         <Message negative>
           <Message.Header>There's been an error</Message.Header>
-          <p>
-            {createTransactionResult.error &&
-              renderErrorMessage(createTransactionResult.error)}
-          </p>
-          <p>
-            {updateTransactionResult.error &&
-              renderErrorMessage(updateTransactionResult.error)}
-          </p>
+          {renderErrorMessage(createTransactionResult.error)}
+        </Message>
+      )}
+      {updateTransactionResult.isError && (
+        <Message negative>
+          <Message.Header>There's been an error</Message.Header>
+          {renderErrorMessage(updateTransactionResult.error)}
         </Message>
       )}
     </FormModal>
