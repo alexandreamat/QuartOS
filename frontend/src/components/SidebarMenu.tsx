@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Icon, Menu } from "semantic-ui-react";
-import routes from "../router/routes";
+import routes from "router";
 import { ReactComponent as Logo } from "./Logo/logo.svg";
 import { useAppSelector } from "app/store";
 

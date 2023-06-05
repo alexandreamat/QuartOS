@@ -9,7 +9,7 @@ import {
   Sidebar,
 } from "semantic-ui-react";
 import SidebarMenu from "components/SidebarMenu";
-import routes from "./router/routes";
+import routes from "./router";
 import { useAppDispatch, useAppSelector } from "app/store";
 import TopBar from "components/TopBar";
 import Login from "features/auth/Login";
