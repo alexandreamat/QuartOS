@@ -130,15 +130,17 @@ export default function Accounts() {
   const modalParam = params.get("modal") === "true";
   const institutionIdParam = Number(params.get("institutionLinkId"));
 
-  const [institutionId, setInstitutionId] = useState(institutionIdParam || 0);
+  const [institutionLinkId, setInstitutionId] = useState(
+    institutionIdParam || 0
+  );
 
   useEffect(() => {
     setIsModalOpen(modalParam);
   }, [modalParam]);
 
-  const accountsQuery = institutionId
+  const accountsQuery = institutionLinkId
     ? api.endpoints.readAccountsApiInstitutionLinksIdAccountsGet.useQuery(
-        institutionId
+        institutionLinkId
       )
     : api.endpoints.readManyApiAccountsGet.useQuery();
 
@@ -157,7 +159,7 @@ export default function Accounts() {
     setIsModalOpen(false);
   };
 
-  const institutionLinkQueries = useInstitutionLinkOptions();
+  const institutionLinkOptions = useInstitutionLinkOptions();
 
   if (accountsQuery.isLoading) return <Loader active size="huge" />;
 
@@ -180,16 +182,16 @@ export default function Accounts() {
             placeholder="Filter by institution"
             search
             selection
-            value={institutionId}
+            value={institutionLinkId}
             control={Dropdown}
-            options={institutionLinkQueries.data || []}
+            options={institutionLinkOptions.data || []}
             onChange={(
               event: React.SyntheticEvent<HTMLElement>,
               data: DropdownProps
             ) => setInstitutionId(data.value as number)}
           />
         </Menu.Item>
-        {institutionId !== 0 && (
+        {institutionLinkId !== 0 && (
           <Menu.Item fitted onClick={() => setInstitutionId(0)}>
             <Icon name="close" />
           </Menu.Item>
