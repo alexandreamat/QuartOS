@@ -13,7 +13,7 @@ import FormTextInput from "components/FormTextInput";
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDropdownInput from "components/FormDropdownInput";
 import { useLocation } from "react-router-dom";
-import InstitutionLinkOption from "features/institutionlink/InstitutionLinkOption";
+import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
@@ -30,6 +30,8 @@ export default function AccountForm(props: {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const institutionLinkIdParam = params.get("institutionLinkId");
+
+  const institutionLinkOptions = useInstitutionLinkOptions();
 
   useEffect(() => {
     institutionLinkId.set(Number(institutionLinkIdParam));
@@ -59,20 +61,6 @@ export default function AccountForm(props: {
     institutionLinkId.set(props.account.user_institution_link_id);
     balanceStr.set(props.account.balance.toFixed(2));
   }, [props.account]);
-
-  const institutionLinksQuery =
-    api.endpoints.readManyApiInstitutionLinksGet.useQuery();
-
-  const institutionLinkOptions =
-    institutionLinksQuery.data?.map((link) => {
-      const content = <InstitutionLinkOption institutionLink={link} />;
-      return {
-        key: link.id,
-        value: link.id,
-        content: content,
-        text: content,
-      };
-    }) || [];
 
   const handleClose = () => {
     fields.forEach((field) => field.reset());
@@ -138,9 +126,9 @@ export default function AccountForm(props: {
       <FormDropdownInput
         label="Institution"
         field={institutionLinkId}
-        options={institutionLinkOptions}
-        loading={institutionLinksQuery.isLoading}
-        error={institutionLinksQuery.isError}
+        options={institutionLinkOptions.data || []}
+        loading={institutionLinkOptions.isLoading}
+        error={institutionLinkOptions.isError}
       />
       <FormTextInput label="Account Name" field={name} />
       <FormTextInput label="Account Number" field={mask} />

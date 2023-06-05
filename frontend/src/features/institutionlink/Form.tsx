@@ -8,9 +8,9 @@ import {
 import { renderErrorMessage } from "utils/error";
 import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
-import FormTextInput from "components/FormTextInput";
 import FormDropdownInput from "components/FormDropdownInput";
 import PlaidLinkButton from "features/institutionlink/PlaidLinkButton";
+import { useInstitutionOptions } from "features/institution/hooks";
 
 export default function InstitutionLinkForm(props: {
   institutionLink?: UserInstitutionLinkApiOut;
@@ -19,25 +19,17 @@ export default function InstitutionLinkForm(props: {
 }) {
   const institutionId = useFormField(0);
 
+  const institutionOptions = useInstitutionOptions();
+
   const [createInstitutionLink, createInstitutionLinkResult] =
     api.endpoints.createApiInstitutionLinksPost.useMutation();
   const [updateInstitutionLink, updateInstitutionLinkResult] =
     api.endpoints.updateApiInstitutionLinksIdPut.useMutation();
 
-  const institutionsQuery = api.endpoints.readManyApiInstitutionsGet.useQuery();
-
   useEffect(() => {
     if (!props.institutionLink) return;
     institutionId.set(props.institutionLink.institution_id);
   }, [props.institutionLink]);
-
-  const institutionOptions =
-    institutionsQuery.data?.map((institution) => ({
-      key: institution.id,
-      value: institution.id,
-      text: institution.name,
-      flag: institution.country_code.toLocaleLowerCase(),
-    })) || [];
 
   const handleClose = () => {
     institutionId.reset();
@@ -92,9 +84,9 @@ export default function InstitutionLinkForm(props: {
       )}
       <FormDropdownInput
         label="Institution"
-        options={institutionOptions}
-        loading={institutionsQuery.isLoading}
-        error={institutionsQuery.isError}
+        options={institutionOptions.data || []}
+        loading={institutionOptions.isLoading}
+        error={institutionOptions.isError}
         field={institutionId}
       />
       {institutionId.isError && (
