@@ -18,6 +18,8 @@ import {
 } from "semantic-ui-react";
 import TransactionsTable from "./Table";
 import { renderErrorMessage } from "utils/error";
+import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
+import { useAccountOptions } from "features/account/hooks";
 
 export default function Uploader(props: {
   open: boolean;
@@ -28,43 +30,14 @@ export default function Uploader(props: {
 
   const fields = [institutionLinkId, accountId];
 
-  const institutionLinksQuery =
-    api.endpoints.readManyApiInstitutionLinksGet.useQuery();
-
-  const institutionLinkOptions =
-    institutionLinksQuery.data?.map((link) => {
-      const content = <InstitutionLinkOption institutionLink={link} />;
-      return {
-        key: link.id,
-        value: link.id,
-        content: content,
-        text: content,
-      };
-    }) || [];
-
-  const institutionLinkQuery =
-    api.endpoints.readApiInstitutionLinksIdGet.useQuery(
-      institutionLinkId.value || skipToken
-    );
-
-  const accountsQuery =
-    api.endpoints.readAccountsApiInstitutionLinksIdAccountsGet.useQuery(
-      institutionLinkQuery.data?.id || skipToken
-    );
-
-  const accountOptions =
-    accountsQuery.data?.map((account) => {
-      return {
-        key: account.id,
-        value: account.id,
-        text: "··· " + account.mask,
-      };
-    }) || [];
+  const institutionLinkOptions = useInstitutionLinkOptions();
+  const accountOptions = useAccountOptions(institutionLinkId.value);
 
   useEffect(() => {
-    if (!institutionLinkQuery.isSuccess || !accountsQuery.isSuccess) return;
-    if (accountOptions.length === 1) accountId.set(accountOptions[0].key);
-  }, [accountOptions]);
+    if (!institutionLinkOptions.isSuccess) return;
+    if (accountOptions.data?.length === 1)
+      accountId.set(accountOptions.data[0].key);
+  }, [accountOptions.data]);
 
   const [upload, uploadResult] =
     api.endpoints.uploadTransactionsSheetApiAccountsIdTransactionsSheetPost.useMutation();
@@ -128,16 +101,16 @@ export default function Uploader(props: {
           <FormDropdownInput
             label="Institution"
             field={institutionLinkId}
-            options={institutionLinkOptions}
-            loading={institutionLinksQuery.isLoading}
-            error={institutionLinksQuery.isError}
+            options={institutionLinkOptions.data || []}
+            loading={institutionLinkOptions.isLoading}
+            error={institutionLinkOptions.isError}
           />
           <FormDropdownInput
             label="Account"
             field={accountId}
-            options={accountOptions}
-            loading={accountsQuery.isLoading}
-            error={accountsQuery.isError}
+            options={accountOptions.data || []}
+            loading={accountOptions.isLoading}
+            error={accountOptions.isError}
           />
 
           {(uploadResult.isUninitialized || uploadResult.isLoading) && (
