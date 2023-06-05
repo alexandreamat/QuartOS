@@ -1,5 +1,5 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
-import { Icon, Table } from "semantic-ui-react";
+import { Icon, Label, Table } from "semantic-ui-react";
 import LoadableCell from "components/LoadableCell";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
@@ -55,10 +55,15 @@ function TransactionRow(
       <Table.Cell>{props.transaction.name}</Table.Cell>
       {/* <Table.Cell>{props.transaction.code}</Table.Cell> */}
       <Table.Cell collapsing>
-        {props.transaction.amount.toLocaleString(undefined, {
-          style: "currency",
-          currency: props.transaction.currency_code,
-        })}
+        <Label
+          style={{ width: 100, textAlign: "center" }}
+          color={props.transaction.amount > 0 ? "green" : "orange"}
+        >
+          {props.transaction.amount.toLocaleString(undefined, {
+            style: "currency",
+            currency: props.transaction.currency_code,
+          })}
+        </Label>
       </Table.Cell>
       <LoadableCell
         collapsing

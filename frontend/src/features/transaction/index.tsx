@@ -71,8 +71,9 @@ function TransactionsInfiniteTable(props: {
     <>
       <Menu borderless>
         <Menu.Item>
-          <Button primary onClick={props.onCreate}>
-            Create New
+          <Button icon labelPosition="left" primary onClick={props.onCreate}>
+            <Icon name="plus" />
+            Add
           </Button>
         </Menu.Item>
         <Menu.Item>
@@ -85,7 +86,6 @@ function TransactionsInfiniteTable(props: {
             search
             selection
             value={institutionLinkId}
-            control={Dropdown}
             options={institutionLinkOptions.data || []}
             onChange={(
               event: React.SyntheticEvent<HTMLElement>,
@@ -108,7 +108,6 @@ function TransactionsInfiniteTable(props: {
                 search
                 selection
                 value={accountId}
-                control={Dropdown}
                 options={accountOptions.data || []}
                 onChange={(
                   event: React.SyntheticEvent<HTMLElement>,
@@ -124,12 +123,7 @@ function TransactionsInfiniteTable(props: {
           </>
         )}
         <Menu.Item position="right">
-          <Button
-            icon
-            labelPosition="left"
-            floated="right"
-            onClick={handleUpload}
-          >
+          <Button icon labelPosition="left" onClick={handleUpload}>
             <Icon name="upload" />
             Upload Transactions Sheet
           </Button>
