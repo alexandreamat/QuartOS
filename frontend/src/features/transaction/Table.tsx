@@ -111,15 +111,7 @@ export default function TransactionsTable(
   return (
     <Table>
       <TableHeader
-        headers={[
-          "",
-          "Created",
-          // "Category",
-          "Name",
-          // "Code",
-          "Amount",
-          "Account",
-        ]}
+        headers={["", "Created", "Name", "Amount", "Account"]}
         actions={isApiOut ? 2 : 0}
       />
       <Table.Body>
