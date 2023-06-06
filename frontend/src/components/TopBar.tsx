@@ -22,7 +22,7 @@ export default function TopBar(props: { onToggleSidebar?: () => void }) {
   const me = api.endpoints.readMeApiUsersMeGet.useQuery();
 
   return (
-    <Menu color="teal" inverted style={{ height: "100%", borderRadius: 0 }}>
+    <Menu color="teal" inverted style={{ borderRadius: 0 }}>
       {props.onToggleSidebar && (
         <Menu.Menu position="left">
           <Menu.Item link onClick={props.onToggleSidebar}>
