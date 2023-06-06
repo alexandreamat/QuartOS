@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  Icon,
-  Segment,
-  Button,
-  Menu,
-  Dropdown,
-  DropdownProps,
-} from "semantic-ui-react";
+import { Icon, Button, Menu, Dropdown, DropdownProps } from "semantic-ui-react";
 import TransactionForm from "./Form";
 import { TransactionApiOut, api } from "app/services/api";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
@@ -16,33 +9,10 @@ import TransactionsTable from "./Table";
 import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 import { useAccountOptions } from "features/account/hooks";
 
-function TransactionsInfiniteTable(props: {
-  onCreate: () => void;
-  onEdit: (transaction: TransactionApiOut) => void;
-}) {
-  const [isUploaderOpen, setIsUploaderOpen] = useState(false);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [allTransactions, setAllTransactions] = useState<TransactionApiOut[]>(
-    []
-  );
-
+function Bar(props: { onCreate: () => void }) {
   const [institutionLinkId, setInstitutionLinkId] = useState(0);
   const [accountId, setAccountId] = useState(0);
-
-  const institutionLinkOptions = useInstitutionLinkOptions();
-  const accountOptions = useAccountOptions(institutionLinkId);
-
-  const transactionsQuery = api.endpoints.readManyApiTransactionsGet.useQuery({
-    page: currentPage,
-    perPage: 20,
-  });
-
-  // TODO api logic to query filtered api endpoints
-
-  const next = useCallback(() => {
-    setCurrentPage(currentPage + 1);
-  }, [currentPage]);
+  const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
   const handleUpload = () => {
     setIsUploaderOpen(true);
@@ -52,20 +22,8 @@ function TransactionsInfiniteTable(props: {
     setIsUploaderOpen(false);
   };
 
-  useEffect(() => {
-    if (transactionsQuery.data) {
-      setAllTransactions((prevTransactions) => [
-        ...prevTransactions,
-        ...transactionsQuery.data!,
-      ]);
-    }
-  }, [transactionsQuery.data]);
-
-  useEffect(() => {}, [transactionsQuery.isFetching]);
-
-  if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
-
-  if (!allTransactions.length) return <EmptyTablePlaceholder />;
+  const institutionLinkOptions = useInstitutionLinkOptions();
+  const accountOptions = useAccountOptions(institutionLinkId);
 
   return (
     <>
@@ -130,6 +88,48 @@ function TransactionsInfiniteTable(props: {
         </Menu.Item>
       </Menu>
       <Uploader open={isUploaderOpen} onClose={handleCloseUploader} />
+    </>
+  );
+}
+function TransactionsInfiniteTable(props: {
+  onCreate: () => void;
+  onEdit: (transaction: TransactionApiOut) => void;
+}) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allTransactions, setAllTransactions] = useState<TransactionApiOut[]>(
+    []
+  );
+
+  const transactionsQuery = api.endpoints.readManyApiTransactionsGet.useQuery({
+    page: currentPage,
+    perPage: 20,
+  });
+
+  // TODO api logic to query filtered api endpoints
+
+  const next = () => {
+    console.log("next");
+    setCurrentPage(currentPage + 1);
+  };
+
+  useEffect(() => {
+    if (transactionsQuery.data) {
+      setAllTransactions((prevTransactions) => [
+        ...prevTransactions,
+        ...transactionsQuery.data!,
+      ]);
+    }
+  }, [transactionsQuery.data]);
+
+  useEffect(() => {}, [transactionsQuery.isFetching]);
+
+  if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
+
+  if (!allTransactions.length) return <EmptyTablePlaceholder />;
+
+  return (
+    <>
+      <Bar onCreate={props.onCreate} />
       <InfiniteScroll
         loader={<></>}
         dataLength={allTransactions.length}
