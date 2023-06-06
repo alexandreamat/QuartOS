@@ -32,10 +32,18 @@ function Content() {
           key={route.label}
           path={route.path}
           element={
-            <>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+              }}
+            >
               <Header as="h2">{route.label}</Header>
-              <route.component />
-            </>
+              <div style={{ flex: 1, overflow: "hidden" }}>
+                <route.component />
+              </div>
+            </div>
           }
         />
       ))}
@@ -43,10 +51,18 @@ function Content() {
         key="profile"
         path="/profile"
         element={
-          <>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
+            }}
+          >
             <Header as="h2">Profile</Header>
-            <Profile />
-          </>
+            <div style={{ flex: 1, overflow: "hidden" }}>
+              <Profile />
+            </div>
+          </div>
         }
       />
     </Routes>
@@ -75,19 +91,14 @@ function MobileApp() {
     </div>
   );
 }
-
 function DesktopApp() {
   return (
     <div style={{ display: "flex", height: "100vh" }}>
-      <div style={{ flex: "0 0 200px" }}>
-        <SidebarMenu />
-      </div>
-      <div style={{ flex: "1", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: "0 0 40px" }}>
-          <TopBar />
-        </div>
-        <div style={{ flex: "1", overflow: "auto" }}>
-          <Container style={{ paddingTop: "20px", paddingBottom: "20px" }}>
+      <SidebarMenu />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <TopBar />
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <Container style={{ height: "100%" }}>
             <Content />
           </Container>
         </div>

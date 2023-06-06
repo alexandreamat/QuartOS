@@ -9,11 +9,7 @@ export default function SidebarMenu() {
   const location = useLocation();
   const current_user = useAppSelector((state) => state.auth.current_user);
   return (
-    <Menu
-      vertical
-      inverted
-      style={{ height: "100vh", borderRadius: 0, width: "100%" }}
-    >
+    <Menu vertical inverted style={{ height: "100vh", borderRadius: 0 }}>
       <Menu.Item>
         <Logo height="100px" width="100%" />
       </Menu.Item>
