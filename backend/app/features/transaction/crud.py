@@ -83,10 +83,24 @@ class CRUDTransaction(
 
     @classmethod
     def read_many_by_account(
-        cls, db: Session, account_id: int
+        cls, db: Session, account_id: int, page: int, per_page: int
     ) -> list[TransactionApiOut]:
-        a = account.models.Account.read(db, account_id)
-        return [cls.api_out_model.from_orm(t) for t in a.transactions]
+        offset = (page - 1) * per_page if page and per_page else 0
+
+        query = (
+            db.query(Transaction)
+            .join(account.models.Account)
+            .filter(account.models.Account.id == account_id)
+            .order_by(desc(Transaction.datetime))
+        )
+
+        if per_page:
+            offset = (page - 1) * per_page
+            query = query.offset(offset).limit(per_page)
+
+        transactions = query.all()
+
+        return [cls.api_out_model.from_orm(t) for t in transactions]
 
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:

@@ -6,12 +6,13 @@ import EmptyTablePlaceholder from "components/TablePlaceholder";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Uploader from "./Uploader";
 import TransactionsTable from "./Table";
-import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
-import { useAccountOptions } from "features/account/hooks";
+import { useAccountJoinInstitutionOptions } from "features/account/hooks";
 
-function Bar(props: { onCreate: () => void }) {
-  const [institutionLinkId, setInstitutionLinkId] = useState(0);
-  const [accountId, setAccountId] = useState(0);
+function Bar(props: {
+  onCreate: () => void;
+  accountId: number;
+  onAccountIdChange: (x: number) => void;
+}) {
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
   const handleUpload = () => {
@@ -22,11 +23,10 @@ function Bar(props: { onCreate: () => void }) {
     setIsUploaderOpen(false);
   };
 
-  const institutionLinkOptions = useInstitutionLinkOptions();
-  const accountOptions = useAccountOptions(institutionLinkId);
+  const accountOptions = useAccountJoinInstitutionOptions();
 
   return (
-    <Menu borderless>
+    <Menu tabular>
       <Menu.Item>
         <Button icon labelPosition="left" primary onClick={props.onCreate}>
           <Icon name="plus" />
@@ -39,45 +39,21 @@ function Bar(props: { onCreate: () => void }) {
           labeled
           className="icon"
           button
-          placeholder="Filter by institution"
+          placeholder="Filter by account"
           search
           selection
-          value={institutionLinkId}
-          options={institutionLinkOptions.data || []}
+          value={props.accountId}
+          options={accountOptions.data || []}
           onChange={(
             event: React.SyntheticEvent<HTMLElement>,
             data: DropdownProps
-          ) => setInstitutionLinkId(data.value as number)}
+          ) => props.onAccountIdChange(data.value as number)}
         />
       </Menu.Item>
-      {institutionLinkId !== 0 && (
-        <>
-          <Menu.Item fitted onClick={() => setInstitutionLinkId(0)}>
-            <Icon name="close" />
-          </Menu.Item>
-          <Menu.Item>
-            <Dropdown
-              icon="filter"
-              labeled
-              className="icon"
-              button
-              placeholder="Filter by account"
-              search
-              selection
-              value={accountId}
-              options={accountOptions.data || []}
-              onChange={(
-                event: React.SyntheticEvent<HTMLElement>,
-                data: DropdownProps
-              ) => setAccountId(data.value as number)}
-            />
-          </Menu.Item>
-          {accountId !== 0 && (
-            <Menu.Item fitted onClick={() => setAccountId(0)}>
-              <Icon name="close" />
-            </Menu.Item>
-          )}
-        </>
+      {props.accountId !== 0 && (
+        <Menu.Item fitted onClick={() => props.onAccountIdChange(0)}>
+          <Icon name="close" />
+        </Menu.Item>
       )}
       <Menu.Item position="right">
         <Button icon labelPosition="left" onClick={handleUpload}>
@@ -89,6 +65,7 @@ function Bar(props: { onCreate: () => void }) {
     </Menu>
   );
 }
+
 function TransactionsInfiniteTable(props: {
   onCreate: () => void;
   onEdit: (transaction: TransactionApiOut) => void;
@@ -97,13 +74,23 @@ function TransactionsInfiniteTable(props: {
   const [allTransactions, setAllTransactions] = useState<TransactionApiOut[]>(
     []
   );
+  const [accountId, setAccountId] = useState(0);
 
-  const transactionsQuery = api.endpoints.readManyApiTransactionsGet.useQuery({
-    page: currentPage,
-    perPage: 20,
-  });
+  const handleAccountIdChange = (value: number) => {
+    setAllTransactions([]);
+    setAccountId(value);
+  };
 
-  // TODO api logic to query filtered api endpoints
+  const transactionsQuery = accountId
+    ? api.endpoints.readTransactionsApiAccountsIdTransactionsGet.useQuery({
+        id: accountId,
+        page: currentPage,
+        perPage: 20,
+      })
+    : api.endpoints.readManyApiTransactionsGet.useQuery({
+        page: currentPage,
+        perPage: 20,
+      });
 
   useEffect(() => {
     if (transactionsQuery.data) {
@@ -122,7 +109,11 @@ function TransactionsInfiniteTable(props: {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <Bar onCreate={props.onCreate} />
+      <Bar
+        onCreate={props.onCreate}
+        accountId={accountId}
+        onAccountIdChange={handleAccountIdChange}
+      />
       <div style={{ flex: 1, overflow: "auto" }}>
         <InfiniteScroll
           loader={<></>}
