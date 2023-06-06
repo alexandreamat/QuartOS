@@ -331,6 +331,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["accounts"],
       }),
+      readTransactionsApiAccountsIdTransactionsGet: build.query<
+        ReadTransactionsApiAccountsIdTransactionsGetApiResponse,
+        ReadTransactionsApiAccountsIdTransactionsGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/accounts/${queryArg.id}/transactions`,
+          params: { page: queryArg.page, per_page: queryArg.perPage },
+        }),
+        providesTags: ["accounts"],
+      }),
       uploadTransactionsSheetApiAccountsIdTransactionsSheetPost: build.mutation<
         UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiResponse,
         UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiArg
@@ -569,6 +579,13 @@ export type UpdateApiAccountsIdPutApiArg = {
 export type DeleteApiAccountsIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
 export type DeleteApiAccountsIdDeleteApiArg = number;
+export type ReadTransactionsApiAccountsIdTransactionsGetApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut[];
+export type ReadTransactionsApiAccountsIdTransactionsGetApiArg = {
+  id: number;
+  page?: number;
+  perPage?: number;
+};
 export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiResponse =
   /** status 200 Successful Response */ TransactionApiIn[];
 export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiArg = {
@@ -731,6 +748,16 @@ export type TransactionCode =
   | "standing order"
   | "transfer"
   | "null";
+export type TransactionApiOut = {
+  id: number;
+  amount: number;
+  datetime?: string;
+  name: string;
+  currency_code: string;
+  account_id: number;
+  payment_channel: PaymentChannel;
+  code?: TransactionCode;
+};
 export type TransactionApiIn = {
   amount: number;
   datetime: string;
@@ -742,14 +769,4 @@ export type TransactionApiIn = {
 };
 export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
   file: Blob;
-};
-export type TransactionApiOut = {
-  id: number;
-  amount: number;
-  datetime?: string;
-  name: string;
-  currency_code: string;
-  account_id: number;
-  payment_channel: PaymentChannel;
-  code?: TransactionCode;
 };

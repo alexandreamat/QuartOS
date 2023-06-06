@@ -11,9 +11,8 @@ from app.database.deps import DBSession
 from .crud import CRUDAccount
 from .models import AccountApiOut, AccountApiIn
 
-from app.features.userinstitutionlink.crud import CRUDUserInstitutionLink
 
-from app.features import transaction
+from app.features import transaction, userinstitutionlink
 
 router = APIRouter()
 
@@ -25,12 +24,16 @@ def create(
     account: AccountApiIn,
 ) -> AccountApiOut:
     try:
-        user = CRUDUserInstitutionLink.read_user(db, account.user_institution_link_id)
+        user = userinstitutionlink.crud.CRUDUserInstitutionLink.read_user(
+            db, account.user_institution_link_id
+        )
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if user.id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
-    if CRUDUserInstitutionLink.is_synced(db, account.user_institution_link_id):
+    if userinstitutionlink.crud.CRUDUserInstitutionLink.is_synced(
+        db, account.user_institution_link_id
+    ):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDAccount.create(db, account)
 
@@ -44,6 +47,21 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> AccountApiOut:
     if CRUDAccount.read_user(db, account.id).id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return account
+
+
+@router.get("/{id}/transactions")
+def read_transactions(
+    db: DBSession, current_user: CurrentUser, id: int, page: int = 1, per_page: int = 0
+) -> list[transaction.models.TransactionApiOut]:
+    try:
+        account = CRUDAccount.read(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    if CRUDAccount.read_user(db, account.id).id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    return transaction.crud.CRUDTransaction.read_many_by_account(
+        db, account.id, page, per_page
+    )
 
 
 @router.post("/{id}/transactions-sheet")
@@ -92,7 +110,9 @@ def update(
     if CRUDAccount.is_synced(db, id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     try:
-        user = CRUDUserInstitutionLink.read_user(db, account.user_institution_link_id)
+        user = userinstitutionlink.crud.CRUDUserInstitutionLink.read_user(
+            db, account.user_institution_link_id
+        )
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if user.id != current_user.id:

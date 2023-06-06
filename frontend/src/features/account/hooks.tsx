@@ -1,5 +1,5 @@
 import { skipToken } from "@reduxjs/toolkit/dist/query";
-import { api } from "app/services/api";
+import { AccountApiOut, api } from "app/services/api";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 import { renderErrorMessage } from "utils/error";
 
@@ -67,5 +67,36 @@ export function useAccountOptions(institutionLinkid?: number) {
     isError: institutionLinkQuery.isError || accountsQuery.isError,
     isSuccess: institutionLinkQuery.isSuccess && accountsQuery.isSuccess,
     error,
+  };
+}
+
+function AccountOption(props: { account: AccountApiOut }) {
+  const accountQueries = useAccountQueries(props.account.id);
+  return (
+    <>
+      {accountQueries.institution?.name} / ··· {accountQueries.account?.mask}
+    </>
+  );
+}
+
+export function useAccountJoinInstitutionOptions() {
+  const accountsQuery = api.endpoints.readManyApiAccountsGet.useQuery();
+  const accountOptions = accountsQuery.data?.map((account) => {
+    const option = <AccountOption account={account} />;
+    return {
+      key: account.id,
+      value: account.id,
+      content: option,
+      text: option,
+    };
+  });
+  return {
+    data: accountOptions,
+    isLoading: accountsQuery.isLoading,
+    isError: accountsQuery.isError,
+    isSuccess: accountsQuery.isSuccess,
+    error: accountsQuery.isError
+      ? renderErrorMessage(accountsQuery.error)
+      : undefined,
   };
 }
