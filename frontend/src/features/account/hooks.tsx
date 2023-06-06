@@ -34,42 +34,6 @@ export function useAccountQueries(accountId?: number) {
   };
 }
 
-export function useAccountOptions(institutionLinkid?: number) {
-  const institutionLinkQuery =
-    api.endpoints.readApiInstitutionLinksIdGet.useQuery(
-      institutionLinkid || skipToken
-    );
-  const accountsQuery =
-    api.endpoints.readAccountsApiInstitutionLinksIdAccountsGet.useQuery(
-      institutionLinkQuery.data?.id || skipToken
-    );
-
-  const accountOptions = accountsQuery.data?.map((account) => {
-    return {
-      key: account.id,
-      value: account.id,
-      text: "··· " + account.mask,
-    };
-  });
-
-  const error = [
-    institutionLinkQuery.isError
-      ? renderErrorMessage(institutionLinkQuery.error)
-      : undefined,
-    accountsQuery.isError ? accountsQuery.error : undefined,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  return {
-    data: accountOptions,
-    isLoading: institutionLinkQuery.isLoading || accountsQuery.isLoading,
-    isError: institutionLinkQuery.isError || accountsQuery.isError,
-    isSuccess: institutionLinkQuery.isSuccess && accountsQuery.isSuccess,
-    error,
-  };
-}
-
 function AccountOption(props: { account: AccountApiOut }) {
   const accountQueries = useAccountQueries(props.account.id);
   return (
@@ -79,7 +43,7 @@ function AccountOption(props: { account: AccountApiOut }) {
   );
 }
 
-export function useAccountJoinInstitutionOptions() {
+export function useAccountOptions() {
   const accountsQuery = api.endpoints.readManyApiAccountsGet.useQuery();
   const accountOptions = accountsQuery.data?.map((account) => {
     const option = <AccountOption account={account} />;

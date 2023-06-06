@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import {
   TransactionApiOut,
   TransactionApiIn,
-  UserInstitutionLinkApiOut,
   api,
   PaymentChannel,
   TransactionCode,
@@ -16,7 +15,6 @@ import FormDateTimeInput from "components/FormDateTimeInput";
 import FormTextInput from "components/FormTextInput";
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDropdownInput from "components/FormDropdownInput";
-import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 import { useAccountOptions } from "features/account/hooks";
 
 export default function TransactionForm(props: {
@@ -29,7 +27,6 @@ export default function TransactionForm(props: {
   const name = useFormField("");
   const currency = useFormField("");
   // const category = useFormField("");
-  const institutionLinkId = useFormField(0);
   const accountId = useFormField(0);
   const currencyCode = useFormField("");
   const code = useFormField("");
@@ -40,7 +37,6 @@ export default function TransactionForm(props: {
     datetime,
     name,
     currency,
-    institutionLinkId,
     accountId,
     currencyCode,
     code,
@@ -80,8 +76,7 @@ export default function TransactionForm(props: {
     text: option,
   }));
 
-  const institutionLinkOptions = useInstitutionLinkOptions();
-  const accountOptions = useAccountOptions(institutionLinkId.value);
+  const accountOptions = useAccountOptions();
 
   useEffect(() => {
     if (!props.transaction) return;
@@ -96,14 +91,7 @@ export default function TransactionForm(props: {
     // category.set(props.transaction.category);
     accountId.set(props.transaction.account_id);
     currencyCode.set(props.transaction!.currency_code);
-    if (accountQuery.data)
-      institutionLinkId.set(accountQuery.data.user_institution_link_id);
   }, [props.transaction, accountQuery]);
-
-  useEffect(() => {
-    if (accountOptions.data?.length === 1)
-      accountId.set(accountOptions.data[0].key);
-  }, [accountOptions.data]);
 
   const [createTransaction, createTransactionResult] =
     api.endpoints.createApiTransactionsPost.useMutation();
@@ -161,13 +149,6 @@ export default function TransactionForm(props: {
       title={(props.transaction ? "Edit" : "Add") + " a Transaction"}
       onSubmit={handleSubmit}
     >
-      <FormDropdownInput
-        label="Institution"
-        field={institutionLinkId}
-        options={institutionLinkOptions.data || []}
-        loading={institutionLinkOptions.isLoading}
-        error={institutionLinkOptions.isError}
-      />
       <FormDropdownInput
         label="Account"
         field={accountId}

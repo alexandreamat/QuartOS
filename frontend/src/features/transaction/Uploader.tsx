@@ -1,8 +1,6 @@
-import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost } from "app/services/api";
 import { api } from "app/services/api";
 import FormDropdownInput from "components/FormDropdownInput";
-import InstitutionLinkOption from "features/institutionlink/InstitutionLinkOption";
 import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
 import {
@@ -18,32 +16,21 @@ import {
 } from "semantic-ui-react";
 import TransactionsTable from "./Table";
 import { renderErrorMessage } from "utils/error";
-import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 import { useAccountOptions } from "features/account/hooks";
 
 export default function Uploader(props: {
   open: boolean;
   onClose: () => void;
 }) {
-  const institutionLinkId = useFormField(0);
   const accountId = useFormField(0);
 
-  const fields = [institutionLinkId, accountId];
-
-  const institutionLinkOptions = useInstitutionLinkOptions();
-  const accountOptions = useAccountOptions(institutionLinkId.value);
-
-  useEffect(() => {
-    if (!institutionLinkOptions.isSuccess) return;
-    if (accountOptions.data?.length === 1)
-      accountId.set(accountOptions.data[0].key);
-  }, [accountOptions.data]);
+  const accountOptions = useAccountOptions();
 
   const [upload, uploadResult] =
     api.endpoints.uploadTransactionsSheetApiAccountsIdTransactionsSheetPost.useMutation();
 
   const handleClose = () => {
-    fields.forEach((field) => field.reset());
+    accountId.reset();
     uploadResult.reset();
     props.onClose();
   };
@@ -62,8 +49,7 @@ export default function Uploader(props: {
   };
 
   const handleFileUpload = async (file: File) => {
-    const invalidFields = fields.filter((field) => !field.validate());
-    if (invalidFields.length > 0) return;
+    if (!accountId.validate()) return;
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -99,23 +85,15 @@ export default function Uploader(props: {
       <Modal.Content scrolling>
         <Form>
           <FormDropdownInput
-            label="Institution"
-            field={institutionLinkId}
-            options={institutionLinkOptions.data || []}
-            loading={institutionLinkOptions.isLoading}
-            error={institutionLinkOptions.isError}
-          />
-          <FormDropdownInput
             label="Account"
             field={accountId}
             options={accountOptions.data || []}
             loading={accountOptions.isLoading}
             error={accountOptions.isError}
           />
-
           {(uploadResult.isUninitialized || uploadResult.isLoading) && (
             <Segment
-              disabled={!accountId.value || !institutionLinkId.value}
+              disabled={!accountId.value}
               placeholder
               onDrop={handleFileDrop}
               onDragOver={(event: any) => event.preventDefault()}
@@ -126,7 +104,7 @@ export default function Uploader(props: {
                   Upload your Transactions Sheet File
                 </Header>
                 <Button
-                  disabled={!accountId.value || !institutionLinkId.value}
+                  disabled={!accountId.value}
                   as="label"
                   htmlFor="file-input"
                   primary

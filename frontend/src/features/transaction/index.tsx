@@ -6,7 +6,7 @@ import EmptyTablePlaceholder from "components/TablePlaceholder";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Uploader from "./Uploader";
 import TransactionsTable from "./Table";
-import { useAccountJoinInstitutionOptions } from "features/account/hooks";
+import { useAccountOptions } from "features/account/hooks";
 
 function Bar(props: {
   onCreate: () => void;
@@ -23,7 +23,7 @@ function Bar(props: {
     setIsUploaderOpen(false);
   };
 
-  const accountOptions = useAccountJoinInstitutionOptions();
+  const accountOptions = useAccountOptions();
 
   return (
     <Menu tabular>
