@@ -105,8 +105,6 @@ function TransactionsInfiniteTable(props: {
 
   if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
 
-  if (!allTransactions.length) return <EmptyTablePlaceholder />;
-
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <Bar
@@ -115,17 +113,21 @@ function TransactionsInfiniteTable(props: {
         onAccountIdChange={handleAccountIdChange}
       />
       <div style={{ flex: 1, overflow: "auto" }}>
-        <InfiniteScroll
-          loader={<></>}
-          dataLength={allTransactions.length}
-          next={() => setCurrentPage(currentPage + 1)}
-          hasMore={true}
-        >
-          <TransactionsTable
-            transactions={allTransactions}
-            onEdit={props.onEdit}
-          />
-        </InfiniteScroll>
+        {allTransactions.length ? (
+          <InfiniteScroll
+            loader={<></>}
+            dataLength={allTransactions.length}
+            next={() => setCurrentPage(currentPage + 1)}
+            hasMore={true}
+          >
+            <TransactionsTable
+              transactions={allTransactions}
+              onEdit={props.onEdit}
+            />
+          </InfiniteScroll>
+        ) : (
+          <EmptyTablePlaceholder />
+        )}
       </div>
     </div>
   );
