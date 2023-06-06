@@ -20,7 +20,7 @@ class IdentifiableBase(SQLModel):
         cls: Type[ModelType], db: Session, obj: ModelType
     ) -> ModelType:
         db.add(obj)
-        db.commit()
+        db.flush()
         db.refresh(obj)
         return obj
 
@@ -41,7 +41,7 @@ class IdentifiableBase(SQLModel):
     def delete(cls: Type[ModelType], db: Session, id: int) -> None:
         obj = cls.read(db, id)
         db.delete(obj)
-        db.commit()
+        db.flush()
 
 
 class PlaidBase(SQLModel):
