@@ -51,7 +51,12 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> AccountApiOut:
 
 @router.get("/{id}/transactions")
 def read_transactions(
-    db: DBSession, current_user: CurrentUser, id: int, page: int = 1, per_page: int = 0
+    db: DBSession,
+    current_user: CurrentUser,
+    id: int,
+    page: int = 1,
+    per_page: int = 0,
+    search: str | None = None,
 ) -> list[transaction.models.TransactionApiOut]:
     try:
         account = CRUDAccount.read(db, id)
@@ -60,7 +65,7 @@ def read_transactions(
     if CRUDAccount.read_user(db, account.id).id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return transaction.crud.CRUDTransaction.read_many_by_account(
-        db, account.id, page, per_page
+        db, account.id, page, per_page, search
     )
 
 

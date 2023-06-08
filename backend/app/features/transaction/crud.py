@@ -85,22 +85,26 @@ class CRUDTransaction(
 
     @classmethod
     def read_many_by_account(
-        cls, db: Session, account_id: int, page: int, per_page: int
+        cls, db: Session, account_id: int, page: int, per_page: int, search: str | None
     ) -> list[TransactionApiOut]:
         offset = (page - 1) * per_page if page and per_page else 0
 
-        query = (
-            db.query(Transaction)
+        statement = (
+            select(Transaction)
             .join(account.models.Account)
             .filter(account.models.Account.id == account_id)
             .order_by(desc(Transaction.datetime))
         )
 
+        if search:
+            search = f"%{search}%"
+            statement = statement.where(col(Transaction.name).like(search))
+
         if per_page:
             offset = (page - 1) * per_page
-            query = query.offset(offset).limit(per_page)
+            statement = statement.offset(offset).limit(per_page)
 
-        transactions = query.all()
+        transactions = db.exec(statement).all()
 
         return [cls.api_out_model.from_orm(t) for t in transactions]
 
