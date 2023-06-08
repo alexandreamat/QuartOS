@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Table, Loader, Flag, FlagNameValues } from "semantic-ui-react";
+import {
+  Table,
+  Loader,
+  Flag,
+  FlagNameValues,
+  Message,
+} from "semantic-ui-react";
 import AccountForm from "./Form";
 import { AccountApiOut, InstitutionApiOut, api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
@@ -28,7 +34,7 @@ function InstitutionCell(props: { institution: InstitutionApiOut }) {
 
 function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
   const institutionLinkQueries = useInstitutionLinkQueries(
-    props.account.user_institution_link_id
+    props.account.institutionalaccount?.user_institution_link_id
   );
 
   const [deleteAccount, deleteAccountResult] =
@@ -46,8 +52,17 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
   return (
     <Table.Row key={props.account.id}>
       <Table.Cell>{props.account.name}</Table.Cell>
-      <Table.Cell>**** {props.account.mask}</Table.Cell>
-      <Table.Cell>{props.account.type}</Table.Cell>
+      <Table.Cell>
+        {props.account.institutionalaccount && (
+          <>**** {props.account.institutionalaccount.mask}</>
+        )}
+      </Table.Cell>
+      <Table.Cell>
+        {props.account.institutionalaccount &&
+          props.account.institutionalaccount.type}
+        {props.account.noninstitutionalaccount &&
+          props.account.noninstitutionalaccount.type}
+      </Table.Cell>
       <Table.Cell>{props.account.currency_code}</Table.Cell>
       <LoadableCell
         isLoading={institutionLinkQueries.isLoading}
@@ -89,6 +104,9 @@ function AccountsTable(props: {
   onEdit: (account: AccountApiOut) => void;
   onCreate: () => void;
 }) {
+  if (!props.data.length)
+    return <EmptyTablePlaceholder onCreate={props.onCreate} />;
+
   return (
     <Table>
       <TableHeader
@@ -146,14 +164,20 @@ export default function Accounts() {
 
   return (
     <>
-      {accountsQuery.data?.length ? (
+      {accountsQuery.isError && (
+        <Message
+          negative
+          header="An error has occurred!"
+          content={renderErrorMessage(accountsQuery.error)}
+          icon="attention"
+        />
+      )}
+      {accountsQuery.isSuccess && (
         <AccountsTable
           data={accountsQuery.data}
           onEdit={handleEdit}
           onCreate={handleCreate}
         />
-      ) : (
-        <EmptyTablePlaceholder onCreate={handleCreate} />
       )}
       <AccountForm
         account={selectedAccount}

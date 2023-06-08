@@ -6,7 +6,7 @@ from app.features.institution.models import Institution
 from app.features.user.models import User
 
 if TYPE_CHECKING:
-    from app.features.account.models import Account
+    from app.features.account.models import InstitutionalAccount
 
 
 class __InstitutionLinkBase(SQLModel):
@@ -64,7 +64,7 @@ class UserInstitutionLink(
 
     user: User = Relationship(back_populates="institution_links")
     institution: Institution = Relationship(back_populates="user_links")
-    accounts: list["Account"] = Relationship(
+    institutionalaccounts: list["InstitutionalAccount"] = Relationship(
         back_populates="userinstitutionlink",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )

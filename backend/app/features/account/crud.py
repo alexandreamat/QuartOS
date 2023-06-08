@@ -1,4 +1,4 @@
-from sqlmodel import Session
+from sqlmodel import Session, select
 from app.common.crud import CRUDBase, CRUDSyncable
 
 from sqlalchemy.exc import NoResultFound
@@ -9,36 +9,59 @@ from .models import (
     Account,
     AccountApiOut,
     AccountApiIn,
+    AccountDBIn,
     AccountPlaidIn,
     AccountPlaidOut,
+    InstitutionalAccount,
+    NonInstitutionalAccount,
 )
 
 
-class CRUDAccount(
-    CRUDBase[Account, AccountApiOut, AccountApiIn],
-    CRUDSyncable[Account, AccountPlaidOut, AccountPlaidIn],
-):
+class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountDBIn]):
     db_model = Account
     api_out_model = AccountApiOut
-    plaid_out_model = AccountPlaidOut
+
+    @classmethod
+    def db_obj_from_schema(cls, obj_in: AccountDBIn) -> Account:
+        obj_in_dict = obj_in.dict()
+
+        institutionalaccount_data = obj_in_dict.pop("institutionalaccount", None)
+        noninstitutionalaccount_data = obj_in_dict.pop("noninstitutionalaccount", None)
+
+        institutionalaccount = (
+            InstitutionalAccount(**institutionalaccount_data)
+            if institutionalaccount_data
+            else None
+        )
+        noninstitutionalaccount = (
+            NonInstitutionalAccount(**noninstitutionalaccount_data)
+            if noninstitutionalaccount_data
+            else None
+        )
+
+        return Account(
+            **obj_in_dict,
+            institutionalaccount=institutionalaccount,
+            noninstitutionalaccount=noninstitutionalaccount
+        )
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
-        return user.models.UserApiOut.from_orm(cls.db_model.read(db, id).user)
+        return user.models.UserApiOut.from_orm(Account.read(db, id).user)
 
     @classmethod
     def read_institution(
         cls, db: Session, id: int
     ) -> institution.models.InstitutionApiOut:
         return institution.models.InstitutionApiOut.from_orm(
-            cls.db_model.read(db, id).institution
+            Account.read(db, id).institution
         )
 
     @classmethod
     def read_transaction_deserialiser(
         cls, db: Session, id: int
     ) -> transactiondeserialiser.models.TransactionDeserialiserApiOut:
-        db_deserialiser = cls.db_model.read(db, id).transaction_deserialiser
+        db_deserialiser = Account.read(db, id).transactiondeserialiser
         if not db_deserialiser:
             raise NoResultFound
         return transactiondeserialiser.models.TransactionDeserialiserApiOut.from_orm(
@@ -52,7 +75,7 @@ class CRUDAccount(
         l = userinstitutionlink.models.UserInstitutionLink.read(
             db, user_institution_link_id
         )
-        return [cls.api_out_model.from_orm(a) for a in l.accounts]
+        return [AccountApiOut.from_orm(ia.account) for ia in l.institutionalaccounts]
 
     @classmethod
     def read_many_by_institution_link_plaid(
@@ -61,17 +84,26 @@ class CRUDAccount(
         l = userinstitutionlink.models.UserInstitutionLink.read(
             db, user_institution_link_id
         )
-        return [cls.plaid_out_model.from_orm(a) for a in l.accounts]
+        return [AccountPlaidOut.from_orm(ia.account) for ia in l.institutionalaccounts]
 
     @classmethod
     def read_many_by_user(cls, db: Session, user_id: int) -> list[AccountApiOut]:
         db_user = user.models.User.read(db, user_id)
         return [
-            cls.api_out_model.from_orm(a)
+            AccountApiOut.from_orm(ia.account)
             for l in db_user.institution_links
-            for a in l.accounts
+            for ia in l.institutionalaccounts
+        ] + [
+            AccountApiOut.from_orm(nia.account)
+            for nia in db_user.noninstitutionalaccounts
         ]
 
     @classmethod
+    def sync(cls, db: Session, account: AccountPlaidIn) -> AccountPlaidOut:
+        db_account_in = Account(**account.dict())
+        db_account_out = Account.create_or_update(db, db_account_in)
+        return AccountPlaidOut.from_orm(db_account_out)
+
+    @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
-        return cls.db_model.read(db, id).is_synced
+        return Account.read(db, id).is_synced

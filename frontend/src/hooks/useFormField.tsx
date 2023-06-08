@@ -5,9 +5,11 @@ const useFormField = <T,>(initialValue?: T, optional?: boolean) => {
   const [isError, setIsError] = useState(false);
 
   const validate = () => {
+    if (typeof value === "boolean") return true;
     if (optional) return true;
     const isValid = Boolean(value) && value !== undefined;
     setIsError(!isValid);
+    if (!isValid) console.log(`Value of type ${typeof value} is invalid`);
     return isValid;
   };
 

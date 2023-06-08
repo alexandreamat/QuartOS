@@ -719,29 +719,43 @@ export type UserInstitutionLinkApiOut = {
 export type InstitutionLinkApiIn = {
   institution_id: number;
 };
-export type AccountType =
+export type InstitutionalAccountType =
   | "investment"
   | "credit"
   | "depository"
   | "loan"
   | "brokerage"
   | "other";
+export type InstitutionalAccountBase = {
+  user_institution_link_id: number;
+  type: InstitutionalAccountType;
+  mask: string;
+};
+export type NonInstitutionalAccountType =
+  | "personal ledger"
+  | "cash"
+  | "property";
+export type NonInstitutionalAccountBaseApiOut = {
+  type: NonInstitutionalAccountType;
+  user_id: number;
+};
 export type AccountApiOut = {
   id: number;
   currency_code: string;
-  type: AccountType;
-  user_institution_link_id: number;
   balance: number;
   name: string;
-  mask: string;
+  institutionalaccount?: InstitutionalAccountBase;
+  noninstitutionalaccount?: NonInstitutionalAccountBaseApiOut;
+};
+export type NonInstitutionalAccountBaseApiIn = {
+  type: NonInstitutionalAccountType;
 };
 export type AccountApiIn = {
   currency_code: string;
-  type: AccountType;
-  user_institution_link_id: number;
   balance: number;
   name: string;
-  mask: string;
+  institutionalaccount?: InstitutionalAccountBase;
+  noninstitutionalaccount?: NonInstitutionalAccountBaseApiIn;
 };
 export type PaymentChannel = "online" | "in store" | "other";
 export type TransactionCode =

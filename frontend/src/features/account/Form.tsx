@@ -1,9 +1,10 @@
-import { Message } from "semantic-ui-react";
+import { CheckboxProps, Form, Message } from "semantic-ui-react";
 import { useEffect } from "react";
 import {
   AccountApiOut,
   AccountApiIn,
-  AccountType,
+  InstitutionalAccountType,
+  NonInstitutionalAccountType,
   api,
 } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
@@ -20,10 +21,12 @@ export default function AccountForm(props: {
   open: boolean;
   onClose: () => void;
 }) {
+  const isInstitutional = useFormField(false);
   const mask = useFormField("");
   const name = useFormField("");
   const currencyCode = useFormField("");
-  const typeIdx = useFormField(-1);
+  const institutionalType = useFormField("");
+  const nonInstitutionalType = useFormField("");
   const institutionLinkId = useFormField(0);
   const balanceStr = useFormField("");
 
@@ -41,10 +44,14 @@ export default function AccountForm(props: {
     mask,
     name,
     currencyCode,
-    typeIdx,
+    institutionalType,
+    nonInstitutionalType,
     balanceStr,
     institutionLinkId,
+    isInstitutional,
   ];
+
+  const requiredFields = [name, currencyCode, balanceStr];
 
   const [createAccount, createAccountResult] =
     api.endpoints.createApiAccountsPost.useMutation();
@@ -55,11 +62,17 @@ export default function AccountForm(props: {
     if (!props.account) return;
     name.set(props.account.name);
     currencyCode.set(props.account.currency_code);
-    typeIdx.set(
-      typeOptions.findIndex((option) => option.text === props.account?.type)
-    );
-    institutionLinkId.set(props.account.user_institution_link_id);
     balanceStr.set(props.account.balance.toFixed(2));
+    if (props.account.institutionalaccount) {
+      const institutionalAccount = props.account.institutionalaccount;
+      institutionLinkId.set(institutionalAccount.user_institution_link_id);
+      institutionalType.set(institutionalAccount.type);
+      mask.set(institutionalAccount.mask);
+    }
+    if (props.account.noninstitutionalaccount) {
+      const nonInstitutionalAccount = props.account.noninstitutionalaccount;
+      nonInstitutionalType.set(nonInstitutionalAccount.type);
+    }
   }, [props.account]);
 
   const handleClose = () => {
@@ -67,7 +80,7 @@ export default function AccountForm(props: {
     props.onClose();
   };
 
-  const typeOptions = [
+  const institutionalTypeOptions = [
     "investment",
     "credit",
     "depository",
@@ -80,18 +93,47 @@ export default function AccountForm(props: {
     text: type,
   }));
 
-  const handleSubmit = async () => {
-    const invalidFields = fields.filter((field) => !field.validate());
+  const nonInstitutionalTypeOptions = [
+    "personal ledger",
+    "cash",
+    "property",
+  ].map((type, index) => ({
+    key: index,
+    value: type,
+    text: type,
+  }));
 
-    if (invalidFields.length > 0) return;
+  const handleSubmit = async () => {
+    const formFields = [
+      ...requiredFields,
+      ...(isInstitutional.value
+        ? [institutionalType, institutionLinkId, mask]
+        : [nonInstitutionalType]),
+    ];
+
+    const invalidFields = formFields.reduce(
+      (count, field) => count + (field.validate() ? 0 : 1),
+      0
+    );
+
+    if (invalidFields > 0) return;
 
     const account: AccountApiIn = {
-      mask: mask.value!,
       name: name.value!,
       currency_code: currencyCode.value!,
-      type: typeOptions[typeIdx.value!].text as AccountType,
-      user_institution_link_id: institutionLinkId.value!,
       balance: Number(balanceStr.value!),
+      institutionalaccount: isInstitutional.value
+        ? {
+            mask: mask.value!,
+            type: institutionalType.value! as InstitutionalAccountType,
+            user_institution_link_id: institutionLinkId.value!,
+          }
+        : undefined,
+      noninstitutionalaccount: !isInstitutional.value
+        ? {
+            type: nonInstitutionalType.value! as NonInstitutionalAccountType,
+          }
+        : undefined,
     };
     if (props.account) {
       try {
@@ -123,26 +165,55 @@ export default function AccountForm(props: {
       title={(props.account ? "Edit" : "Add") + " an Account"}
       onSubmit={handleSubmit}
     >
-      <FormDropdownInput
-        label="Institution"
-        field={institutionLinkId}
-        options={institutionLinkOptions.data || []}
-        loading={institutionLinkOptions.isLoading}
-        error={institutionLinkOptions.isError}
-      />
       <FormTextInput label="Account Name" field={name} />
-      <FormTextInput label="Account Number" field={mask} />
+      <Form.Checkbox
+        label="Link to a financial institution"
+        checked={isInstitutional.value}
+        onChange={(
+          event: React.FormEvent<HTMLInputElement>,
+          data: CheckboxProps
+        ) => {
+          institutionalType.reset();
+          nonInstitutionalType.reset();
+          isInstitutional.reset();
+          isInstitutional.set(data.checked);
+        }}
+      />
+      {isInstitutional.value ? (
+        <>
+          <FormDropdownInput
+            label="Institution"
+            field={institutionLinkId}
+            options={institutionLinkOptions.data || []}
+            loading={institutionLinkOptions.isLoading}
+            error={institutionLinkOptions.isError}
+          />
+          <FormDropdownInput
+            label="Type"
+            field={institutionalType}
+            options={institutionalTypeOptions}
+          />
+          <FormTextInput label="Account Number" field={mask} />
+        </>
+      ) : (
+        <>
+          <FormDropdownInput
+            label="Type"
+            field={nonInstitutionalType}
+            options={nonInstitutionalTypeOptions}
+          />
+        </>
+      )}
       <FormCurrencyInput
         label="Current Balance"
         amount={balanceStr}
         currency={currencyCode}
       />
-      <FormDropdownInput label="Type" field={typeIdx} options={typeOptions} />
-      {fields.some((field) => field.isError) && (
+      {requiredFields.some((field) => field.isError) && (
         <Message
           error
           header="Action Forbidden"
-          content="All fields are required!"
+          content="Some fields are required!"
         />
       )}
       {createAccountResult.isError && (

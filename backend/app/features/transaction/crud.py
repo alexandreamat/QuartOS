@@ -34,7 +34,7 @@ class CRUDTransaction(
         cls, db: Session, id: int
     ) -> institution.models.InstitutionApiOut:
         return institution.models.InstitutionApiOut.from_orm(
-            cls.db_model.read(db, id).user_institution_link
+            cls.db_model.read(db, id).userinstitutionlink
         )
 
     @classmethod
@@ -53,7 +53,9 @@ class CRUDTransaction(
             db, user_institution_link
         )
         return [
-            cls.api_out_model.from_orm(t) for a in l.accounts for t in a.transactions
+            cls.api_out_model.from_orm(t)
+            for ia in l.institutionalaccounts
+            for t in ia.account.transactions
         ]
 
     @classmethod
