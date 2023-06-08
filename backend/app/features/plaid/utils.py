@@ -18,7 +18,7 @@ def sync_transactions(
     user_institution_link: UserInstitutionLinkPlaidOut,
 ) -> None:
     accounts = {
-        account.plaid_id: account
+        account.institutionalaccount.plaid_id: account
         for account in CRUDAccount.read_many_by_institution_link_plaid(
             db, user_institution_link.id
         )

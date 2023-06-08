@@ -9,6 +9,7 @@ from app.core.security import verify_password
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink.models import UserInstitutionLink
+    from app.features.account.models import NonInstitutionalAccount
 
 
 class __UserBase(SQLModel):
@@ -29,6 +30,10 @@ class User(__UserBase, IdentifiableBase, table=True):
     hashed_password: str
 
     institution_links: list["UserInstitutionLink"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
+    noninstitutionalaccounts: list["NonInstitutionalAccount"] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )

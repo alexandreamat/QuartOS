@@ -66,14 +66,14 @@ class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=Tr
 
     @property
     def user(self) -> User:
-        return self.account.userinstitutionlink.user
+        return self.account.user
 
     @property
-    def institution(self) -> Institution:
-        return self.account.userinstitutionlink.institution
+    def institution(self) -> Institution | None:
+        return self.account.institution
 
     @property
-    def user_institution_link(self) -> UserInstitutionLink:
+    def userinstitutionlink(self) -> UserInstitutionLink | None:
         return self.account.userinstitutionlink
 
     @property

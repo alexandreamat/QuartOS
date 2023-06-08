@@ -9,7 +9,7 @@ export function useAccountQueries(accountId?: number) {
   );
 
   const institutionLinkQueries = useInstitutionLinkQueries(
-    accountQuery.data?.user_institution_link_id
+    accountQuery.data?.institutionalaccount?.user_institution_link_id
   );
 
   const isLoading = accountQuery.isLoading || institutionLinkQueries.isLoading;
@@ -36,11 +36,18 @@ export function useAccountQueries(accountId?: number) {
 
 function AccountOption(props: { account: AccountApiOut }) {
   const accountQueries = useAccountQueries(props.account.id);
-  return (
-    <>
-      {accountQueries.institution?.name} / ··· {accountQueries.account?.mask}
-    </>
-  );
+  if (accountQueries.account?.institutionalaccount)
+    return (
+      <>
+        {accountQueries.institution?.name} / ···{" "}
+        {accountQueries.account.institutionalaccount.mask}
+      </>
+    );
+
+  if (accountQueries.account?.noninstitutionalaccount)
+    return <>{accountQueries.account.name}</>;
+
+  return <></>;
 }
 
 export function useAccountOptions() {

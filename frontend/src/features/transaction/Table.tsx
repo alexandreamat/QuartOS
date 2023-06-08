@@ -72,7 +72,7 @@ function TransactionRow(
         isError={accountQueries.isError}
         error={accountQueries.error}
       >
-        ··· {accountQueries.account?.mask}
+        ··· {accountQueries.account?.institutionalaccount?.mask}
       </LoadableCell>
       {isApiOut && (
         <>
