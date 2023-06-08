@@ -91,17 +91,6 @@ function InstitutionLinkRow(props: {
           }
         />
       </Table.Cell>
-      <Table.Cell collapsing>
-        <ActionButton
-          icon="credit card"
-          content="View"
-          onClick={() =>
-            navigate(
-              `/accounts?modal=false&institutionLinkId=${props.institutionLink.id}`
-            )
-          }
-        />
-      </Table.Cell>
       <EditCell
         disabled={props.institutionLink.is_synced}
         onEdit={() => props.onEdit(props.institutionLink)}
@@ -156,7 +145,7 @@ export default function InstitutionsLinks() {
     data: UserInstitutionLinkApiOut[];
   }) => (
     <Table>
-      <TableHeader headers={["Institution", "Website"]} actions={5} />
+      <TableHeader headers={["Institution", "Website"]} actions={4} />
       <Table.Body>
         {props.data.map((institutionLink) => (
           <InstitutionLinkRow
@@ -165,7 +154,7 @@ export default function InstitutionsLinks() {
           />
         ))}
       </Table.Body>
-      <TableFooter columns={7} onCreate={handleCreate} />
+      <TableFooter columns={6} onCreate={handleCreate} />
     </Table>
   );
 
