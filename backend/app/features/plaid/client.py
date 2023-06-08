@@ -156,7 +156,6 @@ def create_transaction_plaid_in(
     transaction: Transaction,
     accounts: dict[str, AccountPlaidOut],
 ) -> TransactionPlaidIn:
-    print(transaction.transaction_id)
     return TransactionPlaidIn(
         account_id=accounts[transaction.account_id].id,
         amount=-transaction.amount,
