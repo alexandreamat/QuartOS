@@ -337,7 +337,11 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/api/accounts/${queryArg.id}/transactions`,
-          params: { page: queryArg.page, per_page: queryArg.perPage },
+          params: {
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+            search: queryArg.search,
+          },
         }),
         providesTags: ["accounts"],
       }),
@@ -358,7 +362,11 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/api/transactions/`,
-          params: { page: queryArg.page, per_page: queryArg.perPage },
+          params: {
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+            search: queryArg.search,
+          },
         }),
         providesTags: ["transactions"],
       }),
@@ -585,6 +593,7 @@ export type ReadTransactionsApiAccountsIdTransactionsGetApiArg = {
   id: number;
   page?: number;
   perPage?: number;
+  search?: string;
 };
 export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiResponse =
   /** status 200 Successful Response */ TransactionApiIn[];
@@ -597,6 +606,7 @@ export type ReadManyApiTransactionsGetApiResponse =
 export type ReadManyApiTransactionsGetApiArg = {
   page?: number;
   perPage?: number;
+  search?: string;
 };
 export type CreateApiTransactionsPostApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];

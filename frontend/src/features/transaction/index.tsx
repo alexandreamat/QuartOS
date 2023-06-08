@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Icon, Button, Menu, Dropdown, DropdownProps } from "semantic-ui-react";
+import {
+  Icon,
+  Button,
+  Menu,
+  Dropdown,
+  DropdownProps,
+  Input,
+  InputOnChangeData,
+} from "semantic-ui-react";
 import TransactionForm from "./Form";
 import { TransactionApiOut, api } from "app/services/api";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
@@ -12,6 +20,8 @@ function Bar(props: {
   onCreate: () => void;
   accountId: number;
   onAccountIdChange: (x: number) => void;
+  search: string;
+  onSearchChange: (x: string) => void;
 }) {
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
@@ -26,12 +36,23 @@ function Bar(props: {
   const accountOptions = useAccountOptions();
 
   return (
-    <Menu tabular>
+    <Menu secondary>
       <Menu.Item>
         <Button icon labelPosition="left" primary onClick={props.onCreate}>
           <Icon name="plus" />
           Add
         </Button>
+      </Menu.Item>
+      <Menu.Item>
+        <Input
+          icon="search"
+          placeholder="Search..."
+          value={props.search}
+          onChange={(
+            event: React.ChangeEvent<HTMLInputElement>,
+            data: InputOnChangeData
+          ) => props.onSearchChange(data.value as string)}
+        />
       </Menu.Item>
       <Menu.Item>
         <Dropdown
@@ -75,10 +96,16 @@ function TransactionsInfiniteTable(props: {
     []
   );
   const [accountId, setAccountId] = useState(0);
+  const [search, setSearch] = useState("");
 
   const handleAccountIdChange = (value: number) => {
     setAllTransactions([]);
     setAccountId(value);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setAllTransactions([]);
+    setSearch(value);
   };
 
   const transactionsQuery = accountId
@@ -86,10 +113,12 @@ function TransactionsInfiniteTable(props: {
         id: accountId,
         page: currentPage,
         perPage: 20,
+        search: search,
       })
     : api.endpoints.readManyApiTransactionsGet.useQuery({
         page: currentPage,
         perPage: 20,
+        search: search,
       });
 
   useEffect(() => {
@@ -111,6 +140,8 @@ function TransactionsInfiniteTable(props: {
         onCreate={props.onCreate}
         accountId={accountId}
         onAccountIdChange={handleAccountIdChange}
+        search={search}
+        onSearchChange={handleSearchChange}
       />
       <div style={{ flex: 1, overflow: "auto" }}>
         {allTransactions.length ? (
