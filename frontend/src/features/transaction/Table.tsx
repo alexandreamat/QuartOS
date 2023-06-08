@@ -49,7 +49,7 @@ function TransactionRow(
       </Table.Cell>
       <Table.Cell collapsing>
         {props.transaction.datetime &&
-          format(new Date(props.transaction.datetime), " yyyy MMMM d, H:mm")}
+          format(new Date(props.transaction.datetime), " yyyy MMMM d")}
       </Table.Cell>
       {/* <Table.Cell>{props.transaction.category}</Table.Cell> */}
       <Table.Cell>{props.transaction.name}</Table.Cell>
