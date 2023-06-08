@@ -50,8 +50,11 @@ def read_many(
     current_user: CurrentUser,
     page: int = 1,
     per_page: int = 0,
+    search: str | None = None,
 ) -> list[TransactionApiOut]:
-    return CRUDTransaction.read_many_by_user(db, current_user.id, page, per_page)
+    return CRUDTransaction.read_many_by_user(
+        db, current_user.id, page, per_page, search
+    )
 
 
 @router.put("/{id}")
