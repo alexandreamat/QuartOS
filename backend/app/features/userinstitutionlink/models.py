@@ -6,7 +6,10 @@ from app.features.institution.models import Institution
 from app.features.user.models import User
 
 if TYPE_CHECKING:
-    from app.features.account.models import InstitutionalAccount
+    # from app.features.account.models.Account import InstitutionalAccount
+    from app.features.account.models import Account
+
+    InstitutionalAccount = Account.InstitutionalAccount
 
 
 class __UserInstitutionLinkBase(SQLModel):

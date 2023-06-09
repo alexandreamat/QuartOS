@@ -9,7 +9,9 @@ from app.core.security import verify_password
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink.models import UserInstitutionLink
-    from app.features.account.models import NonInstitutionalAccount
+    from app.features.account.models import Account
+
+    NonInstitutionalAccount = Account.NonInstitutionalAccount
 
 
 class __UserBase(SQLModel):

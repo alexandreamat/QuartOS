@@ -16,71 +16,29 @@ if TYPE_CHECKING:
     from app.features.transaction.models import Transaction
 
 
-class _InstitutionalAccountBase(SQLModel):
-    class InstitutionalAccountType(str, Enum):
-        INVESTMENT = "investment"
-        CREDIT = "credit"
-        DEPOSITORY = "depository"
-        LOAN = "loan"
-        BROKERAGE = "brokerage"
-        OTHER = "other"
+class _AccountBase(SQLModel):
+    class InstitutionalAccount(SQLModel):
+        class InstitutionalAccountType(str, Enum):
+            INVESTMENT = "investment"
+            CREDIT = "credit"
+            DEPOSITORY = "depository"
+            LOAN = "loan"
+            BROKERAGE = "brokerage"
+            OTHER = "other"
 
-    user_institution_link_id: int
-    type: InstitutionalAccountType
-    mask: str
+        user_institution_link_id: int
+        type: InstitutionalAccountType
+        mask: str
 
+    class NonInstitutionalAccount(SQLModel):
+        class NonInstitutionalAccountType(str, Enum):
+            PERSONAL_LEDGER = "personal ledger"
+            CASH = "cash"
+            PROPERTY = "property"
 
-class InstitutionalAccount(
-    _InstitutionalAccountBase, IdentifiableBase, PlaidMaybeMixin, table=True
-):
-    user_institution_link_id: int = Field(foreign_key="userinstitutionlink.id")
+        type: NonInstitutionalAccountType
+        user_id: int | None
 
-    userinstitutionlink: UserInstitutionLink = Relationship(
-        back_populates="institutionalaccounts"
-    )
-    account: "Account" = Relationship(
-        back_populates="institutionalaccount", sa_relationship_kwargs={"uselist": False}
-    )
-
-    @property
-    def user(self) -> User:
-        return self.userinstitutionlink.user
-
-    @property
-    def institution(self) -> Institution:
-        return self.userinstitutionlink.institution
-
-    @property
-    def transactiondeserialiser(self) -> TransactionDeserialiser | None:
-        return self.userinstitutionlink.institution.transactiondeserialiser
-
-    @property
-    def is_synced(self) -> bool:
-        return self.userinstitutionlink.is_synced
-
-
-class _NonInstitutionalAccountBase(SQLModel):
-    class NonInstitutionalAccountType(str, Enum):
-        PERSONAL_LEDGER = "personal ledger"
-        CASH = "cash"
-        PROPERTY = "property"
-
-    type: NonInstitutionalAccountType
-    user_id: int | None
-
-
-class NonInstitutionalAccount(
-    _NonInstitutionalAccountBase, IdentifiableBase, table=True
-):
-    user_id: int = Field(foreign_key="user.id")
-    user: User = Relationship(back_populates="noninstitutionalaccounts")
-    account: "Account" = Relationship(
-        back_populates="noninstitutionalaccount",
-        sa_relationship_kwargs={"uselist": False},
-    )
-
-
-class __AccountBase(SQLModel):
     currency_code: CurrencyCode
     balance: Decimal
     name: str
@@ -103,22 +61,24 @@ class __AccountBase(SQLModel):
         return values
 
 
-class AccountApiIn(__AccountBase):
-    class InstitutionalAccount(_InstitutionalAccountBase):
+class AccountApiIn(_AccountBase):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount):
         ...
 
-    class NonInstitutionalAccount(_NonInstitutionalAccountBase):
+    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount):
         ...
 
     institutionalaccount: InstitutionalAccount | None
     noninstitutionalaccount: NonInstitutionalAccount | None
 
 
-class AccountApiOut(__AccountBase, IdentifiableBase):
-    class InstitutionalAccount(_InstitutionalAccountBase, IdentifiableBase):
+class AccountApiOut(_AccountBase, IdentifiableBase):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, IdentifiableBase):
         ...
 
-    class NonInstitutionalAccount(_NonInstitutionalAccountBase, IdentifiableBase):
+    class NonInstitutionalAccount(
+        _AccountBase.NonInstitutionalAccount, IdentifiableBase
+    ):
         user_id: int
 
     institutionalaccount: InstitutionalAccount | None
@@ -126,21 +86,65 @@ class AccountApiOut(__AccountBase, IdentifiableBase):
     is_synced: bool
 
 
-class AccountPlaidIn(__AccountBase):
-    class InstitutionalAccount(_InstitutionalAccountBase, PlaidBase):
+class AccountPlaidIn(_AccountBase):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidBase):
         ...
 
     institutionalaccount: InstitutionalAccount
 
 
-class AccountPlaidOut(__AccountBase, IdentifiableBase):
-    class InstitutionalAccount(_InstitutionalAccountBase, IdentifiableBase, PlaidBase):
+class AccountPlaidOut(_AccountBase, IdentifiableBase):
+    class InstitutionalAccount(
+        _AccountBase.InstitutionalAccount, IdentifiableBase, PlaidBase
+    ):
         ...
 
     institutionalaccount: InstitutionalAccount
 
 
-class Account(__AccountBase, IdentifiableBase, table=True):
+class Account(_AccountBase, IdentifiableBase, table=True):
+    class InstitutionalAccount(
+        _AccountBase.InstitutionalAccount,
+        IdentifiableBase,
+        PlaidMaybeMixin,
+        table=True,
+    ):
+        user_institution_link_id: int = Field(foreign_key="userinstitutionlink.id")
+
+        userinstitutionlink: UserInstitutionLink = Relationship(
+            back_populates="institutionalaccounts"
+        )
+        account: "Account" = Relationship(
+            back_populates="institutionalaccount",
+            sa_relationship_kwargs={"uselist": False},
+        )
+
+        @property
+        def user(self) -> User:
+            return self.userinstitutionlink.user
+
+        @property
+        def institution(self) -> Institution:
+            return self.userinstitutionlink.institution
+
+        @property
+        def transactiondeserialiser(self) -> TransactionDeserialiser | None:
+            return self.userinstitutionlink.institution.transactiondeserialiser
+
+        @property
+        def is_synced(self) -> bool:
+            return self.userinstitutionlink.is_synced
+
+    class NonInstitutionalAccount(
+        _AccountBase.NonInstitutionalAccount, IdentifiableBase, table=True
+    ):
+        user_id: int = Field(foreign_key="user.id")
+        user: User = Relationship(back_populates="noninstitutionalaccounts")
+        account: "Account" = Relationship(
+            back_populates="noninstitutionalaccount",
+            sa_relationship_kwargs={"uselist": False},
+        )
+
     institutional_account_id: int | None = Field(foreign_key="institutionalaccount.id")
     non_institutional_account_id: int | None = Field(
         foreign_key="noninstitutionalaccount.id"

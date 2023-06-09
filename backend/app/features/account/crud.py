@@ -11,8 +11,6 @@ from .models import (
     AccountApiIn,
     AccountPlaidIn,
     AccountPlaidOut,
-    InstitutionalAccount,
-    NonInstitutionalAccount,
 )
 
 
@@ -28,14 +26,14 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         if obj_in.institutionalaccount:
             return Account(
                 **obj_in_dict,
-                institutionalaccount=InstitutionalAccount(
+                institutionalaccount=Account.InstitutionalAccount(
                     **obj_in.institutionalaccount.dict()
                 ),
             )
         if obj_in.noninstitutionalaccount:
             return Account(
                 **obj_in_dict,
-                noninstitutionalaccount=NonInstitutionalAccount(
+                noninstitutionalaccount=Account.NonInstitutionalAccount(
                     **obj_in.noninstitutionalaccount.dict()
                 ),
             )

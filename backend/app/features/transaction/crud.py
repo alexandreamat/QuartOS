@@ -67,13 +67,13 @@ class CRUDTransaction(
         statement = (
             select(Transaction)
             .join(account.models.Account)
-            .outerjoin(account.models.InstitutionalAccount)
-            .outerjoin(account.models.NonInstitutionalAccount)
+            .outerjoin(account.models.Account.InstitutionalAccount)
+            .outerjoin(account.models.Account.NonInstitutionalAccount)
             .outerjoin(userinstitutionlink.models.UserInstitutionLink)
             .where(
                 or_(
                     userinstitutionlink.models.UserInstitutionLink.user_id == user_id,
-                    account.models.NonInstitutionalAccount.user_id == user_id,
+                    account.models.Account.NonInstitutionalAccount.user_id == user_id,
                 )
             )
             .order_by(desc(Transaction.datetime))
