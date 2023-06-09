@@ -1,4 +1,4 @@
-from sqlmodel import Session, select, col
+from sqlmodel import Session, select, col, or_
 from sqlalchemy import desc
 
 from app.common.crud import CRUDBase, CRUDSyncable
@@ -67,9 +67,15 @@ class CRUDTransaction(
         statement = (
             select(Transaction)
             .join(account.models.Account)
-            .join(userinstitutionlink.models.UserInstitutionLink)
-            .join(user.models.User)
-            .where(user.models.User.id == user_id)
+            .outerjoin(account.models.InstitutionalAccount)
+            .outerjoin(account.models.NonInstitutionalAccount)
+            .outerjoin(userinstitutionlink.models.UserInstitutionLink)
+            .where(
+                or_(
+                    userinstitutionlink.models.UserInstitutionLink.user_id == user_id,
+                    account.models.NonInstitutionalAccount.user_id == user_id,
+                )
+            )
             .order_by(desc(Transaction.datetime))
         )
 
