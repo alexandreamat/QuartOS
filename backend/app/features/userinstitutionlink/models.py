@@ -9,16 +9,9 @@ if TYPE_CHECKING:
     from app.features.account.models import InstitutionalAccount
 
 
-class __InstitutionLinkBase(SQLModel):
+class __UserInstitutionLinkBase(SQLModel):
     institution_id: int
-
-
-class __UserLinkBase(SQLModel):
-    user_id: int
-
-
-class __UserInstitutionLinkBase(__InstitutionLinkBase, __UserLinkBase):
-    ...
+    user_id: int | None
 
 
 class __UserInstitutionLinkPlaidMixin(PlaidBase):
@@ -26,36 +19,29 @@ class __UserInstitutionLinkPlaidMixin(PlaidBase):
     cursor: str | None
 
 
-class InstitutionLinkApiIn(__InstitutionLinkBase):
-    """Assumes current user, for API client usage"""
-
+class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
     ...
 
 
 class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, IdentifiableBase):
+    user_id: int
     is_synced: bool
-
-
-class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
-    """In model proper, for internal usage"""
-
-    ...
 
 
 class UserInstitutionLinkPlaidIn(
     __UserInstitutionLinkBase, __UserInstitutionLinkPlaidMixin
 ):
-    ...
+    user_id: int
 
 
 class UserInstitutionLinkPlaidOut(
     __UserInstitutionLinkBase, __UserInstitutionLinkPlaidMixin, IdentifiableBase
 ):
-    ...
+    user_id: int
 
 
 class UserInstitutionLink(
-    __InstitutionLinkBase, IdentifiableBase, PlaidMaybeMixin, table=True
+    __UserInstitutionLinkBase, IdentifiableBase, PlaidMaybeMixin, table=True
 ):
     user_id: int = Field(foreign_key="user.id")
     institution_id: int = Field(foreign_key="institution.id")

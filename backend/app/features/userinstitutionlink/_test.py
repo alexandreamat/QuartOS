@@ -22,12 +22,7 @@ from app.features.institution._test import (
     institutions_write,
 )
 
-from .models import (
-    UserInstitutionLinkApiIn,
-    UserInstitutionLinkApiOut,
-    InstitutionLinkApiIn,
-    UserInstitutionLink,
-)
+from .models import UserInstitutionLinkApiIn, UserInstitutionLinkApiOut
 from .crud import CRUDUserInstitutionLink
 
 
@@ -85,7 +80,7 @@ def test_create(
 ) -> None:
     response = user_client.post(
         "/api/institution-links/",
-        json=InstitutionLinkApiIn(
+        json=UserInstitutionLinkApiIn(
             institution_id=user_institution_links_write[0].institution_id,
         ).dict(),
     )
@@ -96,7 +91,7 @@ def test_create(
 
     response = user_client.post(
         "/api/institution-links/",
-        json=InstitutionLinkApiIn(institution_id=123).dict(),
+        json=UserInstitutionLinkApiIn(institution_id=123).dict(),
     )
     assert response.status_code == 404
 
@@ -140,7 +135,7 @@ def test_update(
 ) -> None:
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[0].id}",
-        json=InstitutionLinkApiIn(
+        json=UserInstitutionLinkApiIn(
             institution_id=user_institution_links_read[0].institution_id,
         ).dict(),
     )
@@ -149,7 +144,7 @@ def test_update(
 
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[0].id}",
-        json=InstitutionLinkApiIn(
+        json=UserInstitutionLinkApiIn(
             institution_id=99,
         ).dict(),
     )
@@ -158,7 +153,7 @@ def test_update(
 
     response = user_client.put(
         f"/api/institution-links/{user_institution_links_read[-1].id}",
-        json=InstitutionLinkApiIn(
+        json=UserInstitutionLinkApiIn(
             institution_id=user_institution_links_read[-1].institution_id,
         ).dict(),
     )
