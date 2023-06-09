@@ -7,6 +7,7 @@ import TableHeader from "components/TableHeader";
 import { renderErrorMessage } from "utils/error";
 import { format } from "date-fns";
 import { useAccountQueries } from "features/account/hooks";
+import EmptyTablePlaceholder from "components/TablePlaceholder";
 
 function TransactionRow(
   props:
@@ -108,6 +109,9 @@ export default function TransactionsTable(
       }
 ) {
   const isApiOut = "onEdit" in props;
+
+  if (!props.transactions.length) return <EmptyTablePlaceholder />;
+
   return (
     <Table>
       <TableHeader

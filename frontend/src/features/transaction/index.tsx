@@ -7,14 +7,15 @@ import {
   DropdownProps,
   Input,
   InputOnChangeData,
+  Message,
 } from "semantic-ui-react";
 import TransactionForm from "./Form";
 import { TransactionApiOut, api } from "app/services/api";
-import EmptyTablePlaceholder from "components/TablePlaceholder";
 import InfiniteScroll from "react-infinite-scroll-component";
 import Uploader from "./Uploader";
 import TransactionsTable from "./Table";
 import { useAccountOptions } from "features/account/hooks";
+import { renderErrorMessage } from "utils/error";
 
 function Bar(props: {
   onCreate: () => void;
@@ -144,7 +145,7 @@ function TransactionsInfiniteTable(props: {
         onSearchChange={handleSearchChange}
       />
       <div style={{ flex: 1, overflow: "auto" }}>
-        {allTransactions.length ? (
+        {(transactionsQuery.isSuccess || transactionsQuery.isLoading) && (
           <InfiniteScroll
             loader={<></>}
             dataLength={allTransactions.length}
@@ -156,8 +157,14 @@ function TransactionsInfiniteTable(props: {
               onEdit={props.onEdit}
             />
           </InfiniteScroll>
-        ) : (
-          <EmptyTablePlaceholder />
+        )}
+        {transactionsQuery.isError && (
+          <Message
+            negative
+            header="An error has occurred!"
+            content={renderErrorMessage(transactionsQuery.error)}
+            icon="attention"
+          />
         )}
       </div>
     </div>
