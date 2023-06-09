@@ -145,7 +145,14 @@ function TransactionsInfiniteTable(props: {
         onSearchChange={handleSearchChange}
       />
       <div style={{ flex: 1, overflow: "auto" }}>
-        {(transactionsQuery.isSuccess || transactionsQuery.isLoading) && (
+        {transactionsQuery.isError ? (
+          <Message
+            negative
+            header="An error has occurred!"
+            content={renderErrorMessage(transactionsQuery.error)}
+            icon="attention"
+          />
+        ) : (
           <InfiniteScroll
             loader={<></>}
             dataLength={allTransactions.length}
@@ -157,14 +164,6 @@ function TransactionsInfiniteTable(props: {
               onEdit={props.onEdit}
             />
           </InfiniteScroll>
-        )}
-        {transactionsQuery.isError && (
-          <Message
-            negative
-            header="An error has occurred!"
-            content={renderErrorMessage(transactionsQuery.error)}
-            icon="attention"
-          />
         )}
       </div>
     </div>
