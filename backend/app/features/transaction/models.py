@@ -1,3 +1,4 @@
+from typing import Optional
 from enum import Enum
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -41,6 +42,7 @@ class __TransactionBase(SQLModel):
     account_id: int
     payment_channel: PaymentChannel
     code: TransactionCode | None
+    related_transaction_id: int | None
 
 
 class TransactionApiOut(__TransactionBase, IdentifiableBase):
@@ -63,6 +65,11 @@ class TransactionPlaidOut(__TransactionBase, PlaidBase, IdentifiableBase):
 class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=True):
     account_id: int = Field(foreign_key="account.id")
     account: Account = Relationship(back_populates="transactions")
+
+    related_transaction_id: int | None = Field(foreign_key="transaction.id")
+    linked_transaction: Optional["Transaction"] = Relationship(
+        sa_relationship_kwargs={"uselist": False}
+    )
 
     @property
     def user(self) -> User:
