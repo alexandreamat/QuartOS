@@ -15,11 +15,13 @@ function TransactionRow(
     | {
         transaction: TransactionApiOut;
         onEdit: (transaction: TransactionApiOut) => void;
+        onDelete: () => void;
       }
     | {
         transaction: TransactionApiIn;
       }
 ) {
+  const isApiOut = "onEdit" in props;
   const accountQueries = useAccountQueries(props.transaction.account_id);
 
   const [deleteTransaction, deleteTransactionResult] =
@@ -32,9 +34,8 @@ function TransactionRow(
       console.error(deleteTransactionResult.originalArgs);
       throw error;
     }
+    if (isApiOut) props.onDelete();
   };
-
-  const isApiOut = "onEdit" in props;
 
   return (
     <Table.Row>
@@ -97,6 +98,7 @@ export default function TransactionsTable(
     | {
         transactions: TransactionApiOut[];
         onEdit: (transaction: TransactionApiOut) => void;
+        onDelete: () => void;
       }
     | {
         transactions: TransactionApiIn[];
@@ -119,6 +121,7 @@ export default function TransactionsTable(
                 key={index}
                 transaction={transaction}
                 onEdit={props.onEdit}
+                onDelete={props.onDelete}
               />
             ))
           : props.transactions.map((transaction, index) => (
