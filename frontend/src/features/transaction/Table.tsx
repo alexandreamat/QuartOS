@@ -8,6 +8,7 @@ import { renderErrorMessage } from "utils/error";
 import { format } from "date-fns";
 import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
+import CurrencyLabel from "components/CurrencyLabel";
 
 function TransactionRow(
   props:
@@ -56,15 +57,10 @@ function TransactionRow(
       <Table.Cell>{props.transaction.name}</Table.Cell>
       {/* <Table.Cell>{props.transaction.code}</Table.Cell> */}
       <Table.Cell collapsing>
-        <Label
-          style={{ width: 100, textAlign: "center" }}
-          color={props.transaction.amount > 0 ? "green" : "orange"}
-        >
-          {props.transaction.amount.toLocaleString(undefined, {
-            style: "currency",
-            currency: props.transaction.currency_code,
-          })}
-        </Label>
+        <CurrencyLabel
+          amount={props.transaction.amount}
+          currencyCode={props.transaction.currency_code}
+        />
       </Table.Cell>
       <LoadableCell
         collapsing
