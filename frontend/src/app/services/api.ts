@@ -261,7 +261,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/api/institution-links/${queryArg.id}`,
           method: "PUT",
-          body: queryArg.institutionLinkApiIn,
+          body: queryArg.userInstitutionLinkApiIn,
         }),
         invalidatesTags: ["institution-links"],
       }),
@@ -550,7 +550,7 @@ export type ReadManyApiInstitutionLinksGetApiResponse =
 export type ReadManyApiInstitutionLinksGetApiArg = void;
 export type CreateApiInstitutionLinksPostApiResponse =
   /** status 200 Successful Response */ UserInstitutionLinkApiOut;
-export type CreateApiInstitutionLinksPostApiArg = InstitutionLinkApiIn;
+export type CreateApiInstitutionLinksPostApiArg = UserInstitutionLinkApiIn;
 export type ReadAccountsApiInstitutionLinksIdAccountsGetApiResponse =
   /** status 200 Successful Response */ AccountApiOut[];
 export type ReadAccountsApiInstitutionLinksIdAccountsGetApiArg = number;
@@ -561,7 +561,7 @@ export type UpdateApiInstitutionLinksIdPutApiResponse =
   /** status 200 Successful Response */ UserInstitutionLinkApiOut;
 export type UpdateApiInstitutionLinksIdPutApiArg = {
   id: number;
-  institutionLinkApiIn: InstitutionLinkApiIn;
+  userInstitutionLinkApiIn: UserInstitutionLinkApiIn;
 };
 export type DeleteApiInstitutionLinksIdDeleteApiResponse =
   /** status 200 Successful Response */ null;
@@ -712,12 +712,13 @@ export type InstitutionApiIn = {
 };
 export type UserInstitutionLinkApiOut = {
   id: number;
-  user_id: number;
   institution_id: number;
+  user_id: number;
   is_synced: boolean;
 };
-export type InstitutionLinkApiIn = {
+export type UserInstitutionLinkApiIn = {
   institution_id: number;
+  user_id?: number;
 };
 export type InstitutionalAccountType =
   | "investment"
@@ -726,7 +727,8 @@ export type InstitutionalAccountType =
   | "loan"
   | "brokerage"
   | "other";
-export type InstitutionalAccountBase = {
+export type InstitutionalAccountApiOut = {
+  id: number;
   user_institution_link_id: number;
   type: InstitutionalAccountType;
   mask: string;
@@ -735,7 +737,8 @@ export type NonInstitutionalAccountType =
   | "personal ledger"
   | "cash"
   | "property";
-export type NonInstitutionalAccountBaseApiOut = {
+export type NonInstitutionalAccountApiOut = {
+  id: number;
   type: NonInstitutionalAccountType;
   user_id: number;
 };
@@ -744,18 +747,25 @@ export type AccountApiOut = {
   currency_code: string;
   balance: number;
   name: string;
-  institutionalaccount?: InstitutionalAccountBase;
-  noninstitutionalaccount?: NonInstitutionalAccountBaseApiOut;
+  institutionalaccount?: InstitutionalAccountApiOut;
+  noninstitutionalaccount?: NonInstitutionalAccountApiOut;
+  is_synced: boolean;
 };
-export type NonInstitutionalAccountBaseApiIn = {
+export type InstitutionalAccountApiIn = {
+  user_institution_link_id: number;
+  type: InstitutionalAccountType;
+  mask: string;
+};
+export type NonInstitutionalAccountApiIn = {
   type: NonInstitutionalAccountType;
+  user_id?: number;
 };
 export type AccountApiIn = {
   currency_code: string;
   balance: number;
   name: string;
-  institutionalaccount?: InstitutionalAccountBase;
-  noninstitutionalaccount?: NonInstitutionalAccountBaseApiIn;
+  institutionalaccount?: InstitutionalAccountApiIn;
+  noninstitutionalaccount?: NonInstitutionalAccountApiIn;
 };
 export type PaymentChannel = "online" | "in store" | "other";
 export type TransactionCode =

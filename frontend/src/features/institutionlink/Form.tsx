@@ -1,7 +1,7 @@
 import { Divider, Header, Message } from "semantic-ui-react";
 import { useEffect } from "react";
 import {
-  InstitutionLinkApiIn,
+  UserInstitutionLinkApiIn,
   UserInstitutionLinkApiOut,
   api,
 } from "app/services/api";
@@ -39,14 +39,14 @@ export default function InstitutionLinkForm(props: {
   const handleSubmit = async () => {
     if (!institutionId.validate()) return;
 
-    const institutionLink: InstitutionLinkApiIn = {
+    const institutionLink: UserInstitutionLinkApiIn = {
       institution_id: institutionId.value!,
     };
     if (props.institutionLink) {
       try {
         await updateInstitutionLink({
           id: props.institutionLink.id,
-          institutionLinkApiIn: institutionLink,
+          userInstitutionLinkApiIn: institutionLink,
         }).unwrap();
       } catch (error) {
         console.error(error);

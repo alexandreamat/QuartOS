@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from app.features.transaction.models import Transaction
 
 
-class InstitutionalAccountBase(SQLModel):
+class _InstitutionalAccountBase(SQLModel):
     class InstitutionalAccountType(str, Enum):
         INVESTMENT = "investment"
         CREDIT = "credit"
@@ -30,18 +30,26 @@ class InstitutionalAccountBase(SQLModel):
     mask: str
 
 
-class InstitutionalAccountPlaidIn(InstitutionalAccountBase, PlaidBase):
+class InstitutionalAccountPlaidIn(_InstitutionalAccountBase, PlaidBase):
     ...
 
 
 class InstitutionalAccountPlaidOut(
-    InstitutionalAccountBase, IdentifiableBase, PlaidBase
+    _InstitutionalAccountBase, IdentifiableBase, PlaidBase
 ):
     ...
 
 
+class InstitutionalAccountApiIn(_InstitutionalAccountBase):
+    ...
+
+
+class InstitutionalAccountApiOut(_InstitutionalAccountBase, IdentifiableBase):
+    ...
+
+
 class InstitutionalAccount(
-    InstitutionalAccountBase, IdentifiableBase, PlaidMaybeMixin, table=True
+    _InstitutionalAccountBase, IdentifiableBase, PlaidMaybeMixin, table=True
 ):
     user_institution_link_id: int = Field(foreign_key="userinstitutionlink.id")
 
@@ -76,14 +84,15 @@ class _NonInstitutionalAccountBase(SQLModel):
         PROPERTY = "property"
 
     type: NonInstitutionalAccountType
+    user_id: int | None
 
 
-class NonInstitutionalAccountBaseApiOut(_NonInstitutionalAccountBase):
-    user_id: int
-
-
-class NonInstitutionalAccountBaseApiIn(_NonInstitutionalAccountBase):
+class NonInstitutionalAccountApiIn(_NonInstitutionalAccountBase):
     ...
+
+
+class NonInstitutionalAccountApiOut(_NonInstitutionalAccountBase, IdentifiableBase):
+    user_id: int
 
 
 class NonInstitutionalAccount(
@@ -108,11 +117,6 @@ class __AccountBase(SQLModel):
             raise ValueError("Invalid currency code")
         return value
 
-
-class AccountApiOut(__AccountBase, IdentifiableBase):
-    institutionalaccount: InstitutionalAccountBase | None
-    noninstitutionalaccount: NonInstitutionalAccountBaseApiOut | None
-
     @root_validator()
     def only_one_type_allowed(
         cls,
@@ -126,24 +130,14 @@ class AccountApiOut(__AccountBase, IdentifiableBase):
 
 
 class AccountApiIn(__AccountBase):
-    institutionalaccount: InstitutionalAccountBase | None
-    noninstitutionalaccount: NonInstitutionalAccountBaseApiIn | None
-
-    @root_validator()
-    def only_one_type_allowed(
-        cls,
-        values: dict[str, Any],
-    ) -> dict[str, Any]:
-        institutionalaccount = values.get("institutionalaccount")
-        noninstitutionalaccount = values.get("noninstitutionalaccount")
-        if bool(institutionalaccount) is bool(noninstitutionalaccount):
-            raise ValueError("One and only one account must be defined")
-        return values
+    institutionalaccount: InstitutionalAccountApiIn | None
+    noninstitutionalaccount: NonInstitutionalAccountApiIn | None
 
 
-class AccountDBIn(__AccountBase):
-    institutionalaccount: InstitutionalAccountBase | None
-    noninstitutionalaccount: NonInstitutionalAccountBaseApiOut | None
+class AccountApiOut(__AccountBase, IdentifiableBase):
+    institutionalaccount: InstitutionalAccountApiOut | None
+    noninstitutionalaccount: NonInstitutionalAccountApiOut | None
+    is_synced: bool
 
 
 class AccountPlaidIn(__AccountBase):
@@ -162,11 +156,11 @@ class Account(__AccountBase, IdentifiableBase, table=True):
 
     institutionalaccount: InstitutionalAccount | None = Relationship(
         back_populates="account",
-        sa_relationship_kwargs={"uselist": False},
+        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
     )
     noninstitutionalaccount: NonInstitutionalAccount | None = Relationship(
         back_populates="account",
-        sa_relationship_kwargs={"uselist": False},
+        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
     )
 
     transactions: list["Transaction"] = Relationship(

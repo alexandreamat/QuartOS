@@ -76,16 +76,16 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
         <ActionButton
           content="Upload Transactions"
           onClick={() => {}}
-          disabled={institutionLinkQueries.institutionLink?.is_synced !== false}
+          disabled={props.account.is_synced !== false}
           icon="upload"
         />
       </Table.Cell>
       <EditCell
-        disabled={institutionLinkQueries.institutionLink?.is_synced !== false}
+        disabled={props.account.is_synced !== false}
         onEdit={props.onEdit}
       />
       <DeleteCell
-        disabled={institutionLinkQueries.institutionLink?.is_synced !== false}
+        disabled={props.account.is_synced !== false}
         isError={deleteAccountResult.isError}
         isLoading={deleteAccountResult.isLoading}
         error={
