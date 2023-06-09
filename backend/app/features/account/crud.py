@@ -9,7 +9,6 @@ from .models import (
     Account,
     AccountApiOut,
     AccountApiIn,
-    AccountDBIn,
     AccountPlaidIn,
     AccountPlaidOut,
     InstitutionalAccount,
@@ -17,12 +16,12 @@ from .models import (
 )
 
 
-class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountDBIn]):
+class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     db_model = Account
     api_out_model = AccountApiOut
 
     @classmethod
-    def db_obj_from_schema(cls, obj_in: AccountDBIn) -> Account:
+    def db_obj_from_schema(cls, obj_in: AccountApiIn) -> Account:
         obj_in_dict = obj_in.dict()
 
         institutionalaccount_data = obj_in_dict.pop("institutionalaccount", None)

@@ -9,13 +9,7 @@ from app.database.deps import DBSession
 
 
 from .crud import CRUDAccount
-from .models import (
-    AccountApiOut,
-    AccountApiIn,
-    NonInstitutionalAccountBaseApiOut,
-    InstitutionalAccountBase,
-    AccountDBIn,
-)
+from .models import AccountApiOut, AccountApiIn
 
 
 from app.features import transaction, userinstitutionlink
@@ -42,23 +36,9 @@ def create(
             db, institutional_account.user_institution_link_id
         ):
             raise HTTPException(status.HTTP_403_FORBIDDEN)
-        institutionalaccount = InstitutionalAccountBase(
-            **account.institutionalaccount.dict(),
-        )
-        del account.institutionalaccount
-        account_in = AccountDBIn(
-            **account.dict(), institutionalaccount=institutionalaccount
-        )
     if account.noninstitutionalaccount:
-        noninstitutionalaccount = NonInstitutionalAccountBaseApiOut(
-            **account.noninstitutionalaccount.dict(),
-            user_id=current_user.id,
-        )
-        del account.noninstitutionalaccount
-        account_in = AccountDBIn(
-            **account.dict(), noninstitutionalaccount=noninstitutionalaccount
-        )
-    return CRUDAccount.create(db, account_in)
+        account.noninstitutionalaccount.user_id = current_user.id
+    return CRUDAccount.create(db, account)
 
 
 @router.get("/{id}")
@@ -146,23 +126,9 @@ def update(
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
-        institutionalaccount = InstitutionalAccountBase(
-            **account.institutionalaccount.dict(),
-        )
-        del account.institutionalaccount
-        account_in = AccountDBIn(
-            **account.dict(), institutionalaccount=institutionalaccount
-        )
     if account.noninstitutionalaccount:
-        noninstitutionalaccount = NonInstitutionalAccountBaseApiOut(
-            **account.noninstitutionalaccount.dict(),
-            user_id=current_user.id,
-        )
-        del account.noninstitutionalaccount
-        account_in = AccountDBIn(
-            **account.dict(), noninstitutionalaccount=noninstitutionalaccount
-        )
-    return CRUDAccount.update(db, id, account_in)
+        account.noninstitutionalaccount.user_id = current_user.id
+    return CRUDAccount.update(db, id, account)
 
 
 @router.delete("/{id}")
