@@ -135,8 +135,6 @@ function TransactionsInfiniteTable(props: {
     }
   }, [transactionsQuery.data]);
 
-  useEffect(() => {}, [transactionsQuery.isFetching]);
-
   if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
 
   return (
@@ -166,6 +164,7 @@ function TransactionsInfiniteTable(props: {
             <TransactionsTable
               transactions={allTransactions}
               onEdit={props.onEdit}
+              onDelete={() => setAllTransactions([])}
             />
           </InfiniteScroll>
         )}
