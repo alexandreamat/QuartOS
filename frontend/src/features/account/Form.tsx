@@ -15,6 +15,7 @@ import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDropdownInput from "components/FormDropdownInput";
 import { useLocation } from "react-router-dom";
 import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
+import { capitalizeFirstLetter as capitaliseFirstLetter } from "utils/string";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
@@ -90,7 +91,7 @@ export default function AccountForm(props: {
   ].map((type, index) => ({
     key: index,
     value: index,
-    text: type,
+    text: capitaliseFirstLetter(type),
   }));
 
   const nonInstitutionalTypeOptions = [
@@ -100,7 +101,7 @@ export default function AccountForm(props: {
   ].map((type, index) => ({
     key: index,
     value: type,
-    text: type,
+    text: capitaliseFirstLetter(type),
   }));
 
   const handleSubmit = async () => {
