@@ -92,6 +92,8 @@ export default function TransactionForm(props: {
 
   const handleClose = () => {
     fields.forEach((field) => field.reset());
+    setSearch("");
+    setTransactionOptions([]);
     props.onClose();
   };
 
@@ -107,6 +109,7 @@ export default function TransactionForm(props: {
       name: name.value!,
       currency_code: currencyCode.value!,
       account_id: accountId.value!,
+      related_transaction_id: relatedTransactionId.value || undefined,
     };
     if (props.transaction) {
       try {
