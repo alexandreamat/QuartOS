@@ -18,7 +18,7 @@ import { useLocation } from "react-router-dom";
 import ActionButton from "components/ActionButton";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 import TableFooter from "components/TableFooter";
-import { capitalizeFirstLetter } from "utils/string";
+import { capitaliseFirstLetter } from "utils/string";
 import CurrencyLabel from "components/CurrencyLabel";
 
 function InstitutionCell(props: { institution: InstitutionApiOut }) {
@@ -63,7 +63,7 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
           <>**** {props.account.institutionalaccount.mask}</>
         )}
       </Table.Cell>
-      <Table.Cell>{capitalizeFirstLetter(type)}</Table.Cell>
+      <Table.Cell>{capitaliseFirstLetter(type)}</Table.Cell>
       <Table.Cell>
         <CurrencyLabel
           amount={props.account.balance}

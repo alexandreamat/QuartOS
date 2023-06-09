@@ -12,9 +12,21 @@ export function useAccountQueries(accountId?: number) {
     accountQuery.data?.institutionalaccount?.user_institution_link_id
   );
 
-  const isLoading = accountQuery.isLoading || institutionLinkQueries.isLoading;
-  const isSuccess = accountQuery.isSuccess && institutionLinkQueries.isSuccess;
-  const isError = accountQuery.isError || institutionLinkQueries.isError;
+  const isLoading =
+    accountQuery.isLoading ||
+    (accountQuery.isSuccess &&
+      Boolean(accountQuery.data.institutionalaccount) &&
+      institutionLinkQueries.isLoading);
+  const isSuccess =
+    (accountQuery.isSuccess &&
+      Boolean(accountQuery.data.institutionalaccount) &&
+      institutionLinkQueries.isSuccess) ||
+    accountQuery.isSuccess;
+  const isError =
+    accountQuery.isError ||
+    (accountQuery.isSuccess &&
+      Boolean(accountQuery.data.institutionalaccount) &&
+      institutionLinkQueries.isError);
 
   const error = [
     accountQuery.isError ? renderErrorMessage(accountQuery.error) : undefined,

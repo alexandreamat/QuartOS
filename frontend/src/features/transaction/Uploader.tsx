@@ -20,9 +20,14 @@ import { useAccountOptions } from "features/account/hooks";
 
 export default function Uploader(props: {
   open: boolean;
+  accountId: number;
   onClose: () => void;
 }) {
   const accountId = useFormField(0);
+
+  useEffect(() => {
+    if (props.accountId) accountId.set(props.accountId);
+  }, [props.accountId]);
 
   const accountOptions = useAccountOptions();
 

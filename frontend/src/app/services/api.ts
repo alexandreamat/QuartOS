@@ -727,7 +727,7 @@ export type InstitutionalAccountType =
   | "loan"
   | "brokerage"
   | "other";
-export type InstitutionalAccountApiOut = {
+export type InstitutionalAccount = {
   id: number;
   user_institution_link_id: number;
   type: InstitutionalAccountType;
@@ -737,7 +737,7 @@ export type NonInstitutionalAccountType =
   | "personal ledger"
   | "cash"
   | "property";
-export type NonInstitutionalAccountApiOut = {
+export type NonInstitutionalAccount = {
   id: number;
   type: NonInstitutionalAccountType;
   user_id: number;
@@ -747,16 +747,16 @@ export type AccountApiOut = {
   currency_code: string;
   balance: number;
   name: string;
-  institutionalaccount?: InstitutionalAccountApiOut;
-  noninstitutionalaccount?: NonInstitutionalAccountApiOut;
+  institutionalaccount?: InstitutionalAccount;
+  noninstitutionalaccount?: NonInstitutionalAccount;
   is_synced: boolean;
 };
-export type InstitutionalAccountApiIn = {
+export type InstitutionalAccount2 = {
   user_institution_link_id: number;
   type: InstitutionalAccountType;
   mask: string;
 };
-export type NonInstitutionalAccountApiIn = {
+export type NonInstitutionalAccount2 = {
   type: NonInstitutionalAccountType;
   user_id?: number;
 };
@@ -764,8 +764,8 @@ export type AccountApiIn = {
   currency_code: string;
   balance: number;
   name: string;
-  institutionalaccount?: InstitutionalAccountApiIn;
-  noninstitutionalaccount?: NonInstitutionalAccountApiIn;
+  institutionalaccount?: InstitutionalAccount2;
+  noninstitutionalaccount?: NonInstitutionalAccount2;
 };
 export type PaymentChannel = "online" | "in store" | "other";
 export type TransactionCode =
@@ -791,6 +791,7 @@ export type TransactionApiOut = {
   account_id: number;
   payment_channel: PaymentChannel;
   code?: TransactionCode;
+  related_transaction_id?: number;
 };
 export type TransactionApiIn = {
   amount: number;
@@ -800,6 +801,7 @@ export type TransactionApiIn = {
   account_id: number;
   payment_channel: PaymentChannel;
   code: TransactionCode;
+  related_transaction_id?: number;
 };
 export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
   file: Blob;

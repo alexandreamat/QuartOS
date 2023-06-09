@@ -1,5 +1,5 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
-import { Icon, Label, Table } from "semantic-ui-react";
+import { Icon, Table } from "semantic-ui-react";
 import LoadableCell from "components/LoadableCell";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
@@ -53,9 +53,7 @@ function TransactionRow(
         {props.transaction.datetime &&
           format(new Date(props.transaction.datetime), " yyyy MMMM d")}
       </Table.Cell>
-      {/* <Table.Cell>{props.transaction.category}</Table.Cell> */}
       <Table.Cell>{props.transaction.name}</Table.Cell>
-      {/* <Table.Cell>{props.transaction.code}</Table.Cell> */}
       <Table.Cell collapsing>
         <CurrencyLabel
           amount={props.transaction.amount}
@@ -69,16 +67,16 @@ function TransactionRow(
         isError={accountQueries.isError}
         error={accountQueries.error}
       >
-        ··· {accountQueries.account?.institutionalaccount?.mask}
+        {accountQueries.account ? accountQueries.account.name : "UNKNOWN"}
       </LoadableCell>
       {isApiOut && (
         <>
           <EditCell
-            disabled={accountQueries.institutionLink?.is_synced !== false}
+            disabled={accountQueries.account?.is_synced !== false}
             onEdit={() => props.onEdit(props.transaction)}
           />
           <DeleteCell
-            disabled={accountQueries.institutionLink?.is_synced !== false}
+            disabled={accountQueries.account?.is_synced !== false}
             isLoading={deleteTransactionResult.isLoading}
             isError={deleteTransactionResult.isError}
             error={
