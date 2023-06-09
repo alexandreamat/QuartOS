@@ -1,5 +1,5 @@
-import { Message } from "semantic-ui-react";
-import { useEffect } from "react";
+import { DropdownItemProps, Message } from "semantic-ui-react";
+import { useEffect, useState } from "react";
 import {
   TransactionApiOut,
   TransactionApiIn,
@@ -16,6 +16,8 @@ import FormTextInput from "components/FormTextInput";
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDropdownInput from "components/FormDropdownInput";
 import { useAccountOptions } from "features/account/hooks";
+import { useTransactionOptions } from "./hooks";
+import { codeOptions, paymentChannelOptions } from "./options";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
@@ -25,73 +27,63 @@ export default function TransactionForm(props: {
   const amountStr = useFormField("");
   const datetime = useFormField(new Date());
   const name = useFormField("");
-  const currency = useFormField("");
-  // const category = useFormField("");
   const accountId = useFormField(0);
   const currencyCode = useFormField("");
   const code = useFormField("");
   const paymentChannel = useFormField("");
+  const relatedTransactionId = useFormField(0, true);
+
+  const [search, setSearch] = useState("");
+  const [relatedTransactionOption, setTransactionOptions] = useState<
+    DropdownItemProps[]
+  >([]);
 
   const fields = [
     amountStr,
     datetime,
     name,
-    currency,
     accountId,
     currencyCode,
     code,
     paymentChannel,
+    relatedTransactionId,
   ];
 
-  // in case of modification, we'll query the selected account directly
-  const accountQuery = api.endpoints.readApiAccountsIdGet.useQuery(
-    accountId.value || skipToken
-  );
-
-  const paymentChannelOptions = ["online", "in store", "other"].map(
-    (option, index) => ({
-      key: index,
-      value: option,
-      text: option,
-    })
-  );
-
-  const codeOptions = [
-    "adjustment",
-    "atm",
-    "bank charge",
-    "bill payment",
-    "cash",
-    "cashback",
-    "cheque",
-    "direct debit",
-    "interest",
-    "purchase",
-    "standing order",
-    "transfer",
-    "null",
-  ].map((option, index) => ({
-    key: index,
-    value: option,
-    text: option,
-  }));
+  const relatedTransactionQuery =
+    api.endpoints.readApiTransactionsIdGet.useQuery(
+      relatedTransactionId.value || skipToken
+    );
 
   const accountOptions = useAccountOptions();
+  const searchedRelatedTransactionOptions = useTransactionOptions(search);
 
   useEffect(() => {
-    if (!props.transaction) return;
-    amountStr.set(props.transaction.amount.toFixed(2));
-    datetime.set(
-      props.transaction.datetime
-        ? new Date(props.transaction.datetime)
-        : new Date()
-    );
-    name.set(props.transaction.name);
-    currency.set(props.transaction.currency_code);
-    // category.set(props.transaction.category);
-    accountId.set(props.transaction.account_id);
-    currencyCode.set(props.transaction!.currency_code);
-  }, [props.transaction, accountQuery]);
+    const rtx = relatedTransactionQuery.data;
+    if (!rtx) return;
+    if (props.transaction) {
+      setTransactionOptions([{ key: rtx.id, value: rtx.id, text: rtx.name }]);
+    } else {
+      amountStr.set((-rtx.amount).toFixed(2));
+      datetime.set(rtx.datetime ? new Date(rtx.datetime) : new Date());
+      name.set(rtx.name);
+      currencyCode.set(rtx.currency_code);
+      code.set(rtx.code);
+      paymentChannel.set(rtx.payment_channel);
+    }
+  }, [relatedTransactionQuery.data]);
+
+  useEffect(() => {
+    const tx = props.transaction;
+    if (!tx) return;
+    paymentChannel.set(tx.payment_channel);
+    code.set(tx.code);
+    relatedTransactionId.set(tx.related_transaction_id || 0);
+    amountStr.set(tx.amount.toFixed(2));
+    datetime.set(tx.datetime ? new Date(tx.datetime) : new Date());
+    name.set(tx.name);
+    accountId.set(tx.account_id);
+    currencyCode.set(tx.currency_code);
+  }, [props.transaction]);
 
   const [createTransaction, createTransactionResult] =
     api.endpoints.createApiTransactionsPost.useMutation();
@@ -114,7 +106,6 @@ export default function TransactionForm(props: {
       datetime: datetime.value!.toISOString(),
       name: name.value!,
       currency_code: currencyCode.value!,
-      // // category: category.value!,
       account_id: accountId.value!,
     };
     if (props.transaction) {
@@ -156,6 +147,18 @@ export default function TransactionForm(props: {
         loading={accountOptions.isLoading}
         error={accountOptions.isError}
       />
+      <FormDropdownInput
+        label="Related transaction"
+        optional
+        field={relatedTransactionId}
+        options={[
+          ...relatedTransactionOption,
+          ...searchedRelatedTransactionOptions.data,
+        ]}
+        loading={searchedRelatedTransactionOptions.isLoading}
+        error={searchedRelatedTransactionOptions.isError}
+        onSearchChange={setSearch}
+      />
       <FormCurrencyInput
         label="Amount"
         amount={amountStr}
@@ -167,8 +170,7 @@ export default function TransactionForm(props: {
         field={paymentChannel}
         options={paymentChannelOptions}
       />
-      <FormTextInput label="Description" field={name} />
-      {/* <FormTextInput label="Category" field={category} /> */}
+      <FormTextInput label="Name" field={name} />
       <FormDateTimeInput label="Time" field={datetime} />
       {fields.some((field) => field.isError) && (
         <Message

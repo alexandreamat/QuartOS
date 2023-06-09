@@ -15,7 +15,7 @@ import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDropdownInput from "components/FormDropdownInput";
 import { useLocation } from "react-router-dom";
 import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
-import { capitalizeFirstLetter as capitaliseFirstLetter } from "utils/string";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;

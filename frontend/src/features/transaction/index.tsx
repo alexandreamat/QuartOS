@@ -83,7 +83,11 @@ function Bar(props: {
           Upload Transactions Sheet
         </Button>
       </Menu.Item>
-      <Uploader open={isUploaderOpen} onClose={handleCloseUploader} />
+      <Uploader
+        open={isUploaderOpen}
+        accountId={props.accountId}
+        onClose={handleCloseUploader}
+      />
     </Menu>
   );
 }

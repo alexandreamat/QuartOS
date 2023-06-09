@@ -1,5 +1,10 @@
 import useFormField from "hooks/useFormField";
-import { DropdownItemProps, DropdownProps, Form } from "semantic-ui-react";
+import {
+  DropdownItemProps,
+  DropdownOnSearchChangeData,
+  DropdownProps,
+  Form,
+} from "semantic-ui-react";
 
 export default function FormDropdownInput<T extends number | string>(props: {
   label: string;
@@ -9,6 +14,7 @@ export default function FormDropdownInput<T extends number | string>(props: {
   error?: boolean;
   compact?: boolean;
   optional?: boolean;
+  onSearchChange?: (s: string) => void;
 }) {
   return (
     <Form.Select
@@ -28,6 +34,10 @@ export default function FormDropdownInput<T extends number | string>(props: {
       loading={props.loading}
       error={props.error || props.field.isError}
       compact={props.compact}
+      onSearchChange={(
+        event: React.SyntheticEvent<HTMLElement>,
+        data: DropdownOnSearchChangeData
+      ) => props.onSearchChange && props.onSearchChange(data.searchQuery)}
     />
   );
 }
