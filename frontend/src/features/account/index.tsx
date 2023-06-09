@@ -19,6 +19,7 @@ import ActionButton from "components/ActionButton";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 import TableFooter from "components/TableFooter";
 import { capitalizeFirstLetter } from "utils/string";
+import CurrencyLabel from "components/CurrencyLabel";
 
 function InstitutionCell(props: { institution: InstitutionApiOut }) {
   return (
@@ -50,6 +51,10 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
     }
   };
 
+  const type = props.account.institutionalaccount
+    ? props.account.institutionalaccount.type
+    : props.account.noninstitutionalaccount!.type;
+
   return (
     <Table.Row key={props.account.id}>
       <Table.Cell>{props.account.name}</Table.Cell>
@@ -58,13 +63,13 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
           <>**** {props.account.institutionalaccount.mask}</>
         )}
       </Table.Cell>
+      <Table.Cell>{capitalizeFirstLetter(type)}</Table.Cell>
       <Table.Cell>
-        {props.account.institutionalaccount &&
-          capitalizeFirstLetter(props.account.institutionalaccount.type)}
-        {props.account.noninstitutionalaccount &&
-          capitalizeFirstLetter(props.account.noninstitutionalaccount.type)}
+        <CurrencyLabel
+          amount={props.account.balance}
+          currencyCode={props.account.currency_code}
+        />
       </Table.Cell>
-      <Table.Cell>{props.account.currency_code}</Table.Cell>
       <LoadableCell
         isLoading={institutionLinkQueries.isLoading}
         isSuccess={institutionLinkQueries.isSuccess}
@@ -75,7 +80,6 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
       </LoadableCell>
       <Table.Cell collapsing>
         <ActionButton
-          content="Upload Transactions"
           onClick={() => {}}
           disabled={props.account.is_synced !== false}
           icon="upload"
@@ -111,7 +115,7 @@ function AccountsTable(props: {
   return (
     <Table>
       <TableHeader
-        headers={["Name", "Number", "Type", "Currency", "Institution"]}
+        headers={["Name", "Number", "Type", "Balance", "Institution"]}
         actions={3}
       />
       <Table.Body>
