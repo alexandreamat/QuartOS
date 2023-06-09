@@ -35,10 +35,9 @@ from app.features.institution.models import InstitutionPlaidIn, InstitutionPlaid
 from app.features.account.models import (
     AccountPlaidIn,
     AccountPlaidOut,
-    InstitutionalAccountPlaidIn,
 )
-from app.features.transaction.models import TransactionPlaidIn, TransactionPlaidOut
-from app.features.user.models import UserApiOut, UserApiIn
+from app.features.transaction.models import TransactionPlaidIn
+from app.features.user.models import UserApiOut
 from app.features.userinstitutionlink.models import (
     UserInstitutionLinkPlaidIn,
     UserInstitutionLinkPlaidOut,
@@ -143,7 +142,7 @@ def get_accounts(
     accounts: list[AccountBase] = response.accounts
     return [
         AccountPlaidIn(
-            institutionalaccount=InstitutionalAccountPlaidIn(
+            institutionalaccount=AccountPlaidIn.InstitutionalAccount(
                 plaid_id=account.account_id,
                 plaid_metadata=account.to_str(),
                 mask=account.mask,

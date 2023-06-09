@@ -30,24 +30,6 @@ class _InstitutionalAccountBase(SQLModel):
     mask: str
 
 
-class InstitutionalAccountPlaidIn(_InstitutionalAccountBase, PlaidBase):
-    ...
-
-
-class InstitutionalAccountPlaidOut(
-    _InstitutionalAccountBase, IdentifiableBase, PlaidBase
-):
-    ...
-
-
-class InstitutionalAccountApiIn(_InstitutionalAccountBase):
-    ...
-
-
-class InstitutionalAccountApiOut(_InstitutionalAccountBase, IdentifiableBase):
-    ...
-
-
 class InstitutionalAccount(
     _InstitutionalAccountBase, IdentifiableBase, PlaidMaybeMixin, table=True
 ):
@@ -87,14 +69,6 @@ class _NonInstitutionalAccountBase(SQLModel):
     user_id: int | None
 
 
-class NonInstitutionalAccountApiIn(_NonInstitutionalAccountBase):
-    ...
-
-
-class NonInstitutionalAccountApiOut(_NonInstitutionalAccountBase, IdentifiableBase):
-    user_id: int
-
-
 class NonInstitutionalAccount(
     _NonInstitutionalAccountBase, IdentifiableBase, table=True
 ):
@@ -130,22 +104,40 @@ class __AccountBase(SQLModel):
 
 
 class AccountApiIn(__AccountBase):
-    institutionalaccount: InstitutionalAccountApiIn | None
-    noninstitutionalaccount: NonInstitutionalAccountApiIn | None
+    class InstitutionalAccount(_InstitutionalAccountBase):
+        ...
+
+    class NonInstitutionalAccount(_NonInstitutionalAccountBase):
+        ...
+
+    institutionalaccount: InstitutionalAccount | None
+    noninstitutionalaccount: NonInstitutionalAccount | None
 
 
 class AccountApiOut(__AccountBase, IdentifiableBase):
-    institutionalaccount: InstitutionalAccountApiOut | None
-    noninstitutionalaccount: NonInstitutionalAccountApiOut | None
+    class InstitutionalAccount(_InstitutionalAccountBase, IdentifiableBase):
+        ...
+
+    class NonInstitutionalAccount(_NonInstitutionalAccountBase, IdentifiableBase):
+        user_id: int
+
+    institutionalaccount: InstitutionalAccount | None
+    noninstitutionalaccount: NonInstitutionalAccount | None
     is_synced: bool
 
 
 class AccountPlaidIn(__AccountBase):
-    institutionalaccount: InstitutionalAccountPlaidIn
+    class InstitutionalAccount(_InstitutionalAccountBase, PlaidBase):
+        ...
+
+    institutionalaccount: InstitutionalAccount
 
 
 class AccountPlaidOut(__AccountBase, IdentifiableBase):
-    institutionalaccount: InstitutionalAccountPlaidOut
+    class InstitutionalAccount(_InstitutionalAccountBase, IdentifiableBase, PlaidBase):
+        ...
+
+    institutionalaccount: InstitutionalAccount
 
 
 class Account(__AccountBase, IdentifiableBase, table=True):
