@@ -22,27 +22,24 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
     @classmethod
     def db_obj_from_schema(cls, obj_in: AccountApiIn) -> Account:
-        obj_in_dict = obj_in.dict()
-
-        institutionalaccount_data = obj_in_dict.pop("institutionalaccount", None)
-        noninstitutionalaccount_data = obj_in_dict.pop("noninstitutionalaccount", None)
-
-        institutionalaccount = (
-            InstitutionalAccount(**institutionalaccount_data)
-            if institutionalaccount_data
-            else None
+        obj_in_dict = obj_in.dict(
+            exclude={"institutionalaccount", "noninstitutionalaccount"}
         )
-        noninstitutionalaccount = (
-            NonInstitutionalAccount(**noninstitutionalaccount_data)
-            if noninstitutionalaccount_data
-            else None
-        )
-
-        return Account(
-            **obj_in_dict,
-            institutionalaccount=institutionalaccount,
-            noninstitutionalaccount=noninstitutionalaccount
-        )
+        if obj_in.institutionalaccount:
+            return Account(
+                **obj_in_dict,
+                institutionalaccount=InstitutionalAccount(
+                    **obj_in.institutionalaccount.dict()
+                ),
+            )
+        if obj_in.noninstitutionalaccount:
+            return Account(
+                **obj_in_dict,
+                noninstitutionalaccount=NonInstitutionalAccount(
+                    **obj_in.noninstitutionalaccount.dict()
+                ),
+            )
+        raise ValueError
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
