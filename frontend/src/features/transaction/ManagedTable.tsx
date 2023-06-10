@@ -10,21 +10,20 @@ import { useTransactionsQuery } from "./hooks";
 export default function ManagedTable(props: {
   onOpenCreateForm: (accountId: number) => void;
   onOpenEditForm: (transaction: TransactionApiOut) => void;
+  resetKey: number;
 }) {
   const [currentPage, setCurrentPage] = useState(1);
-  const [allTransactions, setAllTransactions] = useState<TransactionApiOut[]>(
-    []
-  );
+  const [transactions, setTransactions] = useState<TransactionApiOut[]>([]);
   const [accountId, setAccountId] = useState(0);
   const [search, setSearch] = useState("");
 
   const handleAccountIdChange = (value: number) => {
-    setAllTransactions([]);
+    setTransactions([]);
     setAccountId(value);
   };
 
   const handleSearchChange = (value: string) => {
-    setAllTransactions([]);
+    setTransactions([]);
     setSearch(value);
   };
 
@@ -36,12 +35,14 @@ export default function ManagedTable(props: {
 
   useEffect(() => {
     if (transactionsQuery.data) {
-      setAllTransactions((prevTransactions) => [
+      setTransactions((prevTransactions) => [
         ...prevTransactions,
         ...transactionsQuery.data!,
       ]);
     }
   }, [transactionsQuery.data]);
+
+  useEffect(() => setTransactions([]), [props.resetKey]);
 
   if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
 
@@ -65,14 +66,14 @@ export default function ManagedTable(props: {
         ) : (
           <InfiniteScroll
             loader={<></>}
-            dataLength={allTransactions.length}
+            dataLength={transactions.length}
             next={() => setCurrentPage(currentPage + 1)}
             hasMore={true}
           >
             <Table
-              transactions={allTransactions}
+              transactions={transactions}
               onOpenEditForm={props.onOpenEditForm}
-              onDelete={() => setAllTransactions([])}
+              onMutation={() => setTransactions([])}
             />
           </InfiniteScroll>
         )}
