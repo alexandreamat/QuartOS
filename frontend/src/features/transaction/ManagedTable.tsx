@@ -36,21 +36,19 @@ export default function ManagedTable(props: {
   );
 
   useEffect(() => {
-    console.log("props.resetKey");
     setTransactions([]);
     setCurrentPage(1);
     setSearch("");
   }, [props.resetKey]);
 
   useEffect(() => {
-    console.log("transactionsQuery");
     if (transactionsQuery.data) {
       setTransactions((prevTransactions) => [
         ...prevTransactions,
         ...transactionsQuery.data!,
       ]);
     }
-  }, [transactionsQuery]);
+  }, [transactionsQuery.data]);
 
   if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
 
