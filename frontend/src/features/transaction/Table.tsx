@@ -14,14 +14,14 @@ function TransactionRow(
   props:
     | {
         transaction: TransactionApiOut;
-        onEdit: (transaction: TransactionApiOut) => void;
+        onOpenEditForm: (transaction: TransactionApiOut) => void;
         onDelete: () => void;
       }
     | {
         transaction: TransactionApiIn;
       }
 ) {
-  const isApiOut = "onEdit" in props;
+  const isApiOut = "onOpenEditForm" in props;
   const accountQueries = useAccountQueries(props.transaction.account_id);
 
   const [deleteTransaction, deleteTransactionResult] =
@@ -74,7 +74,7 @@ function TransactionRow(
         <>
           <EditCell
             disabled={accountQueries.account?.is_synced !== false}
-            onEdit={() => props.onEdit(props.transaction)}
+            onEdit={() => props.onOpenEditForm(props.transaction)}
           />
           <DeleteCell
             disabled={accountQueries.account?.is_synced !== false}
@@ -97,14 +97,14 @@ export default function TransactionsTable(
   props:
     | {
         transactions: TransactionApiOut[];
-        onEdit: (transaction: TransactionApiOut) => void;
+        onOpenEditForm: (transaction: TransactionApiOut) => void;
         onDelete: () => void;
       }
     | {
         transactions: TransactionApiIn[];
       }
 ) {
-  const isApiOut = "onEdit" in props;
+  const isApiOut = "onOpenEditForm" in props;
 
   if (!props.transactions.length) return <EmptyTablePlaceholder />;
 
@@ -120,7 +120,7 @@ export default function TransactionsTable(
               <TransactionRow
                 key={index}
                 transaction={transaction}
-                onEdit={props.onEdit}
+                onOpenEditForm={props.onOpenEditForm}
                 onDelete={props.onDelete}
               />
             ))

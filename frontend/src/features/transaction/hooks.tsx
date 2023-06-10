@@ -33,3 +33,23 @@ export function useTransactionOptions(search: string) {
     error: query.isError ? renderErrorMessage(query.error) : undefined,
   };
 }
+
+export function useTransactionsQuery(
+  accountId: number,
+  search: string,
+  currentPage: number
+) {
+  const transactionsQuery = accountId
+    ? api.endpoints.readTransactionsApiAccountsIdTransactionsGet.useQuery({
+        id: accountId,
+        page: currentPage,
+        perPage: 20,
+        search: search,
+      })
+    : api.endpoints.readManyApiTransactionsGet.useQuery({
+        page: currentPage,
+        perPage: 20,
+        search: search,
+      });
+  return transactionsQuery;
+}

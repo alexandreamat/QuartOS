@@ -21,6 +21,7 @@ import { codeOptions, paymentChannelOptions } from "./options";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
+  accountId?: number;
   open: boolean;
   onClose: () => void;
 }) {
@@ -84,6 +85,11 @@ export default function TransactionForm(props: {
     accountId.set(tx.account_id);
     currencyCode.set(tx.currency_code);
   }, [props.transaction]);
+
+  useEffect(() => {
+    if (!props.accountId) return;
+    accountId.set(props.accountId);
+  }, [props.accountId]);
 
   const [createTransaction, createTransactionResult] =
     api.endpoints.createApiTransactionsPost.useMutation();
