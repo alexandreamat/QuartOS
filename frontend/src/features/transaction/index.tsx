@@ -19,6 +19,7 @@ export default function Transactions() {
   };
 
   const handleOpenEditForm = (transaction: TransactionApiOut) => {
+    setSelectedAccountId(0);
     setSelectedTransaction(transaction);
     setIsFormOpen(true);
   };
