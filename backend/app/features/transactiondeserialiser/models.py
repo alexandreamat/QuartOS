@@ -13,7 +13,7 @@ from sqlmodel import Relationship
 class __TransactionDeserialiserBase(SQLModel):
     module_name: str
     amount_deserialiser: CodeSnippet
-    datetime_deserialiser: CodeSnippet
+    timestamp_deserialiser: CodeSnippet
     name_deserialiser: CodeSnippet
     currency_code_deserialiser: CodeSnippet
     payment_channel_deserialiser: CodeSnippet

@@ -131,10 +131,6 @@ class CRUDTransaction(
     def update(
         cls, db: Session, id: int, new_obj_in: TransactionApiIn
     ) -> TransactionApiOut:
-        print(new_obj_in)
-        from datetime import datetime
-
-        print(isinstance(new_obj_in.timestamp, datetime))
         new_obj_out = super().update(db, id, new_obj_in)
         if new_obj_out.related_transaction_id:
             Transaction.link(db, new_obj_out.id, new_obj_out.related_transaction_id)

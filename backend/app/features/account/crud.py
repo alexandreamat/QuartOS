@@ -19,27 +19,6 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     api_out_model = AccountApiOut
 
     @classmethod
-    def db_obj_from_schema(cls, obj_in: AccountApiIn) -> Account:
-        obj_in_dict = obj_in.dict(
-            exclude={"institutionalaccount", "noninstitutionalaccount"}
-        )
-        if obj_in.institutionalaccount:
-            return Account(
-                **obj_in_dict,
-                institutionalaccount=Account.InstitutionalAccount(
-                    **obj_in.institutionalaccount.dict()
-                ),
-            )
-        if obj_in.noninstitutionalaccount:
-            return Account(
-                **obj_in_dict,
-                noninstitutionalaccount=Account.NonInstitutionalAccount(
-                    **obj_in.noninstitutionalaccount.dict()
-                ),
-            )
-        raise ValueError
-
-    @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
         return user.models.UserApiOut.from_orm(Account.read(db, id).user)
 

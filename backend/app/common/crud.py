@@ -17,16 +17,12 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
     api_out_model: Type[ApiOutModel]
 
     @classmethod
-    def db_obj_from_schema(cls, obj_in: ApiInModel) -> DBModelType:
-        return cls.db_model(**obj_in.dict())
-
-    @classmethod
     def create(
         cls,
         db: Session,
         new_schema_obj: ApiInModel,
     ) -> ApiOutModel:
-        db_obj_in = cls.db_obj_from_schema(new_schema_obj)
+        db_obj_in = cls.db_model.from_schema(new_schema_obj)
         db_obj_out = cls.db_model.create_or_update(db, db_obj_in)
         api_out_obj: ApiOutModel = cls.api_out_model.from_orm(db_obj_out)
         return api_out_obj
@@ -47,9 +43,7 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
 
     @classmethod
     def update(cls, db: Session, id: int, new_obj: ApiInModel) -> ApiOutModel:
-        db_obj = cls.db_model.read(db, id)
-        for key, value in new_obj.dict().items():
-            setattr(db_obj, key, value)
+        db_obj = cls.db_model.update(db, id, new_obj)
         db_obj_out = cls.db_model.create_or_update(db, db_obj)
         api_out_obj: ApiOutModel = cls.api_out_model.from_orm(db_obj_out)
         return api_out_obj

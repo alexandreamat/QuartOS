@@ -16,7 +16,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     def create(cls, db: Session, new_schema_obj: UserApiIn) -> UserApiOut:
         hashed_password = get_password_hash(new_schema_obj.password)
         del new_schema_obj.password
-        db_obj_in = cls.db_obj_from_schema(new_schema_obj)
+        db_obj_in = cls.db_model.from_schema(new_schema_obj)
         db_obj_in.hashed_password = hashed_password
         db_obj_out = User.create_or_update(db, db_obj_in)
         return UserApiOut.from_orm(db_obj_out)

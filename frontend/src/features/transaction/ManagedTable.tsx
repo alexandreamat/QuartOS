@@ -24,6 +24,7 @@ export default function ManagedTable(props: {
 
   const handleSearchChange = (value: string) => {
     setTransactions([]);
+    setCurrentPage(1);
     setSearch(value);
   };
 
@@ -44,6 +45,7 @@ export default function ManagedTable(props: {
 
   useEffect(() => {
     setTransactions([]);
+    setCurrentPage(1);
     transactionsQuery.refetch();
   }, [props.resetKey]);
 
@@ -77,7 +79,11 @@ export default function ManagedTable(props: {
               transactions={transactions}
               onOpenEditForm={props.onOpenEditForm}
               onOpenCreateForm={props.onOpenCreateForm}
-              onMutation={() => setTransactions([])}
+              onMutation={() => {
+                setTransactions([]);
+                setCurrentPage(1);
+                transactionsQuery.refetch();
+              }}
             />
           </InfiniteScroll>
         )}
