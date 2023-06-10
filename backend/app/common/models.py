@@ -7,10 +7,15 @@ from sqlalchemy.exc import NoResultFound
 
 ModelType = TypeVar("ModelType", bound="IdentifiableBase")
 PlaidModelType = TypeVar("PlaidModelType", bound="PlaidMaybeMixin")
+ApiInModel = TypeVar("ApiInModel", bound=SQLModel)
 
 
 class IdentifiableBase(SQLModel):
     id: int = Field(primary_key=True)
+
+    @classmethod
+    def from_schema(cls: Type[ModelType], obj_in: ApiInModel) -> ModelType:
+        return cls(**obj_in.dict())
 
     @classmethod
     def create_or_update(
@@ -33,6 +38,15 @@ class IdentifiableBase(SQLModel):
         cls: Type[ModelType], db: Session, skip: int = 0, limit: int = 100
     ) -> list[ModelType]:
         return db.query(cls).offset(skip).limit(limit).all()
+
+    @classmethod
+    def update(
+        cls: Type[ModelType], db: Session, id: int, obj_in: ApiInModel
+    ) -> ModelType:
+        db_obj = cls.read(db, id)
+        for key, value in obj_in.dict().items():
+            setattr(db_obj, key, value)
+        return db_obj
 
     @classmethod
     def delete(cls: Type[ModelType], db: Session, id: int) -> None:

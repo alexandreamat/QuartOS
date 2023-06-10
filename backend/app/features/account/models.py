@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any
 from decimal import Decimal
 from enum import Enum
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, Session
 from pydantic import root_validator, validator
 import pycountry
 
@@ -163,6 +163,49 @@ class Account(_AccountBase, IdentifiableBase, table=True):
         back_populates="account",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
+
+    @classmethod
+    def from_schema(cls, obj_in: AccountApiIn) -> "Account":  # type: ignore[override]
+        obj_in_dict = obj_in.dict(
+            exclude={"institutionalaccount", "noninstitutionalaccount"}
+        )
+        if obj_in.institutionalaccount:
+            return Account(
+                **obj_in_dict,
+                institutionalaccount=Account.InstitutionalAccount(
+                    **obj_in.institutionalaccount.dict()
+                ),
+            )
+        if obj_in.noninstitutionalaccount:
+            return Account(
+                **obj_in_dict,
+                noninstitutionalaccount=Account.NonInstitutionalAccount(
+                    **obj_in.noninstitutionalaccount.dict()
+                ),
+            )
+        raise ValueError
+
+    @classmethod
+    def update(cls, db: Session, id: int, obj_in: AccountApiIn) -> "Account":  # type: ignore[override]
+        obj = cls.read(db, id)
+        obj_in_dict = obj_in.dict(
+            exclude={"institutionalaccount", "noninstitutionalaccount"}
+        )
+        for key, value in obj_in_dict.items():
+            setattr(obj, key, value)
+        if obj.institutional_account_id and obj_in.institutionalaccount:
+            obj.institutionalaccount = Account.InstitutionalAccount.update(
+                db, obj.institutional_account_id, obj_in.institutionalaccount
+            )
+            return obj
+
+        if obj.non_institutional_account_id and obj_in.noninstitutionalaccount:
+            obj.noninstitutionalaccount = Account.NonInstitutionalAccount.update(
+                db, obj.non_institutional_account_id, obj_in.noninstitutionalaccount
+            )
+            return obj
+
+        raise ValueError
 
     @property
     def user(self) -> User:

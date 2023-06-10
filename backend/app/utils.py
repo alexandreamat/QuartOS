@@ -106,8 +106,9 @@ def generate_password_reset_token(email: str) -> str:
 
 
 def verify_password_reset_token(token: str) -> str:
-    decoded_token: str = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-    return decoded_token["email"]
+    decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    email: str = decoded_token["email"]
+    return email
 
 
 def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:

@@ -183,6 +183,7 @@ const injectedRtkApi = api
           params: {
             from_currency: queryArg.fromCurrency,
             to_currency: queryArg.toCurrency,
+            date: queryArg.date,
           },
         }),
         providesTags: ["exchangerate"],
@@ -523,6 +524,7 @@ export type GetExchangeRateApiExchangerateGetApiResponse =
 export type GetExchangeRateApiExchangerateGetApiArg = {
   fromCurrency: string;
   toCurrency: string;
+  date?: string;
 };
 export type ReadManyApiInstitutionsGetApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut[];

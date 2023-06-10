@@ -67,10 +67,11 @@ export default function TransactionForm(props: {
 
   const exchangeRateQuery =
     api.endpoints.getExchangeRateApiExchangerateGet.useQuery(
-      relatedTransactionQuery.isSuccess && currencyCode.value
+      relatedTransactionQuery.isSuccess && currencyCode.value && timestamp.value
         ? {
             fromCurrency: relatedTransactionQuery.data?.currency_code,
             toCurrency: currencyCode.value,
+            date: timestamp.value.toISOString().split("T")[0],
           }
         : skipToken
     );
@@ -84,10 +85,8 @@ export default function TransactionForm(props: {
     const rtx = relatedTransactionQuery.data;
     if (!rtx) return;
     if (!isEdit) {
-      amountStr.set((-rtx.amount).toFixed(2));
       timestamp.set(rtx.timestamp ? new Date(rtx.timestamp) : new Date());
       name.set(rtx.name);
-      currencyCode.set(rtx.currency_code);
       code.set(rtx.code);
       paymentChannel.set(rtx.payment_channel);
     }
@@ -99,7 +98,7 @@ export default function TransactionForm(props: {
   useEffect(() => {
     if (!accountQuery.isSuccess) return;
     currencyCode.set(accountQuery.data.currency_code);
-  }, [accountQuery.data]);
+  }, [accountQuery]);
 
   useEffect(() => {
     const tx = props.transaction;
@@ -214,30 +213,33 @@ export default function TransactionForm(props: {
         onSearchChange={setSearch}
       />
       {currencyCode.value && (
-        <FormCurrencyInput
-          label="Amount"
-          amount={amountStr}
-          currency={currencyCode.value}
-        />
-      )}
-      {isCreateRelated &&
-        relatedTransactionQuery.isSuccess &&
-        exchangeRateQuery.isSuccess &&
-        currencyCode.value && (
-          <p>
-            Related amount is{" "}
-            {renderCurrency(
-              Math.abs(relatedTransactionQuery.data.amount),
-              relatedTransactionQuery.data.currency_code
-            )}{" "}
-            ={" "}
-            {renderCurrency(
-              exchangeRateQuery.data *
-                Math.abs(relatedTransactionQuery.data.amount),
-              currencyCode.value
+        <>
+          <FormCurrencyInput
+            label="Amount"
+            amount={amountStr}
+            currency={currencyCode.value}
+          />
+          {isCreateRelated &&
+            relatedTransactionQuery.isSuccess &&
+            exchangeRateQuery.isSuccess &&
+            currencyCode.value !==
+              relatedTransactionQuery.data.currency_code && (
+              <p>
+                Related amount was{" "}
+                {renderCurrency(
+                  Math.abs(relatedTransactionQuery.data.amount),
+                  relatedTransactionQuery.data.currency_code
+                )}{" "}
+                ={" "}
+                {renderCurrency(
+                  exchangeRateQuery.data *
+                    Math.abs(relatedTransactionQuery.data.amount),
+                  currencyCode.value
+                )}
+              </p>
             )}
-          </p>
-        )}
+        </>
+      )}
       <FormDropdownInput label="Code" field={code} options={codeOptions} />
       <FormDropdownInput
         label="Payment Channel"
