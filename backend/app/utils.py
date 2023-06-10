@@ -1,20 +1,25 @@
+import hashlib
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import emails
 from emails.template import JinjaTemplate
+from fastapi import HTTPException, status
 from jose import jwt
 
-from app.core.config import settings
+from app.settings import settings
+
+
+ALGORITHM = "HS256"
 
 
 def send_email(
     email_to: str,
     subject_template: str = "",
     html_template: str = "",
-    environment: Dict[str, Any] = {},
+    environment: dict[str, Any] = {},
 ) -> None:
     assert settings.EMAILS_ENABLED, "no provided configuration for email variables"
     message = emails.Message(
@@ -92,7 +97,7 @@ def generate_password_reset_token(email: str) -> str:
     now = datetime.utcnow()
     expires = now + delta
     exp = expires.timestamp()
-    encoded_jwt = jwt.encode(
+    encoded_jwt: str = jwt.encode(
         {"exp": exp, "nbf": now, "sub": email},
         settings.SECRET_KEY,
         algorithm="HS256",
@@ -101,5 +106,29 @@ def generate_password_reset_token(email: str) -> str:
 
 
 def verify_password_reset_token(token: str) -> str:
-    decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    decoded_token: str = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
     return decoded_token["email"]
+
+
+def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+    to_encode = {"exp": expire, "sub": str(subject)}
+    encoded_jwt: str = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+
+def get_password_hash(password: str) -> str:
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+
+def verify_password(plain_password: str, hashed_password: str) -> None:
+    if not get_password_hash(plain_password) == hashed_password:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            headers={"WWW-Authenticate": "Bearer"},
+        )

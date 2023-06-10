@@ -28,11 +28,13 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
     ) -> ApiOutModel:
         db_obj_in = cls.db_obj_from_schema(new_schema_obj)
         db_obj_out = cls.db_model.create_or_update(db, db_obj_in)
-        return cls.api_out_model.from_orm(db_obj_out)
+        api_out_obj: ApiOutModel = cls.api_out_model.from_orm(db_obj_out)
+        return api_out_obj
 
     @classmethod
     def read(cls, db: Session, id: int) -> ApiOutModel:
-        return cls.api_out_model.from_orm(cls.db_model.read(db, id))
+        api_out_obj: ApiOutModel = cls.api_out_model.from_orm(cls.db_model.read(db, id))
+        return api_out_obj
 
     @classmethod
     def read_many(
@@ -49,7 +51,8 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
         for key, value in jsonable_encoder(new_obj).items():
             setattr(db_obj, key, value)
         db_obj_out = cls.db_model.create_or_update(db, db_obj)
-        return cls.api_out_model.from_orm(db_obj_out)
+        api_out_obj: ApiOutModel = cls.api_out_model.from_orm(db_obj_out)
+        return api_out_obj
 
     @classmethod
     def delete(cls, db: Session, id: int) -> None:
@@ -64,7 +67,8 @@ class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
     def sync(cls, db: Session, obj: PlaidInModel) -> PlaidOutModel:
         db_obj_in = cls.db_model(**obj.dict())
         db_obj_out = cls.db_model.create_or_update(db, db_obj_in)
-        return cls.plaid_out_model.from_orm(db_obj_out)
+        plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(db_obj_out)
+        return plaid_out_obj
 
     @classmethod
     def resync(cls, db: Session, id: int, new_obj: PlaidInModel) -> PlaidOutModel:
@@ -72,7 +76,8 @@ class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
         for key, value in jsonable_encoder(new_obj).items():
             setattr(db_obj, key, value)
         db_obj_out = cls.db_model.create_or_update(db, db_obj)
-        return cls.plaid_out_model.from_orm(db_obj_out)
+        plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(db_obj_out)
+        return plaid_out_obj
 
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
@@ -80,7 +85,10 @@ class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
 
     @classmethod
     def read_by_plaid_id(cls, db: Session, name: str) -> PlaidOutModel:
-        return cls.plaid_out_model.from_orm(cls.db_model.read_by_plaid_id(db, name))
+        plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(
+            cls.db_model.read_by_plaid_id(db, name)
+        )
+        return plaid_out_obj
 
     @classmethod
     def read_many_plaid(
@@ -93,4 +101,7 @@ class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
 
     @classmethod
     def read_plaid(cls, db: Session, id: int) -> PlaidOutModel:
-        return cls.plaid_out_model.from_orm(cls.db_model.read(db, id))
+        plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(
+            cls.db_model.read(db, id)
+        )
+        return plaid_out_obj

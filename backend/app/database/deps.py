@@ -4,7 +4,7 @@ from sqlmodel import create_engine, Session
 from sqlalchemy import event
 from fastapi import Depends
 
-from app.core.config import settings
+from app.settings import settings
 
 
 connect_args = {"check_same_thread": False}

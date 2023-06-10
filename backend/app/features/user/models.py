@@ -5,7 +5,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, select
 
 from app.common.models import IdentifiableBase
-from app.core.security import verify_password
+from app.utils import verify_password
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink.models import UserInstitutionLink

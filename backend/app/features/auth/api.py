@@ -6,8 +6,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.exc import NoResultFound
 from jose.exceptions import JWTError
 
-from app.core import security
-from app.core.config import settings
+from app import utils
+from app.settings import settings
 from app.utils import (
     generate_password_reset_token,
     send_reset_password_email,
@@ -35,7 +35,7 @@ def login(db: DBSession, form_data: OAuth2PasswordRequestForm = Depends()) -> To
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Token(
-        access_token=security.create_access_token(
+        access_token=utils.create_access_token(
             str(user.id), expires_delta=access_token_expires
         ),
         token_type="bearer",
