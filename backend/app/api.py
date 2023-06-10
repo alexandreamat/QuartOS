@@ -9,6 +9,7 @@ from app.features import (
     transaction,
     transactiondeserialiser,
     plaid,
+    exchangerate,
 )
 
 
@@ -20,6 +21,7 @@ INSTITUTION_LINKS = "institution-links"
 ACCOUNTS = "accounts"
 TRANSACTIONS = "transactions"
 PLAID = "plaid"
+EXCHANGERATE = "exchangerate"
 
 api_router = APIRouter()
 
@@ -30,6 +32,9 @@ api_router.include_router(
     tags=[TRANSACTION_DESERIALISERS],
 )
 api_router.include_router(user.api.router, prefix=f"/{USERS}", tags=[USERS])
+api_router.include_router(
+    exchangerate.api.router, prefix=f"/{EXCHANGERATE}", tags=[EXCHANGERATE]
+)
 api_router.include_router(
     institution.api.router, prefix=f"/{INSTITUTIONS}", tags=[INSTITUTIONS]
 )
