@@ -11,7 +11,6 @@ from app.features import (
     plaid,
 )
 
-from . import utils
 
 AUTH = "auth"
 TRANSACTION_DESERIALISERS = "transaction-deserialisers"
@@ -20,7 +19,6 @@ INSTITUTIONS = "institutions"
 INSTITUTION_LINKS = "institution-links"
 ACCOUNTS = "accounts"
 TRANSACTIONS = "transactions"
-UTILS = "utils"
 PLAID = "plaid"
 
 api_router = APIRouter()
@@ -44,7 +42,6 @@ api_router.include_router(account.api.router, prefix=f"/{ACCOUNTS}", tags=[ACCOU
 api_router.include_router(
     transaction.api.router, prefix=f"/{TRANSACTIONS}", tags=[TRANSACTIONS]
 )
-api_router.include_router(utils.router, prefix=f"/{UTILS}", tags=[UTILS])
 api_router.include_router(
     plaid.api.router,
     prefix=f"/{PLAID}",

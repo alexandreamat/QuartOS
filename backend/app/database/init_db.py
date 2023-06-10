@@ -2,7 +2,7 @@
 from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
-from app.core.config import settings
+from app.settings import settings
 from app.features.user.crud import CRUDUser
 from app.features.user.models import UserApiIn
 
@@ -10,8 +10,8 @@ from app.features.user.models import UserApiIn
 from app.common.models import IdentifiableBase
 
 # 2. Import inheritors of the base model
-from app.features.institution.models import Institution
 from app.features.user.models import User
+from app.features.institution.models import Institution
 from app.features.userinstitutionlink.models import UserInstitutionLink
 from app.features.account.models import Account
 from app.features.transaction.models import Transaction

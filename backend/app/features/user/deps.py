@@ -7,11 +7,14 @@ from pydantic import ValidationError
 from sqlalchemy.exc import NoResultFound
 
 from app.database.deps import DBSession
-from app.core import security
-from app.core.config import settings
-from app.features.user.crud import CRUDUser
-from app.features.user.models import UserApiOut
+from app.utils import ALGORITHM
+from app.settings import settings
+
+from .crud import CRUDUser
+
 from app.features.auth.models import TokenPayload
+
+from .models import UserApiOut
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_STR}/auth/login")
 
@@ -20,9 +23,7 @@ def get_current_user(
     db: DBSession, token: str = Depends(reusable_oauth2)
 ) -> UserApiOut:
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
         token_data = TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)

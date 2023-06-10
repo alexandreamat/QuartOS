@@ -2,7 +2,7 @@ from sqlmodel import Session
 
 from fastapi.encoders import jsonable_encoder
 
-from app.core.security import get_password_hash
+from app.utils import get_password_hash
 from app.common.crud import CRUDBase
 
 from .models import User, UserApiOut, UserApiIn
