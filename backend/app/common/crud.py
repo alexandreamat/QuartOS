@@ -48,7 +48,7 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
     @classmethod
     def update(cls, db: Session, id: int, new_obj: ApiInModel) -> ApiOutModel:
         db_obj = cls.db_model.read(db, id)
-        for key, value in jsonable_encoder(new_obj).items():
+        for key, value in new_obj.dict().items():
             setattr(db_obj, key, value)
         db_obj_out = cls.db_model.create_or_update(db, db_obj)
         api_out_obj: ApiOutModel = cls.api_out_model.from_orm(db_obj_out)

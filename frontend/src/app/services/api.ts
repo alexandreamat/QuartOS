@@ -3,11 +3,11 @@ export const addTagTypes = [
   "auth",
   "transaction-deserialisers",
   "users",
+  "exchangerate",
   "institutions",
   "institution-links",
   "accounts",
   "transactions",
-  "utils",
   "plaid",
 ] as const;
 const injectedRtkApi = api
@@ -173,6 +173,19 @@ const injectedRtkApi = api
           body: queryArg,
         }),
         invalidatesTags: ["users"],
+      }),
+      getExchangeRateApiExchangerateGet: build.query<
+        GetExchangeRateApiExchangerateGetApiResponse,
+        GetExchangeRateApiExchangerateGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/exchangerate/`,
+          params: {
+            from_currency: queryArg.fromCurrency,
+            to_currency: queryArg.toCurrency,
+          },
+        }),
+        providesTags: ["exchangerate"],
       }),
       readManyApiInstitutionsGet: build.query<
         ReadManyApiInstitutionsGetApiResponse,
@@ -409,28 +422,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["transactions"],
       }),
-      testCeleryApiUtilsTestCeleryPost: build.mutation<
-        TestCeleryApiUtilsTestCeleryPostApiResponse,
-        TestCeleryApiUtilsTestCeleryPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/utils/test-celery/`,
-          method: "POST",
-          params: { msg: queryArg },
-        }),
-        invalidatesTags: ["utils"],
-      }),
-      testEmailApiUtilsTestEmailPost: build.mutation<
-        TestEmailApiUtilsTestEmailPostApiResponse,
-        TestEmailApiUtilsTestEmailPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/utils/test-email/`,
-          method: "POST",
-          params: { email_to: queryArg },
-        }),
-        invalidatesTags: ["utils"],
-      }),
       getLinkTokenApiPlaidLinkTokenGet: build.query<
         GetLinkTokenApiPlaidLinkTokenGetApiResponse,
         GetLinkTokenApiPlaidLinkTokenGetApiArg
@@ -527,6 +518,12 @@ export type ReadManyApiUsersGetApiArg = {
 export type CreateApiUsersPostApiResponse =
   /** status 200 Successful Response */ UserApiOut;
 export type CreateApiUsersPostApiArg = UserApiIn;
+export type GetExchangeRateApiExchangerateGetApiResponse =
+  /** status 200 Successful Response */ number;
+export type GetExchangeRateApiExchangerateGetApiArg = {
+  fromCurrency: string;
+  toCurrency: string;
+};
 export type ReadManyApiInstitutionsGetApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut[];
 export type ReadManyApiInstitutionsGetApiArg = void;
@@ -623,12 +620,6 @@ export type UpdateApiTransactionsIdPutApiArg = {
 export type DeleteApiTransactionsIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
 export type DeleteApiTransactionsIdDeleteApiArg = number;
-export type TestCeleryApiUtilsTestCeleryPostApiResponse =
-  /** status 201 Successful Response */ string;
-export type TestCeleryApiUtilsTestCeleryPostApiArg = string;
-export type TestEmailApiUtilsTestEmailPostApiResponse =
-  /** status 201 Successful Response */ string;
-export type TestEmailApiUtilsTestEmailPostApiArg = string;
 export type GetLinkTokenApiPlaidLinkTokenGetApiResponse =
   /** status 200 Successful Response */ string;
 export type GetLinkTokenApiPlaidLinkTokenGetApiArg = void;
@@ -666,7 +657,7 @@ export type TransactionDeserialiserApiOut = {
   id: number;
   module_name: string;
   amount_deserialiser: string;
-  datetime_deserialiser: string;
+  timestamp_deserialiser: string;
   name_deserialiser: string;
   currency_code_deserialiser: string;
   payment_channel_deserialiser: string;
@@ -677,7 +668,7 @@ export type TransactionDeserialiserApiOut = {
 export type TransactionDeserialiserApiIn = {
   module_name: string;
   amount_deserialiser: string;
-  datetime_deserialiser: string;
+  timestamp_deserialiser: string;
   name_deserialiser: string;
   currency_code_deserialiser: string;
   payment_channel_deserialiser: string;
@@ -785,7 +776,7 @@ export type TransactionCode =
 export type TransactionApiOut = {
   id: number;
   amount: number;
-  datetime?: string;
+  timestamp?: string;
   name: string;
   currency_code: string;
   account_id: number;
@@ -795,7 +786,7 @@ export type TransactionApiOut = {
 };
 export type TransactionApiIn = {
   amount: number;
-  datetime: string;
+  timestamp: string;
   name: string;
   currency_code: string;
   account_id: number;

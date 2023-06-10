@@ -56,8 +56,8 @@ function TransactionRow(
         )}
       </Table.Cell>
       <Table.Cell collapsing>
-        {props.transaction.datetime &&
-          format(new Date(props.transaction.datetime), " yyyy MMMM d")}
+        {props.transaction.timestamp &&
+          format(new Date(props.transaction.timestamp), " yyyy MMMM d")}
       </Table.Cell>
       <Table.Cell>{props.transaction.name}</Table.Cell>
       <Table.Cell collapsing>
@@ -79,6 +79,7 @@ function TransactionRow(
         <>
           <Table.Cell collapsing>
             <ActionButton
+              disabled={Boolean(props.transaction.related_transaction_id)}
               icon="linkify"
               onClick={() => props.onOpenCreateForm(0, props.transaction.id)}
             />
