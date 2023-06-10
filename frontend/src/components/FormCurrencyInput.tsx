@@ -9,10 +9,6 @@ export default function FormCurrencyInput(props: {
   return (
     <Form.Input
       type="number"
-      input={{
-        inputMode: "decimal",
-        step: "0.01",
-      }}
       placeholder={"Enter " + props.label}
       required
       value={props.amount.value}
@@ -27,7 +23,7 @@ export default function FormCurrencyInput(props: {
       error={props.amount.isError}
     >
       <Label>{props.currency}</Label>
-      <input />
+      <input inputMode="decimal" step="0.01" />
     </Form.Input>
   );
 }
