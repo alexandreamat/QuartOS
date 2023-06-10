@@ -3,6 +3,7 @@ from sqlalchemy import desc
 
 from app.common.crud import CRUDBase, CRUDSyncable
 from app.features import account, userinstitutionlink, institution, user
+from backend.app.features.transaction.models import TransactionApiIn, TransactionApiOut
 
 from .models import (
     Transaction,
@@ -119,6 +120,13 @@ class CRUDTransaction(
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
         return cls.db_model.read(db, id).is_synced
+
+    @classmethod
+    def create(cls, db: Session, new_schema_obj: TransactionApiIn) -> TransactionApiOut:
+        new_obj_out = super().create(db, new_schema_obj)
+        if new_obj_out.related_transaction_id:
+            Transaction.link(db, new_obj_out.id, new_obj_out.related_transaction_id)
+        return new_obj_out
 
     @classmethod
     def update(
