@@ -11,7 +11,7 @@ import { renderErrorMessage } from "utils/error";
 import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import FormTextInput from "components/FormTextInput";
-import FormCurrencyInput from "components/FormCurrencyInput";
+import FormCurrencyInputs from "components/FormCurrencyInputs";
 import FormDropdownInput from "components/FormDropdownInput";
 import { useLocation } from "react-router-dom";
 import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
@@ -205,7 +205,7 @@ export default function AccountForm(props: {
           />
         </>
       )}
-      <FormCurrencyInput
+      <FormCurrencyInputs
         label="Current Balance"
         amount={balanceStr}
         currency={currencyCode}
