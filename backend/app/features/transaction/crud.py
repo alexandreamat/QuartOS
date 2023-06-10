@@ -119,3 +119,12 @@ class CRUDTransaction(
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
         return cls.db_model.read(db, id).is_synced
+
+    @classmethod
+    def update(
+        cls, db: Session, id: int, new_obj_in: TransactionApiIn
+    ) -> TransactionApiOut:
+        new_obj_out = super().update(db, id, new_obj_in)
+        if new_obj_out.related_transaction_id:
+            Transaction.link(db, new_obj_out.id, new_obj_out.related_transaction_id)
+        return new_obj_out

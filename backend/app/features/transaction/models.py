@@ -1,7 +1,7 @@
 from typing import Optional
 from enum import Enum
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, Session
 from datetime import datetime
 from decimal import Decimal
 
@@ -70,6 +70,13 @@ class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=Tr
     linked_transaction: Optional["Transaction"] = Relationship(
         sa_relationship_kwargs={"uselist": False}
     )
+
+    @classmethod
+    def link(cls, db: Session, a_id: int, b_id: int) -> None:
+        a = cls.read(db, a_id)
+        b = cls.read(db, b_id)
+        a.related_transaction_id = b.id
+        b.related_transaction_id = a.id
 
     @property
     def user(self) -> User:
