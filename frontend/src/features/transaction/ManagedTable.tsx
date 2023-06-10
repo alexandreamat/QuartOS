@@ -8,7 +8,7 @@ import Bar from "./Bar";
 import { useTransactionsQuery } from "./hooks";
 
 export default function ManagedTable(props: {
-  onOpenCreateForm: (accountId: number) => void;
+  onOpenCreateForm: (accountId: number, relatedTransactionId: number) => void;
   onOpenEditForm: (transaction: TransactionApiOut) => void;
   resetKey: number;
 }) {
@@ -73,6 +73,7 @@ export default function ManagedTable(props: {
             <Table
               transactions={transactions}
               onOpenEditForm={props.onOpenEditForm}
+              onOpenCreateForm={props.onOpenCreateForm}
               onMutation={() => setTransactions([])}
             />
           </InfiniteScroll>

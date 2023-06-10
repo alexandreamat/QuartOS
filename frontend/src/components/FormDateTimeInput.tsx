@@ -4,6 +4,7 @@ import { Form } from "semantic-ui-react";
 export default function FormDateTimeInput(props: {
   label: string;
   field: ReturnType<typeof useFormField<Date>>;
+  disabled?: boolean;
 }) {
   const formatDate = (date: Date) => {
     const year = date.getFullYear();
@@ -21,6 +22,7 @@ export default function FormDateTimeInput(props: {
   return (
     <Form.Group widths="equal">
       <Form.Input
+        disabled={props.disabled}
         type="date"
         name={props.label}
         label="Date"
@@ -40,6 +42,7 @@ export default function FormDateTimeInput(props: {
         }}
       />
       <Form.Input
+        disabled={props.disabled}
         type="time"
         name={props.label}
         label="Time"

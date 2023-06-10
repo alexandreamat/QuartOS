@@ -22,10 +22,14 @@ import { codeOptions, paymentChannelOptions } from "./options";
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
   accountId?: number;
+  relatedTransactionId?: number;
   open: boolean;
   onClose: () => void;
   onMutation: () => void;
 }) {
+  const isEdit = props.transaction !== undefined;
+  const isCreateRelated = props.relatedTransactionId !== 0;
+
   const amountStr = useFormField("");
   const datetime = useFormField(new Date());
   const name = useFormField("");
@@ -60,17 +64,20 @@ export default function TransactionForm(props: {
   const searchedRelatedTransactionOptions = useTransactionOptions(search);
 
   useEffect(() => {
+    const isEdit = props.transaction !== undefined;
+    const isCreateRelated = props.relatedTransactionId !== 0;
     const rtx = relatedTransactionQuery.data;
     if (!rtx) return;
-    if (props.transaction) {
-      setTransactionOptions([{ key: rtx.id, value: rtx.id, text: rtx.name }]);
-    } else {
+    if (!isEdit) {
       amountStr.set((-rtx.amount).toFixed(2));
       datetime.set(rtx.datetime ? new Date(rtx.datetime) : new Date());
       name.set(rtx.name);
       currencyCode.set(rtx.currency_code);
       code.set(rtx.code);
       paymentChannel.set(rtx.payment_channel);
+    }
+    if (isEdit || isCreateRelated) {
+      setTransactionOptions([{ key: rtx.id, value: rtx.id, text: rtx.name }]);
     }
   }, [relatedTransactionQuery.data]);
 
@@ -91,6 +98,11 @@ export default function TransactionForm(props: {
     if (!props.accountId) return;
     accountId.set(props.accountId);
   }, [props.accountId]);
+
+  useEffect(() => {
+    if (!props.relatedTransactionId) return;
+    relatedTransactionId.set(props.relatedTransactionId);
+  }, [props.relatedTransactionId]);
 
   const [createTransaction, createTransactionResult] =
     api.endpoints.createApiTransactionsPost.useMutation();
@@ -144,11 +156,21 @@ export default function TransactionForm(props: {
     handleClose();
   };
 
+  function getModalTitle(isEdit: boolean, isCreateRelated: boolean) {
+    if (isEdit) {
+      return "Edit a Transaction";
+    } else if (isCreateRelated) {
+      return "Add a Related Transaction";
+    } else {
+      return "Add a Transaction";
+    }
+  }
+
   return (
     <FormModal
       open={props.open}
       onClose={handleClose}
-      title={(props.transaction ? "Edit" : "Add") + " a Transaction"}
+      title={getModalTitle(isEdit, isCreateRelated)}
       onSubmit={handleSubmit}
     >
       <FormDropdownInput
@@ -159,6 +181,7 @@ export default function TransactionForm(props: {
         error={accountOptions.isError}
       />
       <FormDropdownInput
+        disabled={isCreateRelated}
         label="Related transaction"
         optional
         field={relatedTransactionId}
@@ -182,7 +205,11 @@ export default function TransactionForm(props: {
         options={paymentChannelOptions}
       />
       <FormTextInput label="Name" field={name} />
-      <FormDateTimeInput label="Time" field={datetime} />
+      <FormDateTimeInput
+        disabled={isCreateRelated}
+        label="Time"
+        field={datetime}
+      />
       {fields.some((field) => field.isError) && (
         <Message
           error

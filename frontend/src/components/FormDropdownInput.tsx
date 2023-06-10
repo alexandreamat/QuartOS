@@ -14,10 +14,12 @@ export default function FormDropdownInput<T extends number | string>(props: {
   error?: boolean;
   compact?: boolean;
   optional?: boolean;
+  disabled?: boolean;
   onSearchChange?: (s: string) => void;
 }) {
   return (
     <Form.Select
+      disabled={props.disabled}
       label={props.label}
       placeholder={
         props.compact ? "Select" : "Select " + props.label.toLocaleLowerCase()
