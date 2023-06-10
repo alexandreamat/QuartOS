@@ -11,7 +11,9 @@ export default function TableHeader(props: {
           <Table.HeaderCell key={index}>{header}</Table.HeaderCell>
         ))}
         {props.actions !== 0 && (
-          <Table.HeaderCell colSpan={props.actions}>Actions</Table.HeaderCell>
+          <Table.HeaderCell key="actions" colSpan={props.actions}>
+            Actions
+          </Table.HeaderCell>
         )}
       </Table.Row>
     </Table.Header>

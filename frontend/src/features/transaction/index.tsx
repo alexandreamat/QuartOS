@@ -11,11 +11,16 @@ export default function Transactions() {
     TransactionApiOut | undefined
   >(undefined);
   const [selectedAccountId, setSelectedAccountId] = useState(0);
+  const [selectedRelatedTransactionId, setSelectedRelatedTransactionId] =
+    useState(0);
   const [resetKey, setResetKey] = useState(0);
-
-  const handleOpenCreateForm = (accountId: number) => {
+  const handleOpenCreateForm = (
+    accountId: number,
+    relatedTransactionId: number
+  ) => {
     setSelectedAccountId(accountId);
     setSelectedTransaction(undefined);
+    setSelectedRelatedTransactionId(relatedTransactionId);
     setIsFormOpen(true);
   };
 
@@ -45,6 +50,7 @@ export default function Transactions() {
         open={isFormOpen}
         onClose={handleCloseForm}
         accountId={selectedAccountId}
+        relatedTransactionId={selectedRelatedTransactionId}
         onMutation={handleMutation}
       />
     </div>

@@ -9,12 +9,17 @@ import { format } from "date-fns";
 import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import CurrencyLabel from "components/CurrencyLabel";
+import ActionButton from "components/ActionButton";
 
 function TransactionRow(
   props:
     | {
         transaction: TransactionApiOut;
         onOpenEditForm: (transaction: TransactionApiOut) => void;
+        onOpenCreateForm: (
+          accountId: number,
+          relatedTransactionId: number
+        ) => void;
         onDelete: () => void;
       }
     | {
@@ -68,10 +73,16 @@ function TransactionRow(
         isError={accountQueries.isError}
         error={accountQueries.error}
       >
-        {accountQueries.account ? accountQueries.account.name : "UNKNOWN"}
+        {accountQueries.account?.name}
       </LoadableCell>
       {isApiOut && (
         <>
+          <Table.Cell collapsing>
+            <ActionButton
+              icon="linkify"
+              onClick={() => props.onOpenCreateForm(0, props.transaction.id)}
+            />
+          </Table.Cell>
           <EditCell
             disabled={accountQueries.account?.is_synced !== false}
             onEdit={() => props.onOpenEditForm(props.transaction)}
@@ -98,6 +109,10 @@ export default function TransactionsTable(
     | {
         transactions: TransactionApiOut[];
         onOpenEditForm: (transaction: TransactionApiOut) => void;
+        onOpenCreateForm: (
+          accountId: number,
+          relatedTransactionId: number
+        ) => void;
         onMutation: () => void;
       }
     | {
@@ -112,7 +127,7 @@ export default function TransactionsTable(
     <Table>
       <TableHeader
         headers={["", "Created", "Name", "Amount", "Account"]}
-        actions={isApiOut ? 2 : 0}
+        actions={isApiOut ? 3 : 0}
       />
       <Table.Body>
         {isApiOut
@@ -121,6 +136,7 @@ export default function TransactionsTable(
                 key={index}
                 transaction={transaction}
                 onOpenEditForm={props.onOpenEditForm}
+                onOpenCreateForm={props.onOpenCreateForm}
                 onDelete={props.onMutation}
               />
             ))
