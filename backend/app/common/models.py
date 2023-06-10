@@ -1,11 +1,8 @@
-import json
 from typing import TypeVar, Type, Any, Generator, Callable
 
 import pycountry
-from pydantic import validator
 from sqlmodel import Session, SQLModel, Field, select
 from sqlalchemy.exc import NoResultFound
-from fastapi.encoders import jsonable_encoder
 
 
 ModelType = TypeVar("ModelType", bound="IdentifiableBase")
