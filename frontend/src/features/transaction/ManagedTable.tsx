@@ -42,7 +42,10 @@ export default function ManagedTable(props: {
     }
   }, [transactionsQuery.data]);
 
-  useEffect(() => setTransactions([]), [props.resetKey]);
+  useEffect(() => {
+    setTransactions([]);
+    transactionsQuery.refetch();
+  }, [props.resetKey]);
 
   if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
 
