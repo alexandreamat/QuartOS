@@ -26,12 +26,14 @@ export default function Transactions() {
 
   const handleOpenEditForm = (transaction: TransactionApiOut) => {
     setSelectedAccountId(0);
+    setSelectedRelatedTransactionId(0);
     setSelectedTransaction(transaction);
     setIsFormOpen(true);
   };
 
   const handleCloseForm = () => {
     setSelectedAccountId(0);
+    setSelectedRelatedTransactionId(0);
     setSelectedTransaction(undefined);
     setIsFormOpen(false);
   };
