@@ -3,7 +3,6 @@ from sqlalchemy import desc
 
 from app.common.crud import CRUDBase, CRUDSyncable
 from app.features import account, userinstitutionlink, institution, user
-from backend.app.features.transaction.models import TransactionApiIn, TransactionApiOut
 
 from .models import (
     Transaction,
