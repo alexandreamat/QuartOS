@@ -19,6 +19,7 @@ export default function ManagedTable(props: {
 
   const handleAccountIdChange = (value: number) => {
     setTransactions([]);
+    setCurrentPage(1);
     setAccountId(value);
   };
 
@@ -35,19 +36,21 @@ export default function ManagedTable(props: {
   );
 
   useEffect(() => {
+    console.log("props.resetKey");
+    setTransactions([]);
+    setCurrentPage(1);
+    setSearch("");
+  }, [props.resetKey]);
+
+  useEffect(() => {
+    console.log("transactionsQuery");
     if (transactionsQuery.data) {
       setTransactions((prevTransactions) => [
         ...prevTransactions,
         ...transactionsQuery.data!,
       ]);
     }
-  }, [transactionsQuery.data]);
-
-  useEffect(() => {
-    setTransactions([]);
-    setCurrentPage(1);
-    transactionsQuery.refetch();
-  }, [props.resetKey]);
+  }, [transactionsQuery]);
 
   if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
 
