@@ -56,6 +56,10 @@ export default function TransactionForm(props: {
     relatedTransactionId,
   ];
 
+  const accountQuery = api.endpoints.readApiAccountsIdGet.useQuery(
+    accountId.value || skipToken
+  );
+
   const relatedTransactionQuery =
     api.endpoints.readApiTransactionsIdGet.useQuery(
       relatedTransactionId.value || skipToken
@@ -91,6 +95,11 @@ export default function TransactionForm(props: {
       setTransactionOptions([{ key: rtx.id, value: rtx.id, text: rtx.name }]);
     }
   }, [relatedTransactionQuery.data]);
+
+  useEffect(() => {
+    if (!accountQuery.isSuccess) return;
+    currencyCode.set(accountQuery.data.currency_code);
+  }, [accountQuery.data]);
 
   useEffect(() => {
     const tx = props.transaction;
@@ -204,11 +213,13 @@ export default function TransactionForm(props: {
         error={searchedRelatedTransactionOptions.isError}
         onSearchChange={setSearch}
       />
-      <FormCurrencyInput
-        label="Amount"
-        amount={amountStr}
-        currency={currencyCode}
-      />
+      {currencyCode.value && (
+        <FormCurrencyInput
+          label="Amount"
+          amount={amountStr}
+          currency={currencyCode.value}
+        />
+      )}
       {isCreateRelated &&
         relatedTransactionQuery.isSuccess &&
         exchangeRateQuery.isSuccess &&
