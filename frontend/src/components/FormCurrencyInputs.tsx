@@ -16,6 +16,12 @@ export default function FormCurrencyInputs(props: {
 }) {
   return (
     <Form.Group widths="equal">
+      <FormDropdownInput
+        field={props.currency}
+        label="Currency"
+        options={currencyCodeOptions}
+        compact
+      />
       <Form.Input
         type="number"
         input={{
@@ -34,12 +40,6 @@ export default function FormCurrencyInputs(props: {
           props.amount.set(data.value as string);
         }}
         error={props.amount.isError}
-      />
-      <FormDropdownInput
-        field={props.currency}
-        label="Currency"
-        options={currencyCodeOptions}
-        compact
       />
     </Form.Group>
   );
