@@ -18,6 +18,7 @@ import FormDropdownInput from "components/FormDropdownInput";
 import { useAccountOptions } from "features/account/hooks";
 import { useTransactionOptions } from "./hooks";
 import { codeOptions, paymentChannelOptions } from "./options";
+import { renderCurrency } from "utils/currency";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
@@ -31,7 +32,7 @@ export default function TransactionForm(props: {
   const isCreateRelated = props.relatedTransactionId !== 0;
 
   const amountStr = useFormField("");
-  const datetime = useFormField(new Date());
+  const timestamp = useFormField(new Date());
   const name = useFormField("");
   const accountId = useFormField(0);
   const currencyCode = useFormField("");
@@ -46,7 +47,7 @@ export default function TransactionForm(props: {
 
   const fields = [
     amountStr,
-    datetime,
+    timestamp,
     name,
     accountId,
     currencyCode,
@@ -60,6 +61,16 @@ export default function TransactionForm(props: {
       relatedTransactionId.value || skipToken
     );
 
+  const exchangeRateQuery =
+    api.endpoints.getExchangeRateApiExchangerateGet.useQuery(
+      relatedTransactionQuery.isSuccess && currencyCode.value
+        ? {
+            fromCurrency: relatedTransactionQuery.data?.currency_code,
+            toCurrency: currencyCode.value,
+          }
+        : skipToken
+    );
+
   const accountOptions = useAccountOptions();
   const searchedRelatedTransactionOptions = useTransactionOptions(search);
 
@@ -70,7 +81,7 @@ export default function TransactionForm(props: {
     if (!rtx) return;
     if (!isEdit) {
       amountStr.set((-rtx.amount).toFixed(2));
-      datetime.set(rtx.datetime ? new Date(rtx.datetime) : new Date());
+      timestamp.set(rtx.timestamp ? new Date(rtx.timestamp) : new Date());
       name.set(rtx.name);
       currencyCode.set(rtx.currency_code);
       code.set(rtx.code);
@@ -88,7 +99,7 @@ export default function TransactionForm(props: {
     code.set(tx.code);
     relatedTransactionId.set(tx.related_transaction_id || 0);
     amountStr.set(tx.amount.toFixed(2));
-    datetime.set(tx.datetime ? new Date(tx.datetime) : new Date());
+    timestamp.set(tx.timestamp ? new Date(tx.timestamp) : new Date());
     name.set(tx.name);
     accountId.set(tx.account_id);
     currencyCode.set(tx.currency_code);
@@ -124,7 +135,7 @@ export default function TransactionForm(props: {
       code: code.value! as TransactionCode,
       payment_channel: paymentChannel.value! as PaymentChannel,
       amount: Number(amountStr.value!),
-      datetime: datetime.value!.toISOString(),
+      timestamp: timestamp.value!.toISOString(),
       name: name.value!,
       currency_code: currencyCode.value!,
       account_id: accountId.value!,
@@ -198,6 +209,24 @@ export default function TransactionForm(props: {
         amount={amountStr}
         currency={currencyCode}
       />
+      {isCreateRelated &&
+        relatedTransactionQuery.isSuccess &&
+        exchangeRateQuery.isSuccess &&
+        currencyCode.value && (
+          <p>
+            Related amount is{" "}
+            {renderCurrency(
+              Math.abs(relatedTransactionQuery.data.amount),
+              relatedTransactionQuery.data.currency_code
+            )}{" "}
+            ={" "}
+            {renderCurrency(
+              exchangeRateQuery.data *
+                Math.abs(relatedTransactionQuery.data.amount),
+              currencyCode.value
+            )}
+          </p>
+        )}
       <FormDropdownInput label="Code" field={code} options={codeOptions} />
       <FormDropdownInput
         label="Payment Channel"
@@ -208,7 +237,7 @@ export default function TransactionForm(props: {
       <FormDateTimeInput
         disabled={isCreateRelated}
         label="Time"
-        field={datetime}
+        field={timestamp}
       />
       {fields.some((field) => field.isError) && (
         <Message

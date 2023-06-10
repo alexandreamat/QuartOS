@@ -20,7 +20,7 @@ export default function TransactionDeserialiserForm(props: {
   const moduleName = useFormField("");
   const name = useFormField("");
   const amount = useFormField("");
-  const datetime = useFormField("");
+  const timestamp = useFormField("");
   const currencyCode = useFormField("");
   const paymentChannel = useFormField("");
   const code = useFormField("");
@@ -31,7 +31,7 @@ export default function TransactionDeserialiserForm(props: {
     columnsStr,
     name,
     amount,
-    datetime,
+    timestamp,
     currencyCode,
     paymentChannel,
     code,
@@ -49,7 +49,7 @@ export default function TransactionDeserialiserForm(props: {
     columnsStr.set(props.transactionDeserialiser.columns.toFixed(0));
     name.set(props.transactionDeserialiser.name_deserialiser);
     amount.set(props.transactionDeserialiser.amount_deserialiser);
-    datetime.set(props.transactionDeserialiser.datetime_deserialiser);
+    timestamp.set(props.transactionDeserialiser.timestamp_deserialiser);
     currencyCode.set(props.transactionDeserialiser.currency_code_deserialiser);
     paymentChannel.set(
       props.transactionDeserialiser.payment_channel_deserialiser
@@ -71,7 +71,7 @@ export default function TransactionDeserialiserForm(props: {
       columns: Number(columnsStr.value!),
       name_deserialiser: name.value!,
       amount_deserialiser: amount.value!,
-      datetime_deserialiser: datetime.value!,
+      timestamp_deserialiser: timestamp.value!,
       currency_code_deserialiser: currencyCode.value!,
       payment_channel_deserialiser: paymentChannel.value!,
       code_deserialiser: code.value!,
@@ -113,8 +113,8 @@ export default function TransactionDeserialiserForm(props: {
             field={amount}
           />
           <FormTextArea
-            label="deserialise_datetime = lambda row:"
-            field={datetime}
+            label="deserialise_timestamp = lambda row:"
+            field={timestamp}
           />
           <FormTextArea
             label="deserialise_currency_code = lambda row:"

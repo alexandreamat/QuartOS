@@ -168,7 +168,7 @@ def create_transaction_plaid_in(
         or transaction.unofficial_currency_code,
         name=getattr(transaction, "merchant_name", None) or transaction.name,
         plaid_id=transaction.transaction_id,
-        datetime=getattr(transaction, "datetime", None)
+        timestamp=getattr(transaction, "datetime", None)
         or datetime.datetime.combine(transaction.date, datetime.time()),
         payment_channel=transaction.payment_channel,
         code=transaction.transaction_code,

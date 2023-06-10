@@ -36,7 +36,7 @@ class TransactionCode(str, Enum):
 
 class __TransactionBase(SQLModel):
     amount: Decimal
-    datetime: datetime | None
+    timestamp: datetime | None
     name: str
     currency_code: CurrencyCode
     account_id: int
@@ -50,7 +50,7 @@ class TransactionApiOut(__TransactionBase, IdentifiableBase):
 
 
 class TransactionApiIn(__TransactionBase):
-    datetime: datetime
+    timestamp: datetime
     code: TransactionCode
 
 
