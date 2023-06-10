@@ -24,6 +24,7 @@ export default function TransactionForm(props: {
   accountId?: number;
   open: boolean;
   onClose: () => void;
+  onMutation: () => void;
 }) {
   const amountStr = useFormField("");
   const datetime = useFormField(new Date());
@@ -139,6 +140,7 @@ export default function TransactionForm(props: {
         return;
       }
     }
+    props.onMutation();
     handleClose();
   };
 

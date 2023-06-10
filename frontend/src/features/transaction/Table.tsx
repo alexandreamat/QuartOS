@@ -98,7 +98,7 @@ export default function TransactionsTable(
     | {
         transactions: TransactionApiOut[];
         onOpenEditForm: (transaction: TransactionApiOut) => void;
-        onDelete: () => void;
+        onMutation: () => void;
       }
     | {
         transactions: TransactionApiIn[];
@@ -121,7 +121,7 @@ export default function TransactionsTable(
                 key={index}
                 transaction={transaction}
                 onOpenEditForm={props.onOpenEditForm}
-                onDelete={props.onDelete}
+                onDelete={props.onMutation}
               />
             ))
           : props.transactions.map((transaction, index) => (

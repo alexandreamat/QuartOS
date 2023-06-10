@@ -11,6 +11,7 @@ export default function Transactions() {
     TransactionApiOut | undefined
   >(undefined);
   const [selectedAccountId, setSelectedAccountId] = useState(0);
+  const [resetKey, setResetKey] = useState(0);
 
   const handleOpenCreateForm = (accountId: number) => {
     setSelectedAccountId(accountId);
@@ -25,21 +26,26 @@ export default function Transactions() {
   };
 
   const handleCloseForm = () => {
+    setSelectedAccountId(0);
     setSelectedTransaction(undefined);
     setIsFormOpen(false);
   };
+
+  const handleMutation = () => setResetKey((x) => x + 1);
 
   return (
     <div style={{ height: "100%" }}>
       <ManagedTable
         onOpenCreateForm={handleOpenCreateForm}
         onOpenEditForm={handleOpenEditForm}
+        resetKey={resetKey}
       />
       <TransactionForm
         transaction={selectedTransaction}
         open={isFormOpen}
         onClose={handleCloseForm}
         accountId={selectedAccountId}
+        onMutation={handleMutation}
       />
     </div>
   );

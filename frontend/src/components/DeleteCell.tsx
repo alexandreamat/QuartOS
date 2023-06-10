@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Confirm, Table } from "semantic-ui-react";
 import ActionButton from "./ActionButton";
 
@@ -11,12 +11,6 @@ export default function DeleteCell(props: {
   error: string;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
-  useEffect(() => {
-    // This function is called when the component is unmounted
-    return () => {
-      console.log("Component is unmounting");
-    };
-  }, []);
   return (
     <Table.Cell collapsing>
       <ActionButton
