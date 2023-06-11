@@ -5,12 +5,12 @@ import {
   UserInstitutionLinkApiOut,
   api,
 } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
 import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import FormDropdownInput from "components/FormDropdownInput";
 import PlaidLinkButton from "features/institutionlink/PlaidLinkButton";
 import { useInstitutionOptions } from "features/institution/hooks";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export default function InstitutionLinkForm(props: {
   institutionLink?: UserInstitutionLinkApiOut;
@@ -95,18 +95,8 @@ export default function InstitutionLinkForm(props: {
           content="All fields are required!"
         />
       )}
-      {createInstitutionLinkResult.isError && (
-        <Message negative>
-          <Message.Header> There's been an error</Message.Header>
-          {renderErrorMessage(createInstitutionLinkResult.error)}
-        </Message>
-      )}
-      {updateInstitutionLinkResult.isError && (
-        <Message negative>
-          <Message.Header> There's been an error</Message.Header>
-          {renderErrorMessage(updateInstitutionLinkResult.error)}
-        </Message>
-      )}
+      <QueryErrorMessage query={createInstitutionLinkResult} />
+      <QueryErrorMessage query={updateInstitutionLinkResult} />
     </FormModal>
   );
 }

@@ -1,16 +1,9 @@
 import React, { useState } from "react";
-import {
-  Segment,
-  Grid,
-  Form,
-  Button,
-  Message,
-  Header,
-} from "semantic-ui-react";
+import { Segment, Grid, Form, Button, Header } from "semantic-ui-react";
 import { useNavigate } from "react-router";
 
 import { api } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export function SignUp() {
   const navigate = useNavigate();
@@ -93,11 +86,7 @@ export function SignUp() {
               }
               required
             ></Form.Input>
-            {signUpResult.isError && (
-              <Message negative>
-                {renderErrorMessage(signUpResult.error)}
-              </Message>
-            )}
+            <QueryErrorMessage query={signUpResult} />
             <Button
               color="teal"
               fluid

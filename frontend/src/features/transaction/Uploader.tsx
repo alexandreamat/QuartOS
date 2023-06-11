@@ -10,13 +10,12 @@ import {
   Header,
   Icon,
   Loader,
-  Message,
   Modal,
   Segment,
 } from "semantic-ui-react";
 import TransactionsTable from "./Table";
-import { renderErrorMessage } from "utils/error";
 import { useAccountOptions } from "features/account/hooks";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export default function Uploader(props: {
   open: boolean;
@@ -132,27 +131,11 @@ export default function Uploader(props: {
               </>
             </Segment>
           )}
-          {uploadResult.isError && (
-            <Message negative icon>
-              <Icon name="exclamation triangle" />
-              <Message.Content>
-                <Message.Header>Encountered Error</Message.Header>
-                {renderErrorMessage(uploadResult.error)}
-              </Message.Content>
-            </Message>
-          )}
           {uploadResult.isSuccess && (
             <TransactionsTable transactions={uploadResult.data} />
           )}
-          {createTransactionsResult.isError && (
-            <Message negative icon>
-              <Icon name="exclamation triangle" />
-              <Message.Content>
-                <Message.Header>Encountered Error</Message.Header>
-                {renderErrorMessage(createTransactionsResult.error)}
-              </Message.Content>
-            </Message>
-          )}
+          <QueryErrorMessage query={uploadResult} />
+          <QueryErrorMessage query={createTransactionsResult} />
         </Form>
       </Modal.Content>
       <Modal.Actions>

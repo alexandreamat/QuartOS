@@ -10,9 +10,9 @@ import {
   Message,
   Segment,
 } from "semantic-ui-react";
-import { setCredentials, setCurrentUser } from "./slice";
-import { renderErrorMessage } from "utils/error";
+import { setCredentials } from "./slice";
 import { BodyLoginApiAuthLoginPost, api } from "app/services/api";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export default function Login() {
   const dispatch = useAppDispatch();
@@ -78,11 +78,7 @@ export default function Login() {
               }}
               required
             />
-            {loginResult.isError && (
-              <Message negative>
-                <p>{renderErrorMessage(loginResult.error)}</p>
-              </Message>
-            )}
+            <QueryErrorMessage query={loginResult} />
             <Button
               color="teal"
               fluid

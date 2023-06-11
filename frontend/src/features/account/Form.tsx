@@ -7,7 +7,6 @@ import {
   NonInstitutionalAccountType,
   api,
 } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
 import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import FormTextInput from "components/FormTextInput";
@@ -16,6 +15,7 @@ import FormDropdownInput from "components/FormDropdownInput";
 import { useLocation } from "react-router-dom";
 import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 import { capitaliseFirstLetter } from "utils/string";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
@@ -216,18 +216,8 @@ export default function AccountForm(props: {
           content="Some fields are required!"
         />
       )}
-      {createAccountResult.isError && (
-        <Message negative>
-          <Message.Header> There's been an error</Message.Header>
-          {renderErrorMessage(createAccountResult.error)}
-        </Message>
-      )}
-      {updateAccountResult.isError && (
-        <Message negative>
-          <Message.Header> There's been an error</Message.Header>
-          {renderErrorMessage(updateAccountResult.error)}
-        </Message>
-      )}
+      <QueryErrorMessage query={createAccountResult} />
+      <QueryErrorMessage query={updateAccountResult} />
     </FormModal>
   );
 }

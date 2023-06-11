@@ -1,15 +1,8 @@
 import { api } from "app/services/api";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 import React from "react";
 import { PlaidLink, PlaidLinkOnSuccessMetadata } from "react-plaid-link";
-import {
-  Dimmer,
-  Header,
-  Icon,
-  Loader,
-  Message,
-  Segment,
-} from "semantic-ui-react";
-import { renderErrorMessage } from "utils/error";
+import { Header, Icon, Loader, Segment } from "semantic-ui-react";
 
 export default function PlaidLinkButton(props: { onSuccess: () => void }) {
   const linkTokenQuery =
@@ -60,14 +53,8 @@ export default function PlaidLinkButton(props: { onSuccess: () => void }) {
           </PlaidLink>
         </>
       )}
-      {linkTokenQuery.isError && (
-        <Message negative>{renderErrorMessage(linkTokenQuery.error)}</Message>
-      )}
-      {setPublicTokenResult.isError && (
-        <Message negative>
-          {renderErrorMessage(setPublicTokenResult.error)}
-        </Message>
-      )}
+      <QueryErrorMessage query={linkTokenQuery} />
+      <QueryErrorMessage query={setPublicTokenResult} />
     </Segment>
   );
 }
