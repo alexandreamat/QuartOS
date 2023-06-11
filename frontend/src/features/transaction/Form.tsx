@@ -73,24 +73,21 @@ export default function TransactionForm(props: {
   }, [relatedTransactionQuery.data]);
 
   useEffect(() => {
-    if (!accountQuery.isSuccess) return;
-    form.currencyCode.set(accountQuery.data.currency_code);
+    accountQuery.isSuccess &&
+      form.currencyCode.set(accountQuery.data.currency_code);
   }, [accountQuery]);
 
   useEffect(() => {
-    const tx = props.transaction;
-    if (!tx) return;
-    transactionApiOutToForm(tx, form);
+    props.transaction && transactionApiOutToForm(props.transaction, form);
   }, [props.transaction]);
 
   useEffect(() => {
-    if (!props.accountId) return;
-    form.accountId.set(props.accountId);
+    props.accountId && form.accountId.set(props.accountId);
   }, [props.accountId]);
 
   useEffect(() => {
-    if (!props.relatedTransactionId) return;
-    form.relatedTransactionId.set(props.relatedTransactionId);
+    props.relatedTransactionId &&
+      form.relatedTransactionId.set(props.relatedTransactionId);
   }, [props.relatedTransactionId]);
 
   const [createTransaction, createTransactionResult] =
