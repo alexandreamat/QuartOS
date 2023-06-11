@@ -6,12 +6,12 @@ export default function FormCurrencyInput(props: {
   label: string;
   amount: ReturnType<typeof useFormField<string>>;
   currency: string;
-  query: SimpleQuery;
+  query?: SimpleQuery;
 }) {
   return (
     <Form.Input
-      disabled={!props.query.isSuccess}
-      loading={props.query.isLoading}
+      disabled={!props.query?.isSuccess}
+      loading={props.query?.isLoading}
       type="number"
       placeholder={"Enter " + props.label}
       required
@@ -24,7 +24,7 @@ export default function FormCurrencyInput(props: {
         props.amount.set(data.value as string);
       }}
       labelPosition="left"
-      error={props.amount.isError || props.query.isError}
+      error={props.amount.isError || props.query?.isError}
     >
       <Label>{props.currency}</Label>
       <input inputMode="decimal" step="0.01" />

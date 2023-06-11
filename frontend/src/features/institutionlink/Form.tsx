@@ -85,8 +85,7 @@ export default function InstitutionLinkForm(props: {
       <FormDropdownInput
         label="Institution"
         options={institutionOptions.data || []}
-        loading={institutionOptions.isLoading}
-        error={institutionOptions.isError}
+        query={institutionOptions}
         field={institutionId}
       />
       {institutionId.isError && (

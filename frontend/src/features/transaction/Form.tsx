@@ -185,8 +185,7 @@ export default function TransactionForm(props: {
         label="Account"
         field={accountId}
         options={accountOptions.data || []}
-        loading={accountOptions.isLoading}
-        error={accountOptions.isError}
+        query={accountOptions}
       />
       <FormDropdownInput
         disabled={isCreateRelated}
@@ -197,8 +196,7 @@ export default function TransactionForm(props: {
           ...relatedTransactionOption,
           ...searchedRelatedTransactionOptions.data,
         ]}
-        loading={searchedRelatedTransactionOptions.isLoading}
-        error={searchedRelatedTransactionOptions.isError}
+        query={searchedRelatedTransactionOptions}
         onSearchChange={setSearch}
       />
       <FormCurrencyInput

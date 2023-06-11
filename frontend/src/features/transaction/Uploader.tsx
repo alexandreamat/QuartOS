@@ -93,8 +93,7 @@ export default function Uploader(props: {
             label="Account"
             field={accountId}
             options={accountOptions.data || []}
-            loading={accountOptions.isLoading}
-            error={accountOptions.isError}
+            query={accountOptions}
           />
           {(uploadResult.isUninitialized || uploadResult.isLoading) && (
             <Segment

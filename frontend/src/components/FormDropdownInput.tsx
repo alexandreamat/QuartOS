@@ -1,4 +1,5 @@
 import useFormField from "hooks/useFormField";
+import { SimpleQuery } from "interfaces";
 import {
   DropdownItemProps,
   DropdownOnSearchChangeData,
@@ -10,8 +11,7 @@ export default function FormDropdownInput<T extends number | string>(props: {
   label: string;
   options: DropdownItemProps[];
   field: ReturnType<typeof useFormField<T>>;
-  loading?: boolean;
-  error?: boolean;
+  query?: SimpleQuery;
   compact?: boolean;
   optional?: boolean;
   disabled?: boolean;
@@ -33,8 +33,8 @@ export default function FormDropdownInput<T extends number | string>(props: {
         props.field.reset();
         props.field.set(data.value as T);
       }}
-      loading={props.loading}
-      error={props.error || props.field.isError}
+      loading={props.query?.isLoading}
+      error={props.query?.isError || props.field.isError}
       compact={props.compact}
       onSearchChange={(
         event: React.SyntheticEvent<HTMLElement>,
