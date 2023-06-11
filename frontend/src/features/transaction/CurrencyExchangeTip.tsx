@@ -5,10 +5,14 @@ export default function CurrencyExchangeTip(props: {
   relatedTransaction: TransactionApiOut;
   currencyCode: string;
 }) {
+  const amount = Math.abs(props.relatedTransaction.amount);
+  const fromCurrency = props.relatedTransaction.currency_code;
+  const toCurrency = props.currencyCode;
+
   const exchangeRateQuery =
     api.endpoints.getExchangeRateApiExchangerateGet.useQuery({
-      fromCurrency: props.relatedTransaction.currency_code,
-      toCurrency: props.currencyCode,
+      fromCurrency,
+      toCurrency,
       date: props.relatedTransaction.timestamp
         ? props.relatedTransaction.timestamp.split("T")[0]
         : undefined,
@@ -16,21 +20,11 @@ export default function CurrencyExchangeTip(props: {
 
   if (!exchangeRateQuery.isSuccess) return <></>;
 
-  if (props.currencyCode !== props.relatedTransaction.currency_code)
-    return <></>;
-
   return (
     <p>
-      Related amount was{" "}
-      {renderCurrency(
-        Math.abs(props.relatedTransaction.amount),
-        props.relatedTransaction.currency_code
-      )}{" "}
-      ={" "}
-      {renderCurrency(
-        exchangeRateQuery.data * Math.abs(props.relatedTransaction.amount),
-        props.currencyCode
-      )}
+      Related amount was {renderCurrency(amount, fromCurrency)}
+      {toCurrency !== fromCurrency &&
+        ` = ${renderCurrency(exchangeRateQuery.data * amount, toCurrency)}`}
     </p>
   );
 }

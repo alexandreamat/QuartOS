@@ -101,7 +101,7 @@ export default function TransactionDeserialiserForm(props: {
 
   return (
     <Modal open={props.open} onClose={props.onClose}>
-      <Modal.Header>Hola</Modal.Header>
+      <Modal.Header>Add a Transaction Deserialiser</Modal.Header>
       <Modal.Content>
         <Form>
           <FormTextInput label="Module Name" field={moduleName} />
