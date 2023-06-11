@@ -18,7 +18,7 @@ import FormDropdownInput from "components/FormDropdownInput";
 import { useAccountOptions } from "features/account/hooks";
 import { useTransactionOptions } from "./hooks";
 import { codeOptions, paymentChannelOptions } from "./options";
-import { renderCurrency } from "utils/currency";
+import CurrencyExchangeTip from "./CurrencyExchangeTip";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
@@ -63,17 +63,6 @@ export default function TransactionForm(props: {
   const relatedTransactionQuery =
     api.endpoints.readApiTransactionsIdGet.useQuery(
       relatedTransactionId.value || skipToken
-    );
-
-  const exchangeRateQuery =
-    api.endpoints.getExchangeRateApiExchangerateGet.useQuery(
-      relatedTransactionQuery.isSuccess && currencyCode.value && timestamp.value
-        ? {
-            fromCurrency: relatedTransactionQuery.data?.currency_code,
-            toCurrency: currencyCode.value,
-            date: timestamp.value.toISOString().split("T")[0],
-          }
-        : skipToken
     );
 
   const accountOptions = useAccountOptions();
@@ -212,34 +201,21 @@ export default function TransactionForm(props: {
         error={searchedRelatedTransactionOptions.isError}
         onSearchChange={setSearch}
       />
-      {currencyCode.value && (
-        <>
-          <FormCurrencyInput
-            label="Amount"
-            amount={amountStr}
-            currency={currencyCode.value}
+      <FormCurrencyInput
+        label="Amount"
+        query={accountQuery}
+        amount={amountStr}
+        currency={currencyCode.value || "USD"}
+      />
+      {relatedTransactionQuery.isSuccess &&
+        currencyCode.value &&
+        currencyCode.value !== relatedTransactionQuery.data.currency_code && (
+          <CurrencyExchangeTip
+            relatedTransaction={relatedTransactionQuery.data}
+            currencyCode={currencyCode.value}
           />
-          {isCreateRelated &&
-            relatedTransactionQuery.isSuccess &&
-            exchangeRateQuery.isSuccess &&
-            currencyCode.value !==
-              relatedTransactionQuery.data.currency_code && (
-              <p>
-                Related amount was{" "}
-                {renderCurrency(
-                  Math.abs(relatedTransactionQuery.data.amount),
-                  relatedTransactionQuery.data.currency_code
-                )}{" "}
-                ={" "}
-                {renderCurrency(
-                  exchangeRateQuery.data *
-                    Math.abs(relatedTransactionQuery.data.amount),
-                  currencyCode.value
-                )}
-              </p>
-            )}
-        </>
-      )}
+        )}
+
       <FormDropdownInput label="Code" field={code} options={codeOptions} />
       <FormDropdownInput
         label="Payment Channel"

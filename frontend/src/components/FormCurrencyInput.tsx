@@ -1,13 +1,17 @@
 import useFormField from "hooks/useFormField";
+import { SimpleQuery } from "interfaces";
 import { Form, InputOnChangeData, Label } from "semantic-ui-react";
 
 export default function FormCurrencyInput(props: {
   label: string;
   amount: ReturnType<typeof useFormField<string>>;
   currency: string;
+  query: SimpleQuery;
 }) {
   return (
     <Form.Input
+      disabled={!props.query.isSuccess}
+      loading={props.query.isLoading}
       type="number"
       placeholder={"Enter " + props.label}
       required
@@ -20,7 +24,7 @@ export default function FormCurrencyInput(props: {
         props.amount.set(data.value as string);
       }}
       labelPosition="left"
-      error={props.amount.isError}
+      error={props.amount.isError || props.query.isError}
     >
       <Label>{props.currency}</Label>
       <input inputMode="decimal" step="0.01" />
