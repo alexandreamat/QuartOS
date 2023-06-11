@@ -2,7 +2,7 @@ import useFormField from "hooks/useFormField";
 import { Form } from "semantic-ui-react";
 
 export default function FormDateTimeInput(props: {
-  label: string;
+  label?: string;
   field: ReturnType<typeof useFormField<Date>>;
   disabled?: boolean;
 }) {
@@ -19,16 +19,17 @@ export default function FormDateTimeInput(props: {
     return `${hours}:${minutes}`;
   };
 
+  const label = props.label || props.field.label;
   return (
     <Form.Group widths="equal">
       <Form.Input
         disabled={props.disabled}
         type="date"
-        name={props.label}
+        name={label}
         label="Date"
         icon="calendar"
         required
-        placeholder={"Enter " + props.label}
+        placeholder={label && "Enter " + label}
         value={formatDate(props.field.value!)}
         iconPosition="left"
         onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) => {
@@ -44,10 +45,10 @@ export default function FormDateTimeInput(props: {
       <Form.Input
         disabled={props.disabled}
         type="time"
-        name={props.label}
+        name={label}
         label="Time"
         icon="calendar"
-        placeholder={"Enter " + props.label}
+        placeholder={label && "Enter " + label}
         value={formatTime(props.field.value!)}
         iconPosition="left"
         onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) => {

@@ -6,9 +6,10 @@ import {
   DropdownProps,
   Form,
 } from "semantic-ui-react";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function FormDropdownInput<T extends number | string>(props: {
-  label: string;
+  label?: string;
   options: DropdownItemProps[];
   field: ReturnType<typeof useFormField<T>>;
   query?: SimpleQuery;
@@ -17,13 +18,12 @@ export default function FormDropdownInput<T extends number | string>(props: {
   disabled?: boolean;
   onSearchChange?: (s: string) => void;
 }) {
+  const label = props.label || props.field.label;
   return (
     <Form.Select
       disabled={props.disabled}
-      label={props.label}
-      placeholder={
-        props.compact ? "Select" : "Select " + props.label.toLocaleLowerCase()
-      }
+      label={label && capitaliseFirstLetter(label)}
+      placeholder={label && (props.compact ? "Select" : "Select " + label)}
       search
       selection
       required={!props.optional}
