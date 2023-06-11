@@ -169,15 +169,12 @@ export default function TransactionForm(props: {
         field={form.amountStr}
         currency={form.currencyCode.value || "USD"}
       />
-      {relatedTransactionQuery.isSuccess &&
-        form.currencyCode.value &&
-        form.currencyCode.value !==
-          relatedTransactionQuery.data.currency_code && (
-          <CurrencyExchangeTip
-            relatedTransaction={relatedTransactionQuery.data}
-            currencyCode={form.currencyCode.value}
-          />
-        )}
+      {relatedTransactionQuery.isSuccess && form.currencyCode.value && (
+        <CurrencyExchangeTip
+          relatedTransaction={relatedTransactionQuery.data}
+          currencyCode={form.currencyCode.value}
+        />
+      )}
 
       <FormDropdownInput field={form.code} options={codeOptions} />
       <FormDropdownInput

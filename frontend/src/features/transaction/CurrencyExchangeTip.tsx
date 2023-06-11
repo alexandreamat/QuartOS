@@ -16,6 +16,9 @@ export default function CurrencyExchangeTip(props: {
 
   if (!exchangeRateQuery.isSuccess) return <></>;
 
+  if (props.currencyCode !== props.relatedTransaction.currency_code)
+    return <></>;
+
   return (
     <p>
       Related amount was{" "}
