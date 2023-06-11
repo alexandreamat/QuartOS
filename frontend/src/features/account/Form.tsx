@@ -16,6 +16,7 @@ import { useLocation } from "react-router-dom";
 import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 import { capitaliseFirstLetter } from "utils/string";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { FormValidationError } from "components/FormValidationError";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
@@ -209,13 +210,7 @@ export default function AccountForm(props: {
         amount={balanceStr}
         currency={currencyCode}
       />
-      {requiredFields.some((field) => field.isError) && (
-        <Message
-          error
-          header="Action Forbidden"
-          content="Some fields are required!"
-        />
-      )}
+      <FormValidationError fields={requiredFields} />
       <QueryErrorMessage query={createAccountResult} />
       <QueryErrorMessage query={updateAccountResult} />
     </FormModal>

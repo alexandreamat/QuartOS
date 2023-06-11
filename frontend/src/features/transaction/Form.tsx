@@ -19,6 +19,7 @@ import { useTransactionOptions } from "./hooks";
 import { codeOptions, paymentChannelOptions } from "./options";
 import CurrencyExchangeTip from "./CurrencyExchangeTip";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { FormValidationError } from "../../components/FormValidationError";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
@@ -218,13 +219,7 @@ export default function TransactionForm(props: {
       />
       <FormTextInput field={name} />
       <FormDateTimeInput disabled={isCreateRelated} field={timestamp} />
-      {fields.some((field) => field.isError) && (
-        <Message
-          error
-          header="Action Forbidden"
-          content="All fields are required!"
-        />
-      )}
+      <FormValidationError fields={fields} />
       <QueryErrorMessage query={createTransactionResult} />
       <QueryErrorMessage query={updateTransactionResult} />
     </FormModal>

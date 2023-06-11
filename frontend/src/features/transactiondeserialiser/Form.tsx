@@ -9,6 +9,7 @@ import useFormField from "hooks/useFormField";
 import FormTextArea from "components/FormTextArea";
 import FormTextInput from "components/FormTextInput";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { FormValidationError } from "components/FormValidationError";
 
 export default function TransactionDeserialiserForm(props: {
   transactionDeserialiser?: TransactionDeserialiserApiOut;
@@ -125,13 +126,7 @@ export default function TransactionDeserialiserForm(props: {
             field={paymentChannel}
           />
           <FormTextArea label="deserialise_code = lambda row:" field={code} />
-          {fields.some((field) => field.isError) && (
-            <Message
-              error
-              header="Action Forbidden"
-              content="All fields are required!"
-            />
-          )}
+          <FormValidationError fields={fields} />
           <QueryErrorMessage query={createTransactionDeserialiserResult} />
           <QueryErrorMessage query={updateTransactionDeserialiserResult} />
         </Form>

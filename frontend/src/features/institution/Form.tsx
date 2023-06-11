@@ -8,6 +8,7 @@ import useFormField from "hooks/useFormField";
 import FormTextInput from "components/FormTextInput";
 import FormDropdownInput from "components/FormDropdownInput";
 import { useTransactionDeserialiserOptions } from "features/transactiondeserialiser/hooks";
+import { FormValidationError } from "components/FormValidationError";
 
 registerLocale(require("i18n-iso-countries/langs/en.json"));
 
@@ -107,13 +108,7 @@ export default function InstitutionForm(props: {
         query={transactionDeserialiserOptions}
         field={transactionDeserialiserId}
       />
-      {fields.some((field) => field.isError) && (
-        <Message
-          error
-          header="Action Forbidden"
-          content="All fields are required!"
-        />
-      )}
+      <FormValidationError fields={fields} />
       {createInstitutionResult.isError && (
         <Message negative>
           <Message.Header>There's been an error</Message.Header>
