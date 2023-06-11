@@ -3,6 +3,7 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import React from "react";
 import { PlaidLink, PlaidLinkOnSuccessMetadata } from "react-plaid-link";
 import { Header, Icon, Loader, Segment } from "semantic-ui-react";
+import { logMutationError } from "utils/error";
 
 export default function PlaidLinkButton(props: { onSuccess: () => void }) {
   const linkTokenQuery =
@@ -24,8 +25,7 @@ export default function PlaidLinkButton(props: { onSuccess: () => void }) {
         institutionPlaidId: metadata.institution.institution_id,
       }).unwrap();
     } catch (error) {
-      console.error(error);
-      console.error(linkTokenQuery.error);
+      logMutationError(error, setPublicTokenResult);
       return;
     }
     props.onSuccess();

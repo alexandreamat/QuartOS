@@ -5,5 +5,6 @@ export interface SimpleQuery {
     isLoading: boolean;
     isError: boolean;
     isSuccess: boolean;
-    error?: FetchBaseQueryError | SerializedError | string
+    error?: FetchBaseQueryError | SerializedError | string;
+    originalArgs?: unknown;
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Table, Loader, Label } from "semantic-ui-react";
 import UserForm from "./Form";
 import { UserApiOut, api } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
+import { logMutationError, renderErrorMessage } from "utils/error";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
@@ -32,8 +32,8 @@ export default function Users() {
     try {
       await deleteUser(user.id).unwrap();
     } catch (error) {
-      console.error(deleteUserResult.originalArgs);
-      throw error;
+      logMutationError(error, deleteUserResult);
+      return;
     }
   };
 

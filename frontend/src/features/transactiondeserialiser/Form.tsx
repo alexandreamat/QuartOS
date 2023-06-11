@@ -10,6 +10,7 @@ import FormTextArea from "components/FormTextArea";
 import FormTextInput from "components/FormTextInput";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { FormValidationError } from "components/FormValidationError";
+import { logMutationError } from "utils/error";
 
 export default function TransactionDeserialiserForm(props: {
   transactionDeserialiser?: TransactionDeserialiserApiOut;
@@ -84,16 +85,14 @@ export default function TransactionDeserialiserForm(props: {
           transactionDeserialiserApiIn: transactionDeserialiser,
         }).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(updateTransactionDeserialiserResult.error);
+        logMutationError(error, updateTransactionDeserialiserResult);
         return;
       }
     } else {
       try {
         await createTransactionDeserialiser(transactionDeserialiser).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(createTransactionDeserialiserResult.error);
+        logMutationError(error, createTransactionDeserialiserResult);
         return;
       }
     }

@@ -3,7 +3,7 @@ import { api } from "app/services/api";
 import FormTextInput from "components/FormTextInput";
 import useFormField from "hooks/useFormField";
 import { Button, Form, Loader, Message, Segment } from "semantic-ui-react";
-import { renderErrorMessage } from "utils/error";
+import { logMutationError, renderErrorMessage } from "utils/error";
 
 export default function Profile() {
   const me = api.endpoints.readMeApiUsersMeGet.useQuery();
@@ -36,8 +36,7 @@ export default function Profile() {
         is_superuser: false,
       }).unwrap();
     } catch (error) {
-      console.error(error);
-      console.error(updateMeResult.error);
+      logMutationError(error, updateMeResult);
       return;
     }
     setEditMode(false);

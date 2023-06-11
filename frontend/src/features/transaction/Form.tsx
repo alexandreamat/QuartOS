@@ -16,6 +16,7 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { FormValidationError } from "../../components/FormValidationError";
 import { TransactionApiInForm } from "./types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "./utils";
+import { logMutationError } from "utils/error";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
@@ -115,18 +116,14 @@ export default function TransactionForm(props: {
           transactionApiIn: transaction,
         }).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(updateTransactionResult.error);
-        console.error(updateTransactionResult.originalArgs);
+        logMutationError(error, updateTransactionResult);
         return;
       }
     } else {
       try {
         await createTransaction([transaction]).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(createTransactionResult.error);
-        console.error(createTransactionResult.originalArgs);
+        logMutationError(error, createTransactionResult);
         return;
       }
     }

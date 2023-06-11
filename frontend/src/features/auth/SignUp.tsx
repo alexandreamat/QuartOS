@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 
 import { api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { logMutationError } from "utils/error";
 
 export function SignUp() {
   const navigate = useNavigate();
@@ -23,8 +24,7 @@ export function SignUp() {
         is_superuser: false,
       }).unwrap();
     } catch (error) {
-      console.error(error);
-      console.error(signUpResult.error);
+      logMutationError(error, signUpResult);
       return;
     }
     navigate("/");

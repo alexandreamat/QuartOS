@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Card, Icon, Loader } from "semantic-ui-react";
+import { Card, Loader } from "semantic-ui-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import TransactionDeserialiserForm from "./Form";
 import { api, TransactionDeserialiserApiOut } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
+import { logMutationError, renderErrorMessage } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
@@ -37,8 +37,8 @@ export default function TransactionDeserialisers() {
     try {
       await deleteTransactionDeserialiser(transactionDeserialiser.id).unwrap();
     } catch (error) {
-      console.error(deleteTransactionDeserialiserResult.originalArgs);
-      throw error;
+      logMutationError(error, deleteTransactionDeserialiserResult);
+      return;
     }
   };
 
