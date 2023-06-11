@@ -31,14 +31,14 @@ export default function TransactionForm(props: {
   const isEdit = props.transaction !== undefined;
   const isCreateRelated = props.relatedTransactionId !== 0;
 
-  const amountStr = useFormField("");
-  const timestamp = useFormField(new Date());
-  const name = useFormField("");
-  const accountId = useFormField(0);
-  const currencyCode = useFormField("");
-  const code = useFormField("");
-  const paymentChannel = useFormField("");
-  const relatedTransactionId = useFormField(0, true);
+  const amountStr = useFormField("", "amount");
+  const timestamp = useFormField(new Date(), "date");
+  const name = useFormField("", "name");
+  const accountId = useFormField(0, "account");
+  const currencyCode = useFormField("", "currency");
+  const code = useFormField("", "code");
+  const paymentChannel = useFormField("", "payment channel");
+  const relatedTransactionId = useFormField(0, "related transaction", true);
 
   const [search, setSearch] = useState("");
   const [relatedTransactionOption, setTransactionOptions] = useState<
@@ -182,14 +182,12 @@ export default function TransactionForm(props: {
       onSubmit={handleSubmit}
     >
       <FormDropdownInput
-        label="Account"
         field={accountId}
         options={accountOptions.data || []}
         query={accountOptions}
       />
       <FormDropdownInput
         disabled={isCreateRelated}
-        label="Related transaction"
         optional
         field={relatedTransactionId}
         options={[
@@ -200,7 +198,6 @@ export default function TransactionForm(props: {
         onSearchChange={setSearch}
       />
       <FormCurrencyInput
-        label="Amount"
         query={accountQuery}
         amount={amountStr}
         currency={currencyCode.value || "USD"}
@@ -214,18 +211,13 @@ export default function TransactionForm(props: {
           />
         )}
 
-      <FormDropdownInput label="Code" field={code} options={codeOptions} />
+      <FormDropdownInput field={code} options={codeOptions} />
       <FormDropdownInput
-        label="Payment Channel"
         field={paymentChannel}
         options={paymentChannelOptions}
       />
-      <FormTextInput label="Name" field={name} />
-      <FormDateTimeInput
-        disabled={isCreateRelated}
-        label="Time"
-        field={timestamp}
-      />
+      <FormTextInput field={name} />
+      <FormDateTimeInput disabled={isCreateRelated} field={timestamp} />
       {fields.some((field) => field.isError) && (
         <Message
           error

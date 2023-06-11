@@ -26,7 +26,7 @@ export default function InstitutionForm(props: {
   const name = useFormField("");
   const countryCode = useFormField("");
   const url = useFormField("");
-  const transactionDeserialiserId = useFormField(0, true);
+  const transactionDeserialiserId = useFormField(0, undefined, true);
 
   const transactionDeserialiserOptions = useTransactionDeserialiserOptions();
 

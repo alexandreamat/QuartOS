@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-const useFormField = <T,>(initialValue?: T, optional?: boolean) => {
+const useFormField = <T,>(
+  initialValue?: T,
+  label?: string,
+  optional?: boolean
+) => {
   const [value, setValue] = useState(initialValue);
   const [isError, setIsError] = useState(false);
 
@@ -18,7 +22,7 @@ const useFormField = <T,>(initialValue?: T, optional?: boolean) => {
     setIsError(false);
   };
 
-  return { value, set: setValue, isError, validate, reset };
+  return { value, label, set: setValue, isError, validate, reset };
 };
 
 export default useFormField;
