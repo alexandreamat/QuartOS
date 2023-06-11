@@ -127,29 +127,24 @@ function AuthenticatedApp() {
   }, []);
 
   const throttledUpdate = throttle(updateMedia, 200);
-  const {
-    data: me,
-    isLoading,
-    isError,
-    error,
-  } = api.endpoints.readMeApiUsersMeGet.useQuery();
+  const meQuery = api.endpoints.readMeApiUsersMeGet.useQuery();
 
   useEffect(() => {
-    if (me) {
-      dispatch(setCurrentUser(me));
+    if (meQuery.data) {
+      dispatch(setCurrentUser(meQuery.data));
     } else {
       dispatch(unsetCurrentUser());
     }
-  }, [dispatch, me]);
+  }, [dispatch, meQuery.data]);
 
   useEffect(() => {
     window.addEventListener("resize", throttledUpdate);
     return () => window.removeEventListener("resize", throttledUpdate);
   }, [throttledUpdate]);
 
-  if (isLoading) return <Loader active size="huge" />;
+  if (meQuery.isLoading) return <Loader active size="huge" />;
 
-  if (isError)
+  if (meQuery.isError)
     return (
       <Container>
         <Grid
@@ -160,7 +155,7 @@ function AuthenticatedApp() {
           <Grid.Column style={{ maxWidth: 450 }}>
             <Message negative>
               <Message.Header>There's been an error</Message.Header>
-              <p>{renderErrorMessage(error)}</p>
+              <p>{renderErrorMessage(meQuery.error)}</p>
             </Message>
           </Grid.Column>
         </Grid>

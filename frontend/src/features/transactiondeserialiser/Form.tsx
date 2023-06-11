@@ -5,10 +5,10 @@ import {
   TransactionDeserialiserApiOut,
   api,
 } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
 import useFormField from "hooks/useFormField";
 import FormTextArea from "components/FormTextArea";
 import FormTextInput from "components/FormTextInput";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export default function TransactionDeserialiserForm(props: {
   transactionDeserialiser?: TransactionDeserialiserApiOut;
@@ -132,18 +132,8 @@ export default function TransactionDeserialiserForm(props: {
               content="All fields are required!"
             />
           )}
-          {createTransactionDeserialiserResult.isError && (
-            <Message negative>
-              <Message.Header>There's been an error</Message.Header>
-              {renderErrorMessage(createTransactionDeserialiserResult.error)}
-            </Message>
-          )}
-          {updateTransactionDeserialiserResult.isError && (
-            <Message negative>
-              <Message.Header>There's been an error</Message.Header>
-              {renderErrorMessage(updateTransactionDeserialiserResult.error)}
-            </Message>
-          )}
+          <QueryErrorMessage query={createTransactionDeserialiserResult} />
+          <QueryErrorMessage query={updateTransactionDeserialiserResult} />
         </Form>
       </Modal.Content>
       <Modal.Actions>

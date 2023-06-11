@@ -7,7 +7,6 @@ import {
   PaymentChannel,
   TransactionCode,
 } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
 import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
@@ -19,6 +18,7 @@ import { useAccountOptions } from "features/account/hooks";
 import { useTransactionOptions } from "./hooks";
 import { codeOptions, paymentChannelOptions } from "./options";
 import CurrencyExchangeTip from "./CurrencyExchangeTip";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
@@ -225,18 +225,8 @@ export default function TransactionForm(props: {
           content="All fields are required!"
         />
       )}
-      {createTransactionResult.isError && (
-        <Message negative>
-          <Message.Header>There's been an error</Message.Header>
-          {renderErrorMessage(createTransactionResult.error)}
-        </Message>
-      )}
-      {updateTransactionResult.isError && (
-        <Message negative>
-          <Message.Header>There's been an error</Message.Header>
-          {renderErrorMessage(updateTransactionResult.error)}
-        </Message>
-      )}
+      <QueryErrorMessage query={createTransactionResult} />
+      <QueryErrorMessage query={updateTransactionResult} />
     </FormModal>
   );
 }
