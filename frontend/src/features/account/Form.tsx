@@ -186,8 +186,7 @@ export default function AccountForm(props: {
             label="Institution"
             field={institutionLinkId}
             options={institutionLinkOptions.data || []}
-            loading={institutionLinkOptions.isLoading}
-            error={institutionLinkOptions.isError}
+            query={institutionLinkOptions}
           />
           <FormDropdownInput
             label="Type"

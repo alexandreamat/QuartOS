@@ -104,8 +104,7 @@ export default function InstitutionForm(props: {
         optional
         label="Transaction deserialiser"
         options={transactionDeserialiserOptions.data || []}
-        error={transactionDeserialiserOptions.isError}
-        loading={transactionDeserialiserOptions.isLoading}
+        query={transactionDeserialiserOptions}
         field={transactionDeserialiserId}
       />
       {fields.some((field) => field.isError) && (
