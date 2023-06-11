@@ -13,6 +13,7 @@ import {
 import { setCredentials } from "./slice";
 import { BodyLoginApiAuthLoginPost, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { logMutationError } from "utils/error";
 
 export default function Login() {
   const dispatch = useAppDispatch();
@@ -37,8 +38,7 @@ export default function Login() {
       ).unwrap();
       dispatch(setCredentials(token.access_token));
     } catch (error) {
-      console.error(error);
-      console.error(loginResult.error);
+      logMutationError(error, loginResult);
       return;
     }
     navigate("/");

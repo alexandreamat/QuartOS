@@ -3,7 +3,7 @@ import { Table, Loader, Flag, FlagNameValues, Label } from "semantic-ui-react";
 import InstitutionForm from "./Form";
 import { InstitutionApiOut, api } from "app/services/api";
 import { getName } from "i18n-iso-countries";
-import { renderErrorMessage } from "utils/error";
+import { logMutationError, renderErrorMessage } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
@@ -34,8 +34,8 @@ export default function Institutions() {
     try {
       await deleteInstitution(institution.id).unwrap();
     } catch (error) {
-      console.error(deleteInstitutionResult.originalArgs);
-      throw error;
+      logMutationError(error, deleteInstitutionResult);
+      return;
     }
   };
 

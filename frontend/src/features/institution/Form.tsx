@@ -1,7 +1,7 @@
 import { Message } from "semantic-ui-react";
 import { useEffect } from "react";
 import { InstitutionApiOut, InstitutionApiIn, api } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
+import { logMutationError, renderErrorMessage } from "utils/error";
 import { getAlpha2Codes, getName, registerLocale } from "i18n-iso-countries";
 import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
@@ -69,16 +69,14 @@ export default function InstitutionForm(props: {
           institutionApiIn: institution,
         }).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(updateInstitutionResult.error);
+        logMutationError(error, updateInstitutionResult);
         return;
       }
     } else {
       try {
         await createInstitution(institution).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(createInstitutionResult.error);
+        logMutationError(error, createInstitutionResult);
         return;
       }
     }

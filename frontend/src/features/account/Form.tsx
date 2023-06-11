@@ -17,6 +17,7 @@ import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 import { capitaliseFirstLetter } from "utils/string";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { FormValidationError } from "components/FormValidationError";
+import { logMutationError } from "utils/error";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
@@ -144,16 +145,14 @@ export default function AccountForm(props: {
           accountApiIn: account,
         }).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(updateAccountResult.originalArgs);
+        logMutationError(error, updateAccountResult);
         return;
       }
     } else {
       try {
         await createAccount(account).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(createAccountResult.originalArgs);
+        logMutationError(error, createAccountResult);
         return;
       }
     }

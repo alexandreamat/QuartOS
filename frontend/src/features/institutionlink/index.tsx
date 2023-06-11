@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Table, Loader, Flag, FlagNameValues, Label } from "semantic-ui-react";
 import InstitutionLinkForm from "./Form";
 import { UserInstitutionLinkApiOut, api } from "app/services/api";
-import { renderErrorMessage } from "utils/error";
+import { logMutationError, renderErrorMessage } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import ActionButton from "components/ActionButton";
 import LoadableLine from "components/LoadableLine";
@@ -27,16 +27,15 @@ function InstitutionLinkRow(props: {
     try {
       await deleteInstitutionLink(institutionLink.id).unwrap();
     } catch (error) {
-      console.error(deleteInstitutionLinkResult.originalArgs);
-      throw error;
+      logMutationError(error, deleteInstitutionLinkResult);
+      return;
     }
   };
   const handleSync = async (userInstitutionLink: UserInstitutionLinkApiOut) => {
     try {
       await syncLink(userInstitutionLink.id).unwrap();
     } catch (error) {
-      console.error(error);
-      console.error(syncLinkResult.error);
+      logMutationError(error, syncLinkResult);
       return;
     }
   };

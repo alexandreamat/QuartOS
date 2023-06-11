@@ -11,6 +11,7 @@ import FormDropdownInput from "components/FormDropdownInput";
 import PlaidLinkButton from "features/institutionlink/PlaidLinkButton";
 import { useInstitutionOptions } from "features/institution/hooks";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { logMutationError } from "utils/error";
 
 export default function InstitutionLinkForm(props: {
   institutionLink?: UserInstitutionLinkApiOut;
@@ -49,16 +50,14 @@ export default function InstitutionLinkForm(props: {
           userInstitutionLinkApiIn: institutionLink,
         }).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(updateInstitutionLinkResult.originalArgs);
+        logMutationError(error, updateInstitutionLinkResult);
         return;
       }
     } else {
       try {
         await createInstitutionLink(institutionLink).unwrap();
       } catch (error) {
-        console.error(error);
-        console.error(createInstitutionLinkResult.originalArgs);
+        logMutationError(error, createInstitutionLinkResult);
         return;
       }
     }

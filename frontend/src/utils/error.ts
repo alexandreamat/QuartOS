@@ -1,5 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { SimpleQuery } from "interfaces";
 
 export function renderErrorMessage(error: FetchBaseQueryError | SerializedError | string) {
     console.error(error)
@@ -25,3 +26,9 @@ export function renderErrorMessage(error: FetchBaseQueryError | SerializedError 
     }
     return 'An error occurred. Please try again later.';
 }
+
+export function logMutationError(error: unknown, query: SimpleQuery) {
+    console.error(error);
+    console.error(query.error);
+    console.error(query.originalArgs);
+  }

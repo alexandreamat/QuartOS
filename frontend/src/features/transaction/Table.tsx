@@ -4,7 +4,7 @@ import LoadableCell from "components/LoadableCell";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 import TableHeader from "components/TableHeader";
-import { renderErrorMessage } from "utils/error";
+import { logMutationError, renderErrorMessage } from "utils/error";
 import { format } from "date-fns";
 import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
@@ -36,8 +36,8 @@ function TransactionRow(
     try {
       await deleteTransaction(transaction.id).unwrap();
     } catch (error) {
-      console.error(deleteTransactionResult.originalArgs);
-      throw error;
+      logMutationError(error, deleteTransactionResult);
+      return;
     }
     if (isApiOut) props.onDelete();
   };

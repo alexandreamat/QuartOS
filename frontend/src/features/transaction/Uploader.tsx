@@ -16,6 +16,7 @@ import {
 import TransactionsTable from "./Table";
 import { useAccountOptions } from "features/account/hooks";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { logMutationError } from "utils/error";
 
 export default function Uploader(props: {
   open: boolean;
@@ -63,8 +64,8 @@ export default function Uploader(props: {
           formData as unknown as BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost,
       }).unwrap();
     } catch (error) {
-      console.error(error);
-      console.error(uploadResult.error);
+      logMutationError(error, uploadResult);
+      return;
     }
   };
 
@@ -75,9 +76,7 @@ export default function Uploader(props: {
     try {
       await createTransactions(uploadResult.data!).unwrap();
     } catch (error) {
-      console.error(error);
-      console.error(createTransactionsResult.error);
-      console.error(createTransactionsResult.originalArgs);
+      logMutationError(error, createTransactionsResult);
       return;
     }
     handleClose();
