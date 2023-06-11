@@ -1,12 +1,6 @@
-import { DropdownItemProps, Message } from "semantic-ui-react";
+import { DropdownItemProps } from "semantic-ui-react";
 import { useEffect, useState } from "react";
-import {
-  TransactionApiOut,
-  TransactionApiIn,
-  api,
-  PaymentChannel,
-  TransactionCode,
-} from "app/services/api";
+import { TransactionApiOut, api } from "app/services/api";
 import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
@@ -20,6 +14,8 @@ import { codeOptions, paymentChannelOptions } from "./options";
 import CurrencyExchangeTip from "./CurrencyExchangeTip";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { FormValidationError } from "../../components/FormValidationError";
+import { TransactionApiInForm } from "./types";
+import { transactionApiOutToForm, transactionFormToApiIn } from "./utils";
 
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
@@ -32,38 +28,29 @@ export default function TransactionForm(props: {
   const isEdit = props.transaction !== undefined;
   const isCreateRelated = props.relatedTransactionId !== 0;
 
-  const amountStr = useFormField("", "amount");
-  const timestamp = useFormField(new Date(), "date");
-  const name = useFormField("", "name");
-  const accountId = useFormField(0, "account");
-  const currencyCode = useFormField("", "currency");
-  const code = useFormField("", "code");
-  const paymentChannel = useFormField("", "payment channel");
-  const relatedTransactionId = useFormField(0, "related transaction", true);
+  const form: TransactionApiInForm = {
+    amountStr: useFormField("", "amount"),
+    timestamp: useFormField(new Date(), "date"),
+    name: useFormField("", "name"),
+    currencyCode: useFormField("", "currency"),
+    accountId: useFormField(0, "account"),
+    paymentChannel: useFormField("", "payment channel"),
+    code: useFormField("", "code"),
+    relatedTransactionId: useFormField(0, "related transaction", true),
+  };
 
   const [search, setSearch] = useState("");
   const [relatedTransactionOption, setTransactionOptions] = useState<
     DropdownItemProps[]
   >([]);
 
-  const fields = [
-    amountStr,
-    timestamp,
-    name,
-    accountId,
-    currencyCode,
-    code,
-    paymentChannel,
-    relatedTransactionId,
-  ];
-
   const accountQuery = api.endpoints.readApiAccountsIdGet.useQuery(
-    accountId.value || skipToken
+    form.accountId.value || skipToken
   );
 
   const relatedTransactionQuery =
     api.endpoints.readApiTransactionsIdGet.useQuery(
-      relatedTransactionId.value || skipToken
+      form.relatedTransactionId.value || skipToken
     );
 
   const accountOptions = useAccountOptions();
@@ -75,10 +62,10 @@ export default function TransactionForm(props: {
     const rtx = relatedTransactionQuery.data;
     if (!rtx) return;
     if (!isEdit) {
-      timestamp.set(rtx.timestamp ? new Date(rtx.timestamp) : new Date());
-      name.set(rtx.name);
-      code.set(rtx.code);
-      paymentChannel.set(rtx.payment_channel);
+      form.timestamp.set(rtx.timestamp ? new Date(rtx.timestamp) : new Date());
+      form.name.set(rtx.name);
+      form.code.set(rtx.code);
+      form.paymentChannel.set(rtx.payment_channel);
     }
     if (isEdit || isCreateRelated) {
       setTransactionOptions([{ key: rtx.id, value: rtx.id, text: rtx.name }]);
@@ -87,30 +74,23 @@ export default function TransactionForm(props: {
 
   useEffect(() => {
     if (!accountQuery.isSuccess) return;
-    currencyCode.set(accountQuery.data.currency_code);
+    form.currencyCode.set(accountQuery.data.currency_code);
   }, [accountQuery]);
 
   useEffect(() => {
     const tx = props.transaction;
     if (!tx) return;
-    paymentChannel.set(tx.payment_channel);
-    code.set(tx.code);
-    relatedTransactionId.set(tx.related_transaction_id || 0);
-    amountStr.set(tx.amount.toFixed(2));
-    timestamp.set(tx.timestamp ? new Date(tx.timestamp) : new Date());
-    name.set(tx.name);
-    accountId.set(tx.account_id);
-    currencyCode.set(tx.currency_code);
+    transactionApiOutToForm(tx, form);
   }, [props.transaction]);
 
   useEffect(() => {
     if (!props.accountId) return;
-    accountId.set(props.accountId);
+    form.accountId.set(props.accountId);
   }, [props.accountId]);
 
   useEffect(() => {
     if (!props.relatedTransactionId) return;
-    relatedTransactionId.set(props.relatedTransactionId);
+    form.relatedTransactionId.set(props.relatedTransactionId);
   }, [props.relatedTransactionId]);
 
   const [createTransaction, createTransactionResult] =
@@ -119,26 +99,18 @@ export default function TransactionForm(props: {
     api.endpoints.updateApiTransactionsIdPut.useMutation();
 
   const handleClose = () => {
-    fields.forEach((field) => field.reset());
+    Object.values(form).forEach((field) => field.reset());
     setSearch("");
     setTransactionOptions([]);
     props.onClose();
   };
 
   const handleSubmit = async () => {
-    const invalidFields = fields.filter((field) => !field.validate());
+    const invalidFields = Object.values(form).filter(
+      (field) => !field.validate()
+    );
     if (invalidFields.length > 0) return;
-
-    const transaction: TransactionApiIn = {
-      code: code.value! as TransactionCode,
-      payment_channel: paymentChannel.value! as PaymentChannel,
-      amount: Number(amountStr.value!),
-      timestamp: timestamp.value!.toISOString(),
-      name: name.value!,
-      currency_code: currencyCode.value!,
-      account_id: accountId.value!,
-      related_transaction_id: relatedTransactionId.value || undefined,
-    };
+    const transaction = transactionFormToApiIn(form);
     if (props.transaction) {
       try {
         await updateTransaction({
@@ -183,14 +155,14 @@ export default function TransactionForm(props: {
       onSubmit={handleSubmit}
     >
       <FormDropdownInput
-        field={accountId}
+        field={form.accountId}
         options={accountOptions.data || []}
         query={accountOptions}
       />
       <FormDropdownInput
         disabled={isCreateRelated}
         optional
-        field={relatedTransactionId}
+        field={form.relatedTransactionId}
         options={[
           ...relatedTransactionOption,
           ...searchedRelatedTransactionOptions.data,
@@ -200,26 +172,27 @@ export default function TransactionForm(props: {
       />
       <FormCurrencyInput
         query={accountQuery}
-        amount={amountStr}
-        currency={currencyCode.value || "USD"}
+        field={form.amountStr}
+        currency={form.currencyCode.value || "USD"}
       />
       {relatedTransactionQuery.isSuccess &&
-        currencyCode.value &&
-        currencyCode.value !== relatedTransactionQuery.data.currency_code && (
+        form.currencyCode.value &&
+        form.currencyCode.value !==
+          relatedTransactionQuery.data.currency_code && (
           <CurrencyExchangeTip
             relatedTransaction={relatedTransactionQuery.data}
-            currencyCode={currencyCode.value}
+            currencyCode={form.currencyCode.value}
           />
         )}
 
-      <FormDropdownInput field={code} options={codeOptions} />
+      <FormDropdownInput field={form.code} options={codeOptions} />
       <FormDropdownInput
-        field={paymentChannel}
+        field={form.paymentChannel}
         options={paymentChannelOptions}
       />
-      <FormTextInput field={name} />
-      <FormDateTimeInput disabled={isCreateRelated} field={timestamp} />
-      <FormValidationError fields={fields} />
+      <FormTextInput field={form.name} />
+      <FormDateTimeInput disabled={isCreateRelated} field={form.timestamp} />
+      <FormValidationError fields={Object.values(form)} />
       <QueryErrorMessage query={createTransactionResult} />
       <QueryErrorMessage query={updateTransactionResult} />
     </FormModal>

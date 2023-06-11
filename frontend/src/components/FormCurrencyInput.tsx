@@ -4,11 +4,11 @@ import { Form, InputOnChangeData, Label } from "semantic-ui-react";
 
 export default function FormCurrencyInput(props: {
   label?: string;
-  amount: ReturnType<typeof useFormField<string>>;
+  field: ReturnType<typeof useFormField<string>>;
   currency: string;
   query?: SimpleQuery;
 }) {
-  const label = props.label || props.amount.label;
+  const label = props.label || props.field.label;
   return (
     <Form.Input
       disabled={!props.query?.isSuccess}
@@ -16,16 +16,16 @@ export default function FormCurrencyInput(props: {
       type="number"
       placeholder={label && "Enter " + label}
       required
-      value={props.amount.value}
+      value={props.field.value}
       onChange={(
         e: React.ChangeEvent<HTMLInputElement>,
         data: InputOnChangeData
       ) => {
-        props.amount.reset();
-        props.amount.set(data.value as string);
+        props.field.reset();
+        props.field.set(data.value as string);
       }}
       labelPosition="left"
-      error={props.amount.isError || props.query?.isError}
+      error={props.field.isError || props.query?.isError}
     >
       <Label>{props.currency}</Label>
       <input inputMode="decimal" step="0.01" />
