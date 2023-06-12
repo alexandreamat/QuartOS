@@ -10,7 +10,7 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useAccountOptions } from "features/account/hooks";
 import useFormField from "hooks/useFormField";
 import { useEffect, useState } from "react";
-import { DropdownItemProps } from "semantic-ui-react";
+import { DropdownItemProps, Icon, Message } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { useTransactionOptions } from "../hooks";
 import { codeOptions, paymentChannelOptions } from "../options";
@@ -27,6 +27,7 @@ export default function TransactionForm(props: {
   onMutation: () => void;
 }) {
   const isEdit = props.transaction !== undefined;
+
   const isCreateRelated = props.relatedTransactionId !== 0;
 
   const form: TransactionApiInForm = {
@@ -53,6 +54,8 @@ export default function TransactionForm(props: {
     api.endpoints.readApiTransactionsIdGet.useQuery(
       form.relatedTransactionId.value || skipToken
     );
+
+  const disableSynced = isEdit && accountQuery.data?.is_synced;
 
   const accountOptions = useAccountOptions();
   const searchedRelatedTransactionOptions = useTransactionOptions(search);
@@ -152,6 +155,7 @@ export default function TransactionForm(props: {
         field={form.accountId}
         options={accountOptions.data || []}
         query={accountOptions}
+        readOnly={disableSynced}
       />
       <FormDropdownInput
         disabled={isCreateRelated}
@@ -168,6 +172,7 @@ export default function TransactionForm(props: {
         query={accountQuery}
         field={form.amountStr}
         currency={form.currencyCode.value || "USD"}
+        readOnly={disableSynced}
       />
       {relatedTransactionQuery.isSuccess && form.currencyCode.value && (
         <CurrencyExchangeTip
@@ -175,17 +180,33 @@ export default function TransactionForm(props: {
           currencyCode={form.currencyCode.value}
         />
       )}
-
-      <FormDropdownInput field={form.code} options={codeOptions} />
+      <FormDropdownInput
+        field={form.code}
+        options={codeOptions}
+        // readOnly={disableSynced}
+      />
       <FormDropdownInput
         field={form.paymentChannel}
         options={paymentChannelOptions}
+        readOnly={disableSynced}
       />
-      <FormTextInput field={form.name} />
-      <FormDateTimeInput disabled={isCreateRelated} field={form.timestamp} />
+      <FormTextInput field={form.name} readOnly={disableSynced} />
+      <FormDateTimeInput
+        field={form.timestamp}
+        readOnly={isCreateRelated || disableSynced}
+      />
       <FormValidationError fields={Object.values(form)} />
       <QueryErrorMessage query={createTransactionResult} />
       <QueryErrorMessage query={updateTransactionResult} />
+      {disableSynced && (
+        <Message info icon>
+          <Icon name="info circle" />
+          <Message.Content>
+            This transaction is synchronised with your institution. Synchronised
+            transactions are not fully editable.
+          </Message.Content>
+        </Message>
+      )}
     </FormModal>
   );
 }
