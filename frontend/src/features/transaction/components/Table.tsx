@@ -10,7 +10,7 @@ import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import CurrencyLabel from "components/CurrencyLabel";
 import ActionButton from "components/ActionButton";
-import { InstitutionLogo } from "features/institution/InstitutionLogo";
+import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 
 function TransactionRow(
   props:

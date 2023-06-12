@@ -3,9 +3,9 @@ import { useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Message } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
-import Table from "./Table";
+import { useTransactionsQuery } from "../hooks";
 import Bar from "./Bar";
-import { useTransactionsQuery } from "./hooks";
+import Table from "./Table";
 
 export default function ManagedTable(props: {
   onOpenCreateForm: (accountId: number, relatedTransactionId: number) => void;

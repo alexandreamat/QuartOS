@@ -1,4 +1,6 @@
+import { BodyLoginApiAuthLoginPost, api } from "app/services/api";
 import { RootState, useAppDispatch } from "app/store";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -10,10 +12,8 @@ import {
   Message,
   Segment,
 } from "semantic-ui-react";
-import { setCredentials } from "./slice";
-import { BodyLoginApiAuthLoginPost, api } from "app/services/api";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { logMutationError } from "utils/error";
+import { setCredentials } from "../slice";
 
 export default function Login() {
   const dispatch = useAppDispatch();

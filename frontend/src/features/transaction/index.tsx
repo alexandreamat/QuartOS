@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-import TransactionForm from "./Form";
+import TransactionForm from "./components/Form";
 import { TransactionApiOut } from "app/services/api";
 
-import ManagedTable from "./ManagedTable";
+import ManagedTable from "./components/ManagedTable";
 
 export default function Transactions() {
   const [isFormOpen, setIsFormOpen] = useState(false);

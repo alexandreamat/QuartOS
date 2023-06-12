@@ -1,7 +1,7 @@
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
-import InstitutionLinkOption from "./InstitutionLinkOption";
+import InstitutionLinkOption from "./components/InstitutionLinkOption";
 
 export function useInstitutionLinkQueries(institutionLinkId?: number) {
   const institutionLinkQuery =

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Table, Loader, Flag, FlagNameValues, Label } from "semantic-ui-react";
-import InstitutionForm from "./Form";
+import InstitutionForm from "./components/Form";
 import { InstitutionApiOut, api } from "app/services/api";
 import { getName } from "i18n-iso-countries";
 import { logMutationError } from "utils/error";
@@ -10,7 +10,7 @@ import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 import ActionButton from "components/ActionButton";
-import { InstitutionLogo } from "./InstitutionLogo";
+import { InstitutionLogo } from "./components/InstitutionLogo";
 
 const InstitutionsTable = (props: {
   onOpenEditForm: (x: InstitutionApiOut) => void;

@@ -12,8 +12,8 @@ import SidebarMenu from "components/SidebarMenu";
 import routes from "./router";
 import { useAppDispatch, useAppSelector } from "app/store";
 import TopBar from "components/TopBar";
-import Login from "features/auth/Login";
-import { SignUp } from "features/auth/SignUp";
+import Login from "features/auth/components/Login";
+import { SignUp } from "features/auth/components/SignUp";
 import { throttle } from "lodash";
 import {
   setCredentials,
