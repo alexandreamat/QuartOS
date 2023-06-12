@@ -18,19 +18,18 @@ export interface RouteI {
 }
 
 export default [
+  // {
+  //   path: "/",
+  //   label: "Dashboard",
+  //   icon: "home",
+  //   component: Dashboard,
+  //   requires_superuser: false,
+  // },
   {
-    path: "/",
-    label: "Dashboard",
-    icon: "home",
-    component: Dashboard,
-    requires_superuser: false,
-  },
-  {
-    path: "/transactions/:accountId?",
-    link: "/transactions",
-    label: "Transactions",
-    icon: "exchange",
-    component: Transactions,
+    path: "/institution-links",
+    label: "My Institutions",
+    icon: "university",
+    component: InstitutionLinks,
     requires_superuser: false,
   },
   {
@@ -41,10 +40,11 @@ export default [
     requires_superuser: false,
   },
   {
-    path: "/institution-links",
-    label: "My Institutions",
-    icon: "university",
-    component: InstitutionLinks,
+    path: "/transactions/:accountId?",
+    link: "/transactions",
+    label: "Transactions",
+    icon: "exchange",
+    component: Transactions,
     requires_superuser: false,
   },
   {

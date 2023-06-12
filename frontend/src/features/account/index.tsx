@@ -36,7 +36,7 @@ function InstitutionCell(props: { institution: InstitutionApiOut }) {
 
 function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
   const institutionLinkQueries = useInstitutionLinkQueries(
-    props.account.institutionalaccount?.user_institution_link_id
+    props.account.institutionalaccount?.userinstitutionlink_id
   );
 
   const [deleteAccount, deleteAccountResult] =

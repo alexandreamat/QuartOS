@@ -43,19 +43,19 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
     @classmethod
     def read_many_by_institution_link(
-        cls, db: Session, user_institution_link_id: int
+        cls, db: Session, userinstitutionlink_id: int
     ) -> list[AccountApiOut]:
         l = userinstitutionlink.models.UserInstitutionLink.read(
-            db, user_institution_link_id
+            db, userinstitutionlink_id
         )
         return [AccountApiOut.from_orm(ia.account) for ia in l.institutionalaccounts]
 
     @classmethod
     def read_many_by_institution_link_plaid(
-        cls, db: Session, user_institution_link_id: int
+        cls, db: Session, userinstitutionlink_id: int
     ) -> list[AccountPlaidOut]:
         l = userinstitutionlink.models.UserInstitutionLink.read(
-            db, user_institution_link_id
+            db, userinstitutionlink_id
         )
         return [AccountPlaidOut.from_orm(ia.account) for ia in l.institutionalaccounts]
 

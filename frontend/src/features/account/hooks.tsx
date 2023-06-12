@@ -9,7 +9,7 @@ export function useAccountQueries(accountId?: number) {
   );
 
   const institutionLinkQueries = useInstitutionLinkQueries(
-    accountQuery.data?.institutionalaccount?.user_institution_link_id
+    accountQuery.data?.institutionalaccount?.userinstitutionlink_id
   );
 
   const isLoading =

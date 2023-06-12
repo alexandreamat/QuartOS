@@ -43,9 +43,7 @@ export default function InstitutionForm(props: {
     name.set(props.institution.name);
     countryCode.set(props.institution.country_code);
     url.set(props.institution.url || "");
-    transactionDeserialiserId.set(
-      props.institution.transaction_deserialiser_id
-    );
+    transactionDeserialiserId.set(props.institution.transactiondeserialiser_id);
   }, [props.institution]);
 
   const handleClose = () => {
@@ -60,7 +58,7 @@ export default function InstitutionForm(props: {
       name: name.value!,
       country_code: countryCode.value!,
       url: url.value!,
-      transaction_deserialiser_id: transactionDeserialiserId.value!,
+      transactiondeserialiser_id: transactionDeserialiserId.value!,
     };
     if (props.institution) {
       try {

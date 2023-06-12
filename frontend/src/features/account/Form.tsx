@@ -68,7 +68,7 @@ export default function AccountForm(props: {
     balanceStr.set(props.account.balance.toFixed(2));
     if (props.account.institutionalaccount) {
       const institutionalAccount = props.account.institutionalaccount;
-      institutionLinkId.set(institutionalAccount.user_institution_link_id);
+      institutionLinkId.set(institutionalAccount.userinstitutionlink_id);
       institutionalType.set(institutionalAccount.type);
       mask.set(institutionalAccount.mask);
     }
@@ -129,7 +129,7 @@ export default function AccountForm(props: {
         ? {
             mask: mask.value!,
             type: institutionalType.value! as InstitutionalAccountType,
-            user_institution_link_id: institutionLinkId.value!,
+            userinstitutionlink_id: institutionLinkId.value!,
           }
         : undefined,
       noninstitutionalaccount: !isInstitutional.value

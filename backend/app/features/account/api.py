@@ -26,14 +26,14 @@ def create(
     if institutional_account := account.institutionalaccount:
         try:
             user = userinstitutionlink.crud.CRUDUserInstitutionLink.read_user(
-                db, institutional_account.user_institution_link_id
+                db, institutional_account.userinstitutionlink_id
             )
         except NoResultFound:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         if userinstitutionlink.crud.CRUDUserInstitutionLink.is_synced(
-            db, institutional_account.user_institution_link_id
+            db, institutional_account.userinstitutionlink_id
         ):
             raise HTTPException(status.HTTP_403_FORBIDDEN)
     if account.noninstitutionalaccount:
@@ -120,7 +120,7 @@ def update(
     if institutional_account := account.institutionalaccount:
         try:
             user = userinstitutionlink.crud.CRUDUserInstitutionLink.read_user(
-                db, institutional_account.user_institution_link_id
+                db, institutional_account.userinstitutionlink_id
             )
         except NoResultFound:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
