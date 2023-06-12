@@ -708,7 +708,7 @@ export type InstitutionApiOut = {
   name: string;
   country_code: string;
   url?: string;
-  transaction_deserialiser_id?: number;
+  transactiondeserialiser_id?: number;
   colour?: string;
   logo_base64?: string;
 };
@@ -716,7 +716,7 @@ export type InstitutionApiIn = {
   name: string;
   country_code: string;
   url: string;
-  transaction_deserialiser_id?: number;
+  transactiondeserialiser_id?: number;
   colour?: string;
 };
 export type UserInstitutionLinkApiOut = {
@@ -738,7 +738,7 @@ export type InstitutionalAccountType =
   | "other";
 export type InstitutionalAccount = {
   id: number;
-  user_institution_link_id: number;
+  userinstitutionlink_id: number;
   type: InstitutionalAccountType;
   mask: string;
 };
@@ -761,7 +761,7 @@ export type AccountApiOut = {
   is_synced: boolean;
 };
 export type InstitutionalAccount2 = {
-  user_institution_link_id: number;
+  userinstitutionlink_id: number;
   type: InstitutionalAccountType;
   mask: string;
 };

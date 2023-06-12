@@ -26,7 +26,7 @@ class _AccountBase(SQLModel):
             BROKERAGE = "brokerage"
             OTHER = "other"
 
-        user_institution_link_id: int
+        userinstitutionlink_id: int
         type: InstitutionalAccountType
         mask: str
 
@@ -109,7 +109,7 @@ class Account(_AccountBase, IdentifiableBase, table=True):
         PlaidMaybeMixin,
         table=True,
     ):
-        user_institution_link_id: int = Field(foreign_key="userinstitutionlink.id")
+        userinstitutionlink_id: int = Field(foreign_key="userinstitutionlink.id")
 
         userinstitutionlink: UserInstitutionLink = Relationship(
             back_populates="institutionalaccounts"
@@ -145,8 +145,8 @@ class Account(_AccountBase, IdentifiableBase, table=True):
             sa_relationship_kwargs={"uselist": False},
         )
 
-    institutional_account_id: int | None = Field(foreign_key="institutionalaccount.id")
-    non_institutional_account_id: int | None = Field(
+    institutionalaccount_id: int | None = Field(foreign_key="institutionalaccount.id")
+    noninstitutionalaccount_id: int | None = Field(
         foreign_key="noninstitutionalaccount.id"
     )
 
@@ -193,15 +193,15 @@ class Account(_AccountBase, IdentifiableBase, table=True):
         )
         for key, value in obj_in_dict.items():
             setattr(obj, key, value)
-        if obj.institutional_account_id and obj_in.institutionalaccount:
+        if obj.institutionalaccount_id and obj_in.institutionalaccount:
             obj.institutionalaccount = Account.InstitutionalAccount.update(
-                db, obj.institutional_account_id, obj_in.institutionalaccount
+                db, obj.institutionalaccount_id, obj_in.institutionalaccount
             )
             return obj
 
-        if obj.non_institutional_account_id and obj_in.noninstitutionalaccount:
+        if obj.noninstitutionalaccount_id and obj_in.noninstitutionalaccount:
             obj.noninstitutionalaccount = Account.NonInstitutionalAccount.update(
-                db, obj.non_institutional_account_id, obj_in.noninstitutionalaccount
+                db, obj.noninstitutionalaccount_id, obj_in.noninstitutionalaccount
             )
             return obj
 

@@ -21,7 +21,7 @@ def get_accounts(
                 plaid_metadata=account.to_str(),
                 mask=account.mask,
                 type=account.type.value,
-                user_institution_link_id=user_institution_link.id,
+                userinstitutionlink_id=user_institution_link.id,
             ),
             name=account.name,
             currency_code=account.balances.iso_currency_code,

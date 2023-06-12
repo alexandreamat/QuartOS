@@ -16,7 +16,7 @@ class __InstitutionBase(SQLModel):
     name: str
     country_code: str
     url: HttpUrl | None
-    transaction_deserialiser_id: int | None
+    transactiondeserialiser_id: int | None
     colour: Annotated[str, constr(regex=r"^#[0-9a-fA-F]{6}$")] | None
 
     @validator("country_code")
@@ -53,7 +53,7 @@ class InstitutionPlaidIn(__InstitutionBase, PlaidBase):
 
 class Institution(__InstitutionBase, IdentifiableBase, PlaidMaybeMixin, table=True):
     logo: bytes | None
-    transaction_deserialiser_id: int | None = Field(
+    transactiondeserialiser_id: int | None = Field(
         foreign_key="transactiondeserialiser.id"
     )
     user_links: list["UserInstitutionLink"] = Relationship(

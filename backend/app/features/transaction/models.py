@@ -59,11 +59,11 @@ class TransactionApiIn(__TransactionBase):
     timestamp: datetime
     code: TransactionCode
 
-    @validator("timestamp")
-    def validate_utc(cls, v: datetime) -> datetime:
-        if v.tzinfo is None or v.tzinfo.utcoffset(v) != timedelta(0):
-            raise ValueError("Expected timestamp in UTC timezone")
-        return v
+    # @validator("timestamp")
+    # def validate_utc(cls, v: datetime) -> datetime:
+    #     if v.tzinfo is None or v.tzinfo.utcoffset(v) != timedelta(0):
+    #         raise ValueError("Expected timestamp in UTC timezone")
+    #     return v
 
 
 class TransactionPlaidIn(__TransactionBase, PlaidBase):
