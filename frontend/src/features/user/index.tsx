@@ -58,7 +58,7 @@ export default function Users() {
                 {user.email}
               </Label>
             </Table.Cell>
-            <EditCell onEdit={() => handleEdit(user)} />
+            <EditCell onOpenEditForm={() => handleEdit(user)} />
             <DeleteCell
               isError={deleteUserResult.isError}
               isLoading={deleteUserResult.isLoading}

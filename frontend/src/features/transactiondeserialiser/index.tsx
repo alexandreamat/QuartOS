@@ -91,7 +91,7 @@ def deserialize_payment_channel(row: list[str]) -> str:
                 </Card.Content>
                 <Card.Content extra>
                   <EditCell
-                    onEdit={() => handleEdit(transactionDeserialiser)}
+                    onOpenEditForm={() => handleEdit(transactionDeserialiser)}
                   />
                   <DeleteCell
                     isError={deleteTransactionDeserialiserResult.isError}
