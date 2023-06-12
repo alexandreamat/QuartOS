@@ -10,6 +10,7 @@ import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import CurrencyLabel from "components/CurrencyLabel";
 import ActionButton from "components/ActionButton";
+import { InstitutionLogo } from "features/institution/InstitutionLogo";
 
 function TransactionRow(
   props:
@@ -73,6 +74,9 @@ function TransactionRow(
         isError={accountQueries.isError}
         error={accountQueries.error}
       >
+        {accountQueries.institution && (
+          <InstitutionLogo institution={accountQueries.institution} />
+        )}{" "}
         {accountQueries.account?.name}
       </LoadableCell>
       {isApiOut && (
