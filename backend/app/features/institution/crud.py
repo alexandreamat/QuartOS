@@ -1,5 +1,3 @@
-from sqlmodel import Session
-
 from app.common.crud import CRUDBase, CRUDSyncable
 
 from .models import (

@@ -1,6 +1,7 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Any
+import base64
 
-from pydantic import HttpUrl, validator
+from pydantic import HttpUrl, validator, constr
 from sqlmodel import Relationship, SQLModel, Field
 import pycountry
 
@@ -16,6 +17,7 @@ class __InstitutionBase(SQLModel):
     country_code: str
     url: HttpUrl | None
     transaction_deserialiser_id: int | None
+    colour: Annotated[str, constr(regex=r"^#[0-9a-fA-F]{6}$")] | None
 
     @validator("country_code")
     def country_code_must_exist(cls, value: str) -> str:
@@ -25,7 +27,16 @@ class __InstitutionBase(SQLModel):
 
 
 class InstitutionApiOut(__InstitutionBase, IdentifiableBase):
-    ...
+    logo_base64: str | None
+
+    @classmethod
+    def from_orm(
+        cls, obj: Any, update: dict[str, Any] | None = None
+    ) -> "InstitutionApiOut":
+        m = super().from_orm(obj, update)
+        if obj.logo:
+            m.logo_base64 = base64.b64encode(obj.logo).decode()
+        return m
 
 
 class InstitutionApiIn(__InstitutionBase):
@@ -33,14 +44,15 @@ class InstitutionApiIn(__InstitutionBase):
 
 
 class InstitutionPlaidOut(__InstitutionBase, PlaidBase, IdentifiableBase):
-    ...
+    logo: bytes | None
 
 
 class InstitutionPlaidIn(__InstitutionBase, PlaidBase):
-    ...
+    logo: bytes | None
 
 
 class Institution(__InstitutionBase, IdentifiableBase, PlaidMaybeMixin, table=True):
+    logo: bytes | None
     transaction_deserialiser_id: int | None = Field(
         foreign_key="transactiondeserialiser.id"
     )

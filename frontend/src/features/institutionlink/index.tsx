@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Table, Loader, Flag, FlagNameValues, Label } from "semantic-ui-react";
+import { Table, Loader, Label } from "semantic-ui-react";
 import InstitutionLinkForm from "./Form";
 import { UserInstitutionLinkApiOut, api } from "app/services/api";
-import { logMutationError, renderErrorMessage } from "utils/error";
+import { logMutationError } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import ActionButton from "components/ActionButton";
 import LoadableLine from "components/LoadableLine";
@@ -11,6 +11,8 @@ import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 import { useNavigate } from "react-router-dom";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { InstitutionLogo } from "../institution/InstitutionLogo";
 
 function InstitutionLinkRow(props: {
   institutionLink: UserInstitutionLinkApiOut;
@@ -42,17 +44,25 @@ function InstitutionLinkRow(props: {
   const institutionQuery = api.endpoints.readApiInstitutionsIdGet.useQuery(
     props.institutionLink.institution_id
   );
+
   return (
     <Table.Row key={props.institutionLink.id}>
-      <Table.Cell>
+      <Table.Cell collapsing>
         <LoadableLine isLoading={institutionQuery.isLoading}>
           {institutionQuery.data && (
+            <InstitutionLogo institution={institutionQuery.data} />
+          )}
+        </LoadableLine>
+      </Table.Cell>
+      <Table.Cell>
+        <LoadableLine isLoading={institutionQuery.isLoading}>
+          {/* {institutionQuery.data && (
             <Flag
               name={
                 institutionQuery.data?.country_code.toLocaleLowerCase() as FlagNameValues
               }
             />
-          )}
+          )} */}
           {institutionQuery.data?.name}
         </LoadableLine>
       </Table.Cell>
@@ -95,13 +105,7 @@ function InstitutionLinkRow(props: {
         onOpenEditForm={() => props.onOpenEditForm(props.institutionLink)}
       />
       <DeleteCell
-        isLoading={deleteInstitutionLinkResult.isLoading}
-        isError={deleteInstitutionLinkResult.isError}
-        error={
-          deleteInstitutionLinkResult.isError
-            ? renderErrorMessage(deleteInstitutionLinkResult.error)
-            : ""
-        }
+        query={deleteInstitutionLinkResult}
         onDelete={async () => await handleDelete(props.institutionLink)}
         confirmContent={
           "All associated account and transaction data WILL BE LOST. Are you sure?"
@@ -121,7 +125,7 @@ const InstitutionLinksTable = (props: {
 
   return (
     <Table>
-      <TableHeader headers={["Institution", "Website"]} actions={4} />
+      <TableHeader headers={["", "Institution", "Website"]} actions={4} />
       <Table.Body>
         {props.institutionLinks.map((institutionLink) => (
           <InstitutionLinkRow
@@ -130,7 +134,7 @@ const InstitutionLinksTable = (props: {
           />
         ))}
       </Table.Body>
-      <TableFooter columns={6} onCreate={props.onOpenCreateForm} />
+      <TableFooter columns={7} onCreate={props.onOpenCreateForm} />
     </Table>
   );
 };
@@ -161,11 +165,9 @@ export default function InstitutionsLinks() {
 
   if (institutionsLinksQuery.isLoading) return <Loader active size="huge" />;
 
-  if (institutionsLinksQuery.isError)
-    console.error(institutionsLinksQuery.originalArgs);
-
   return (
     <>
+      <QueryErrorMessage query={institutionsLinksQuery} />
       <InstitutionLinksTable
         onOpenCreateForm={handleOpenCreateForm}
         onOpenEditForm={handleOpenEditForm}

@@ -206,6 +206,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["institutions"],
       }),
+      syncApiInstitutionsIdSyncPost: build.mutation<
+        SyncApiInstitutionsIdSyncPostApiResponse,
+        SyncApiInstitutionsIdSyncPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/institutions/${queryArg}/sync`,
+          method: "POST",
+        }),
+        invalidatesTags: ["institutions"],
+      }),
       readApiInstitutionsIdGet: build.query<
         ReadApiInstitutionsIdGetApiResponse,
         ReadApiInstitutionsIdGetApiArg
@@ -532,6 +542,9 @@ export type ReadManyApiInstitutionsGetApiArg = void;
 export type CreateApiInstitutionsPostApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
 export type CreateApiInstitutionsPostApiArg = InstitutionApiIn;
+export type SyncApiInstitutionsIdSyncPostApiResponse =
+  /** status 200 Successful Response */ InstitutionApiOut;
+export type SyncApiInstitutionsIdSyncPostApiArg = number;
 export type ReadApiInstitutionsIdGetApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
 export type ReadApiInstitutionsIdGetApiArg = number;
@@ -696,12 +709,15 @@ export type InstitutionApiOut = {
   country_code: string;
   url?: string;
   transaction_deserialiser_id?: number;
+  colour?: string;
+  logo_base64?: string;
 };
 export type InstitutionApiIn = {
   name: string;
   country_code: string;
   url: string;
   transaction_deserialiser_id?: number;
+  colour?: string;
 };
 export type UserInstitutionLinkApiOut = {
   id: number;

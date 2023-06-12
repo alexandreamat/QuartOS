@@ -9,6 +9,8 @@ import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
+import ActionButton from "components/ActionButton";
+import { InstitutionLogo } from "./InstitutionLogo";
 
 const InstitutionsTable = (props: {
   onOpenEditForm: (x: InstitutionApiOut) => void;
@@ -17,6 +19,8 @@ const InstitutionsTable = (props: {
 }) => {
   const [deleteInstitution, deleteInstitutionResult] =
     api.endpoints.deleteApiInstitutionsIdDelete.useMutation();
+  const [syncInstitution, syncInstitutionResult] =
+    api.endpoints.syncApiInstitutionsIdSyncPost.useMutation();
 
   const handleDelete = async (institution: InstitutionApiOut) => {
     try {
@@ -26,15 +30,28 @@ const InstitutionsTable = (props: {
       return;
     }
   };
+
+  const handleSync = async (institution: InstitutionApiOut) => {
+    try {
+      await syncInstitution(institution.id).unwrap();
+    } catch (error) {
+      logMutationError(error, syncInstitutionResult);
+      return;
+    }
+  };
+
   return (
     <Table>
       <TableHeader
-        headers={["Name", "Country or Region", "Website"]}
-        actions={2}
+        headers={["", "Name", "Country or Region", "Website"]}
+        actions={3}
       />
       <Table.Body>
         {props.data.map((institution) => (
           <Table.Row key={institution.id}>
+            <Table.Cell collapsing textAlign="center">
+              <InstitutionLogo institution={institution} />
+            </Table.Cell>
             <Table.Cell>{institution.name}</Table.Cell>
             <Table.Cell>
               <Flag
@@ -54,6 +71,14 @@ const InstitutionsTable = (props: {
                 {institution.url}
               </Label>
             </Table.Cell>
+            <Table.Cell collapsing>
+              <ActionButton
+                icon="sync"
+                onClick={async () => await handleSync(institution)}
+                disabled={false}
+                loading={false}
+              />
+            </Table.Cell>
             <EditCell
               onOpenEditForm={() => props.onOpenEditForm(institution)}
             />
@@ -64,7 +89,7 @@ const InstitutionsTable = (props: {
           </Table.Row>
         ))}
       </Table.Body>
-      <TableFooter columns={5} onCreate={props.onOpenCreateForm} />
+      <TableFooter columns={7} onCreate={props.onOpenCreateForm} />
     </Table>
   );
 };

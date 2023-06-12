@@ -66,9 +66,7 @@ class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
 
     @classmethod
     def resync(cls, db: Session, id: int, new_obj: PlaidInModel) -> PlaidOutModel:
-        db_obj = cls.db_model.read(db, id)
-        for key, value in jsonable_encoder(new_obj).items():
-            setattr(db_obj, key, value)
+        db_obj = cls.db_model.update(db, id, new_obj)
         db_obj_out = cls.db_model.create_or_update(db, db_obj)
         plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(db_obj_out)
         return plaid_out_obj
