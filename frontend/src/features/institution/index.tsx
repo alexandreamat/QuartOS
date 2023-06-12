@@ -76,7 +76,7 @@ export default function Institutions() {
                 {institution.url}
               </Label>
             </Table.Cell>
-            <EditCell onEdit={() => handleEdit(institution)} />
+            <EditCell onOpenEditForm={() => handleEdit(institution)} />
             <DeleteCell
               isError={deleteInstitutionResult.isError}
               isLoading={deleteInstitutionResult.isLoading}

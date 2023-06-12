@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 function InstitutionLinkRow(props: {
   institutionLink: UserInstitutionLinkApiOut;
-  onEdit: (userInstitutionLink: UserInstitutionLinkApiOut) => void;
+  onOpenEditForm: (userInstitutionLink: UserInstitutionLinkApiOut) => void;
 }) {
   const navigate = useNavigate();
 
@@ -92,7 +92,7 @@ function InstitutionLinkRow(props: {
       </Table.Cell>
       <EditCell
         disabled={props.institutionLink.is_synced}
-        onEdit={() => props.onEdit(props.institutionLink)}
+        onOpenEditForm={() => props.onOpenEditForm(props.institutionLink)}
       />
       <DeleteCell
         isLoading={deleteInstitutionLinkResult.isLoading}
@@ -111,8 +111,32 @@ function InstitutionLinkRow(props: {
   );
 }
 
+const InstitutionLinksTable = (props: {
+  institutionLinks: UserInstitutionLinkApiOut[];
+  onOpenEditForm: (institutionLink: UserInstitutionLinkApiOut) => void;
+  onOpenCreateForm: () => void;
+}) => {
+  if (!props.institutionLinks.length)
+    return <EmptyTablePlaceholder onCreate={props.onOpenCreateForm} />;
+
+  return (
+    <Table>
+      <TableHeader headers={["Institution", "Website"]} actions={4} />
+      <Table.Body>
+        {props.institutionLinks.map((institutionLink) => (
+          <InstitutionLinkRow
+            institutionLink={institutionLink}
+            onOpenEditForm={props.onOpenEditForm}
+          />
+        ))}
+      </Table.Body>
+      <TableFooter columns={6} onCreate={props.onOpenCreateForm} />
+    </Table>
+  );
+};
+
 export default function InstitutionsLinks() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormOpen, setIsModalOpen] = useState(false);
   const [selectedInstitutionLink, setSelectedInstitutionLink] = useState<
     UserInstitutionLinkApiOut | undefined
   >(undefined);
@@ -120,17 +144,17 @@ export default function InstitutionsLinks() {
   const institutionsLinksQuery =
     api.endpoints.readManyApiInstitutionLinksGet.useQuery();
 
-  const handleCreate = () => {
+  const handleOpenCreateForm = () => {
     setSelectedInstitutionLink(undefined);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (institutionLink: UserInstitutionLinkApiOut) => {
+  const handleOpenEditForm = (institutionLink: UserInstitutionLinkApiOut) => {
     setSelectedInstitutionLink(institutionLink);
     setIsModalOpen(true);
   };
 
-  const handleClose = () => {
+  const handleCloseForm = () => {
     setSelectedInstitutionLink(undefined);
     setIsModalOpen(false);
   };
@@ -140,34 +164,17 @@ export default function InstitutionsLinks() {
   if (institutionsLinksQuery.isError)
     console.error(institutionsLinksQuery.originalArgs);
 
-  const InstitutionLinksTable = (props: {
-    data: UserInstitutionLinkApiOut[];
-  }) => (
-    <Table>
-      <TableHeader headers={["Institution", "Website"]} actions={4} />
-      <Table.Body>
-        {props.data.map((institutionLink) => (
-          <InstitutionLinkRow
-            institutionLink={institutionLink}
-            onEdit={handleEdit}
-          />
-        ))}
-      </Table.Body>
-      <TableFooter columns={6} onCreate={handleCreate} />
-    </Table>
-  );
-
   return (
     <>
-      {institutionsLinksQuery.data?.length ? (
-        <InstitutionLinksTable data={institutionsLinksQuery.data} />
-      ) : (
-        <EmptyTablePlaceholder onCreate={handleCreate} />
-      )}
+      <InstitutionLinksTable
+        onOpenCreateForm={handleOpenCreateForm}
+        onOpenEditForm={handleOpenEditForm}
+        institutionLinks={institutionsLinksQuery.data || []}
+      />
       <InstitutionLinkForm
         institutionLink={selectedInstitutionLink}
-        open={isModalOpen}
-        onClose={handleClose}
+        open={isFormOpen}
+        onClose={handleCloseForm}
       />
     </>
   );

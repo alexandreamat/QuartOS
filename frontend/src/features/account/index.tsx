@@ -87,7 +87,7 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
       </Table.Cell>
       <EditCell
         disabled={props.account.is_synced !== false}
-        onEdit={props.onEdit}
+        onOpenEditForm={props.onEdit}
       />
       <DeleteCell
         disabled={props.account.is_synced !== false}
