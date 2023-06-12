@@ -17,7 +17,7 @@ from .models import (
     UserInstitutionLinkApiIn,
 )
 from app.features.account.crud import CRUDAccount
-from app.features.plaid.utils import sync_transactions
+from app.features.transaction.plaid import sync_transactions
 
 from app.features.account.models import AccountApiOut
 
