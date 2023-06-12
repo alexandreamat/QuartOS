@@ -1,10 +1,12 @@
 import useFormField from "hooks/useFormField";
 import { Form } from "semantic-ui-react";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function FormDateTimeInput(props: {
   label?: string;
   field: ReturnType<typeof useFormField<Date>>;
   disabled?: boolean;
+  readOnly?: boolean;
 }) {
   const formatDate = (date: Date) => {
     const year = date.getFullYear();
@@ -20,6 +22,22 @@ export default function FormDateTimeInput(props: {
   };
 
   const label = props.label || props.field.label;
+
+  if (props.readOnly) {
+    return (
+      <Form.Group widths="equal">
+        <Form.Field>
+          <label>Date</label>
+          {formatDate(props.field.value!)}
+        </Form.Field>
+        <Form.Field>
+          <label>Time</label>
+          {formatTime(props.field.value!)}
+        </Form.Field>
+      </Form.Group>
+    );
+  }
+
   return (
     <Form.Group widths="equal">
       <Form.Input

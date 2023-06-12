@@ -50,16 +50,16 @@ function AccountOption(props: { account: AccountApiOut }) {
   const accountQueries = useAccountQueries(props.account.id);
   if (accountQueries.account?.institutionalaccount)
     return (
-      <>
+      <p>
         {accountQueries.institution?.name} / ···{" "}
         {accountQueries.account.institutionalaccount.mask}
-      </>
+      </p>
     );
 
   if (accountQueries.account?.noninstitutionalaccount)
-    return <>{accountQueries.account.name}</>;
+    return <p>{accountQueries.account.name}</p>;
 
-  return <></>;
+  return <p></p>;
 }
 
 export function useAccountOptions() {

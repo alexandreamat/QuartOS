@@ -16,9 +16,23 @@ export default function FormDropdownInput<T extends number | string>(props: {
   compact?: boolean;
   optional?: boolean;
   disabled?: boolean;
+  readOnly?: boolean;
   onSearchChange?: (s: string) => void;
 }) {
   const label = props.label || props.field.label;
+
+  if (props.readOnly) {
+    const selectedOption = props.options.find(
+      (o) => o.value === props.field.value
+    );
+    return (
+      <Form.Field>
+        <label>{label && capitaliseFirstLetter(label)}</label>
+        {selectedOption ? selectedOption.text : null}
+      </Form.Field>
+    );
+  }
+
   return (
     <Form.Select
       disabled={props.disabled}

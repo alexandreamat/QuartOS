@@ -1,5 +1,6 @@
 import useFormField from "hooks/useFormField";
 import { Form, InputOnChangeData } from "semantic-ui-react";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function FormTextInput(props: {
   label?: string;
@@ -8,11 +9,20 @@ export default function FormTextInput(props: {
   readOnly?: boolean;
 }) {
   const label = props.label || props.field.label;
+
+  if (props.readOnly) {
+    return (
+      <Form.Field>
+        <label>{label && capitaliseFirstLetter(label)}</label>
+        {props.field.value}
+      </Form.Field>
+    );
+  }
+
   return (
     <Form.Input
-      readOnly={props.readOnly}
       type={props.type}
-      label={props.label}
+      label={label && capitaliseFirstLetter(label)}
       placeholder={label && "Enter " + label.toLocaleLowerCase()}
       required={!props.readOnly}
       value={props.field.value}

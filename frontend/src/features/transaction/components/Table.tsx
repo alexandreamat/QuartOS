@@ -89,7 +89,6 @@ function TransactionRow(
             />
           </Table.Cell>
           <EditCell
-            disabled={accountQueries.account?.is_synced !== false}
             onOpenEditForm={() => props.onOpenEditForm(props.transaction)}
           />
           <DeleteCell
