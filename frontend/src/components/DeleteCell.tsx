@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { Confirm, Table } from "semantic-ui-react";
 import ActionButton from "./ActionButton";
+import { SimpleQuery } from "interfaces";
+import { renderErrorMessage } from "utils/error";
 
 export default function DeleteCell(props: {
   onDelete: () => Promise<void>;
   confirmContent?: string;
   disabled?: boolean;
-  isLoading: boolean;
-  isError: boolean;
-  error: string;
+  query: SimpleQuery;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   return (
     <Table.Cell collapsing>
       <ActionButton
-        loading={props.isLoading}
+        loading={props.query.isLoading}
         disabled={props.disabled}
         // content="Delete"
         icon="trash"
@@ -24,8 +24,8 @@ export default function DeleteCell(props: {
         open={confirmOpen}
         size="mini"
         confirmButton={{
-          disabled: props.isError,
-          loading: props.isLoading,
+          disabled: props.query.isError,
+          loading: props.query.isLoading,
           content: "Delete",
         }}
         onCancel={() => setConfirmOpen(false)}
@@ -38,7 +38,11 @@ export default function DeleteCell(props: {
           }
           setConfirmOpen(false);
         }}
-        content={props.isError ? props.error : props.confirmContent}
+        content={
+          props.query.isError
+            ? renderErrorMessage(props.query.error!)
+            : props.confirmContent
+        }
       />
     </Table.Cell>
   );

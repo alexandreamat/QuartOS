@@ -4,7 +4,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import TransactionDeserialiserForm from "./Form";
 import { api, TransactionDeserialiserApiOut } from "app/services/api";
-import { logMutationError, renderErrorMessage } from "utils/error";
+import { logMutationError } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
@@ -94,15 +94,7 @@ def deserialize_payment_channel(row: list[str]) -> str:
                     onOpenEditForm={() => handleEdit(transactionDeserialiser)}
                   />
                   <DeleteCell
-                    isError={deleteTransactionDeserialiserResult.isError}
-                    isLoading={deleteTransactionDeserialiserResult.isLoading}
-                    error={
-                      deleteTransactionDeserialiserResult.isError
-                        ? renderErrorMessage(
-                            deleteTransactionDeserialiserResult.error
-                          )
-                        : ""
-                    }
+                    query={deleteTransactionDeserialiserResult}
                     onDelete={async () =>
                       await handleDelete(transactionDeserialiser)
                     }

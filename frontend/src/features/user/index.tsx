@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Table, Loader, Label } from "semantic-ui-react";
 import UserForm from "./Form";
 import { UserApiOut, api } from "app/services/api";
-import { logMutationError, renderErrorMessage } from "utils/error";
+import { logMutationError } from "utils/error";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
@@ -60,13 +60,7 @@ export default function Users() {
             </Table.Cell>
             <EditCell onOpenEditForm={() => handleEdit(user)} />
             <DeleteCell
-              isError={deleteUserResult.isError}
-              isLoading={deleteUserResult.isLoading}
-              error={
-                deleteUserResult.isError
-                  ? renderErrorMessage(deleteUserResult.error)
-                  : ""
-              }
+              query={deleteUserResult}
               onDelete={async () => await handleDelete(user)}
             />
           </Table.Row>

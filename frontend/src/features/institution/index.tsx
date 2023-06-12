@@ -3,32 +3,20 @@ import { Table, Loader, Flag, FlagNameValues, Label } from "semantic-ui-react";
 import InstitutionForm from "./Form";
 import { InstitutionApiOut, api } from "app/services/api";
 import { getName } from "i18n-iso-countries";
-import { logMutationError, renderErrorMessage } from "utils/error";
+import { logMutationError } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 
-export default function Institutions() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedInstitution, setSelectedInstitution] = useState<
-    InstitutionApiOut | undefined
-  >(undefined);
-
-  const institutionsQuery = api.endpoints.readManyApiInstitutionsGet.useQuery();
+const InstitutionsTable = (props: {
+  onOpenEditForm: (x: InstitutionApiOut) => void;
+  onOpenCreateForm: () => void;
+  data: InstitutionApiOut[];
+}) => {
   const [deleteInstitution, deleteInstitutionResult] =
     api.endpoints.deleteApiInstitutionsIdDelete.useMutation();
-
-  const handleCreate = () => {
-    setSelectedInstitution(undefined);
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (institution: InstitutionApiOut) => {
-    setSelectedInstitution(institution);
-    setIsModalOpen(true);
-  };
 
   const handleDelete = async (institution: InstitutionApiOut) => {
     try {
@@ -38,17 +26,7 @@ export default function Institutions() {
       return;
     }
   };
-
-  const handleClose = () => {
-    setSelectedInstitution(undefined);
-    setIsModalOpen(false);
-  };
-
-  if (institutionsQuery.isLoading) return <Loader active size="huge" />;
-
-  if (institutionsQuery.isError) console.error(institutionsQuery.originalArgs);
-
-  const InstitutionsTable = (props: { data: InstitutionApiOut[] }) => (
+  return (
     <Table>
       <TableHeader
         headers={["Name", "Country or Region", "Website"]}
@@ -76,30 +54,58 @@ export default function Institutions() {
                 {institution.url}
               </Label>
             </Table.Cell>
-            <EditCell onOpenEditForm={() => handleEdit(institution)} />
+            <EditCell
+              onOpenEditForm={() => props.onOpenEditForm(institution)}
+            />
             <DeleteCell
-              isError={deleteInstitutionResult.isError}
-              isLoading={deleteInstitutionResult.isLoading}
-              error={
-                deleteInstitutionResult.isError
-                  ? renderErrorMessage(deleteInstitutionResult.error)
-                  : ""
-              }
+              query={deleteInstitutionResult}
               onDelete={async () => await handleDelete(institution)}
             />
           </Table.Row>
         ))}
       </Table.Body>
-      <TableFooter columns={5} onCreate={handleCreate} />
+      <TableFooter columns={5} onCreate={props.onOpenCreateForm} />
     </Table>
   );
+};
+
+export default function Institutions() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedInstitution, setSelectedInstitution] = useState<
+    InstitutionApiOut | undefined
+  >(undefined);
+
+  const institutionsQuery = api.endpoints.readManyApiInstitutionsGet.useQuery();
+
+  const handleOpenCreateForm = () => {
+    setSelectedInstitution(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditForm = (institution: InstitutionApiOut) => {
+    setSelectedInstitution(institution);
+    setIsModalOpen(true);
+  };
+
+  const handleClose = () => {
+    setSelectedInstitution(undefined);
+    setIsModalOpen(false);
+  };
+
+  if (institutionsQuery.isLoading) return <Loader active size="huge" />;
+
+  if (institutionsQuery.isError) console.error(institutionsQuery.originalArgs);
 
   return (
     <>
       {institutionsQuery.data?.length ? (
-        <InstitutionsTable data={institutionsQuery.data} />
+        <InstitutionsTable
+          data={institutionsQuery.data}
+          onOpenCreateForm={handleOpenCreateForm}
+          onOpenEditForm={handleOpenEditForm}
+        />
       ) : (
-        <EmptyTablePlaceholder onCreate={handleCreate} />
+        <EmptyTablePlaceholder onCreate={handleOpenCreateForm} />
       )}
       <InstitutionForm
         institution={selectedInstitution}

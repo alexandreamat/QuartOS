@@ -4,7 +4,7 @@ import LoadableCell from "components/LoadableCell";
 import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 import TableHeader from "components/TableHeader";
-import { logMutationError, renderErrorMessage } from "utils/error";
+import { logMutationError } from "utils/error";
 import { format } from "date-fns";
 import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
@@ -90,13 +90,7 @@ function TransactionRow(
           />
           <DeleteCell
             disabled={accountQueries.account?.is_synced !== false}
-            isLoading={deleteTransactionResult.isLoading}
-            isError={deleteTransactionResult.isError}
-            error={
-              deleteTransactionResult.isError
-                ? renderErrorMessage(deleteTransactionResult.error)
-                : ""
-            }
+            query={deleteTransactionResult}
             onDelete={async () => await handleDelete(props.transaction)}
           />
         </>

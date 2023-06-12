@@ -91,13 +91,7 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
       />
       <DeleteCell
         disabled={props.account.is_synced !== false}
-        isError={deleteAccountResult.isError}
-        isLoading={deleteAccountResult.isLoading}
-        error={
-          deleteAccountResult.isError
-            ? renderErrorMessage(deleteAccountResult.error)
-            : ""
-        }
+        query={deleteAccountResult}
         onDelete={async () => await handleDelete(props.account)}
       />
     </Table.Row>
