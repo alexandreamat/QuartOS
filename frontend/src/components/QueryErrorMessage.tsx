@@ -5,6 +5,9 @@ import { renderErrorMessage } from "utils/error";
 export function QueryErrorMessage(props: { query: SimpleQuery }) {
   if (!props.query.isError) return <></>;
 
+  console.error(props.query.error);
+  console.error(props.query.originalArgs);
+
   return (
     <Message negative icon>
       <Icon name="exclamation triangle" />
