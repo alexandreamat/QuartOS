@@ -8,7 +8,7 @@ import {
 import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import FormDropdownInput from "components/FormDropdownInput";
-import PlaidLinkButton from "features/institutionlink/PlaidLinkButton";
+import PlaidLinkButton from "features/institutionlink/components/PlaidLinkButton";
 import { useInstitutionOptions } from "features/institution/hooks";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { logMutationError } from "utils/error";

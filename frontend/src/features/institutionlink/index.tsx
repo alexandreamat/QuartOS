@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Table, Loader, Label } from "semantic-ui-react";
-import InstitutionLinkForm from "./Form";
+import InstitutionLinkForm from "./components/Form";
 import { UserInstitutionLinkApiOut, api } from "app/services/api";
 import { logMutationError } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
@@ -12,7 +12,7 @@ import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 import { useNavigate } from "react-router-dom";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { InstitutionLogo } from "../institution/InstitutionLogo";
+import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 
 function InstitutionLinkRow(props: {
   institutionLink: UserInstitutionLinkApiOut;
