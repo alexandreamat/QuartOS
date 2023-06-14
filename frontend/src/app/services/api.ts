@@ -7,6 +7,7 @@ export const addTagTypes = [
   "institutions",
   "institution-links",
   "accounts",
+  "movements",
   "transactions",
   "plaid",
 ] as const;
@@ -380,6 +381,29 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["accounts"],
       }),
+      readManyApiMovementsGet: build.query<
+        ReadManyApiMovementsGetApiResponse,
+        ReadManyApiMovementsGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/movements/`,
+          params: {
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+            search: queryArg.search,
+          },
+        }),
+        providesTags: ["movements"],
+      }),
+      readTransactionsApiMovementsIdTransactionsGet: build.query<
+        ReadTransactionsApiMovementsIdTransactionsGetApiResponse,
+        ReadTransactionsApiMovementsIdTransactionsGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/movements/${queryArg}/transactions`,
+        }),
+        providesTags: ["movements"],
+      }),
       readManyApiTransactionsGet: build.query<
         ReadManyApiTransactionsGetApiResponse,
         ReadManyApiTransactionsGetApiArg
@@ -597,7 +621,7 @@ export type UpdateApiAccountsIdPutApiArg = {
   accountApiIn: AccountApiIn;
 };
 export type DeleteApiAccountsIdDeleteApiResponse =
-  /** status 200 Successful Response */ any;
+  /** status 200 Successful Response */ null;
 export type DeleteApiAccountsIdDeleteApiArg = number;
 export type ReadTransactionsApiAccountsIdTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
@@ -613,6 +637,16 @@ export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiArg = {
   id: number;
   bodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost: BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost;
 };
+export type ReadManyApiMovementsGetApiResponse =
+  /** status 200 Successful Response */ MovementApiOut[];
+export type ReadManyApiMovementsGetApiArg = {
+  page?: number;
+  perPage?: number;
+  search?: string;
+};
+export type ReadTransactionsApiMovementsIdTransactionsGetApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut[];
+export type ReadTransactionsApiMovementsIdTransactionsGetApiArg = number;
 export type ReadManyApiTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyApiTransactionsGetApiArg = {
@@ -798,9 +832,9 @@ export type TransactionApiOut = {
   name: string;
   currency_code: string;
   account_id: number;
+  movement_id?: number;
   payment_channel: PaymentChannel;
   code?: TransactionCode;
-  related_transaction_id?: number;
 };
 export type TransactionApiIn = {
   amount: number;
@@ -808,10 +842,13 @@ export type TransactionApiIn = {
   name: string;
   currency_code: string;
   account_id: number;
+  movement_id?: number;
   payment_channel: PaymentChannel;
   code: TransactionCode;
-  related_transaction_id?: number;
 };
 export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
   file: Blob;
+};
+export type MovementApiOut = {
+  id: number;
 };

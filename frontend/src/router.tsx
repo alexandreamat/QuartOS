@@ -7,6 +7,7 @@ import Institutions from "features/institution";
 import Users from "features/user";
 import { SemanticICONS } from "semantic-ui-react";
 import TransactionDeserialisers from "features/transactiondeserialiser";
+import Movements from "features/movements";
 
 export interface RouteI {
   path: string;
@@ -43,8 +44,16 @@ export default [
     path: "/transactions/:accountId?",
     link: "/transactions",
     label: "Transactions",
-    icon: "exchange",
+    icon: "arrows alternate horizontal",
     component: Transactions,
+    requires_superuser: false,
+  },
+  {
+    path: "/movements/:accountId?",
+    link: "/movements",
+    label: "Movements",
+    icon: "exchange",
+    component: Movements,
     requires_superuser: false,
   },
   {

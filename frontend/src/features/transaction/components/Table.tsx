@@ -5,12 +5,11 @@ import EditCell from "components/EditCell";
 import DeleteCell from "components/DeleteCell";
 import TableHeader from "components/TableHeader";
 import { logMutationError } from "utils/error";
-import { format } from "date-fns";
 import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import CurrencyLabel from "components/CurrencyLabel";
-import ActionButton from "components/ActionButton";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
+import FormattedTimestamp from "components/FormattedTimestamp";
 
 function TransactionRow(
   props:
@@ -57,8 +56,7 @@ function TransactionRow(
         )}
       </Table.Cell>
       <Table.Cell collapsing>
-        {props.transaction.timestamp &&
-          format(new Date(props.transaction.timestamp), " yyyy MMMM d")}
+        <FormattedTimestamp timestamp={props.transaction.timestamp} />
       </Table.Cell>
       <Table.Cell>{props.transaction.name}</Table.Cell>
       <Table.Cell collapsing>
@@ -82,11 +80,11 @@ function TransactionRow(
       {isApiOut && (
         <>
           <Table.Cell collapsing>
-            <ActionButton
+            {/* <ActionButton
               disabled={Boolean(props.transaction.related_transaction_id)}
               icon="linkify"
               onClick={() => props.onOpenCreateForm(0, props.transaction.id)}
-            />
+            /> */}
           </Table.Cell>
           <EditCell
             onOpenEditForm={() => props.onOpenEditForm(props.transaction)}
