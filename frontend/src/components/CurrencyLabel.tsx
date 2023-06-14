@@ -7,7 +7,7 @@ export default function CurrencyLabel(props: {
   return (
     <Label
       style={{ width: 100, textAlign: "center" }}
-      color={props.amount > 0 ? "green" : "orange"}
+      color={props.amount > 0 ? "green" : props.amount < 0 ? "orange" : "grey"}
     >
       {props.amount.toLocaleString(undefined, {
         style: "currency",
