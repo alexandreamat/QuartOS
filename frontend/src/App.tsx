@@ -23,6 +23,7 @@ import {
 import { api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
 import Profile from "features/profile";
+import FlexColumn from "components/FlexColumn";
 
 function Content() {
   return (
@@ -95,14 +96,14 @@ function DesktopApp() {
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       <SidebarMenu />
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <FlexColumn style={{ flex: 1 }}>
         <TopBar />
-        <div style={{ flex: 1, overflow: "hidden" }}>
+        <FlexColumn.Auto>
           <Container style={{ height: "100%" }}>
             <Content />
           </Container>
-        </div>
-      </div>
+        </FlexColumn.Auto>
+      </FlexColumn>
     </div>
   );
 }
