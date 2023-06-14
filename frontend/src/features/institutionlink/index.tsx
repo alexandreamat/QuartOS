@@ -9,7 +9,7 @@ import LoadableLine from "components/LoadableLine";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
-import DeleteCell from "components/DeleteCell";
+import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import { useNavigate } from "react-router-dom";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
@@ -104,13 +104,15 @@ function InstitutionLinkRow(props: {
         disabled={props.institutionLink.is_synced}
         onOpenEditForm={() => props.onOpenEditForm(props.institutionLink)}
       />
-      <DeleteCell
-        query={deleteInstitutionLinkResult}
-        onDelete={async () => await handleDelete(props.institutionLink)}
-        confirmContent={
-          "All associated account and transaction data WILL BE LOST. Are you sure?"
-        }
-      />
+      <Table.Cell collapsing>
+        <ConfirmDeleteButton
+          query={deleteInstitutionLinkResult}
+          onDelete={async () => await handleDelete(props.institutionLink)}
+          confirmContent={
+            "All associated account and transaction data WILL BE LOST. Are you sure?"
+          }
+        />
+      </Table.Cell>
     </Table.Row>
   );
 }

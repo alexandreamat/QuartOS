@@ -32,3 +32,8 @@ def read_transactions(db: DBSession, id: int) -> list[TransactionApiOut]:
     from app.features import transaction
 
     return transaction.crud.CRUDTransaction.read_many_by_movement(db, id)
+
+
+@router.delete("/{id}")
+def delete(db: DBSession, id: int) -> None:
+    CRUDMovement.delete(db, id)

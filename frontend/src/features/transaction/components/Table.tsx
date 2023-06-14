@@ -2,7 +2,7 @@ import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import { Icon, Table } from "semantic-ui-react";
 import LoadableCell from "components/LoadableCell";
 import EditCell from "components/EditCell";
-import DeleteCell from "components/DeleteCell";
+import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import TableHeader from "components/TableHeader";
 import { logMutationError } from "utils/error";
 import { useAccountQueries } from "features/account/hooks";
@@ -89,11 +89,13 @@ function TransactionRow(
           <EditCell
             onOpenEditForm={() => props.onOpenEditForm(props.transaction)}
           />
-          <DeleteCell
-            disabled={accountQueries.account?.is_synced !== false}
-            query={deleteTransactionResult}
-            onDelete={async () => await handleDelete(props.transaction)}
-          />
+          <Table.Cell collapsing>
+            <ConfirmDeleteButton
+              disabled={accountQueries.account?.is_synced !== false}
+              query={deleteTransactionResult}
+              onDelete={async () => await handleDelete(props.transaction)}
+            />
+          </Table.Cell>
         </>
       )}
     </Table.Row>

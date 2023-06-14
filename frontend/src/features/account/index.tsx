@@ -12,7 +12,7 @@ import { renderErrorMessage } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import TableHeader from "components/TableHeader";
 import EditCell from "components/EditCell";
-import DeleteCell from "components/DeleteCell";
+import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import LoadableCell from "components/LoadableCell";
 import { useLocation } from "react-router-dom";
 import ActionButton from "components/ActionButton";
@@ -89,11 +89,13 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
         disabled={props.account.is_synced !== false}
         onOpenEditForm={props.onEdit}
       />
-      <DeleteCell
-        disabled={props.account.is_synced !== false}
-        query={deleteAccountResult}
-        onDelete={async () => await handleDelete(props.account)}
-      />
+      <Table.Cell collapsing>
+        <ConfirmDeleteButton
+          disabled={props.account.is_synced !== false}
+          query={deleteAccountResult}
+          onDelete={async () => await handleDelete(props.account)}
+        />
+      </Table.Cell>
     </Table.Row>
   );
 }
