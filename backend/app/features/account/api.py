@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Annotated
 
 
@@ -8,11 +9,13 @@ from app.features.user.deps import CurrentUser
 from app.database.deps import DBSession
 
 
+from app.features import userinstitutionlink
+
 from .crud import CRUDAccount
 from .models import AccountApiOut, AccountApiIn
 
-
-from app.features import transaction, userinstitutionlink
+# Forward references, only for type annotations
+from app.features.transaction.models import TransactionApiOut, TransactionApiIn
 
 router = APIRouter()
 
@@ -60,13 +63,16 @@ def read_transactions(
     page: int = 1,
     per_page: int = 0,
     search: str | None = None,
-) -> list[transaction.models.TransactionApiOut]:
+) -> list[TransactionApiOut]:
+    from app.features import transaction
+
     try:
         account = CRUDAccount.read(db, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if CRUDAccount.read_user(db, account.id).id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
+
     return transaction.crud.CRUDTransaction.read_many_by_account(
         db, account.id, page, per_page, search
     )
@@ -78,7 +84,9 @@ def upload_transactions_sheet(
     current_user: CurrentUser,
     id: int,
     file: Annotated[UploadFile, File(...)],
-) -> list[transaction.models.TransactionApiIn]:
+) -> list[TransactionApiIn]:
+    from app.features import transaction
+
     try:
         user = CRUDAccount.read_user(db, id)
     except NoResultFound:

@@ -2,7 +2,7 @@ from sqlmodel import Session, select, col, or_
 from sqlalchemy import desc
 
 from app.common.crud import CRUDBase, CRUDSyncable
-from app.features import account, userinstitutionlink, institution, user
+from app.features import account, userinstitutionlink, institution, user, movement
 
 from .models import (
     Transaction,
@@ -46,11 +46,18 @@ class CRUDTransaction(
         )
 
     @classmethod
+    def read_many_by_movement(
+        cls, db: Session, movement_id: int
+    ) -> list[TransactionApiOut]:
+        m = movement.models.Movement.read(db, movement_id)
+        return [TransactionApiOut.from_orm(t) for t in m.transactions]
+
+    @classmethod
     def read_many_by_institution_link(
-        cls, db: Session, user_institution_link: int
+        cls, db: Session, userinstitutionlink_id: int
     ) -> list[TransactionApiOut]:
         l = userinstitutionlink.models.UserInstitutionLink.read(
-            db, user_institution_link
+            db, userinstitutionlink_id
         )
         return [
             cls.api_out_model.from_orm(t)

@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 import urllib3
 from fastapi import APIRouter, HTTPException, status
@@ -9,16 +8,15 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from app.features.user.deps import CurrentUser
 from app.database.deps import DBSession
 
-from app.features.institution.crud import CRUDInstitution
+from app.features import institution
 
 from .crud import CRUDUserInstitutionLink
 from .models import (
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
 )
-from app.features.account.crud import CRUDAccount
-from app.features.transaction.plaid import sync_transactions
 
+# forward refereneces, only for annotations
 from app.features.account.models import AccountApiOut
 
 router = APIRouter()
@@ -31,7 +29,7 @@ def create(
     user_institution_link: UserInstitutionLinkApiIn,
 ) -> UserInstitutionLinkApiOut:
     try:
-        CRUDInstitution.read(db, user_institution_link.institution_id)
+        institution.crud.CRUDInstitution.read(db, user_institution_link.institution_id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     user_institution_link.user_id = current_user.id
@@ -42,6 +40,8 @@ def create(
 def read_accounts(
     db: DBSession, current_user: CurrentUser, id: int
 ) -> list[AccountApiOut]:
+    from app.features.account.crud import CRUDAccount
+
     try:
         institution_link = CRUDUserInstitutionLink.read(db, id)
     except NoResultFound:
@@ -104,6 +104,8 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
 
 @router.post("/{id}/sync")
 def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
+    from app.features.transaction.plaid import sync_transactions
+
     try:
         curr_institution_link = CRUDUserInstitutionLink.read_plaid(db, id)
     except NoResultFound:
