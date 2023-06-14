@@ -4,7 +4,7 @@ import ActionButton from "./ActionButton";
 import { SimpleQuery } from "interfaces";
 import { renderErrorMessage } from "utils/error";
 
-export default function DeleteCell(props: {
+export default function ConfirmDeleteButton(props: {
   onDelete: () => Promise<void>;
   confirmContent?: string;
   disabled?: boolean;
@@ -12,7 +12,7 @@ export default function DeleteCell(props: {
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   return (
-    <Table.Cell collapsing>
+    <>
       <ActionButton
         loading={props.query.isLoading}
         disabled={props.disabled}
@@ -44,6 +44,6 @@ export default function DeleteCell(props: {
             : props.confirmContent
         }
       />
-    </Table.Cell>
+    </>
   );
 }

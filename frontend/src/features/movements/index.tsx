@@ -5,6 +5,7 @@ import {
   TransactionApiOut,
   api,
 } from "app/services/api";
+import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
@@ -12,6 +13,7 @@ import { useAccountQueries } from "features/account/hooks";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import { SimpleQuery } from "interfaces";
 import { Card, Grid, Icon, Loader, Placeholder, Step } from "semantic-ui-react";
+import { logMutationError } from "utils/error";
 
 function AccountName(props: { query: SimpleQuery; account?: AccountApiOut }) {
   if (props.query.isLoading)
@@ -63,7 +65,7 @@ function Logo(props: { query: SimpleQuery; institution?: InstitutionApiOut }) {
   return <></>;
 }
 
-function OutFlowTransaction(props: { transaction: TransactionApiOut }) {
+function Outflow(props: { transaction: TransactionApiOut }) {
   const accountQueries = useAccountQueries(props.transaction.account_id);
 
   return (
@@ -78,7 +80,7 @@ function OutFlowTransaction(props: { transaction: TransactionApiOut }) {
   );
 }
 
-function InFlowTransaction(props: { transaction: TransactionApiOut }) {
+function Inflow(props: { transaction: TransactionApiOut }) {
   const accountQueries = useAccountQueries(props.transaction.account_id);
 
   return (
@@ -90,6 +92,27 @@ function InFlowTransaction(props: { transaction: TransactionApiOut }) {
       <AccountName query={accountQueries} account={accountQueries.account} />
       <Logo query={accountQueries} institution={accountQueries.institution} />
     </>
+  );
+}
+
+function Flows(props: { transactions: TransactionApiOut[] }) {
+  return (
+    <Step.Group fluid widths={2}>
+      <Step style={{ justifyContent: "space-between" }}>
+        {props.transactions
+          .filter((transaction) => transaction.amount < 0)
+          .map((transaction) => (
+            <Outflow key={transaction.id} transaction={transaction} />
+          ))}
+      </Step>
+      <Step style={{ justifyContent: "space-between" }}>
+        {props.transactions
+          .filter((transaction) => transaction.amount >= 0)
+          .map((transaction) => (
+            <Inflow key={transaction.id} transaction={transaction} />
+          ))}
+      </Step>
+    </Step.Group>
   );
 }
 
@@ -98,6 +121,18 @@ function Movement(props: { movement: MovementApiOut }) {
     api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
       props.movement.id
     );
+
+  const [deleteMovement, deleteMovementResult] =
+    api.endpoints.deleteApiMovementsIdDelete.useMutation();
+
+  const handleDelete = async () => {
+    try {
+      await deleteMovement(props.movement.id).unwrap();
+    } catch (error) {
+      logMutationError(error, deleteMovementResult);
+      return;
+    }
+  };
 
   if (transactionsQuery.isLoading)
     return (
@@ -119,8 +154,10 @@ function Movement(props: { movement: MovementApiOut }) {
           <Grid columns="equal">
             <Grid.Column>{firstTransaction.name}</Grid.Column>
             <Grid.Column textAlign="right">
-              {/* <ActionButton icon="pencil" onClick={() => {}} />
-              <ActionButton icon="pencil" onClick={() => {}} /> */}
+              <ConfirmDeleteButton
+                query={deleteMovementResult}
+                onDelete={handleDelete}
+              />
             </Grid.Column>
           </Grid>
         </Card.Header>
@@ -129,30 +166,7 @@ function Movement(props: { movement: MovementApiOut }) {
         </Card.Meta>
       </Card.Content>
       <Card.Content extra>
-        <Step.Group fluid widths={2}>
-          <Step style={{ justifyContent: "space-between" }}>
-            {transactionsQuery.data
-              .filter((transaction) => transaction.amount < 0)
-              .map((transaction) => (
-                <OutFlowTransaction
-                  key={transaction.id}
-                  transaction={transaction}
-                />
-              ))}
-            {transactionsQuery.isError && <p>Error</p>}
-          </Step>
-          <Step style={{ justifyContent: "space-between" }}>
-            {transactionsQuery.data
-              .filter((transaction) => transaction.amount >= 0)
-              .map((transaction) => (
-                <InFlowTransaction
-                  key={transaction.id}
-                  transaction={transaction}
-                />
-              ))}
-            {transactionsQuery.isError && <p>Error</p>}
-          </Step>
-        </Step.Group>
+        <Flows transactions={transactionsQuery.data} />
       </Card.Content>
     </Card>
   );

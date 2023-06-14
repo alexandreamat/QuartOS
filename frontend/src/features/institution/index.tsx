@@ -8,7 +8,7 @@ import EmptyTablePlaceholder from "components/TablePlaceholder";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
-import DeleteCell from "components/DeleteCell";
+import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import ActionButton from "components/ActionButton";
 import { InstitutionLogo } from "./components/InstitutionLogo";
 
@@ -82,10 +82,12 @@ const InstitutionsTable = (props: {
             <EditCell
               onOpenEditForm={() => props.onOpenEditForm(institution)}
             />
-            <DeleteCell
-              query={deleteInstitutionResult}
-              onDelete={async () => await handleDelete(institution)}
-            />
+            <Table.Cell collapsing>
+              <ConfirmDeleteButton
+                query={deleteInstitutionResult}
+                onDelete={async () => await handleDelete(institution)}
+              />
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table.Body>

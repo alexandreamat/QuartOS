@@ -404,6 +404,16 @@ const injectedRtkApi = api
         }),
         providesTags: ["movements"],
       }),
+      deleteApiMovementsIdDelete: build.mutation<
+        DeleteApiMovementsIdDeleteApiResponse,
+        DeleteApiMovementsIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/movements/${queryArg}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["movements"],
+      }),
       readManyApiTransactionsGet: build.query<
         ReadManyApiTransactionsGetApiResponse,
         ReadManyApiTransactionsGetApiArg
@@ -647,6 +657,9 @@ export type ReadManyApiMovementsGetApiArg = {
 export type ReadTransactionsApiMovementsIdTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadTransactionsApiMovementsIdTransactionsGetApiArg = number;
+export type DeleteApiMovementsIdDeleteApiResponse =
+  /** status 200 Successful Response */ null;
+export type DeleteApiMovementsIdDeleteApiArg = number;
 export type ReadManyApiTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyApiTransactionsGetApiArg = {

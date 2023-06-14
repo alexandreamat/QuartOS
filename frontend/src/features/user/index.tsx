@@ -6,7 +6,7 @@ import { logMutationError } from "utils/error";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
 import EditCell from "components/EditCell";
-import DeleteCell from "components/DeleteCell";
+import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 
 export default function Users() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,10 +59,12 @@ export default function Users() {
               </Label>
             </Table.Cell>
             <EditCell onOpenEditForm={() => handleEdit(user)} />
-            <DeleteCell
-              query={deleteUserResult}
-              onDelete={async () => await handleDelete(user)}
-            />
+            <Table.Cell collapsing>
+              <ConfirmDeleteButton
+                query={deleteUserResult}
+                onDelete={async () => await handleDelete(user)}
+              />
+            </Table.Cell>
           </Table.Row>
         ))}
       </Table.Body>
