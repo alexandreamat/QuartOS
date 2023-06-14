@@ -14,6 +14,7 @@ from app.features.user.models import User
 from app.features.institution.models import Institution
 from app.features.userinstitutionlink.models import UserInstitutionLink
 from app.features.account.models import Account
+from app.features.movement.models import Movement
 from app.features.transaction.models import Transaction
 
 from .deps import engine

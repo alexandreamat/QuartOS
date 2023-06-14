@@ -123,8 +123,6 @@ class CRUDTransaction(
     @classmethod
     def create(cls, db: Session, new_schema_obj: TransactionApiIn) -> TransactionApiOut:
         new_obj_out = super().create(db, new_schema_obj)
-        if new_obj_out.related_transaction_id:
-            Transaction.link(db, new_obj_out.id, new_obj_out.related_transaction_id)
         return new_obj_out
 
     @classmethod
@@ -132,6 +130,4 @@ class CRUDTransaction(
         cls, db: Session, id: int, new_obj_in: TransactionApiIn
     ) -> TransactionApiOut:
         new_obj_out = super().update(db, id, new_obj_in)
-        if new_obj_out.related_transaction_id:
-            Transaction.link(db, new_obj_out.id, new_obj_out.related_transaction_id)
         return new_obj_out
