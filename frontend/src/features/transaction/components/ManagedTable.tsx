@@ -6,6 +6,7 @@ import { renderErrorMessage } from "utils/error";
 import { useTransactionsQuery } from "../hooks";
 import Bar from "./Bar";
 import Table from "./Table";
+import FlexColumn from "components/FlexColumn";
 
 export default function ManagedTable(props: {
   onOpenCreateForm: (accountId: number, relatedTransactionId: number) => void;
@@ -53,7 +54,7 @@ export default function ManagedTable(props: {
   if (transactionsQuery.isError) console.error(transactionsQuery.originalArgs);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <FlexColumn>
       <Bar
         onOpenCreateForm={props.onOpenCreateForm}
         accountId={accountId}
@@ -61,7 +62,7 @@ export default function ManagedTable(props: {
         search={search}
         onSearchChange={handleSearchChange}
       />
-      <div style={{ flex: 1, overflow: "auto" }}>
+      <FlexColumn.Auto>
         {transactionsQuery.isError ? (
           <Message
             negative
@@ -88,7 +89,7 @@ export default function ManagedTable(props: {
             />
           </InfiniteScroll>
         )}
-      </div>
-    </div>
+      </FlexColumn.Auto>
+    </FlexColumn>
   );
 }
