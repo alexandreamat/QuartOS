@@ -52,8 +52,11 @@ function Logo(props: { query: SimpleQuery; institution?: InstitutionApiOut }) {
       </Placeholder>
     );
 
-  if (props.query.isSuccess && props.institution)
-    return <InstitutionLogo institution={props.institution} />;
+  if (props.query.isSuccess) {
+    if (props.institution)
+      return <InstitutionLogo size="mini" institution={props.institution} />;
+    return <Icon size="tiny" name="credit card" />;
+  }
 
   if (props.query.isError) return <Icon name="question" />;
 
@@ -65,12 +68,12 @@ function OutFlowTransaction(props: { transaction: TransactionApiOut }) {
 
   return (
     <>
+      <Logo query={accountQueries} institution={accountQueries.institution} />
+      <AccountName query={accountQueries} account={accountQueries.account} />
       <CurrencyLabel
         amount={props.transaction.amount}
         currencyCode={props.transaction.currency_code}
       />
-      <AccountName query={accountQueries} account={accountQueries.account} />
-      <Logo query={accountQueries} institution={accountQueries.institution} />
     </>
   );
 }
@@ -80,12 +83,12 @@ function InFlowTransaction(props: { transaction: TransactionApiOut }) {
 
   return (
     <>
-      <Logo query={accountQueries} institution={accountQueries.institution} />
-      <AccountName query={accountQueries} account={accountQueries.account} />
       <CurrencyLabel
         amount={props.transaction.amount}
         currencyCode={props.transaction.currency_code}
       />
+      <AccountName query={accountQueries} account={accountQueries.account} />
+      <Logo query={accountQueries} institution={accountQueries.institution} />
     </>
   );
 }
@@ -126,7 +129,7 @@ function Movement(props: { movement: MovementApiOut }) {
         </Card.Meta>
       </Card.Content>
       <Card.Content extra>
-        <Step.Group fluid>
+        <Step.Group fluid widths={2}>
           <Step style={{ justifyContent: "space-between" }}>
             {transactionsQuery.data
               .filter((transaction) => transaction.amount < 0)
@@ -166,7 +169,9 @@ export default function Movements() {
   return (
     <div style={{ height: "100%", padding: 1, overflow: "auto" }}>
       {movementsQuery.isSuccess &&
-        movementsQuery.data.map((movement) => <Movement movement={movement} />)}
+        movementsQuery.data.map((movement) => (
+          <Movement key={movement.id} movement={movement} />
+        ))}
     </div>
   );
 }
