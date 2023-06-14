@@ -5,6 +5,7 @@ from app.features import (
     user,
     institution,
     userinstitutionlink,
+    movement,
     account,
     transaction,
     transactiondeserialiser,
@@ -19,6 +20,7 @@ USERS = "users"
 INSTITUTIONS = "institutions"
 INSTITUTION_LINKS = "institution-links"
 ACCOUNTS = "accounts"
+MOVEMENTS = "movements"
 TRANSACTIONS = "transactions"
 PLAID = "plaid"
 EXCHANGERATE = "exchangerate"
@@ -44,6 +46,7 @@ api_router.include_router(
     tags=[INSTITUTION_LINKS],
 )
 api_router.include_router(account.api.router, prefix=f"/{ACCOUNTS}", tags=[ACCOUNTS])
+api_router.include_router(movement.api.router, prefix=f"/{MOVEMENTS}", tags=[MOVEMENTS])
 api_router.include_router(
     transaction.api.router, prefix=f"/{TRANSACTIONS}", tags=[TRANSACTIONS]
 )
