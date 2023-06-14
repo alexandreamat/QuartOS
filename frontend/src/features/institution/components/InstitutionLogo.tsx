@@ -1,13 +1,17 @@
-import { Image, Icon } from "semantic-ui-react";
+import { Image, Icon, SemanticSIZES } from "semantic-ui-react";
 import { InstitutionApiOut } from "app/services/api";
 
-export function InstitutionLogo(props: { institution: InstitutionApiOut }) {
+export function InstitutionLogo(props: {
+  institution: InstitutionApiOut;
+  size?: SemanticSIZES;
+}) {
   return (
     <>
       {props.institution.logo_base64 ? (
         <Image
+          size={props.size}
           inline
-          style={{ height: 24 }}
+          style={props.size ? {} : { height: 24 }}
           src={`data:image/png;base64,${props.institution.logo_base64}`}
         />
       ) : (
