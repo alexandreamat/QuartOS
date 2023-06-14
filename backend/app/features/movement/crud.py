@@ -2,7 +2,7 @@ from sqlmodel import select, or_, desc, col, Session
 
 from app.common.crud import CRUDBase
 
-from app.features import transaction, account, userinstitutionlink
+from app.features import account, userinstitutionlink
 
 from .models import Movement, MovementApiIn, MovementApiOut
 
@@ -12,6 +12,8 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def read_many_by_user(
         cls, db: Session, user_id: int, page: int, per_page: int, search: str | None
     ) -> list[MovementApiOut]:
+        from app.features import transaction
+
         offset = (page - 1) * per_page if page and per_page else 0
         MovementApiOut.update_forward_refs()
         statement = (
