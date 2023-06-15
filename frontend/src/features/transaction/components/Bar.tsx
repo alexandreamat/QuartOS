@@ -31,7 +31,7 @@ export default function Bar(props: {
   const accountOptions = useAccountOptions();
 
   return (
-    <Menu secondary>
+    <Menu secondary style={{ width: "100%" }}>
       <Menu.Item>
         <Button
           icon
