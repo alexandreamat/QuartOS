@@ -25,16 +25,16 @@ def create(
     movement = CRUDMovement.create(db, MovementApiIn())
     for transaction_id in transaction_ids:
         try:
-            user = transaction.crud.CRUDTransaction.read_user(db, id)
+            user = transaction.crud.CRUDTransaction.read_user(db, transaction_id)
         except NoResultFound:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         transaction_db = transaction.crud.CRUDTransaction.read(db, transaction_id)
-        if not transaction_db.movement_id:
+        if transaction_db.movement_id:
             raise HTTPException(status.HTTP_400_BAD_REQUEST)
         transaction_in = transaction.models.TransactionApiIn(
-            **transaction_db.dict(), movement_id=movement.id
+            **transaction_db.dict(exclude_none=True), movement_id=movement.id
         )
         transaction.crud.CRUDTransaction.update(db, transaction_db.id, transaction_in)
 

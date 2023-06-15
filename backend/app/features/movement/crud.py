@@ -8,6 +8,9 @@ from .models import Movement, MovementApiIn, MovementApiOut
 
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
+    db_model = Movement
+    api_out_model = MovementApiOut
+
     @classmethod
     def read_many_by_user(
         cls, db: Session, user_id: int, page: int, per_page: int, search: str | None

@@ -61,7 +61,7 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
         </div>
       </Modal.Content>
       <Modal.Actions>
-        <Button onClick={props.onClose}>Cancel</Button>
+        <Button onClick={handleClose}>Cancel</Button>
         <Button
           content="Save"
           type="submit"
