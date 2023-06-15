@@ -57,7 +57,7 @@ class TransactionApiOut(__TransactionBase, IdentifiableBase):
 
 class TransactionApiIn(__TransactionBase):
     timestamp: datetime
-    code: TransactionCode
+    code: TransactionCode | None
 
     # @validator("timestamp")
     # def validate_utc(cls, v: datetime) -> datetime:
