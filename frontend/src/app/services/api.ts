@@ -395,6 +395,17 @@ const injectedRtkApi = api
         }),
         providesTags: ["movements"],
       }),
+      createApiMovementsPost: build.mutation<
+        CreateApiMovementsPostApiResponse,
+        CreateApiMovementsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/movements/`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["movements"],
+      }),
       readTransactionsApiMovementsIdTransactionsGet: build.query<
         ReadTransactionsApiMovementsIdTransactionsGetApiResponse,
         ReadTransactionsApiMovementsIdTransactionsGetApiArg
@@ -654,6 +665,9 @@ export type ReadManyApiMovementsGetApiArg = {
   perPage?: number;
   search?: string;
 };
+export type CreateApiMovementsPostApiResponse =
+  /** status 200 Successful Response */ MovementApiOut;
+export type CreateApiMovementsPostApiArg = number[];
 export type ReadTransactionsApiMovementsIdTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadTransactionsApiMovementsIdTransactionsGetApiArg = number;

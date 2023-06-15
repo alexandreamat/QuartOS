@@ -13,7 +13,7 @@ import {
   Modal,
   Segment,
 } from "semantic-ui-react";
-import TransactionsTable from "./Table";
+import Table from "./Table";
 import { useAccountOptions } from "features/account/hooks";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { logMutationError } from "utils/error";
@@ -130,9 +130,7 @@ export default function Uploader(props: {
               </>
             </Segment>
           )}
-          {uploadResult.isSuccess && (
-            <TransactionsTable transactions={uploadResult.data} />
-          )}
+          {uploadResult.isSuccess && <Table transactions={uploadResult.data} />}
           <QueryErrorMessage query={uploadResult} />
           <QueryErrorMessage query={createTransactionsResult} />
         </Form>

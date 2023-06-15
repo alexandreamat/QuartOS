@@ -1,19 +1,44 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
-
+from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.exc import NoResultFound
 
 from app.features.user.deps import CurrentUser
 from app.database.deps import DBSession
 
 
-from .models import MovementApiOut
+from .models import MovementApiOut, MovementApiIn
 from .crud import CRUDMovement
 
 # forward references, only for annotations
 from app.features.transaction.models import TransactionApiOut
 
 router = APIRouter()
+
+
+@router.post("/")
+def create(
+    db: DBSession, current_user: CurrentUser, transaction_ids: list[int]
+) -> MovementApiOut:
+    from app.features import transaction
+
+    movement = CRUDMovement.create(db, MovementApiIn())
+    for transaction_id in transaction_ids:
+        try:
+            user = transaction.crud.CRUDTransaction.read_user(db, id)
+        except NoResultFound:
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
+        if user.id != current_user.id:
+            raise HTTPException(status.HTTP_403_FORBIDDEN)
+        transaction_db = transaction.crud.CRUDTransaction.read(db, transaction_id)
+        if not transaction_db.movement_id:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        transaction_in = transaction.models.TransactionApiIn(
+            **transaction_db.dict(), movement_id=movement.id
+        )
+        transaction.crud.CRUDTransaction.update(db, transaction_db.id, transaction_in)
+
+    return movement
 
 
 @router.get("/")

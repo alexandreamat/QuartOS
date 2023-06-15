@@ -21,14 +21,11 @@ import CurrencyExchangeTip from "./CurrencyExchangeTip";
 export default function TransactionForm(props: {
   transaction?: TransactionApiOut;
   accountId?: number;
-  relatedTransactionId?: number;
   open: boolean;
   onClose: () => void;
   onMutation: () => void;
 }) {
   const isEdit = props.transaction !== undefined;
-
-  const isCreateRelated = props.relatedTransactionId !== 0;
 
   const form: TransactionApiInForm = {
     amountStr: useFormField("", "amount"),
@@ -62,7 +59,6 @@ export default function TransactionForm(props: {
 
   useEffect(() => {
     const isEdit = props.transaction !== undefined;
-    const isCreateRelated = props.relatedTransactionId !== 0;
     const rtx = relatedTransactionQuery.data;
     if (!rtx) return;
     if (!isEdit) {
@@ -71,7 +67,7 @@ export default function TransactionForm(props: {
       form.code.set(rtx.code);
       form.paymentChannel.set(rtx.payment_channel);
     }
-    if (isEdit || isCreateRelated) {
+    if (isEdit) {
       setTransactionOptions([{ key: rtx.id, value: rtx.id, text: rtx.name }]);
     }
   }, [relatedTransactionQuery.data]);
@@ -88,11 +84,6 @@ export default function TransactionForm(props: {
   useEffect(() => {
     props.accountId && form.accountId.set(props.accountId);
   }, [props.accountId]);
-
-  useEffect(() => {
-    props.relatedTransactionId &&
-      form.relatedTransactionId.set(props.relatedTransactionId);
-  }, [props.relatedTransactionId]);
 
   const [createTransaction, createTransactionResult] =
     api.endpoints.createApiTransactionsPost.useMutation();
@@ -134,11 +125,9 @@ export default function TransactionForm(props: {
     handleClose();
   };
 
-  function getModalTitle(isEdit: boolean, isCreateRelated: boolean) {
+  function getModalTitle(isEdit: boolean) {
     if (isEdit) {
       return "Edit a Transaction";
-    } else if (isCreateRelated) {
-      return "Add a Related Transaction";
     } else {
       return "Add a Transaction";
     }
@@ -148,7 +137,7 @@ export default function TransactionForm(props: {
     <FormModal
       open={props.open}
       onClose={handleClose}
-      title={getModalTitle(isEdit, isCreateRelated)}
+      title={getModalTitle(isEdit)}
       onSubmit={handleSubmit}
     >
       <FormDropdownInput
@@ -158,7 +147,6 @@ export default function TransactionForm(props: {
         readOnly={disableSynced}
       />
       <FormDropdownInput
-        disabled={isCreateRelated}
         optional
         field={form.relatedTransactionId}
         options={[
@@ -191,10 +179,7 @@ export default function TransactionForm(props: {
         readOnly={disableSynced}
       />
       <FormTextInput field={form.name} readOnly={disableSynced} />
-      <FormDateTimeInput
-        field={form.timestamp}
-        readOnly={isCreateRelated || disableSynced}
-      />
+      <FormDateTimeInput field={form.timestamp} readOnly={disableSynced} />
       <FormValidationError fields={Object.values(form)} />
       <QueryErrorMessage query={createTransactionResult} />
       <QueryErrorMessage query={updateTransactionResult} />

@@ -1,5 +1,5 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
-import { Icon, Table } from "semantic-ui-react";
+import { Checkbox, CheckboxProps, Icon, Table } from "semantic-ui-react";
 import LoadableCell from "components/LoadableCell";
 import EditCell from "components/EditCell";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
@@ -21,12 +21,14 @@ function TransactionRow(
           relatedTransactionId: number
         ) => void;
         onDelete: () => void;
+        onCheckedChange?: (x: boolean) => void;
       }
     | {
-        transaction: TransactionApiIn;
+        transaction: TransactionApiOut | TransactionApiIn;
       }
 ) {
-  const isApiOut = "onOpenEditForm" in props;
+  const hasActions = "onOpenEditForm" in props;
+  const hasCheckbox = hasActions && props.onCheckedChange;
   const accountQueries = useAccountQueries(props.transaction.account_id);
 
   const [deleteTransaction, deleteTransactionResult] =
@@ -39,11 +41,24 @@ function TransactionRow(
       logMutationError(error, deleteTransactionResult);
       return;
     }
-    if (isApiOut) props.onDelete();
+    if (hasActions) props.onDelete();
   };
 
   return (
     <Table.Row>
+      <Table.Cell collapsing textAlign="center">
+        {hasCheckbox && (
+          <Checkbox
+            // checked={true}
+            onChange={(
+              _: React.FormEvent<HTMLInputElement>,
+              data: CheckboxProps
+            ) => {
+              props.onCheckedChange!(data.checked as boolean);
+            }}
+          />
+        )}
+      </Table.Cell>
       <Table.Cell textAlign="center" collapsing>
         {props.transaction.payment_channel === "online" && (
           <Icon name="cloud" color="grey" />
@@ -77,7 +92,7 @@ function TransactionRow(
         )}{" "}
         {accountQueries.account?.name}
       </LoadableCell>
-      {isApiOut && (
+      {hasActions && (
         <>
           <Table.Cell collapsing>
             {/* <ActionButton
@@ -112,23 +127,34 @@ export default function TransactionsTable(
           relatedTransactionId: number
         ) => void;
         onMutation: () => void;
+        onTransactionCheckedChange?: (
+          transaction: TransactionApiOut,
+          checked: boolean
+        ) => void;
       }
     | {
-        transactions: TransactionApiIn[];
+        transactions: (TransactionApiOut | TransactionApiIn)[];
       }
 ) {
-  const isApiOut = "onOpenEditForm" in props;
+  const hasActions = "onOpenEditForm" in props;
+  const hasCheckbox = hasActions && props.onTransactionCheckedChange;
 
   if (!props.transactions.length) return <EmptyTablePlaceholder />;
 
   return (
     <Table>
       <TableHeader
-        headers={["", "Created", "Name", "Amount", "Account"]}
-        actions={isApiOut ? 3 : 0}
+        headers={(hasCheckbox ? ["Select"] : []).concat([
+          "",
+          "Created",
+          "Name",
+          "Amount",
+          "Account",
+        ])}
+        actions={hasActions ? 3 : 0}
       />
       <Table.Body>
-        {isApiOut
+        {hasActions
           ? props.transactions.map((transaction, index) => (
               <TransactionRow
                 key={index}
@@ -136,6 +162,11 @@ export default function TransactionsTable(
                 onOpenEditForm={props.onOpenEditForm}
                 onOpenCreateForm={props.onOpenCreateForm}
                 onDelete={props.onMutation}
+                onCheckedChange={
+                  props.onTransactionCheckedChange &&
+                  ((checked: boolean) =>
+                    props.onTransactionCheckedChange!(transaction, checked))
+                }
               />
             ))
           : props.transactions.map((transaction, index) => (
