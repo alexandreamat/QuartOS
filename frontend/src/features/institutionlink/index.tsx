@@ -8,7 +8,7 @@ import ActionButton from "components/ActionButton";
 import LoadableLine from "components/LoadableLine";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
-import EditCell from "components/EditCell";
+import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import { useNavigate } from "react-router-dom";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
@@ -100,10 +100,12 @@ function InstitutionLinkRow(props: {
           }
         />
       </Table.Cell>
-      <EditCell
-        disabled={props.institutionLink.is_synced}
-        onOpenEditForm={() => props.onOpenEditForm(props.institutionLink)}
-      />
+      <Table.Cell collapsing>
+        <EditActionButton
+          disabled={props.institutionLink.is_synced}
+          onOpenEditForm={() => props.onOpenEditForm(props.institutionLink)}
+        />
+      </Table.Cell>
       <Table.Cell collapsing>
         <ConfirmDeleteButton
           query={deleteInstitutionLinkResult}

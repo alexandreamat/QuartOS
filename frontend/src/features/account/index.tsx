@@ -11,7 +11,7 @@ import { AccountApiOut, InstitutionApiOut, api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import TableHeader from "components/TableHeader";
-import EditCell from "components/EditCell";
+import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import LoadableCell from "components/LoadableCell";
 import { useLocation } from "react-router-dom";
@@ -85,10 +85,12 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
           icon="upload"
         />
       </Table.Cell>
-      <EditCell
-        disabled={props.account.is_synced !== false}
-        onOpenEditForm={props.onEdit}
-      />
+      <Table.Cell collapsing>
+        <EditActionButton
+          disabled={props.account.is_synced !== false}
+          onOpenEditForm={props.onEdit}
+        />
+      </Table.Cell>
       <Table.Cell collapsing>
         <ConfirmDeleteButton
           disabled={props.account.is_synced !== false}

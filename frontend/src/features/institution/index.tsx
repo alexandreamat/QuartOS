@@ -7,7 +7,7 @@ import { logMutationError } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
-import EditCell from "components/EditCell";
+import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import ActionButton from "components/ActionButton";
 import { InstitutionLogo } from "./components/InstitutionLogo";
@@ -79,9 +79,11 @@ const InstitutionsTable = (props: {
                 loading={false}
               />
             </Table.Cell>
-            <EditCell
-              onOpenEditForm={() => props.onOpenEditForm(institution)}
-            />
+            <Table.Cell collapsing>
+              <EditActionButton
+                onOpenEditForm={() => props.onOpenEditForm(institution)}
+              />
+            </Table.Cell>
             <Table.Cell collapsing>
               <ConfirmDeleteButton
                 query={deleteInstitutionResult}

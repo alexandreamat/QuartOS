@@ -5,7 +5,7 @@ import { UserApiOut, api } from "app/services/api";
 import { logMutationError } from "utils/error";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
-import EditCell from "components/EditCell";
+import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 
 export default function Users() {
@@ -58,7 +58,9 @@ export default function Users() {
                 {user.email}
               </Label>
             </Table.Cell>
-            <EditCell onOpenEditForm={() => handleEdit(user)} />
+            <Table.Cell collapsing>
+              <EditActionButton onOpenEditForm={() => handleEdit(user)} />
+            </Table.Cell>
             <Table.Cell collapsing>
               <ConfirmDeleteButton
                 query={deleteUserResult}
