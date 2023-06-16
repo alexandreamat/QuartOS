@@ -1,6 +1,16 @@
-import { Button, Icon, Menu } from "semantic-ui-react";
+import {
+  Button,
+  Icon,
+  Input,
+  InputOnChangeData,
+  Menu,
+} from "semantic-ui-react";
 
-export function Bar(props: { onOpenCreateForm: () => void }) {
+export function Bar(props: {
+  onOpenCreateForm: () => void;
+  search: string;
+  onSearchChange: (x: string) => void;
+}) {
   return (
     <Menu secondary>
       <Menu.Item>
@@ -13,6 +23,17 @@ export function Bar(props: { onOpenCreateForm: () => void }) {
           Add
           <Icon name="plus" />
         </Button>
+      </Menu.Item>
+      <Menu.Item>
+        <Input
+          icon="search"
+          placeholder="Search..."
+          value={props.search}
+          onChange={(
+            event: React.ChangeEvent<HTMLInputElement>,
+            data: InputOnChangeData
+          ) => props.onSearchChange(data.value as string)}
+        />
       </Menu.Item>
     </Menu>
   );

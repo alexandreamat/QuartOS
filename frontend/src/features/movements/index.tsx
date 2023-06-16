@@ -14,8 +14,11 @@ export default function Movements() {
   const isFormOpenParam = params.get("isFormOpen") === "true";
 
   const [isFormOpen, setIsFormOpen] = useState(isFormOpenParam);
+  const [search, setSearch] = useState("");
 
-  const movementsQuery = api.endpoints.readManyApiMovementsGet.useQuery({});
+  const movementsQuery = api.endpoints.readManyApiMovementsGet.useQuery({
+    search,
+  });
 
   const handleOpenCreateForm = () => {
     setIsFormOpen(true);
@@ -23,6 +26,10 @@ export default function Movements() {
 
   const handleCloseForm = () => {
     setIsFormOpen(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
   };
 
   if (movementsQuery.isLoading) return <Loader active size="huge" />;
@@ -33,7 +40,11 @@ export default function Movements() {
   return (
     <>
       <FlexColumn>
-        <Bar onOpenCreateForm={handleOpenCreateForm} />
+        <Bar
+          onOpenCreateForm={handleOpenCreateForm}
+          search={search}
+          onSearchChange={handleSearchChange}
+        />
         <FlexColumn.Auto style={{ padding: 1 }}>
           {movementsQuery.isSuccess &&
             movementsQuery.data.map((movement) => (
