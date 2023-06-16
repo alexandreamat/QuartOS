@@ -7,14 +7,10 @@ import CurrencyLabel from "components/CurrencyLabel";
 import { useAccountQueries } from "features/account/hooks";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import { SimpleQuery } from "interfaces";
-import {
-  Grid,
-  Header,
-  Icon,
-  Message,
-  Placeholder,
-  Step,
-} from "semantic-ui-react";
+import { Grid, Icon, Placeholder, Step } from "semantic-ui-react";
+
+const flowPadding = 5;
+const stepPadding = 18;
 
 function AccountName(props: { query: SimpleQuery; account?: AccountApiOut }) {
   if (props.query.isLoading)
@@ -54,14 +50,14 @@ function Outflow(props: { outflow: TransactionApiOut }) {
   const accountQueries = useAccountQueries(props.outflow.account_id);
 
   return (
-    <Grid.Row>
+    <Grid.Row columns="equal" style={{ padding: flowPadding }}>
       <Grid.Column width={2} textAlign="center" verticalAlign="middle">
         <Logo query={accountQueries} institution={accountQueries.institution} />
       </Grid.Column>
-      <Grid.Column width={8} textAlign="center" verticalAlign="middle">
+      <Grid.Column textAlign="center" verticalAlign="middle">
         <AccountName query={accountQueries} account={accountQueries.account} />
       </Grid.Column>
-      <Grid.Column width={6} textAlign="center" verticalAlign="middle">
+      <Grid.Column width={4} textAlign="center" verticalAlign="middle">
         <CurrencyLabel
           amount={props.outflow.amount}
           currencyCode={props.outflow.currency_code}
@@ -75,14 +71,14 @@ function Inflow(props: { outflow: TransactionApiOut }) {
   const accountQueries = useAccountQueries(props.outflow.account_id);
 
   return (
-    <Grid.Row>
-      <Grid.Column width={6} textAlign="center" verticalAlign="middle">
+    <Grid.Row columns="equal" style={{ padding: flowPadding }}>
+      <Grid.Column width={4} textAlign="center" verticalAlign="middle">
         <CurrencyLabel
           amount={props.outflow.amount}
           currencyCode={props.outflow.currency_code}
         />
       </Grid.Column>
-      <Grid.Column width={8} textAlign="center" verticalAlign="middle">
+      <Grid.Column textAlign="center" verticalAlign="middle">
         <AccountName query={accountQueries} account={accountQueries.account} />
       </Grid.Column>
       <Grid.Column width={2} textAlign="center" verticalAlign="middle">
@@ -98,7 +94,7 @@ export function Flows(props: {
 }) {
   return (
     <Step.Group fluid widths={2}>
-      <Step>
+      <Step style={{ padding: stepPadding }}>
         <Step.Content style={{ width: "100%" }}>
           {props.outflows.length ? (
             <Grid>
@@ -111,7 +107,7 @@ export function Flows(props: {
           )}
         </Step.Content>
       </Step>
-      <Step style={{ justifyContent: "space-between" }}>
+      <Step style={{ padding: stepPadding }}>
         <Step.Content style={{ width: "100%" }}>
           {props.inflows.length ? (
             <Grid>
