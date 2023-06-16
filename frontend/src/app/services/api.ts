@@ -435,6 +435,7 @@ const injectedRtkApi = api
             page: queryArg.page,
             per_page: queryArg.perPage,
             search: queryArg.search,
+            ids: queryArg.ids,
           },
         }),
         providesTags: ["transactions"],
@@ -680,6 +681,7 @@ export type ReadManyApiTransactionsGetApiArg = {
   page?: number;
   perPage?: number;
   search?: string;
+  ids?: string;
 };
 export type CreateApiTransactionsPostApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
@@ -871,7 +873,7 @@ export type TransactionApiIn = {
   account_id: number;
   movement_id?: number;
   payment_channel: PaymentChannel;
-  code: TransactionCode;
+  code?: TransactionCode;
 };
 export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
   file: Blob;

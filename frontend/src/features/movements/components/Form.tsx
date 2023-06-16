@@ -1,14 +1,29 @@
 import { Flows } from "./Flows";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ManagedTable from "features/transaction/components/ManagedTable";
 import { Button, Modal } from "semantic-ui-react";
 import FlexColumn from "components/FlexColumn";
 import { TransactionApiOut, api } from "app/services/api";
 import { logMutationError } from "utils/error";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { useLocation } from "react-router-dom";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export default function Form(props: { open: boolean; onClose: () => void }) {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const transactionIdsStr = params.get("transactionIds");
+
+  const transactionsQuery = api.endpoints.readManyApiTransactionsGet.useQuery(
+    transactionIdsStr ? { ids: transactionIdsStr } : skipToken
+  );
+
   const [flows, setFlows] = useState<Record<number, TransactionApiOut>>({});
+
+  useEffect(() => {
+    if (!transactionsQuery.isSuccess) return;
+    setFlows(transactionsQuery.data);
+  }, [transactionsQuery.isSuccess, transactionsQuery.data]);
 
   const outflows = Object.values(flows).filter((t) => t.amount < 0);
   const inflows = Object.values(flows).filter((t) => t.amount >= 0);
