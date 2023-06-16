@@ -1,3 +1,4 @@
+import { PaymentChannel, TransactionCode } from "app/services/api";
 import useFormField from "hooks/useFormField";
 
 export type TransactionApiInForm = {
@@ -8,5 +9,4 @@ export type TransactionApiInForm = {
   accountId: ReturnType<typeof useFormField<number>>;
   paymentChannel: ReturnType<typeof useFormField<string>>;
   code: ReturnType<typeof useFormField<string>>;
-  relatedTransactionId: ReturnType<typeof useFormField<number>>;
 };

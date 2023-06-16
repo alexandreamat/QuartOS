@@ -97,7 +97,7 @@ function TransactionRow(
           <Table.Cell collapsing>
             <ActionButton
               disabled={Boolean(props.transaction.movement_id)}
-              icon="arrows alternate horizontal"
+              icon="linkify"
               onClick={() => handleGoToCreateMovementForm(props.transaction)}
             />
           </Table.Cell>

@@ -1,11 +1,11 @@
 import { TransactionApiOut, api } from "app/services/api";
 import { renderCurrency } from "utils/currency";
 
-export default function CurrencyExchangeTip(props: {
+function CurrencyExchangeTip(props: {
   relatedTransaction: TransactionApiOut;
   currencyCode: string;
 }) {
-  const amount = Math.abs(props.relatedTransaction.amount);
+  const amount = props.relatedTransaction.amount;
   const fromCurrency = props.relatedTransaction.currency_code;
   const toCurrency = props.currencyCode;
 
@@ -26,5 +26,22 @@ export default function CurrencyExchangeTip(props: {
       {toCurrency !== fromCurrency &&
         ` = ${renderCurrency(exchangeRateQuery.data * amount, toCurrency)}`}
     </p>
+  );
+}
+
+export default function CurrencyExchangeTips(props: {
+  relatedTransactions: TransactionApiOut[];
+  currencyCode: string;
+}) {
+  return (
+    <>
+      {props.relatedTransactions.map((transaction) => (
+        <CurrencyExchangeTip
+          key={transaction.id}
+          relatedTransaction={transaction}
+          currencyCode={props.currencyCode}
+        />
+      ))}
+    </>
   );
 }

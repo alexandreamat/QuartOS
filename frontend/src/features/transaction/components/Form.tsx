@@ -9,21 +9,21 @@ import { FormValidationError } from "components/FormValidationError";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useAccountOptions } from "features/account/hooks";
 import useFormField from "hooks/useFormField";
-import { useEffect, useState } from "react";
-import { DropdownItemProps, Icon, Message } from "semantic-ui-react";
+import { useEffect } from "react";
+import { Icon, Message } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
-import { useTransactionOptions } from "../hooks";
 import { codeOptions, paymentChannelOptions } from "../options";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
-import CurrencyExchangeTip from "./CurrencyExchangeTip";
+import CurrencyExchangeTips from "./CurrencyExchangeTips";
 
-export default function TransactionForm(props: {
+export default function Form(props: {
   transaction?: TransactionApiOut;
   accountId?: number;
+  relatedTransactions?: TransactionApiOut[];
   open: boolean;
   onClose: () => void;
-  onMutation: () => void;
+  onMutation: (x: TransactionApiOut) => void;
 }) {
   const isEdit = props.transaction !== undefined;
 
@@ -35,42 +35,33 @@ export default function TransactionForm(props: {
     accountId: useFormField(0, "account"),
     paymentChannel: useFormField("", "payment channel"),
     code: useFormField("", "code"),
-    relatedTransactionId: useFormField(0, "related transaction", true),
   };
-
-  const [search, setSearch] = useState("");
-  const [relatedTransactionOption, setTransactionOptions] = useState<
-    DropdownItemProps[]
-  >([]);
 
   const accountQuery = api.endpoints.readApiAccountsIdGet.useQuery(
     form.accountId.value || skipToken
   );
 
-  const relatedTransactionQuery =
-    api.endpoints.readApiTransactionsIdGet.useQuery(
-      form.relatedTransactionId.value || skipToken
-    );
-
   const disableSynced = isEdit && accountQuery.data?.is_synced;
 
   const accountOptions = useAccountOptions();
-  const searchedRelatedTransactionOptions = useTransactionOptions(search);
 
   useEffect(() => {
     const isEdit = props.transaction !== undefined;
-    const rtx = relatedTransactionQuery.data;
-    if (!rtx) return;
+    const txs = props.relatedTransactions;
+    if (!txs) return;
     if (!isEdit) {
-      form.timestamp.set(rtx.timestamp ? new Date(rtx.timestamp) : new Date());
-      form.name.set(rtx.name);
-      form.code.set(rtx.code);
-      form.paymentChannel.set(rtx.payment_channel);
+      const timestamp = txs.reduce(
+        (acc, tx) => (tx.timestamp && acc > tx.timestamp ? tx.timestamp : acc),
+        new Date().toISOString()
+      );
+      form.timestamp.set(timestamp ? new Date(timestamp) : new Date());
+      form.name.set(txs.find((tx) => tx.name)?.name || "");
+      form.code.set(
+        txs.find((tx) => tx.payment_channel)?.payment_channel || "null"
+      );
+      form.paymentChannel.set(txs.find((tx) => tx.code)?.code || "other");
     }
-    if (isEdit) {
-      setTransactionOptions([{ key: rtx.id, value: rtx.id, text: rtx.name }]);
-    }
-  }, [relatedTransactionQuery.data]);
+  }, [props.relatedTransactions]);
 
   useEffect(() => {
     accountQuery.isSuccess &&
@@ -92,8 +83,6 @@ export default function TransactionForm(props: {
 
   const handleClose = () => {
     Object.values(form).forEach((field) => field.reset());
-    setSearch("");
-    setTransactionOptions([]);
     props.onClose();
   };
 
@@ -102,26 +91,29 @@ export default function TransactionForm(props: {
       (field) => !field.validate()
     );
     if (invalidFields.length > 0) return;
-    const transaction = transactionFormToApiIn(form);
+    const transactionIn = transactionFormToApiIn(form);
     if (props.transaction) {
       try {
-        await updateTransaction({
+        const transactionOut = await updateTransaction({
           id: props.transaction.id,
-          transactionApiIn: transaction,
+          transactionApiIn: transactionIn,
         }).unwrap();
+        props.onMutation(transactionOut);
       } catch (error) {
         logMutationError(error, updateTransactionResult);
         return;
       }
     } else {
       try {
-        await createTransaction([transaction]).unwrap();
+        const transactionsOut = await createTransaction([
+          transactionIn,
+        ]).unwrap();
+        props.onMutation(transactionsOut[0]);
       } catch (error) {
         logMutationError(error, createTransactionResult);
         return;
       }
     }
-    props.onMutation();
     handleClose();
   };
 
@@ -146,25 +138,15 @@ export default function TransactionForm(props: {
         query={accountOptions}
         readOnly={disableSynced}
       />
-      <FormDropdownInput
-        optional
-        field={form.relatedTransactionId}
-        options={[
-          ...relatedTransactionOption,
-          ...searchedRelatedTransactionOptions.data,
-        ]}
-        query={searchedRelatedTransactionOptions}
-        onSearchChange={setSearch}
-      />
       <FormCurrencyInput
         query={accountQuery}
         field={form.amountStr}
         currency={form.currencyCode.value || "USD"}
         readOnly={disableSynced}
       />
-      {relatedTransactionQuery.isSuccess && form.currencyCode.value && (
-        <CurrencyExchangeTip
-          relatedTransaction={relatedTransactionQuery.data}
+      {props.relatedTransactions && form.currencyCode.value && (
+        <CurrencyExchangeTips
+          relatedTransactions={props.relatedTransactions}
           currencyCode={form.currencyCode.value}
         />
       )}
