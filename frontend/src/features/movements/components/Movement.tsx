@@ -1,7 +1,7 @@
 import { MovementApiOut, api } from "app/services/api";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import FormattedTimestamp from "components/FormattedTimestamp";
-import { Card, Grid, Placeholder } from "semantic-ui-react";
+import { Card, Grid, Header, Placeholder } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { Flows } from "./Flows";
 
@@ -42,22 +42,22 @@ export function Movement(props: { movement: MovementApiOut }) {
   return (
     <Card fluid color="teal">
       <Card.Content>
-        <Card.Header>
-          <Grid columns="equal">
-            <Grid.Column>{firstTransaction.name}</Grid.Column>
-            <Grid.Column textAlign="right">
-              <ConfirmDeleteButton
-                query={deleteMovementResult}
-                onDelete={handleDelete}
-              />
-            </Grid.Column>
-          </Grid>
-        </Card.Header>
-        <Card.Meta>
-          <FormattedTimestamp timestamp={firstTransaction.timestamp} />
-        </Card.Meta>
-      </Card.Content>
-      <Card.Content extra>
+        <Grid>
+          <Grid.Column width={3}>
+            <Card.Meta>
+              <FormattedTimestamp timestamp={firstTransaction.timestamp} />
+            </Card.Meta>
+          </Grid.Column>
+          <Grid.Column width={12}>
+            <Header as="h4">{firstTransaction.name}</Header>
+          </Grid.Column>
+          <Grid.Column width={1} textAlign="right">
+            <ConfirmDeleteButton
+              query={deleteMovementResult}
+              onDelete={handleDelete}
+            />
+          </Grid.Column>
+        </Grid>
         <Flows inflows={inflows} outflows={outflows} />
       </Card.Content>
     </Card>

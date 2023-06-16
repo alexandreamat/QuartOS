@@ -24,9 +24,9 @@ function AccountName(props: { query: SimpleQuery; account?: AccountApiOut }) {
       </Placeholder>
     );
 
-  if (props.query.isSuccess) return <Header>{props.account!.name}</Header>;
+  if (props.query.isSuccess) return <p>{props.account!.name}</p>;
 
-  if (props.query.isError) return <Header>?</Header>;
+  if (props.query.isError) return <p>?</p>;
 
   return <></>;
 }
@@ -41,7 +41,7 @@ function Logo(props: { query: SimpleQuery; institution?: InstitutionApiOut }) {
 
   if (props.query.isSuccess) {
     if (props.institution)
-      return <InstitutionLogo size="mini" institution={props.institution} />;
+      return <InstitutionLogo height={26} institution={props.institution} />;
     return <Icon size="big" name="credit card" />;
   }
 
@@ -55,13 +55,13 @@ function Outflow(props: { outflow: TransactionApiOut }) {
 
   return (
     <Grid.Row>
-      <Grid.Column width={4} textAlign="center" verticalAlign="middle">
+      <Grid.Column width={2} textAlign="center" verticalAlign="middle">
         <Logo query={accountQueries} institution={accountQueries.institution} />
       </Grid.Column>
       <Grid.Column width={8} textAlign="center" verticalAlign="middle">
         <AccountName query={accountQueries} account={accountQueries.account} />
       </Grid.Column>
-      <Grid.Column width={4} textAlign="center" verticalAlign="middle">
+      <Grid.Column width={6} textAlign="center" verticalAlign="middle">
         <CurrencyLabel
           amount={props.outflow.amount}
           currencyCode={props.outflow.currency_code}
@@ -76,7 +76,7 @@ function Inflow(props: { outflow: TransactionApiOut }) {
 
   return (
     <Grid.Row>
-      <Grid.Column width={4} textAlign="center" verticalAlign="middle">
+      <Grid.Column width={6} textAlign="center" verticalAlign="middle">
         <CurrencyLabel
           amount={props.outflow.amount}
           currencyCode={props.outflow.currency_code}
@@ -85,7 +85,7 @@ function Inflow(props: { outflow: TransactionApiOut }) {
       <Grid.Column width={8} textAlign="center" verticalAlign="middle">
         <AccountName query={accountQueries} account={accountQueries.account} />
       </Grid.Column>
-      <Grid.Column width={4} textAlign="center" verticalAlign="middle">
+      <Grid.Column width={2} textAlign="center" verticalAlign="middle">
         <Logo query={accountQueries} institution={accountQueries.institution} />
       </Grid.Column>
     </Grid.Row>
