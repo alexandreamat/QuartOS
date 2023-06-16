@@ -6,23 +6,37 @@ import FlexColumn from "components/FlexColumn";
 import { TransactionApiOut, api } from "app/services/api";
 import { logMutationError } from "utils/error";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export default function Form(props: { open: boolean; onClose: () => void }) {
   const location = useLocation();
+  const navigate = useNavigate();
+
   const params = new URLSearchParams(location.search);
-  const transactionIdsStr = params.get("transactionIds");
+  const transactionIdsStrParam = params.get("transactionIds");
+
+  const [transactionIdsStr, setTransactionIdsStr] = useState("");
+  const [flows, setFlows] = useState<Record<number, TransactionApiOut>>({});
 
   const transactionsQuery = api.endpoints.readManyApiTransactionsGet.useQuery(
     transactionIdsStr ? { ids: transactionIdsStr } : skipToken
   );
 
-  const [flows, setFlows] = useState<Record<number, TransactionApiOut>>({});
+  useEffect(() => {
+    if (transactionIdsStrParam) {
+      setTransactionIdsStr(transactionIdsStrParam);
+    } else {
+      setTransactionIdsStr("");
+      setFlows({});
+    }
+  }, [transactionIdsStrParam]);
 
   useEffect(() => {
     if (!transactionsQuery.isSuccess) return;
-    setFlows(transactionsQuery.data);
+    setFlows(
+      transactionsQuery.data.reduce((acc, t) => ({ ...acc, [t.id]: t }), {})
+    );
   }, [transactionsQuery.isSuccess, transactionsQuery.data]);
 
   const outflows = Object.values(flows).filter((t) => t.amount < 0);
@@ -30,17 +44,6 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
 
   const [createMovement, createMovementResult] =
     api.endpoints.createApiMovementsPost.useMutation();
-
-  function handleTransactionCheckedChange(
-    transaction: TransactionApiOut,
-    checked: boolean
-  ) {
-    setFlows((prevFlows) => {
-      if (checked) return { ...prevFlows, [transaction.id]: transaction };
-      const { [transaction.id]: _, ...remaining } = prevFlows;
-      return remaining;
-    });
-  }
 
   function handleClose() {
     setFlows({});
@@ -59,18 +62,34 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
     props.onClose();
   }
 
+  function handleRemoveFlow(transactionId: number) {
+    var transactionIds = params.get("transactionIds")?.split(",").map(Number);
+    if (!transactionIds) return;
+
+    transactionIds = transactionIds.filter((id) => id !== transactionId);
+    if (transactionIds.length === 0) {
+      navigate("/movements/?isFormOpen=true");
+      return;
+    }
+
+    const param = transactionIds.join(",");
+    navigate(`/movements/?isFormOpen=true&transactionIds=${param}`);
+  }
+
   return (
     <Modal open={props.open} onClose={handleClose} size="fullscreen">
       <Modal.Header>Create a Movement</Modal.Header>
       <Modal.Content>
         <div style={{ height: "70vh" }}>
           <FlexColumn>
-            <Flows inflows={inflows} outflows={outflows} />
+            <Flows
+              inflows={inflows}
+              outflows={outflows}
+              onRemoveFlow={handleRemoveFlow}
+            />
             <QueryErrorMessage query={createMovementResult} />
             <FlexColumn.Auto>
-              <ManagedTable
-                onTransactionCheckedChange={handleTransactionCheckedChange}
-              />
+              <ManagedTable />
             </FlexColumn.Auto>
           </FlexColumn>
         </div>

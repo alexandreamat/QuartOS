@@ -1,5 +1,5 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
-import { Checkbox, CheckboxProps, Icon, Table } from "semantic-ui-react";
+import { Icon, Table } from "semantic-ui-react";
 import LoadableCell from "components/LoadableCell";
 import EditCell from "components/EditCell";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
@@ -10,6 +10,8 @@ import EmptyTablePlaceholder from "components/TablePlaceholder";
 import CurrencyLabel from "components/CurrencyLabel";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import FormattedTimestamp from "components/FormattedTimestamp";
+import ActionButton from "components/ActionButton";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function TransactionRow(
   props:
@@ -21,14 +23,16 @@ function TransactionRow(
           relatedTransactionId: number
         ) => void;
         onDelete: () => void;
-        onCheckedChange?: (x: boolean) => void;
       }
     | {
         transaction: TransactionApiOut | TransactionApiIn;
       }
 ) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+
   const hasActions = "onOpenEditForm" in props;
-  const hasCheckbox = hasActions && props.onCheckedChange;
   const accountQueries = useAccountQueries(props.transaction.account_id);
 
   const [deleteTransaction, deleteTransactionResult] =
@@ -44,21 +48,17 @@ function TransactionRow(
     if (hasActions) props.onDelete();
   };
 
+  function handleGoToCreateMovementForm(transaction: TransactionApiOut) {
+    var transactionIds = params.get("transactionIds")?.split(",").map(Number);
+    const transactionIdsSet = new Set(transactionIds).add(transaction.id);
+    transactionIds = Array.from(transactionIdsSet);
+    navigate(
+      `/movements/?isFormOpen=true&transactionIds=${transactionIds.join(",")}`
+    );
+  }
+
   return (
     <Table.Row>
-      <Table.Cell collapsing textAlign="center">
-        {hasCheckbox && (
-          <Checkbox
-            // checked={true}
-            onChange={(
-              _: React.FormEvent<HTMLInputElement>,
-              data: CheckboxProps
-            ) => {
-              props.onCheckedChange!(data.checked as boolean);
-            }}
-          />
-        )}
-      </Table.Cell>
       <Table.Cell textAlign="center" collapsing>
         {props.transaction.payment_channel === "online" && (
           <Icon name="cloud" color="grey" />
@@ -95,11 +95,11 @@ function TransactionRow(
       {hasActions && (
         <>
           <Table.Cell collapsing>
-            {/* <ActionButton
-              disabled={Boolean(props.transaction.related_transaction_id)}
-              icon="linkify"
-              onClick={() => props.onOpenCreateForm(0, props.transaction.id)}
-            /> */}
+            <ActionButton
+              disabled={Boolean(props.transaction.movement_id)}
+              icon="arrows alternate horizontal"
+              onClick={() => handleGoToCreateMovementForm(props.transaction)}
+            />
           </Table.Cell>
           <EditCell
             onOpenEditForm={() => props.onOpenEditForm(props.transaction)}
@@ -127,30 +127,19 @@ export default function TransactionsTable(
           relatedTransactionId: number
         ) => void;
         onMutation: () => void;
-        onTransactionCheckedChange?: (
-          transaction: TransactionApiOut,
-          checked: boolean
-        ) => void;
       }
     | {
         transactions: (TransactionApiOut | TransactionApiIn)[];
       }
 ) {
   const hasActions = "onOpenEditForm" in props;
-  const hasCheckbox = hasActions && props.onTransactionCheckedChange;
 
   if (!props.transactions.length) return <EmptyTablePlaceholder />;
 
   return (
     <Table>
       <TableHeader
-        headers={(hasCheckbox ? ["Select"] : []).concat([
-          "",
-          "Created",
-          "Name",
-          "Amount",
-          "Account",
-        ])}
+        headers={["", "Created", "Name", "Amount", "Account"]}
         actions={hasActions ? 3 : 0}
       />
       <Table.Body>
@@ -162,11 +151,6 @@ export default function TransactionsTable(
                 onOpenEditForm={props.onOpenEditForm}
                 onOpenCreateForm={props.onOpenCreateForm}
                 onDelete={props.onMutation}
-                onCheckedChange={
-                  props.onTransactionCheckedChange &&
-                  ((checked: boolean) =>
-                    props.onTransactionCheckedChange!(transaction, checked))
-                }
               />
             ))
           : props.transactions.map((transaction, index) => (
