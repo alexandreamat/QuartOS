@@ -12,7 +12,7 @@ import {
 import Uploader from "./Uploader";
 
 export default function Bar(props: {
-  onOpenCreateForm: (accountId: number, relatedTransactionId: number) => void;
+  onOpenCreateForm: (accountId: number) => void;
   accountId: number;
   onAccountIdChange: (x: number) => void;
   search: string;
@@ -37,7 +37,7 @@ export default function Bar(props: {
           icon
           labelPosition="left"
           primary
-          onClick={() => props.onOpenCreateForm(props.accountId, 0)}
+          onClick={() => props.onOpenCreateForm(props.accountId)}
         >
           <Icon name="plus" />
           Add

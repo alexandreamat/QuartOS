@@ -9,12 +9,7 @@ import Table from "./Table";
 import FlexColumn from "components/FlexColumn";
 import Form from "./Form";
 
-export default function ManagedTable(props: {
-  onTransactionCheckedChange?: (
-    transaction: TransactionApiOut,
-    checked: boolean
-  ) => void;
-}) {
+export default function ManagedTable() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<
     TransactionApiOut | undefined
@@ -28,10 +23,7 @@ export default function ManagedTable(props: {
 
   const handleMutation = () => setResetKey((x) => x + 1);
 
-  const handleOpenCreateForm = (
-    accountId: number,
-    relatedTransactionId: number
-  ) => {
+  const handleOpenCreateForm = (accountId: number) => {
     setSelectedAccountId(accountId);
     setSelectedTransaction(undefined);
     setIsFormOpen(true);
@@ -118,7 +110,6 @@ export default function ManagedTable(props: {
                   setCurrentPage(1);
                   transactionsQuery.refetch();
                 }}
-                onTransactionCheckedChange={props.onTransactionCheckedChange}
               />
             </InfiniteScroll>
           )}

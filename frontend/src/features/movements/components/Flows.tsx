@@ -46,11 +46,21 @@ function Logo(props: { query: SimpleQuery; institution?: InstitutionApiOut }) {
   return <></>;
 }
 
-function Outflow(props: { outflow: TransactionApiOut }) {
+function Outflow(props: {
+  outflow: TransactionApiOut;
+  onRemoveFlow?: () => void;
+}) {
   const accountQueries = useAccountQueries(props.outflow.account_id);
 
   return (
     <Grid.Row columns="equal" style={{ padding: flowPadding }}>
+      {props.onRemoveFlow && (
+        <Grid.Column width={1} verticalAlign="middle">
+          <div onClick={props.onRemoveFlow} style={{ cursor: "pointer" }}>
+            <Icon name="remove circle" color="grey" />
+          </div>
+        </Grid.Column>
+      )}
       <Grid.Column width={2} textAlign="center" verticalAlign="middle">
         <Logo query={accountQueries} institution={accountQueries.institution} />
       </Grid.Column>
@@ -67,7 +77,10 @@ function Outflow(props: { outflow: TransactionApiOut }) {
   );
 }
 
-function Inflow(props: { outflow: TransactionApiOut }) {
+function Inflow(props: {
+  outflow: TransactionApiOut;
+  onRemoveFlow?: () => void;
+}) {
   const accountQueries = useAccountQueries(props.outflow.account_id);
 
   return (
@@ -84,6 +97,13 @@ function Inflow(props: { outflow: TransactionApiOut }) {
       <Grid.Column width={2} textAlign="center" verticalAlign="middle">
         <Logo query={accountQueries} institution={accountQueries.institution} />
       </Grid.Column>
+      {props.onRemoveFlow && (
+        <Grid.Column width={1} verticalAlign="middle">
+          <div onClick={props.onRemoveFlow} style={{ cursor: "pointer" }}>
+            <Icon name="remove circle" color="grey" />
+          </div>
+        </Grid.Column>
+      )}
     </Grid.Row>
   );
 }
@@ -91,6 +111,7 @@ function Inflow(props: { outflow: TransactionApiOut }) {
 export function Flows(props: {
   outflows: TransactionApiOut[];
   inflows: TransactionApiOut[];
+  onRemoveFlow?: (transactionId: number) => void;
 }) {
   return (
     <Step.Group fluid widths={2}>
@@ -98,8 +119,16 @@ export function Flows(props: {
         <Step.Content style={{ width: "100%" }}>
           {props.outflows.length ? (
             <Grid>
-              {props.outflows.map((outflow) => (
-                <Outflow key={outflow.id} outflow={outflow} />
+              {props.outflows.map((transaction) => (
+                <Outflow
+                  key={transaction.id}
+                  outflow={transaction}
+                  onRemoveFlow={
+                    props.onRemoveFlow
+                      ? () => props.onRemoveFlow!(transaction.id)
+                      : undefined
+                  }
+                />
               ))}
             </Grid>
           ) : (
@@ -111,8 +140,16 @@ export function Flows(props: {
         <Step.Content style={{ width: "100%" }}>
           {props.inflows.length ? (
             <Grid>
-              {props.inflows.map((inflow) => (
-                <Inflow key={inflow.id} outflow={inflow} />
+              {props.inflows.map((transaction) => (
+                <Inflow
+                  key={transaction.id}
+                  outflow={transaction}
+                  onRemoveFlow={
+                    props.onRemoveFlow
+                      ? () => props.onRemoveFlow!(transaction.id)
+                      : undefined
+                  }
+                />
               ))}
             </Grid>
           ) : (
