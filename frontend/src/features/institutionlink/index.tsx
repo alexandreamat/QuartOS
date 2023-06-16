@@ -95,7 +95,7 @@ function InstitutionLinkRow(props: {
           content="Add"
           onClick={() =>
             navigate(
-              `/accounts?modal=true&institutionLinkId=${props.institutionLink.id}`
+              `/accounts?isFormOpen=true&institutionLinkId=${props.institutionLink.id}`
             )
           }
         />

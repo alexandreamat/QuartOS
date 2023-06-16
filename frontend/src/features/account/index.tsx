@@ -129,34 +129,31 @@ function AccountsTable(props: {
 }
 
 export default function Accounts() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<
     AccountApiOut | undefined
   >(undefined);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const modalParam = params.get("modal") === "true";
+  const isFormOpenParam = params.get("isFormOpen") === "true";
 
-  useEffect(() => {
-    setIsModalOpen(modalParam);
-  }, [modalParam]);
+  const [isFormOpen, setIsFormOpen] = useState(isFormOpenParam);
 
   const accountsQuery = api.endpoints.readManyApiAccountsGet.useQuery();
 
   const handleCreate = () => {
     setSelectedAccount(undefined);
-    setIsModalOpen(true);
+    setIsFormOpen(true);
   };
 
   const handleEdit = (account: AccountApiOut) => {
     setSelectedAccount(account);
-    setIsModalOpen(true);
+    setIsFormOpen(true);
   };
 
   const handleClose = () => {
     setSelectedAccount(undefined);
-    setIsModalOpen(false);
+    setIsFormOpen(false);
   };
 
   if (accountsQuery.isLoading) return <Loader active size="huge" />;
@@ -182,7 +179,7 @@ export default function Accounts() {
       )}
       <AccountForm
         account={selectedAccount}
-        open={isModalOpen}
+        open={isFormOpen}
         onClose={handleClose}
       />
     </>
