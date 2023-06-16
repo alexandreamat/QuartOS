@@ -1,7 +1,7 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import { Icon, Table } from "semantic-ui-react";
 import LoadableCell from "components/LoadableCell";
-import EditCell from "components/EditCell";
+import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import TableHeader from "components/TableHeader";
 import { logMutationError } from "utils/error";
@@ -101,9 +101,11 @@ function TransactionRow(
               onClick={() => handleGoToCreateMovementForm(props.transaction)}
             />
           </Table.Cell>
-          <EditCell
-            onOpenEditForm={() => props.onOpenEditForm(props.transaction)}
-          />
+          <Table.Cell collapsing>
+            <EditActionButton
+              onOpenEditForm={() => props.onOpenEditForm(props.transaction)}
+            />
+          </Table.Cell>
           <Table.Cell collapsing>
             <ConfirmDeleteButton
               disabled={accountQueries.account?.is_synced !== false}
