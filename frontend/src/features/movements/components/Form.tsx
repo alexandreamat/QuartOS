@@ -47,6 +47,8 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
 
   function handleClose() {
     setFlows({});
+    setTransactionIdsStr("");
+    navigate("/movements/?isFormOpen=true");
     props.onClose();
   }
 
@@ -59,8 +61,17 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
       logMutationError(error, createMovementResult);
       return;
     }
-    props.onClose();
+    handleClose();
   }
+
+  const handleMutation = (transaction: TransactionApiOut) => {
+    var transactionIds = params.get("transactionIds")?.split(",").map(Number);
+    const transactionIdsSet = new Set(transactionIds).add(transaction.id);
+    transactionIds = Array.from(transactionIdsSet);
+    navigate(
+      `/movements/?isFormOpen=true&transactionIds=${transactionIds.join(",")}`
+    );
+  };
 
   function handleRemoveFlow(transactionId: number) {
     var transactionIds = params.get("transactionIds")?.split(",").map(Number);
@@ -89,7 +100,10 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
             />
             <QueryErrorMessage query={createMovementResult} />
             <FlexColumn.Auto>
-              <ManagedTable />
+              <ManagedTable
+                relatedTransactions={Object.values(flows)}
+                onMutation={handleMutation}
+              />
             </FlexColumn.Auto>
           </FlexColumn>
         </div>

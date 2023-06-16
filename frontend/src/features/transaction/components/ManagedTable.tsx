@@ -9,7 +9,10 @@ import Table from "./Table";
 import FlexColumn from "components/FlexColumn";
 import Form from "./Form";
 
-export default function ManagedTable() {
+export default function ManagedTable(props: {
+  relatedTransactions?: TransactionApiOut[];
+  onMutation?: (x: TransactionApiOut) => void;
+}) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<
     TransactionApiOut | undefined
@@ -21,7 +24,10 @@ export default function ManagedTable() {
   const [accountId, setAccountId] = useState(0);
   const [search, setSearch] = useState("");
 
-  const handleMutation = () => setResetKey((x) => x + 1);
+  const handleMutation = (transaction: TransactionApiOut) => {
+    if (props.onMutation) props.onMutation(transaction);
+    setResetKey((x) => x + 1);
+  };
 
   const handleOpenCreateForm = (accountId: number) => {
     setSelectedAccountId(accountId);
@@ -116,6 +122,7 @@ export default function ManagedTable() {
         </FlexColumn.Auto>
       </FlexColumn>
       <Form
+        relatedTransactions={props.relatedTransactions}
         transaction={selectedTransaction}
         open={isFormOpen}
         onClose={handleCloseForm}
