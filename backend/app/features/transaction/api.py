@@ -51,7 +51,19 @@ def read_many(
     page: int = 1,
     per_page: int = 0,
     search: str | None = None,
+    ids: str | None = None,
 ) -> list[TransactionApiOut]:
+    if ids:
+        transactions = []
+        for id in map(int, ids.split(",")):
+            try:
+                transaction = CRUDTransaction.read(db, id)
+            except NoResultFound:
+                raise HTTPException(status.HTTP_404_NOT_FOUND)
+            if CRUDTransaction.read_user(db, transaction.id).id != current_user.id:
+                raise HTTPException(status.HTTP_403_FORBIDDEN)
+            transactions.append(transaction)
+        return transactions
     return CRUDTransaction.read_many_by_user(
         db, current_user.id, page, per_page, search
     )

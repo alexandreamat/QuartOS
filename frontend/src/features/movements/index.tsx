@@ -6,9 +6,14 @@ import { Bar } from "./components/Bar";
 import { Movement } from "./components/Movement";
 import Form from "./components/Form";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 
 export default function Movements() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const isFormOpenParam = params.get("isFormOpen") === "true";
+
+  const [isFormOpen, setIsFormOpen] = useState(isFormOpenParam);
 
   const movementsQuery = api.endpoints.readManyApiMovementsGet.useQuery({});
 
