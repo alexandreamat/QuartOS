@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { unsetCredentials, unsetCurrentUser } from "features/auth/slice";
 import { api } from "app/services/api";
 
-export default function TopBar(props: { onToggleSidebar?: () => void }) {
+export default function TopBar(props: { onToggleSidebar: () => void }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -23,13 +23,11 @@ export default function TopBar(props: { onToggleSidebar?: () => void }) {
 
   return (
     <Menu color="teal" inverted style={{ borderRadius: 0 }}>
-      {props.onToggleSidebar && (
-        <Menu.Menu position="left">
-          <Menu.Item link onClick={props.onToggleSidebar}>
-            <Icon name="bars" inverted />
-          </Menu.Item>
-        </Menu.Menu>
-      )}
+      <Menu.Menu position="left">
+        <Menu.Item link onClick={props.onToggleSidebar}>
+          <Icon name="bars" inverted />
+        </Menu.Item>
+      </Menu.Menu>
       <Menu.Menu position="right">
         <MenuItem onClick={handleNameClick}>{me.data?.full_name}</MenuItem>
         <Menu.Item onClick={handleLogout}>
