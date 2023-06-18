@@ -1,15 +1,19 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Icon, Menu } from "semantic-ui-react";
 import routes from "router";
 import { ReactComponent as Logo } from "./Logo/logo.svg";
 import { useAppSelector } from "app/store";
 
-export default function SidebarMenu() {
+export default function SidebarMenu(props: { style?: CSSProperties }) {
   const location = useLocation();
   const current_user = useAppSelector((state) => state.auth.current_user);
   return (
-    <Menu vertical inverted style={{ height: "100vh", borderRadius: 0 }}>
+    <Menu
+      vertical
+      inverted
+      style={{ height: "100vh", borderRadius: 0, ...props.style }}
+    >
       <Menu.Item>
         <Logo height="100px" width="100%" />
       </Menu.Item>
