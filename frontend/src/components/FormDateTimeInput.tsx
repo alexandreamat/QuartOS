@@ -1,6 +1,6 @@
 import useFormField from "hooks/useFormField";
 import { Form } from "semantic-ui-react";
-import { capitaliseFirstLetter } from "utils/string";
+import { dateToString, stringToDate, timeToString } from "utils/time";
 
 export default function FormDateTimeInput(props: {
   label?: string;
@@ -8,19 +8,6 @@ export default function FormDateTimeInput(props: {
   disabled?: boolean;
   readOnly?: boolean;
 }) {
-  const formatDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
-
-  const formatTime = (date: Date) => {
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
-
   const label = props.label || props.field.label;
 
   if (props.readOnly) {
@@ -28,11 +15,11 @@ export default function FormDateTimeInput(props: {
       <Form.Group widths="equal">
         <Form.Field>
           <label>Date</label>
-          {formatDate(props.field.value!)}
+          {dateToString(props.field.value!)}
         </Form.Field>
         <Form.Field>
           <label>Time</label>
-          {formatTime(props.field.value!)}
+          {timeToString(props.field.value!)}
         </Form.Field>
       </Form.Group>
     );
@@ -48,15 +35,10 @@ export default function FormDateTimeInput(props: {
         icon="calendar"
         required
         placeholder={label && "Enter " + label}
-        value={formatDate(props.field.value!)}
+        value={dateToString(props.field.value!)}
         iconPosition="left"
         onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) => {
-          const newDate = data.value;
-          const [year, month, day] = newDate.split("-");
-          const updatedDatetime = new Date(props.field.value!);
-          updatedDatetime.setFullYear(Number(year));
-          updatedDatetime.setMonth(Number(month) - 1);
-          updatedDatetime.setDate(Number(day));
+          const updatedDatetime = stringToDate(data.value, props.field.value);
           props.field.set(updatedDatetime);
         }}
       />
@@ -67,7 +49,7 @@ export default function FormDateTimeInput(props: {
         label="Time"
         icon="calendar"
         placeholder={label && "Enter " + label}
-        value={formatTime(props.field.value!)}
+        value={timeToString(props.field.value!)}
         iconPosition="left"
         onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) => {
           const newTime = data.value;

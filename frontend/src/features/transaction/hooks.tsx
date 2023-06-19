@@ -37,18 +37,21 @@ export function useTransactionOptions(search: string) {
 export function useTransactionsQuery(
   accountId: number,
   search: string,
-  page: number
+  page: number,
+  timestamp?: Date
 ) {
   const transactionsQuery = accountId
     ? api.endpoints.readTransactionsApiAccountsIdTransactionsGet.useQuery({
         id: accountId,
         page: page,
         perPage: 20,
+        timestamp: timestamp && timestamp.toISOString(),
         search: search,
       })
     : api.endpoints.readManyApiTransactionsGet.useQuery({
         page: page,
         perPage: 20,
+        timestamp: timestamp && timestamp.toISOString(),
         search: search,
       });
   return transactionsQuery;

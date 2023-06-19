@@ -10,6 +10,8 @@ import {
   Menu,
 } from "semantic-ui-react";
 import Uploader from "./Uploader";
+import { dateToString, stringToDate } from "utils/time";
+import { RemoveCircle } from "features/movements/components/RemoveCircle";
 
 export default function Bar(props: {
   onOpenCreateForm: (accountId: number) => void;
@@ -17,6 +19,8 @@ export default function Bar(props: {
   onAccountIdChange: (x: number) => void;
   search: string;
   onSearchChange: (x: string) => void;
+  timestamp?: Date;
+  onTimestampChange: (x: Date | undefined) => void;
 }) {
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
@@ -72,10 +76,26 @@ export default function Bar(props: {
         />
       </Menu.Item>
       {props.accountId !== 0 && (
-        <Menu.Item fitted onClick={() => props.onAccountIdChange(0)}>
-          <Icon name="close" />
+        <Menu.Item fitted>
+          <RemoveCircle onClick={() => props.onAccountIdChange(0)} />
         </Menu.Item>
       )}
+      <Menu.Item>
+        <Input
+          type="date"
+          icon="calendar"
+          value={props.timestamp ? dateToString(props.timestamp) : ""}
+          iconPosition="left"
+          onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) =>
+            props.onTimestampChange(stringToDate(data.value))
+          }
+        />
+        {props.timestamp && (
+          <Menu.Item fitted>
+            <RemoveCircle onClick={() => props.onTimestampChange(undefined)} />
+          </Menu.Item>
+        )}
+      </Menu.Item>
       <Menu.Item position="right">
         <Button icon labelPosition="left" onClick={handleUpload}>
           <Icon name="upload" />

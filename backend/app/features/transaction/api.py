@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
@@ -50,6 +52,7 @@ def read_many(
     current_user: CurrentUser,
     page: int = 1,
     per_page: int = 0,
+    timestamp: datetime | None = None,
     search: str | None = None,
     ids: str | None = None,
 ) -> list[TransactionApiOut]:
@@ -65,7 +68,7 @@ def read_many(
             transactions.append(transaction)
         return transactions
     return CRUDTransaction.read_many_by_user(
-        db, current_user.id, page, per_page, search
+        db, current_user.id, page, per_page, search, timestamp
     )
 
 
