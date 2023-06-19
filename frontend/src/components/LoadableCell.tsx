@@ -1,21 +1,20 @@
-import { Message, Table } from "semantic-ui-react";
+import { Message } from "semantic-ui-react";
 import LoadableLine from "./LoadableLine";
 import { ReactNode } from "react";
+import { SimpleQuery } from "interfaces";
+import { renderErrorMessage } from "utils/error";
 
-export default function LoadableCell(props: {
-  isLoading: boolean;
-  isSuccess: boolean;
-  isError: boolean;
-  error?: string;
+export default function LoadableQuery(props: {
+  query: SimpleQuery;
   children: ReactNode;
   collapsing?: boolean;
 }) {
   return (
-    <Table.Cell collapsing>
-      <LoadableLine isLoading={props.isLoading}>
-        {props.isSuccess && props.children}
-        {props.isError && <Message negative>{props.error}</Message>}
-      </LoadableLine>
-    </Table.Cell>
+    <LoadableLine isLoading={props.query.isLoading}>
+      {props.query.isSuccess && props.children}
+      {props.query.isError && (
+        <Message negative>{renderErrorMessage(props.query.error!)}</Message>
+      )}
+    </LoadableLine>
   );
 }
