@@ -74,12 +74,12 @@ export default function Bar(props: {
             data: DropdownProps
           ) => props.onAccountIdChange(data.value as number)}
         />
+        {props.accountId !== 0 && (
+          <Menu.Item fitted>
+            <RemoveCircle onClick={() => props.onAccountIdChange(0)} />
+          </Menu.Item>
+        )}
       </Menu.Item>
-      {props.accountId !== 0 && (
-        <Menu.Item fitted>
-          <RemoveCircle onClick={() => props.onAccountIdChange(0)} />
-        </Menu.Item>
-      )}
       <Menu.Item>
         <Input
           type="date"
