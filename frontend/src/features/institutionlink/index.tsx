@@ -56,13 +56,6 @@ function InstitutionLinkRow(props: {
       </Table.Cell>
       <Table.Cell>
         <LoadableLine isLoading={institutionQuery.isLoading}>
-          {/* {institutionQuery.data && (
-            <Flag
-              name={
-                institutionQuery.data?.country_code.toLocaleLowerCase() as FlagNameValues
-              }
-            />
-          )} */}
           {institutionQuery.data?.name}
         </LoadableLine>
       </Table.Cell>
