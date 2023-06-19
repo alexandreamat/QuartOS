@@ -37,7 +37,7 @@ export function useTransactionOptions(search: string) {
 export function useTransactionsQuery(arg: {
   accountId: number;
   search: string;
-  page: number;
+  page?: number;
   timestamp?: Date;
 }) {
   const transactionsQuery = arg.accountId

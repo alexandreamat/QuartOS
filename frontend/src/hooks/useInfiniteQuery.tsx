@@ -1,8 +1,11 @@
+import { SimpleDataQuery } from "interfaces";
 import { useEffect, useRef, useState } from "react";
 
-export function useInfiniteQuery<T>(
-  useQuery: any,
-  params: object,
+type UseQuery<T, U> = (x: U) => SimpleDataQuery<T>;
+
+export function useInfiniteQuery<T, U>(
+  useQuery: UseQuery<T, U>,
+  params: U,
   onMutation?: (x: T) => void
 ) {
   const reference = useRef<HTMLDivElement | null>(null);

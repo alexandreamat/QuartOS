@@ -7,7 +7,7 @@ import Bar from "./Bar";
 import Table from "./Table";
 import FlexColumn from "components/FlexColumn";
 import Form from "./Form";
-import { useInfiniteQuery } from "../../../hooks/useInfiniteQuery";
+import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 
 export default function ManagedTable(props: {
   relatedTransactions?: TransactionApiOut[];
@@ -57,7 +57,10 @@ export default function ManagedTable(props: {
     setTimestamp(value);
   }
 
-  const infiniteQuery = useInfiniteQuery<TransactionApiOut>(
+  const infiniteQuery = useInfiniteQuery<
+    TransactionApiOut,
+    Parameters<typeof useTransactionsQuery>[0]
+  >(
     useTransactionsQuery,
     {
       timestamp,
@@ -84,7 +87,7 @@ export default function ManagedTable(props: {
             <Message
               negative
               header="An error has occurred!"
-              content={renderErrorMessage(infiniteQuery.error)}
+              content={renderErrorMessage(infiniteQuery.error!)}
               icon="attention"
             />
           )}
