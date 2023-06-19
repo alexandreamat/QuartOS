@@ -6,6 +6,7 @@ export default function CurrencyLabel(props: {
 }) {
   return (
     <Label
+      circular
       style={{ width: 100, textAlign: "center" }}
       color={props.amount > 0 ? "green" : props.amount < 0 ? "orange" : "grey"}
     >
