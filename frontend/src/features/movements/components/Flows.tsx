@@ -146,7 +146,7 @@ export function Flows(props: {
   onRemoveFlow?: (transactionId: number) => void;
 }) {
   return (
-    <Step.Group fluid widths={2}>
+    <Step.Group fluid widths={2} style={{ margin: 10 }}>
       <Step style={{ padding: stepPadding }}>
         <Step.Content style={{ width: "100%" }}>
           {props.outflows.length ? (
