@@ -34,25 +34,25 @@ export function useTransactionOptions(search: string) {
   };
 }
 
-export function useTransactionsQuery(
-  accountId: number,
-  search: string,
-  page: number,
-  timestamp?: Date
-) {
-  const transactionsQuery = accountId
+export function useTransactionsQuery(arg: {
+  accountId: number;
+  search: string;
+  page: number;
+  timestamp?: Date;
+}) {
+  const transactionsQuery = arg.accountId
     ? api.endpoints.readTransactionsApiAccountsIdTransactionsGet.useQuery({
-        id: accountId,
-        page: page,
+        id: arg.accountId,
+        page: arg.page,
         perPage: 20,
-        timestamp: timestamp && timestamp.toISOString(),
-        search: search,
+        timestamp: arg.timestamp && arg.timestamp.toISOString(),
+        search: arg.search,
       })
     : api.endpoints.readManyApiTransactionsGet.useQuery({
-        page: page,
+        page: arg.page,
         perPage: 20,
-        timestamp: timestamp && timestamp.toISOString(),
-        search: search,
+        timestamp: arg.timestamp && arg.timestamp.toISOString(),
+        search: arg.search,
       });
   return transactionsQuery;
 }
