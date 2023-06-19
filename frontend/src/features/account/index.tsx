@@ -1,11 +1,5 @@
-import { useEffect, useState } from "react";
-import {
-  Table,
-  Loader,
-  Flag,
-  FlagNameValues,
-  Message,
-} from "semantic-ui-react";
+import { useState } from "react";
+import { Table, Loader, Message, Icon } from "semantic-ui-react";
 import AccountForm from "./Form";
 import { AccountApiOut, InstitutionApiOut, api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
@@ -20,15 +14,13 @@ import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 import TableFooter from "components/TableFooter";
 import { capitaliseFirstLetter } from "utils/string";
 import CurrencyLabel from "components/CurrencyLabel";
+import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
+import { accountTypeToIconName } from "./utils";
 
 function InstitutionCell(props: { institution: InstitutionApiOut }) {
   return (
     <>
-      <Flag
-        name={
-          props.institution.country_code.toLocaleLowerCase() as FlagNameValues
-        }
-      />
+      <InstitutionLogo institution={props.institution} />{" "}
       {props.institution.name}
     </>
   );
@@ -59,16 +51,19 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
     <Table.Row key={props.account.id}>
       <Table.Cell>{props.account.name}</Table.Cell>
       <Table.Cell>
-        {props.account.institutionalaccount && (
-          <>**** {props.account.institutionalaccount.mask}</>
-        )}
-      </Table.Cell>
-      <Table.Cell>{capitaliseFirstLetter(type)}</Table.Cell>
-      <Table.Cell>
         <CurrencyLabel
           amount={props.account.balance}
           currencyCode={props.account.currency_code}
         />
+      </Table.Cell>
+      <Table.Cell>
+        <Icon name={accountTypeToIconName(type)} />{" "}
+        {capitaliseFirstLetter(type)}
+      </Table.Cell>
+      <Table.Cell>
+        {props.account.institutionalaccount && (
+          <>**** {props.account.institutionalaccount.mask}</>
+        )}
       </Table.Cell>
       <LoadableCell
         isLoading={institutionLinkQueries.isLoading}
@@ -113,7 +108,7 @@ function AccountsTable(props: {
   return (
     <Table>
       <TableHeader
-        headers={["Name", "Number", "Type", "Balance", "Institution"]}
+        headers={["Name", "Balance", "Type", "Number", "Institution"]}
         actions={3}
       />
       <Table.Body>

@@ -12,6 +12,7 @@ import { InstitutionLogo } from "features/institution/components/InstitutionLogo
 import FormattedTimestamp from "components/FormattedTimestamp";
 import ActionButton from "components/ActionButton";
 import { useLocation, useNavigate } from "react-router-dom";
+import { accountTypeToIconName } from "features/account/utils";
 
 function TransactionRow(
   props:
@@ -87,8 +88,17 @@ function TransactionRow(
         isError={accountQueries.isError}
         error={accountQueries.error}
       >
-        {accountQueries.institution && (
+        {accountQueries.institution ? (
           <InstitutionLogo institution={accountQueries.institution} />
+        ) : (
+          <Icon
+            color="grey"
+            name={accountTypeToIconName(
+              accountQueries.account?.institutionalaccount?.type ||
+                accountQueries.account?.noninstitutionalaccount?.type ||
+                "other"
+            )}
+          />
         )}{" "}
         {accountQueries.account?.name}
       </LoadableCell>
