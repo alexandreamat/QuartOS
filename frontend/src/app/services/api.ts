@@ -365,6 +365,7 @@ const injectedRtkApi = api
           params: {
             page: queryArg.page,
             per_page: queryArg.perPage,
+            timestamp: queryArg.timestamp,
             search: queryArg.search,
           },
         }),
@@ -434,6 +435,7 @@ const injectedRtkApi = api
           params: {
             page: queryArg.page,
             per_page: queryArg.perPage,
+            timestamp: queryArg.timestamp,
             search: queryArg.search,
             ids: queryArg.ids,
           },
@@ -651,6 +653,7 @@ export type ReadTransactionsApiAccountsIdTransactionsGetApiArg = {
   id: number;
   page?: number;
   perPage?: number;
+  timestamp?: string;
   search?: string;
 };
 export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiResponse =
@@ -680,6 +683,7 @@ export type ReadManyApiTransactionsGetApiResponse =
 export type ReadManyApiTransactionsGetApiArg = {
   page?: number;
   perPage?: number;
+  timestamp?: string;
   search?: string;
   ids?: string;
 };
@@ -882,6 +886,6 @@ export type MovementApiOut = {
   id: number;
   amount?: number;
   currency_code?: string;
-  earliest_timestamp: string;
-  latest_timestamp: string;
+  earliest_timestamp?: string;
+  latest_timestamp?: string;
 };

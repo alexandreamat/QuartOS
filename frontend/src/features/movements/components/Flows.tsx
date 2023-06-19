@@ -9,6 +9,7 @@ import { useAccountQueries } from "features/account/hooks";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import { SimpleQuery } from "interfaces";
 import { Grid, Icon, Placeholder, Popup, Step } from "semantic-ui-react";
+import { RemoveCircle } from "./RemoveCircle";
 
 const flowPadding = 5;
 const stepPadding = 18;
@@ -66,9 +67,7 @@ function Outflow(props: {
         <Grid.Row columns="equal" style={{ padding: flowPadding }}>
           {props.onRemoveFlow && (
             <Grid.Column width={1} verticalAlign="middle">
-              <div onClick={props.onRemoveFlow} style={{ cursor: "pointer" }}>
-                <Icon name="remove circle" color="grey" />
-              </div>
+              <RemoveCircle onClick={props.onRemoveFlow} />
             </Grid.Column>
           )}
           <Grid.Column width={2} textAlign="center" verticalAlign="middle">
@@ -129,9 +128,7 @@ function Inflow(props: { flow: TransactionApiOut; onRemoveFlow?: () => void }) {
           </Grid.Column>
           {props.onRemoveFlow && (
             <Grid.Column width={1} verticalAlign="middle">
-              <div onClick={props.onRemoveFlow} style={{ cursor: "pointer" }}>
-                <Icon name="remove circle" color="grey" />
-              </div>
+              <RemoveCircle onClick={props.onRemoveFlow} />
             </Grid.Column>
           )}
         </Grid.Row>

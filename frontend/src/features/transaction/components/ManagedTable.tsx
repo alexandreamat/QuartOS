@@ -24,6 +24,7 @@ export default function ManagedTable(props: {
   >({});
   const [accountId, setAccountId] = useState(0);
   const [search, setSearch] = useState("");
+  const [timestamp, setTimestamp] = useState<Date | undefined>(undefined);
 
   const reference = useRef<HTMLDivElement | null>(null);
 
@@ -68,7 +69,18 @@ export default function ManagedTable(props: {
     setSearch(value);
   };
 
-  const transactionsQuery = useTransactionsQuery(accountId, search, page);
+  function handleTimestampChange(value: Date | undefined) {
+    setTransactions([]);
+    setPage(1);
+    setTimestamp(value);
+  }
+
+  const transactionsQuery = useTransactionsQuery(
+    accountId,
+    search,
+    page,
+    timestamp
+  );
 
   useEffect(() => {
     const handleScroll = (event: Event) => {
@@ -111,6 +123,8 @@ export default function ManagedTable(props: {
           onAccountIdChange={handleAccountIdChange}
           search={search}
           onSearchChange={handleSearchChange}
+          timestamp={timestamp}
+          onTimestampChange={handleTimestampChange}
         />
         <FlexColumn.Auto reference={reference}>
           {transactionsQuery.isError && (

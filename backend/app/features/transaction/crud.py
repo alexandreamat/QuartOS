@@ -1,4 +1,6 @@
-from sqlmodel import Session, select, col, or_
+from datetime import datetime
+
+from sqlmodel import Session, select, col, or_, and_
 from sqlalchemy import desc
 
 from app.common.crud import CRUDBase, CRUDSyncable
@@ -67,7 +69,13 @@ class CRUDTransaction(
 
     @classmethod
     def read_many_by_user(
-        cls, db: Session, user_id: int, page: int, per_page: int, search: str | None
+        cls,
+        db: Session,
+        user_id: int,
+        page: int,
+        per_page: int,
+        search: str | None,
+        timestamp: datetime | None,
     ) -> list[TransactionApiOut]:
         offset = (page - 1) * per_page if page and per_page else 0
 
@@ -86,6 +94,14 @@ class CRUDTransaction(
             .order_by(desc(Transaction.timestamp))
         )
 
+        if timestamp:
+            statement = statement.where(
+                and_(
+                    col(Transaction.timestamp).isnot(None),
+                    col(Transaction.timestamp) < timestamp,
+                )
+            )
+
         if search:
             search = f"%{search}%"
             statement = statement.where(col(Transaction.name).like(search))
@@ -100,7 +116,13 @@ class CRUDTransaction(
 
     @classmethod
     def read_many_by_account(
-        cls, db: Session, account_id: int, page: int, per_page: int, search: str | None
+        cls,
+        db: Session,
+        account_id: int,
+        page: int,
+        per_page: int,
+        search: str | None,
+        timestamp: datetime | None,
     ) -> list[TransactionApiOut]:
         offset = (page - 1) * per_page if page and per_page else 0
 
@@ -110,6 +132,14 @@ class CRUDTransaction(
             .filter(account.models.Account.id == account_id)
             .order_by(desc(Transaction.timestamp))
         )
+
+        if timestamp:
+            statement = statement.where(
+                and_(
+                    col(Transaction.timestamp).isnot(None),
+                    col(Transaction.timestamp) < timestamp,
+                )
+            )
 
         if search:
             search = f"%{search}%"

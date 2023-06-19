@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import datetime
 from typing import Annotated
 
 
@@ -62,6 +63,7 @@ def read_transactions(
     id: int,
     page: int = 1,
     per_page: int = 0,
+    timestamp: datetime | None = None,
     search: str | None = None,
 ) -> list[TransactionApiOut]:
     from app.features import transaction
@@ -74,7 +76,7 @@ def read_transactions(
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
     return transaction.crud.CRUDTransaction.read_many_by_account(
-        db, account.id, page, per_page, search
+        db, account.id, page, per_page, search, timestamp
     )
 
 
