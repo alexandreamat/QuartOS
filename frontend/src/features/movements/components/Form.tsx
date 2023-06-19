@@ -53,8 +53,8 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
   }
 
   async function handleSubmit() {
-    if (!outflows.length) return;
-    if (!inflows.length) return;
+    // if (!outflows.length) return;
+    // if (!inflows.length) return;
     try {
       await createMovement(Object.keys(flows).map(Number)).unwrap();
     } catch (error) {
@@ -98,6 +98,14 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
               outflows={outflows}
               onRemoveFlow={handleRemoveFlow}
             />
+            {/* <MovementCard
+              name={firstFlow.name}
+              timestamp={firstFlow.name}
+              amount={}
+              inflows={inflows}
+              outflows={outflows}
+              onRemoveFlow={handleRemoveFlow}
+            /> */}
             <QueryErrorMessage query={createMovementResult} />
             <FlexColumn.Auto>
               <ManagedTable
