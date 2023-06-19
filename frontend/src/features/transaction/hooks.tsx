@@ -37,6 +37,7 @@ export function useTransactionOptions(search: string) {
 export function useTransactionsQuery(arg: {
   accountId: number;
   search: string;
+  perPage?: number;
   page?: number;
   timestamp?: Date;
 }) {
@@ -44,13 +45,13 @@ export function useTransactionsQuery(arg: {
     ? api.endpoints.readTransactionsApiAccountsIdTransactionsGet.useQuery({
         id: arg.accountId,
         page: arg.page,
-        perPage: 20,
+        perPage: arg.perPage,
         timestamp: arg.timestamp && arg.timestamp.toISOString(),
         search: arg.search,
       })
     : api.endpoints.readManyApiTransactionsGet.useQuery({
         page: arg.page,
-        perPage: 20,
+        perPage: arg.perPage,
         timestamp: arg.timestamp && arg.timestamp.toISOString(),
         search: arg.search,
       });

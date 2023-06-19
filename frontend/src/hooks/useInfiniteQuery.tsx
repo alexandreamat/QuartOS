@@ -6,6 +6,7 @@ type UseQuery<T, U> = (x: U) => SimpleDataQuery<T>;
 export function useInfiniteQuery<T, U>(
   useQuery: UseQuery<T, U>,
   params: U,
+  perPage: number,
   onMutation?: (x: T) => void
 ) {
   const reference = useRef<HTMLDivElement | null>(null);
@@ -16,7 +17,7 @@ export function useInfiniteQuery<T, U>(
 
   console.log(params);
   console.log(useQuery);
-  const query = useQuery({ ...params, page });
+  const query = useQuery({ ...params, page, perPage });
 
   const handleMutation = (item: T) => {
     if (onMutation) onMutation(item);
@@ -67,6 +68,10 @@ export function useInfiniteQuery<T, U>(
     reset: handleReset,
     mutate: handleMutation,
     isError: query.isError,
+    isLoading: query.isLoading,
+    isSuccess: query.isSuccess,
+    isFetching: query.isFetching,
+    originalArgs: query.originalArgs,
     error: query.error,
   };
 }

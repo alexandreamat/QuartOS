@@ -1,13 +1,12 @@
 import { TransactionApiOut } from "app/services/api";
 import { useState } from "react";
-import { Message } from "semantic-ui-react";
-import { renderErrorMessage } from "utils/error";
 import { useTransactionsQuery } from "../hooks";
 import Bar from "./Bar";
 import Table from "./Table";
 import FlexColumn from "components/FlexColumn";
 import Form from "./Form";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export default function ManagedTable(props: {
   relatedTransactions?: TransactionApiOut[];
@@ -67,6 +66,7 @@ export default function ManagedTable(props: {
       accountId: accountId,
       search,
     },
+    20,
     props.onMutation
   );
 
@@ -83,14 +83,7 @@ export default function ManagedTable(props: {
           onTimestampChange={handleTimestampChange}
         />
         <FlexColumn.Auto reference={infiniteQuery.reference}>
-          {infiniteQuery.isError && (
-            <Message
-              negative
-              header="An error has occurred!"
-              content={renderErrorMessage(infiniteQuery.error!)}
-              icon="attention"
-            />
-          )}
+          {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
           <Table
             transactionPages={Object.values(infiniteQuery.pages)}
             onOpenEditForm={handleOpenEditForm}
