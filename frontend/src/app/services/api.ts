@@ -880,4 +880,8 @@ export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
 };
 export type MovementApiOut = {
   id: number;
+  amount?: number;
+  currency_code?: string;
+  earliest_timestamp: string;
+  latest_timestamp: string;
 };
