@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Table, Loader, Message, Icon } from "semantic-ui-react";
-import AccountForm from "./Form";
+import AccountForm from "./components/Form";
 import { AccountApiOut, InstitutionApiOut, api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import TableHeader from "components/TableHeader";
 import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
-import LoadableCell from "components/LoadableCell";
+import LoadableQuery from "components/LoadableCell";
 import { useLocation } from "react-router-dom";
 import ActionButton from "components/ActionButton";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
@@ -16,15 +16,6 @@ import { capitaliseFirstLetter } from "utils/string";
 import CurrencyLabel from "components/CurrencyLabel";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import { accountTypeToIconName } from "./utils";
-
-function InstitutionCell(props: { institution: InstitutionApiOut }) {
-  return (
-    <>
-      <InstitutionLogo institution={props.institution} />{" "}
-      {props.institution.name}
-    </>
-  );
-}
 
 function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
   const institutionLinkQueries = useInstitutionLinkQueries(
@@ -56,23 +47,25 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
           currencyCode={props.account.currency_code}
         />
       </Table.Cell>
-      <Table.Cell>
-        <Icon name={accountTypeToIconName(type)} />{" "}
-        {capitaliseFirstLetter(type)}
+      <Table.Cell collapsing>
+        <Icon name={accountTypeToIconName(type)} />
       </Table.Cell>
+      <Table.Cell>{capitaliseFirstLetter(type)}</Table.Cell>
       <Table.Cell>
         {props.account.institutionalaccount && (
           <>**** {props.account.institutionalaccount.mask}</>
         )}
       </Table.Cell>
-      <LoadableCell
-        isLoading={institutionLinkQueries.isLoading}
-        isSuccess={institutionLinkQueries.isSuccess}
-        isError={institutionLinkQueries.isError}
-        error={institutionLinkQueries.error}
-      >
-        <InstitutionCell institution={institutionLinkQueries.institution!} />
-      </LoadableCell>
+      <Table.Cell collapsing>
+        <LoadableQuery query={institutionLinkQueries}>
+          <InstitutionLogo institution={institutionLinkQueries.institution!} />
+        </LoadableQuery>
+      </Table.Cell>
+      <Table.Cell>
+        <LoadableQuery query={institutionLinkQueries}>
+          {institutionLinkQueries.institution?.name}
+        </LoadableQuery>
+      </Table.Cell>
       <Table.Cell collapsing>
         <ActionButton
           onClick={() => {}}
@@ -107,10 +100,22 @@ function AccountsTable(props: {
 
   return (
     <Table>
-      <TableHeader
-        headers={["Name", "Balance", "Type", "Number", "Institution"]}
-        actions={3}
-      />
+      <Table.Header>
+        <Table.Row>
+          <Table.HeaderCell key={1}>Name</Table.HeaderCell>
+          <Table.HeaderCell key={2}>Balance</Table.HeaderCell>
+          <Table.HeaderCell key={3} colSpan={2}>
+            Type
+          </Table.HeaderCell>
+          <Table.HeaderCell key={4}>Number</Table.HeaderCell>
+          <Table.HeaderCell key={5} colSpan={2}>
+            Institution
+          </Table.HeaderCell>
+          <Table.HeaderCell key="actions" colSpan={3}>
+            Actions
+          </Table.HeaderCell>
+        </Table.Row>
+      </Table.Header>
       <Table.Body>
         {props.data.map((account, index) => (
           <AccountRow
