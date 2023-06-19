@@ -84,7 +84,12 @@ export default function ManagedTable(props: {
 
   useEffect(() => {
     const handleScroll = (event: Event) => {
-      if (!transactionsQuery.isSuccess) return;
+      if (
+        !transactionsQuery.isSuccess ||
+        transactionsQuery.isLoading ||
+        transactionsQuery.isFetching
+      )
+        return;
       const target = event.target as HTMLDivElement;
       if (target.scrollHeight - target.scrollTop < 1.5 * target.clientHeight) {
         setPage((prevPage) => prevPage + 1);
@@ -99,7 +104,11 @@ export default function ManagedTable(props: {
       if (scrollContainer)
         scrollContainer.removeEventListener("scroll", handleScroll);
     };
-  }, [transactionsQuery.isSuccess]);
+  }, [
+    transactionsQuery.isSuccess,
+    transactionsQuery.isLoading,
+    transactionsQuery.isFetching,
+  ]);
 
   useEffect(() => handleReset(), [resetKey]);
 
