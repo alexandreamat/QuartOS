@@ -46,7 +46,7 @@ export function Movement(props: { movement: MovementApiOut }) {
       onDelete={handleDelete}
       amount={props.movement.amount}
       currencyCode={props.movement.currency_code}
-      timestamp={firstTransaction.timestamp}
+      timestamp={props.movement.earliest_timestamp}
     />
   );
 }
