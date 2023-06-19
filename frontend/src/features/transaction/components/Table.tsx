@@ -1,18 +1,16 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import { Icon, Table } from "semantic-ui-react";
-import LoadableCell from "components/LoadableCell";
+import LoadableQuery from "components/LoadableCell";
 import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
-import TableHeader from "components/TableHeader";
 import { logMutationError } from "utils/error";
 import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import CurrencyLabel from "components/CurrencyLabel";
-import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import ActionButton from "components/ActionButton";
 import { useLocation, useNavigate } from "react-router-dom";
-import { accountTypeToIconName } from "features/account/utils";
+import AccountIcon from "features/account/components/Icon";
 
 function TransactionRow(
   props:
@@ -81,27 +79,19 @@ function TransactionRow(
           currencyCode={props.transaction.currency_code}
         />
       </Table.Cell>
-      <LoadableCell
-        collapsing
-        isLoading={accountQueries.isLoading}
-        isSuccess={accountQueries.isSuccess}
-        isError={accountQueries.isError}
-        error={accountQueries.error}
-      >
-        {accountQueries.institution ? (
-          <InstitutionLogo institution={accountQueries.institution} />
-        ) : (
-          <Icon
-            color="grey"
-            name={accountTypeToIconName(
-              accountQueries.account?.institutionalaccount?.type ||
-                accountQueries.account?.noninstitutionalaccount?.type ||
-                "other"
-            )}
+      <Table.Cell collapsing textAlign="center">
+        <LoadableQuery query={accountQueries}>
+          <AccountIcon
+            account={accountQueries.account!}
+            institution={accountQueries.institution}
           />
-        )}{" "}
-        {accountQueries.account?.name}
-      </LoadableCell>
+        </LoadableQuery>
+      </Table.Cell>
+      <Table.Cell collapsing>
+        <LoadableQuery query={accountQueries}>
+          {accountQueries.account?.name}
+        </LoadableQuery>
+      </Table.Cell>
       {hasActions && (
         <>
           <Table.Cell collapsing>
@@ -150,10 +140,20 @@ export default function TransactionsTable(
 
   return (
     <Table>
-      <TableHeader
-        headers={["", "Created", "Name", "Amount", "Account"]}
-        actions={hasActions ? 3 : 0}
-      />
+      <Table.Header>
+        <Table.Row>
+          <Table.HeaderCell key={1} />
+          <Table.HeaderCell key={2}>Created</Table.HeaderCell>
+          <Table.HeaderCell key={3}>Name</Table.HeaderCell>
+          <Table.HeaderCell key={4}>Amount</Table.HeaderCell>
+          <Table.HeaderCell key={5} colSpan={2}>
+            Account
+          </Table.HeaderCell>
+          <Table.HeaderCell key="actions" colSpan={3}>
+            Actions
+          </Table.HeaderCell>
+        </Table.Row>
+      </Table.Header>
       <Table.Body>
         {hasActions
           ? props.transactionPages.map((transactionPage, i) =>

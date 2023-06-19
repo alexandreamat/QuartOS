@@ -1,52 +1,14 @@
-import {
-  AccountApiOut,
-  InstitutionApiOut,
-  TransactionApiOut,
-} from "app/services/api";
+import { TransactionApiOut } from "app/services/api";
 import CurrencyLabel from "components/CurrencyLabel";
 import FormattedTimestamp from "components/FormattedTimestamp";
+import LoadableQuery from "components/LoadableCell";
+import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
-import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
-import { SimpleQuery } from "interfaces";
-import { Grid, Icon, Placeholder, Popup, Step } from "semantic-ui-react";
+import { Grid, Popup, Step } from "semantic-ui-react";
 import { RemoveCircle } from "./RemoveCircle";
 
 const flowPadding = 5;
 const stepPadding = 18;
-
-function AccountName(props: { query: SimpleQuery; account?: AccountApiOut }) {
-  if (props.query.isLoading)
-    return (
-      <Placeholder>
-        <Placeholder.Header />
-      </Placeholder>
-    );
-
-  if (props.query.isSuccess) return <p>{props.account!.name}</p>;
-
-  if (props.query.isError) return <p>?</p>;
-
-  return <></>;
-}
-
-function Logo(props: { query: SimpleQuery; institution?: InstitutionApiOut }) {
-  if (props.query.isLoading)
-    return (
-      <Placeholder>
-        <Placeholder.Image />
-      </Placeholder>
-    );
-
-  if (props.query.isSuccess) {
-    if (props.institution)
-      return <InstitutionLogo height={26} institution={props.institution} />;
-    return <Icon size="big" name="credit card" />;
-  }
-
-  if (props.query.isError) return <Icon name="question" />;
-
-  return <></>;
-}
 
 function Outflow(props: {
   flow: TransactionApiOut;
@@ -71,16 +33,17 @@ function Outflow(props: {
             </Grid.Column>
           )}
           <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-            <Logo
-              query={accountQueries}
-              institution={accountQueries.institution}
-            />
+            <LoadableQuery query={accountQueries}>
+              <AccountIcon
+                account={accountQueries.account!}
+                institution={accountQueries.institution!}
+              />
+            </LoadableQuery>
           </Grid.Column>
           <Grid.Column textAlign="center" verticalAlign="middle">
-            <AccountName
-              query={accountQueries}
-              account={accountQueries.account}
-            />
+            <LoadableQuery query={accountQueries}>
+              {accountQueries.account?.name}
+            </LoadableQuery>
           </Grid.Column>
           <Grid.Column width={4} textAlign="center" verticalAlign="middle">
             <CurrencyLabel
@@ -115,16 +78,17 @@ function Inflow(props: { flow: TransactionApiOut; onRemoveFlow?: () => void }) {
             />
           </Grid.Column>
           <Grid.Column textAlign="center" verticalAlign="middle">
-            <AccountName
-              query={accountQueries}
-              account={accountQueries.account}
-            />
+            <LoadableQuery query={accountQueries}>
+              {accountQueries.account?.name}
+            </LoadableQuery>
           </Grid.Column>
           <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-            <Logo
-              query={accountQueries}
-              institution={accountQueries.institution}
-            />
+            <LoadableQuery query={accountQueries}>
+              <AccountIcon
+                account={accountQueries.account!}
+                institution={accountQueries.institution!}
+              />
+            </LoadableQuery>
           </Grid.Column>
           {props.onRemoveFlow && (
             <Grid.Column width={1} verticalAlign="middle">
