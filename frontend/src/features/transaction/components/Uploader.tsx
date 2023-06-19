@@ -130,7 +130,9 @@ export default function Uploader(props: {
               </>
             </Segment>
           )}
-          {uploadResult.isSuccess && <Table transactions={uploadResult.data} />}
+          {uploadResult.isSuccess && (
+            <Table transactionPages={[uploadResult.data]} />
+          )}
           <QueryErrorMessage query={uploadResult} />
           <QueryErrorMessage query={createTransactionsResult} />
         </Form>

@@ -122,7 +122,7 @@ function TransactionRow(
 export default function TransactionsTable(
   props:
     | {
-        transactions: TransactionApiOut[];
+        transactionPages: TransactionApiOut[][];
         onOpenEditForm: (transaction: TransactionApiOut) => void;
         onOpenCreateForm: (
           accountId: number,
@@ -131,12 +131,12 @@ export default function TransactionsTable(
         onMutation: () => void;
       }
     | {
-        transactions: (TransactionApiOut | TransactionApiIn)[];
+        transactionPages: (TransactionApiOut | TransactionApiIn)[][];
       }
 ) {
   const hasActions = "onOpenEditForm" in props;
 
-  if (!props.transactions.length) return <EmptyTablePlaceholder />;
+  if (!props.transactionPages.length) return <EmptyTablePlaceholder />;
 
   return (
     <Table>
@@ -146,18 +146,22 @@ export default function TransactionsTable(
       />
       <Table.Body>
         {hasActions
-          ? props.transactions.map((transaction, index) => (
-              <TransactionRow
-                key={index}
-                transaction={transaction}
-                onOpenEditForm={props.onOpenEditForm}
-                onOpenCreateForm={props.onOpenCreateForm}
-                onDelete={props.onMutation}
-              />
-            ))
-          : props.transactions.map((transaction, index) => (
-              <TransactionRow key={index} transaction={transaction} />
-            ))}
+          ? props.transactionPages.map((transactionPage, i) =>
+              transactionPage.map((transaction, j) => (
+                <TransactionRow
+                  key={i * 20 + j}
+                  transaction={transaction}
+                  onOpenEditForm={props.onOpenEditForm}
+                  onOpenCreateForm={props.onOpenCreateForm}
+                  onDelete={props.onMutation}
+                />
+              ))
+            )
+          : props.transactionPages.map((transactionPage, i) =>
+              transactionPage.map((transaction, j) => (
+                <TransactionRow key={i * 20 + j} transaction={transaction} />
+              ))
+            )}
       </Table.Body>
     </Table>
   );

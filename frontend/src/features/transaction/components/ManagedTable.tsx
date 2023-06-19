@@ -1,6 +1,5 @@
 import { TransactionApiOut } from "app/services/api";
-import { useEffect, useState } from "react";
-import InfiniteScroll from "react-infinite-scroll-component";
+import { useEffect, useRef, useState } from "react";
 import { Message } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
 import { useTransactionsQuery } from "../hooks";
@@ -19,10 +18,14 @@ export default function ManagedTable(props: {
   >(undefined);
   const [selectedAccountId, setSelectedAccountId] = useState(0);
   const [resetKey, setResetKey] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [transactions, setTransactions] = useState<TransactionApiOut[]>([]);
+  const [page, setPage] = useState(1);
+  const [transactions, setTransactions] = useState<
+    Record<number, TransactionApiOut[]>
+  >({});
   const [accountId, setAccountId] = useState(0);
   const [search, setSearch] = useState("");
+
+  const reference = useRef<HTMLDivElement | null>(null);
 
   const handleMutation = (transaction: TransactionApiOut) => {
     if (props.onMutation) props.onMutation(transaction);
@@ -31,7 +34,7 @@ export default function ManagedTable(props: {
 
   const handleReset = () => {
     setTransactions([]);
-    setCurrentPage(1);
+    setPage(1);
     transactionsQuery.refetch();
   };
 
@@ -55,30 +58,45 @@ export default function ManagedTable(props: {
 
   const handleAccountIdChange = (value: number) => {
     setTransactions([]);
-    setCurrentPage(1);
+    setPage(1);
     setAccountId(value);
   };
 
   const handleSearchChange = (value: string) => {
     setTransactions([]);
-    setCurrentPage(1);
+    setPage(1);
     setSearch(value);
   };
 
-  const transactionsQuery = useTransactionsQuery(
-    accountId,
-    search,
-    currentPage
-  );
+  const transactionsQuery = useTransactionsQuery(accountId, search, page);
+
+  useEffect(() => {
+    const handleScroll = (event: Event) => {
+      if (!transactionsQuery.isSuccess) return;
+      const target = event.target as HTMLDivElement;
+      if (target.scrollHeight - target.scrollTop < 1.5 * target.clientHeight) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    };
+    const scrollContainer = reference.current;
+
+    if (scrollContainer)
+      scrollContainer.addEventListener("scroll", handleScroll);
+
+    return () => {
+      if (scrollContainer)
+        scrollContainer.removeEventListener("scroll", handleScroll);
+    };
+  }, [transactionsQuery.isSuccess]);
 
   useEffect(() => handleReset(), [resetKey]);
 
   useEffect(() => {
     if (transactionsQuery.data) {
-      setTransactions((prevTransactions) => [
+      setTransactions((prevTransactions) => ({
         ...prevTransactions,
-        ...transactionsQuery.data!,
-      ]);
+        [page]: transactionsQuery.data!,
+      }));
     }
   }, [transactionsQuery.data]);
 
@@ -94,29 +112,21 @@ export default function ManagedTable(props: {
           search={search}
           onSearchChange={handleSearchChange}
         />
-        <FlexColumn.Auto>
-          {transactionsQuery.isError ? (
+        <FlexColumn.Auto reference={reference}>
+          {transactionsQuery.isError && (
             <Message
               negative
               header="An error has occurred!"
               content={renderErrorMessage(transactionsQuery.error)}
               icon="attention"
             />
-          ) : (
-            <InfiniteScroll
-              loader={<></>}
-              dataLength={transactions.length}
-              next={() => setCurrentPage(currentPage + 1)}
-              hasMore={true}
-            >
-              <Table
-                transactions={transactions}
-                onOpenEditForm={handleOpenEditForm}
-                onOpenCreateForm={handleOpenCreateForm}
-                onMutation={handleReset}
-              />
-            </InfiniteScroll>
           )}
+          <Table
+            transactionPages={Object.values(transactions)}
+            onOpenEditForm={handleOpenEditForm}
+            onOpenCreateForm={handleOpenCreateForm}
+            onMutation={handleReset}
+          />
         </FlexColumn.Auto>
       </FlexColumn>
       <Form

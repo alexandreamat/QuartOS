@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode } from "react";
+import React, { CSSProperties, ReactNode, LegacyRef } from "react";
 
 const FlexColumn = (props: { children: ReactNode; style?: CSSProperties }) => (
   <div
@@ -13,8 +13,15 @@ const FlexColumn = (props: { children: ReactNode; style?: CSSProperties }) => (
   </div>
 );
 
-FlexColumn.Auto = (props: { children: ReactNode; style?: CSSProperties }) => (
-  <div style={{ flex: 1, overflow: "auto", ...props.style }}>
+FlexColumn.Auto = (props: {
+  children: ReactNode;
+  style?: CSSProperties;
+  reference?: LegacyRef<HTMLDivElement>;
+}) => (
+  <div
+    ref={props.reference}
+    style={{ flex: 1, overflow: "auto", ...props.style }}
+  >
     {props.children}
   </div>
 );
