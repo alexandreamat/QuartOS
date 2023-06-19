@@ -29,6 +29,12 @@ export default function ManagedTable(props: {
     setResetKey((x) => x + 1);
   };
 
+  const handleReset = () => {
+    setTransactions([]);
+    setCurrentPage(1);
+    transactionsQuery.refetch();
+  };
+
   const handleOpenCreateForm = (accountId: number) => {
     setSelectedAccountId(accountId);
     setSelectedTransaction(undefined);
@@ -65,11 +71,7 @@ export default function ManagedTable(props: {
     currentPage
   );
 
-  useEffect(() => {
-    setTransactions([]);
-    setCurrentPage(1);
-    setSearch("");
-  }, [resetKey]);
+  useEffect(() => handleReset(), [resetKey]);
 
   useEffect(() => {
     if (transactionsQuery.data) {
@@ -111,11 +113,7 @@ export default function ManagedTable(props: {
                 transactions={transactions}
                 onOpenEditForm={handleOpenEditForm}
                 onOpenCreateForm={handleOpenCreateForm}
-                onMutation={() => {
-                  setTransactions([]);
-                  setCurrentPage(1);
-                  transactionsQuery.refetch();
-                }}
+                onMutation={handleReset}
               />
             </InfiniteScroll>
           )}
