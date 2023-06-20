@@ -13,24 +13,26 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const params = new URLSearchParams(location.search);
-  const transactionIdsStrParam = params.get("transactionIds");
-
-  const [transactionIdsStr, setTransactionIdsStr] = useState("");
+  const [transactionIds, setTransactionIds] = useState<number[]>([]);
   const [flows, setFlows] = useState<Record<number, TransactionApiOut>>({});
 
   const transactionsQuery = api.endpoints.readManyApiTransactionsGet.useQuery(
-    transactionIdsStr ? { ids: transactionIdsStr } : skipToken
+    transactionIds.length ? { ids: transactionIds.join() } : skipToken
   );
 
   useEffect(() => {
-    if (transactionIdsStrParam) {
-      setTransactionIdsStr(transactionIdsStrParam);
-    } else {
-      setTransactionIdsStr("");
-      setFlows({});
-    }
-  }, [transactionIdsStrParam]);
+    const params = new URLSearchParams(location.search);
+    const transactionIdsStr = params.get("transactionIds");
+    if (!transactionIdsStr) return;
+
+    setTransactionIds((prevTransactionIds) => [
+      ...prevTransactionIds,
+      ...transactionIdsStr.split(",").map(Number),
+    ]);
+
+    params.delete("transactionIds");
+    navigate({ ...location, search: params.toString() }, { replace: true });
+  }, [location, navigate]);
 
   useEffect(() => {
     if (!transactionsQuery.isSuccess) return;
@@ -47,8 +49,7 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
 
   function handleClose() {
     setFlows({});
-    setTransactionIdsStr("");
-    navigate("/movements/?isFormOpen=true");
+    setTransactionIds([]);
     props.onClose();
   }
 
@@ -65,26 +66,14 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
   }
 
   const handleMutation = (transaction: TransactionApiOut) => {
-    var transactionIds = params.get("transactionIds")?.split(",").map(Number);
     const transactionIdsSet = new Set(transactionIds).add(transaction.id);
-    transactionIds = Array.from(transactionIdsSet);
-    navigate(
-      `/movements/?isFormOpen=true&transactionIds=${transactionIds.join(",")}`
-    );
+    setTransactionIds(Array.from(transactionIdsSet));
   };
 
   function handleRemoveFlow(transactionId: number) {
-    var transactionIds = params.get("transactionIds")?.split(",").map(Number);
-    if (!transactionIds) return;
-
-    transactionIds = transactionIds.filter((id) => id !== transactionId);
-    if (transactionIds.length === 0) {
-      navigate("/movements/?isFormOpen=true");
-      return;
-    }
-
-    const param = transactionIds.join(",");
-    navigate(`/movements/?isFormOpen=true&transactionIds=${param}`);
+    const newTxIds = transactionIds.filter((id) => id !== transactionId);
+    if (!newTxIds.length) setFlows([]);
+    setTransactionIds(transactionIds.filter((id) => id !== transactionId));
   }
 
   return (
@@ -98,14 +87,6 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
               outflows={outflows}
               onRemoveFlow={handleRemoveFlow}
             />
-            {/* <MovementCard
-              name={firstFlow.name}
-              timestamp={firstFlow.name}
-              amount={}
-              inflows={inflows}
-              outflows={outflows}
-              onRemoveFlow={handleRemoveFlow}
-            /> */}
             <QueryErrorMessage query={createMovementResult} />
             <FlexColumn.Auto>
               <ManagedTable
