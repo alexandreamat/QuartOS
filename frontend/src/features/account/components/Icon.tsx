@@ -7,7 +7,6 @@ export default function AccountIcon(props: {
   account: AccountApiOut;
   institution?: InstitutionApiOut;
 }) {
-  console.log(props);
   if (props.institution)
     return <InstitutionLogo institution={props.institution} />;
 

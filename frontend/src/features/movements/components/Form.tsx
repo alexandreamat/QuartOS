@@ -85,7 +85,7 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
             <Flows
               inflows={inflows}
               outflows={outflows}
-              onRemoveFlow={handleRemoveFlow}
+              onRemove={handleRemoveFlow}
             />
             <QueryErrorMessage query={createMovementResult} />
             <FlexColumn.Auto>

@@ -1,4 +1,8 @@
-import { TransactionApiOut } from "app/services/api";
+import {
+  AccountApiOut,
+  InstitutionApiOut,
+  TransactionApiOut,
+} from "app/services/api";
 import CurrencyLabel from "components/CurrencyLabel";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import LoadableQuery from "components/LoadableCell";
@@ -6,14 +10,42 @@ import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
 import { Grid, Popup, Step } from "semantic-ui-react";
 import { RemoveCircle } from "./RemoveCircle";
+import { SimpleQuery } from "interfaces";
 
 const flowPadding = 5;
 const stepPadding = 18;
 
-function Outflow(props: {
-  flow: TransactionApiOut;
-  onRemoveFlow?: () => void;
-}) {
+const RemoveFlow = (props: { onRemoveFlow: () => void }) => (
+  <Grid.Column width={1} verticalAlign="middle">
+    <RemoveCircle onClick={props.onRemoveFlow} />
+  </Grid.Column>
+);
+
+const AccountLogo = (props: {
+  query: SimpleQuery;
+  account: AccountApiOut;
+  institution: InstitutionApiOut;
+}) => (
+  <Grid.Column width={2} textAlign="center" verticalAlign="middle">
+    <LoadableQuery query={props.query}>
+      <AccountIcon account={props.account} institution={props.institution} />
+    </LoadableQuery>
+  </Grid.Column>
+);
+
+const Amount = (props: { amount: number; currencyCode: string }) => (
+  <Grid.Column width={4} textAlign="center" verticalAlign="middle">
+    <CurrencyLabel amount={props.amount} currencyCode={props.currencyCode} />
+  </Grid.Column>
+);
+
+const AccountName = (props: { query: SimpleQuery; name: string }) => (
+  <Grid.Column textAlign="center" verticalAlign="middle">
+    <LoadableQuery query={props.query}>{props.name}</LoadableQuery>
+  </Grid.Column>
+);
+
+function Outflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
   return (
@@ -27,37 +59,27 @@ function Outflow(props: {
       }
       trigger={
         <Grid.Row columns="equal" style={{ padding: flowPadding }}>
-          {props.onRemoveFlow && (
-            <Grid.Column width={1} verticalAlign="middle">
-              <RemoveCircle onClick={props.onRemoveFlow} />
-            </Grid.Column>
-          )}
-          <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-            <LoadableQuery query={accountQueries}>
-              <AccountIcon
-                account={accountQueries.account!}
-                institution={accountQueries.institution!}
-              />
-            </LoadableQuery>
-          </Grid.Column>
-          <Grid.Column textAlign="center" verticalAlign="middle">
-            <LoadableQuery query={accountQueries}>
-              {accountQueries.account?.name}
-            </LoadableQuery>
-          </Grid.Column>
-          <Grid.Column width={4} textAlign="center" verticalAlign="middle">
-            <CurrencyLabel
-              amount={props.flow.amount}
-              currencyCode={props.flow.currency_code}
-            />
-          </Grid.Column>
+          {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+          <AccountLogo
+            query={accountQueries}
+            account={accountQueries.account!}
+            institution={accountQueries.institution!}
+          />
+          <AccountName
+            query={accountQueries}
+            name={accountQueries.account?.name || ""}
+          />
+          <Amount
+            amount={props.flow.amount}
+            currencyCode={props.flow.currency_code}
+          />
         </Grid.Row>
       }
     />
   );
 }
 
-function Inflow(props: { flow: TransactionApiOut; onRemoveFlow?: () => void }) {
+function Inflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
   return (
@@ -71,30 +93,20 @@ function Inflow(props: { flow: TransactionApiOut; onRemoveFlow?: () => void }) {
       }
       trigger={
         <Grid.Row columns="equal" style={{ padding: flowPadding }}>
-          <Grid.Column width={4} textAlign="center" verticalAlign="middle">
-            <CurrencyLabel
-              amount={props.flow.amount}
-              currencyCode={props.flow.currency_code}
-            />
-          </Grid.Column>
-          <Grid.Column textAlign="center" verticalAlign="middle">
-            <LoadableQuery query={accountQueries}>
-              {accountQueries.account?.name}
-            </LoadableQuery>
-          </Grid.Column>
-          <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-            <LoadableQuery query={accountQueries}>
-              <AccountIcon
-                account={accountQueries.account!}
-                institution={accountQueries.institution!}
-              />
-            </LoadableQuery>
-          </Grid.Column>
-          {props.onRemoveFlow && (
-            <Grid.Column width={1} verticalAlign="middle">
-              <RemoveCircle onClick={props.onRemoveFlow} />
-            </Grid.Column>
-          )}
+          <Amount
+            amount={props.flow.amount}
+            currencyCode={props.flow.currency_code}
+          />
+          <AccountName
+            query={accountQueries}
+            name={accountQueries.account?.name || ""}
+          />
+          <AccountLogo
+            query={accountQueries}
+            account={accountQueries.account!}
+            institution={accountQueries.institution!}
+          />
+          {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
         </Grid.Row>
       }
     />
@@ -104,7 +116,7 @@ function Inflow(props: { flow: TransactionApiOut; onRemoveFlow?: () => void }) {
 export function Flows(props: {
   outflows: TransactionApiOut[];
   inflows: TransactionApiOut[];
-  onRemoveFlow?: (transactionId: number) => void;
+  onRemove?: (transactionId: number) => void;
 }) {
   return (
     <Step.Group fluid widths={2} style={{ margin: 10 }}>
@@ -116,9 +128,9 @@ export function Flows(props: {
                 <Outflow
                   key={transaction.id}
                   flow={transaction}
-                  onRemoveFlow={
-                    props.onRemoveFlow
-                      ? () => props.onRemoveFlow!(transaction.id)
+                  onRemove={
+                    props.onRemove
+                      ? () => props.onRemove!(transaction.id)
                       : undefined
                   }
                 />
@@ -137,9 +149,9 @@ export function Flows(props: {
                 <Inflow
                   key={transaction.id}
                   flow={transaction}
-                  onRemoveFlow={
-                    props.onRemoveFlow
-                      ? () => props.onRemoveFlow!(transaction.id)
+                  onRemove={
+                    props.onRemove
+                      ? () => props.onRemove!(transaction.id)
                       : undefined
                   }
                 />
