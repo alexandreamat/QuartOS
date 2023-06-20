@@ -175,9 +175,9 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users"],
       }),
-      getExchangeRateApiExchangerateGet: build.query<
-        GetExchangeRateApiExchangerateGetApiResponse,
-        GetExchangeRateApiExchangerateGetApiArg
+      readExchangeRateApiExchangerateGet: build.query<
+        ReadExchangeRateApiExchangerateGetApiResponse,
+        ReadExchangeRateApiExchangerateGetApiArg
       >({
         query: (queryArg) => ({
           url: `/api/exchangerate/`,
@@ -577,12 +577,12 @@ export type ReadManyApiUsersGetApiArg = {
 export type CreateApiUsersPostApiResponse =
   /** status 200 Successful Response */ UserApiOut;
 export type CreateApiUsersPostApiArg = UserApiIn;
-export type GetExchangeRateApiExchangerateGetApiResponse =
+export type ReadExchangeRateApiExchangerateGetApiResponse =
   /** status 200 Successful Response */ number;
-export type GetExchangeRateApiExchangerateGetApiArg = {
+export type ReadExchangeRateApiExchangerateGetApiArg = {
   fromCurrency: string;
   toCurrency: string;
-  date?: string;
+  date: string;
 };
 export type ReadManyApiInstitutionsGetApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut[];
@@ -861,7 +861,7 @@ export type TransactionCode =
 export type TransactionApiOut = {
   id: number;
   amount: number;
-  timestamp?: string;
+  timestamp: string;
   name: string;
   currency_code: string;
   account_id: number;
@@ -884,8 +884,9 @@ export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
 };
 export type MovementApiOut = {
   id: number;
-  amount?: number;
-  currency_code?: string;
   earliest_timestamp?: string;
   latest_timestamp?: string;
+  amounts: {
+    [key: string]: number;
+  };
 };

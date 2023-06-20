@@ -16,6 +16,46 @@ from app.features.transaction.models import TransactionApiOut
 router = APIRouter()
 
 
+@router.get("/{id}/transactions")
+def read_transactions(
+    db: DBSession, current_user: CurrentUser, id: int
+) -> list[TransactionApiOut]:
+    from app.features import transaction
+
+    try:
+        movement = CRUDMovement.read(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    u = CRUDMovement.read_user(db, movement.id)
+    if u.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    return transaction.crud.CRUDTransaction.read_many_by_movement(db, id)
+
+
+@router.get("/{id}")
+def read(db: DBSession, current_user: CurrentUser, id: int) -> MovementApiOut:
+    try:
+        movement = CRUDMovement.read(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    u = CRUDMovement.read_user(db, movement.id)
+    if u.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    return movement
+
+
+@router.delete("/{id}")
+def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
+    try:
+        movement = CRUDMovement.read(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    u = CRUDMovement.read_user(db, movement.id)
+    if u.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    CRUDMovement.delete(db, id)
+
+
 @router.post("/")
 def create(
     db: DBSession, current_user: CurrentUser, transaction_ids: list[int]
@@ -50,15 +90,3 @@ def read_many(
     search: str | None = None,
 ) -> list[MovementApiOut]:
     return CRUDMovement.read_many_by_user(db, current_user.id, page, per_page, search)
-
-
-@router.get("/{id}/transactions")
-def read_transactions(db: DBSession, id: int) -> list[TransactionApiOut]:
-    from app.features import transaction
-
-    return transaction.crud.CRUDTransaction.read_many_by_movement(db, id)
-
-
-@router.delete("/{id}")
-def delete(db: DBSession, id: int) -> None:
-    CRUDMovement.delete(db, id)

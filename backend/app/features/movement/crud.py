@@ -7,9 +7,16 @@ from app.features import account, userinstitutionlink
 from .models import Movement, MovementApiIn, MovementApiOut
 
 
+from app.features import user
+
+
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     db_model = Movement
     api_out_model = MovementApiOut
+
+    @classmethod
+    def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
+        return user.models.UserApiOut.from_orm(cls.db_model.read(db, id).user)
 
     @classmethod
     def read_many_by_user(
