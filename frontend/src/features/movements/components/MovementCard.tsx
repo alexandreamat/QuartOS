@@ -1,4 +1,4 @@
-import { TransactionApiOut } from "app/services/api";
+import { MovementApiOut, TransactionApiOut } from "app/services/api";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import { Card, Grid, Header } from "semantic-ui-react";
@@ -10,11 +10,9 @@ export function MovementCard(props: {
   deleteQuery: SimpleQuery;
   onDelete: () => Promise<void>;
   name: string;
-  timestamp?: string;
   outflows: TransactionApiOut[];
   inflows: TransactionApiOut[];
-  amount?: number;
-  currencyCode?: string;
+  movement: MovementApiOut;
 }) {
   return (
     <Card fluid color="teal">
@@ -22,7 +20,9 @@ export function MovementCard(props: {
         <Grid>
           <Grid.Column width={3}>
             <Card.Meta>
-              <FormattedTimestamp timestamp={props.timestamp} />
+              <FormattedTimestamp
+                timestamp={props.movement.earliest_timestamp}
+              />
             </Card.Meta>
           </Grid.Column>
           <Grid.Column width={10}>
@@ -38,17 +38,16 @@ export function MovementCard(props: {
         </Grid>
         <Flows inflows={props.inflows} outflows={props.outflows} />
       </Card.Content>
-      {props.amount !== undefined && props.currencyCode && (
-        <Card.Content extra>
-          <Header as="h5" floated="right">
-            Total:
-            <CurrencyLabel
-              amount={props.amount}
-              currencyCode={props.currencyCode}
-            />
-          </Header>
-        </Card.Content>
-      )}
+      <Card.Content extra>
+        <Header as="h5" floated="right">
+          Total:
+          {Object.entries(props.movement.amounts).map(
+            ([currencyCode, amount]) => (
+              <CurrencyLabel amount={amount} currencyCode={currencyCode} />
+            )
+          )}
+        </Header>
+      </Card.Content>
     </Card>
   );
 }

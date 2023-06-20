@@ -3,10 +3,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from sqlmodel import SQLModel, Relationship
 
-from app.common.models import IdentifiableBase
+from app.common.models import IdentifiableBase, CurrencyCode
+
+from app.features.exchangerate.client import get_exchange_rate
 
 if TYPE_CHECKING:
     from app.features.transaction.models import Transaction
+    from app.features.user.models import User
 
 
 class __MovementBase(SQLModel):
@@ -14,10 +17,9 @@ class __MovementBase(SQLModel):
 
 
 class MovementApiOut(__MovementBase, IdentifiableBase):
-    amount: Decimal | None
-    currency_code: str | None
     earliest_timestamp: datetime | None
     latest_timestamp: datetime | None
+    amounts: dict[CurrencyCode, Decimal]
 
 
 class MovementApiIn(__MovementBase):
@@ -28,16 +30,8 @@ class Movement(__MovementBase, IdentifiableBase, table=True):
     transactions: list["Transaction"] = Relationship(back_populates="movement")
 
     @property
-    def amount(self) -> Decimal | None:
-        if len({t.currency_code for t in self.transactions}) != 1:
-            return None
-        return sum([t.amount for t in self.transactions], Decimal(0))
-
-    @property
-    def currency_code(self) -> str | None:
-        if len({t.currency_code for t in self.transactions}) != 1:
-            return None
-        return self.transactions[0].currency_code
+    def user(self) -> "User":
+        return self.transactions[0].user
 
     @property
     def earliest_timestamp(self) -> datetime | None:
@@ -52,3 +46,16 @@ class Movement(__MovementBase, IdentifiableBase, table=True):
             return max(t.timestamp for t in self.transactions if t.timestamp)
         except ValueError:
             return None
+
+    @property
+    def amounts(self) -> dict[CurrencyCode, Decimal]:
+        return {
+            c: sum(
+                [
+                    t.amount * get_exchange_rate(t.currency_code, c, t.timestamp.date())
+                    for t in self.transactions
+                ],
+                Decimal(0),
+            )
+            for c in {t.currency_code for t in self.transactions}
+        }

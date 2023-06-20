@@ -10,12 +10,10 @@ function CurrencyExchangeTip(props: {
   const toCurrency = props.currencyCode;
 
   const exchangeRateQuery =
-    api.endpoints.getExchangeRateApiExchangerateGet.useQuery({
+    api.endpoints.readExchangeRateApiExchangerateGet.useQuery({
       fromCurrency,
       toCurrency,
-      date: props.relatedTransaction.timestamp
-        ? props.relatedTransaction.timestamp.split("T")[0]
-        : undefined,
+      date: props.relatedTransaction.timestamp.split("T")[0],
     });
 
   if (!exchangeRateQuery.isSuccess) return <></>;
