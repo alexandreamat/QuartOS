@@ -15,8 +15,6 @@ export function useInfiniteQuery<T, U>(
   const [pages, setPages] = useState<Record<number, T[]>>({});
   const [resetKey, setResetKey] = useState(0);
 
-  console.log(params);
-  console.log(useQuery);
   const query = useQuery({ ...params, page, perPage });
 
   const handleMutation = (item: T) => {
