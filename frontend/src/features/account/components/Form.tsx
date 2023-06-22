@@ -1,4 +1,4 @@
-import { CheckboxProps, Form, Message } from "semantic-ui-react";
+import { CheckboxProps, Form } from "semantic-ui-react";
 import { useEffect } from "react";
 import {
   AccountApiOut,
@@ -31,7 +31,7 @@ export default function AccountForm(props: {
   const institutionalType = useFormField("");
   const nonInstitutionalType = useFormField("");
   const institutionLinkId = useFormField(0);
-  const balanceStr = useFormField("");
+  const initialBalanceStr = useFormField("");
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -49,12 +49,12 @@ export default function AccountForm(props: {
     currencyCode,
     institutionalType,
     nonInstitutionalType,
-    balanceStr,
+    initialBalanceStr,
     institutionLinkId,
     isInstitutional,
   ];
 
-  const requiredFields = [name, currencyCode, balanceStr];
+  const requiredFields = [name, currencyCode, initialBalanceStr];
 
   const [createAccount, createAccountResult] =
     api.endpoints.createApiAccountsPost.useMutation();
@@ -65,12 +65,13 @@ export default function AccountForm(props: {
     if (!props.account) return;
     name.set(props.account.name);
     currencyCode.set(props.account.currency_code);
-    balanceStr.set(props.account.balance.toFixed(2));
+    initialBalanceStr.set(props.account.balance.toFixed(2));
     if (props.account.institutionalaccount) {
       const institutionalAccount = props.account.institutionalaccount;
       institutionLinkId.set(institutionalAccount.userinstitutionlink_id);
       institutionalType.set(institutionalAccount.type);
       mask.set(institutionalAccount.mask);
+      isInstitutional.set(true);
     }
     if (props.account.noninstitutionalaccount) {
       const nonInstitutionalAccount = props.account.noninstitutionalaccount;
@@ -92,7 +93,7 @@ export default function AccountForm(props: {
     "other",
   ].map((type, index) => ({
     key: index,
-    value: index,
+    value: type,
     text: capitaliseFirstLetter(type),
   }));
 
@@ -124,7 +125,7 @@ export default function AccountForm(props: {
     const account: AccountApiIn = {
       name: name.value!,
       currency_code: currencyCode.value!,
-      balance: Number(balanceStr.value!),
+      initial_balance: Number(initialBalanceStr.value!),
       institutionalaccount: isInstitutional.value
         ? {
             mask: mask.value!,
@@ -206,7 +207,7 @@ export default function AccountForm(props: {
       )}
       <FormCurrencyInputs
         label="Current Balance"
-        amount={balanceStr}
+        amount={initialBalanceStr}
         currency={currencyCode}
       />
       <FormValidationError fields={requiredFields} />
