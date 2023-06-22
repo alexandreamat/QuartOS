@@ -382,6 +382,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["accounts"],
       }),
+      updateBalancesApiAccountsUpdateBalancesPost: build.mutation<
+        UpdateBalancesApiAccountsUpdateBalancesPostApiResponse,
+        UpdateBalancesApiAccountsUpdateBalancesPostApiArg
+      >({
+        query: () => ({ url: `/api/accounts/update-balances`, method: "POST" }),
+        invalidatesTags: ["accounts"],
+      }),
       readTransactionsApiMovementsIdTransactionsGet: build.query<
         ReadTransactionsApiMovementsIdTransactionsGetApiResponse,
         ReadTransactionsApiMovementsIdTransactionsGetApiArg
@@ -680,6 +687,9 @@ export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiArg = {
   id: number;
   bodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost: BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost;
 };
+export type UpdateBalancesApiAccountsUpdateBalancesPostApiResponse =
+  /** status 200 Successful Response */ null;
+export type UpdateBalancesApiAccountsUpdateBalancesPostApiArg = void;
 export type ReadTransactionsApiMovementsIdTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadTransactionsApiMovementsIdTransactionsGetApiArg = number;
@@ -848,11 +858,12 @@ export type NonInstitutionalAccount = {
 export type AccountApiOut = {
   id: number;
   currency_code: string;
-  balance: number;
+  initial_balance: number;
   name: string;
   institutionalaccount?: InstitutionalAccount;
   noninstitutionalaccount?: NonInstitutionalAccount;
   is_synced: boolean;
+  balance: number;
 };
 export type InstitutionalAccount2 = {
   userinstitutionlink_id: number;
@@ -865,7 +876,7 @@ export type NonInstitutionalAccount2 = {
 };
 export type AccountApiIn = {
   currency_code: string;
-  balance: number;
+  initial_balance: number;
   name: string;
   institutionalaccount?: InstitutionalAccount2;
   noninstitutionalaccount?: NonInstitutionalAccount2;
@@ -895,6 +906,7 @@ export type TransactionApiOut = {
   movement_id?: number;
   payment_channel: PaymentChannel;
   code?: TransactionCode;
+  account_balance: number;
 };
 export type TransactionApiIn = {
   amount: number;
@@ -905,6 +917,7 @@ export type TransactionApiIn = {
   movement_id?: number;
   payment_channel: PaymentChannel;
   code?: TransactionCode;
+  account_balance?: number;
 };
 export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
   file: Blob;
