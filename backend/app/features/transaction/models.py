@@ -45,10 +45,11 @@ class __TransactionBase(SQLModel):
     movement_id: int | None
     payment_channel: PaymentChannel
     code: TransactionCode | None
+    account_balance: Decimal | None
 
 
 class TransactionApiOut(__TransactionBase, IdentifiableBase):
-    ...
+    account_balance: Decimal
 
     @validator("timestamp", pre=True)
     def convert_to_utc_aware(cls, v: datetime | None) -> datetime | None:
@@ -77,6 +78,7 @@ class TransactionPlaidOut(__TransactionBase, PlaidBase, IdentifiableBase):
 class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=True):
     account_id: int = Field(foreign_key="account.id")
     movement_id: int | None = Field(foreign_key="movement.id")
+    account_balance: Decimal
 
     account: Account = Relationship(back_populates="transactions")
     movement: Movement | None = Relationship(back_populates="transactions")

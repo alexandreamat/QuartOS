@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.deps import CurrentUser
+from app.features.user.deps import CurrentUser, CurrentSuperuser
 from app.database.deps import DBSession
 
 
@@ -156,3 +156,9 @@ def delete(
     if CRUDAccount.is_synced(db, id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDAccount.delete(db, id)
+
+
+@router.post("/update-balances")
+def update_balances(db: DBSession, current_user: CurrentSuperuser) -> None:
+    for account in CRUDAccount.read_many(db):
+        CRUDAccount.update_balance(db, account.id)

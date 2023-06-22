@@ -1,7 +1,6 @@
-import { api } from "app/services/api";
+import { MovementApiOut, api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { Loader, Message } from "semantic-ui-react";
 import { Bar } from "./components/Bar";
 import { Movement } from "./components/Movement";
 import Form from "./components/Form";
@@ -12,17 +11,29 @@ import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 export default function Movements() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const isFormOpenParam = params.get("isFormOpen") === "true";
+  const formModeParam = params.get("formModeParam") === "true";
 
-  const [isFormOpen, setIsFormOpen] = useState(isFormOpenParam);
+  const [formMode, setFormMode] = useState<"create" | "edit" | undefined>(
+    undefined
+  );
   const [search, setSearch] = useState("");
+  const [selectedMovement, setSelectedMovement] = useState<
+    MovementApiOut | undefined
+  >(undefined);
 
   const handleOpenCreateForm = () => {
-    setIsFormOpen(true);
+    setSelectedMovement(undefined);
+    setFormMode("create");
   };
 
+  function handleOpenEditForm(movement: MovementApiOut) {
+    setSelectedMovement(movement);
+    setFormMode("edit");
+  }
+
   const handleCloseForm = () => {
-    setIsFormOpen(false);
+    setSelectedMovement(undefined);
+    setFormMode(undefined);
   };
 
   const handleSearchChange = (value: string) => {
@@ -55,13 +66,21 @@ export default function Movements() {
             )}
             {Object.values(infiniteQuery.pages).map((movements) =>
               movements.map((movement) => (
-                <Movement key={movement.id} movement={movement} />
+                <Movement
+                  key={movement.id}
+                  movement={movement}
+                  onOpenEditForm={() => handleOpenEditForm(movement)}
+                />
               ))
             )}
           </>
         </FlexColumn.Auto>
       </FlexColumn>
-      <Form onClose={handleCloseForm} open={isFormOpen} />
+
+      {formMode === "create" && <Form.Create onClose={handleCloseForm} />}
+      {selectedMovement && formMode === "edit" && (
+        <Form.Edit onClose={handleCloseForm} movement={selectedMovement} />
+      )}
     </>
   );
 }

@@ -16,7 +16,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
-        return user.models.UserApiOut.from_orm(cls.db_model.read(db, id).user)
+        return user.models.UserApiOut.from_orm(Movement.read(db, id).user)
 
     @classmethod
     def read_many_by_user(
@@ -56,3 +56,9 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         movements = db.exec(statement).all()
 
         return [MovementApiOut.from_orm(m) for m in movements]
+
+    @classmethod
+    def unlink_transactions(cls, db: Session, id: int) -> None:
+        movement_db = Movement.read(db, id)
+        for transaction in movement_db.transactions:
+            transaction.movement_id = None

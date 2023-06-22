@@ -25,7 +25,7 @@ def get_accounts(
             ),
             name=account.name,
             currency_code=account.balances.iso_currency_code,
-            balance=account.balances.current,
+            initial_balance=account.balances.current,
         )
         for account in accounts
     ]

@@ -382,6 +382,43 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["accounts"],
       }),
+      readTransactionsApiMovementsIdTransactionsGet: build.query<
+        ReadTransactionsApiMovementsIdTransactionsGetApiResponse,
+        ReadTransactionsApiMovementsIdTransactionsGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/movements/${queryArg}/transactions`,
+        }),
+        providesTags: ["movements"],
+      }),
+      readApiMovementsIdGet: build.query<
+        ReadApiMovementsIdGetApiResponse,
+        ReadApiMovementsIdGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/api/movements/${queryArg}` }),
+        providesTags: ["movements"],
+      }),
+      deleteApiMovementsIdDelete: build.mutation<
+        DeleteApiMovementsIdDeleteApiResponse,
+        DeleteApiMovementsIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/movements/${queryArg}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["movements"],
+      }),
+      updateApiMovementsIdPatch: build.mutation<
+        UpdateApiMovementsIdPatchApiResponse,
+        UpdateApiMovementsIdPatchApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/movements/${queryArg.id}`,
+          method: "PATCH",
+          body: queryArg.body,
+        }),
+        invalidatesTags: ["movements"],
+      }),
       readManyApiMovementsGet: build.query<
         ReadManyApiMovementsGetApiResponse,
         ReadManyApiMovementsGetApiArg
@@ -404,25 +441,6 @@ const injectedRtkApi = api
           url: `/api/movements/`,
           method: "POST",
           body: queryArg,
-        }),
-        invalidatesTags: ["movements"],
-      }),
-      readTransactionsApiMovementsIdTransactionsGet: build.query<
-        ReadTransactionsApiMovementsIdTransactionsGetApiResponse,
-        ReadTransactionsApiMovementsIdTransactionsGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/movements/${queryArg}/transactions`,
-        }),
-        providesTags: ["movements"],
-      }),
-      deleteApiMovementsIdDelete: build.mutation<
-        DeleteApiMovementsIdDeleteApiResponse,
-        DeleteApiMovementsIdDeleteApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/movements/${queryArg}`,
-          method: "DELETE",
         }),
         invalidatesTags: ["movements"],
       }),
@@ -662,6 +680,21 @@ export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiArg = {
   id: number;
   bodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost: BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost;
 };
+export type ReadTransactionsApiMovementsIdTransactionsGetApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut[];
+export type ReadTransactionsApiMovementsIdTransactionsGetApiArg = number;
+export type ReadApiMovementsIdGetApiResponse =
+  /** status 200 Successful Response */ MovementApiOut;
+export type ReadApiMovementsIdGetApiArg = number;
+export type DeleteApiMovementsIdDeleteApiResponse =
+  /** status 200 Successful Response */ null;
+export type DeleteApiMovementsIdDeleteApiArg = number;
+export type UpdateApiMovementsIdPatchApiResponse =
+  /** status 200 Successful Response */ MovementApiOut;
+export type UpdateApiMovementsIdPatchApiArg = {
+  id: number;
+  body: number[];
+};
 export type ReadManyApiMovementsGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
 export type ReadManyApiMovementsGetApiArg = {
@@ -672,12 +705,6 @@ export type ReadManyApiMovementsGetApiArg = {
 export type CreateApiMovementsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
 export type CreateApiMovementsPostApiArg = number[];
-export type ReadTransactionsApiMovementsIdTransactionsGetApiResponse =
-  /** status 200 Successful Response */ TransactionApiOut[];
-export type ReadTransactionsApiMovementsIdTransactionsGetApiArg = number;
-export type DeleteApiMovementsIdDeleteApiResponse =
-  /** status 200 Successful Response */ null;
-export type DeleteApiMovementsIdDeleteApiArg = number;
 export type ReadManyApiTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyApiTransactionsGetApiArg = {
