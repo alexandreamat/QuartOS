@@ -3,6 +3,7 @@ from decimal import Decimal
 from enum import Enum
 
 from sqlmodel import Field, Relationship, SQLModel, Session
+from sqlmodel import desc
 from pydantic import root_validator, validator
 import pycountry
 
@@ -40,7 +41,7 @@ class _AccountBase(SQLModel):
         user_id: int | None
 
     currency_code: CurrencyCode
-    balance: Decimal
+    initial_balance: Decimal
     name: str
 
     @validator("currency_code")
@@ -84,6 +85,7 @@ class AccountApiOut(_AccountBase, IdentifiableBase):
     institutionalaccount: InstitutionalAccount | None
     noninstitutionalaccount: NonInstitutionalAccount | None
     is_synced: bool
+    balance: Decimal
 
 
 class AccountPlaidIn(_AccountBase):
@@ -161,7 +163,10 @@ class Account(_AccountBase, IdentifiableBase, table=True):
 
     transactions: list["Transaction"] = Relationship(
         back_populates="account",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        sa_relationship_kwargs={
+            "cascade": "all, delete",
+            "lazy": "dynamic",
+        },
     )
 
     @classmethod
@@ -238,3 +243,13 @@ class Account(_AccountBase, IdentifiableBase, table=True):
         if self.institutionalaccount:
             return self.institutionalaccount.is_synced
         return False
+
+    @property
+    def balance(self) -> Decimal:
+        from app.features.transaction.models import Transaction
+
+        query = self.transactions
+        first_transaction: "Transaction" | None = query.order_by(desc(Transaction.timestamp)).first()  # type: ignore
+        if not first_transaction:
+            return self.initial_balance
+        return first_transaction.account_balance

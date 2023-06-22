@@ -116,7 +116,7 @@ function Inflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
 export function Flows(props: {
   outflows: TransactionApiOut[];
   inflows: TransactionApiOut[];
-  onRemove?: (transactionId: number) => void;
+  onRemove?: (x: TransactionApiOut) => void;
 }) {
   return (
     <Step.Group fluid widths={2} style={{ margin: 10 }}>
@@ -130,7 +130,7 @@ export function Flows(props: {
                   flow={transaction}
                   onRemove={
                     props.onRemove
-                      ? () => props.onRemove!(transaction.id)
+                      ? () => props.onRemove!(transaction)
                       : undefined
                   }
                 />
@@ -151,7 +151,7 @@ export function Flows(props: {
                   flow={transaction}
                   onRemove={
                     props.onRemove
-                      ? () => props.onRemove!(transaction.id)
+                      ? () => props.onRemove!(transaction)
                       : undefined
                   }
                 />

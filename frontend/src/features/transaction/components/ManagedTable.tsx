@@ -11,6 +11,7 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 export default function ManagedTable(props: {
   relatedTransactions?: TransactionApiOut[];
   onMutation?: (x: TransactionApiOut) => void;
+  onAddFlow?: (x: TransactionApiOut) => void;
 }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -89,6 +90,7 @@ export default function ManagedTable(props: {
             onOpenEditForm={handleOpenEditForm}
             onOpenCreateForm={handleOpenCreateForm}
             onMutation={infiniteQuery.reset}
+            onAddFlow={props.onAddFlow}
           />
         </FlexColumn.Auto>
       </FlexColumn>

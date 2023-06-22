@@ -1,7 +1,10 @@
-from sqlmodel import Session, select
-from app.common.crud import CRUDBase, CRUDSyncable
+from datetime import datetime
+
+from sqlmodel import Session, asc, desc
+from app.common.crud import CRUDBase
 
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import Query
 
 from app.features import user, institution, userinstitutionlink, transactiondeserialiser
 
@@ -80,3 +83,44 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
         return Account.read(db, id).is_synced
+
+    @classmethod
+    def update_balance(
+        cls, db: Session, id: int, timestamp: datetime | None = None
+    ) -> AccountApiOut:
+        from app.features.transaction.models import (
+            Transaction,
+            TransactionApiIn,
+        )
+
+        account = Account.read(db, id)
+        transactions_query: Query = account.transactions  # type: ignore
+
+        if timestamp:
+            prev_transaction: Transaction = (
+                transactions_query.where(Transaction.timestamp < timestamp)  # type: ignore
+                .order_by(desc(Transaction.timestamp))
+                .first()
+            )
+            if prev_transaction:
+                prev_balance = prev_transaction.account_balance
+            else:
+                prev_balance = account.initial_balance
+            transactions_query = transactions_query.where(
+                Transaction.timestamp >= timestamp
+            )
+        else:
+            prev_balance = account.initial_balance
+
+        transactions_query = transactions_query.order_by(
+            asc(Transaction.timestamp)
+        ).yield_per(100)
+
+        for result in transactions_query:
+            transaction: Transaction = result
+            transaction_in = TransactionApiIn(**transaction.dict())
+            transaction_in.account_balance = prev_balance + transaction.amount
+            Transaction.update(db, transaction.id, transaction_in)
+            prev_balance = transaction.account_balance
+
+        return cls.read(db, id)

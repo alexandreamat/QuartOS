@@ -44,14 +44,56 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> MovementApiOut:
     return movement
 
 
+@router.patch("/{id}")
+def update(
+    db: DBSession, current_user: CurrentUser, id: int, transaction_ids: list[int]
+) -> MovementApiOut:
+    from app.features.transaction.crud import CRUDTransaction
+    from app.features.transaction.models import TransactionApiIn
+
+    try:
+        movement = CRUDMovement.read(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
+    if CRUDMovement.read_user(db, movement.id).id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+
+    # Unlink existing transactions
+    for movement_transaction in CRUDTransaction.read_many_by_movement(db, id):
+        transaction_in = TransactionApiIn(
+            **movement_transaction.dict(exclude={"movement_id"})
+        )
+        CRUDTransaction.update(db, movement_transaction.id, transaction_in)
+
+    # Link new transactions
+    for transaction_id in transaction_ids:
+        try:
+            user = CRUDTransaction.read_user(db, transaction_id)
+        except NoResultFound:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                "Transaction ID not found: %d" % transaction_id,
+            )
+        if user.id != current_user.id:
+            raise HTTPException(status.HTTP_403_FORBIDDEN)
+        transaction_db = CRUDTransaction.read(db, transaction_id)
+        if transaction_db.movement_id:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST)
+        transaction_in = TransactionApiIn(
+            **transaction_db.dict(exclude_none=True), movement_id=movement.id
+        )
+        CRUDTransaction.update(db, transaction_db.id, transaction_in)
+
+    return movement
+
+
 @router.delete("/{id}")
 def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     try:
         movement = CRUDMovement.read(db, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
-    u = CRUDMovement.read_user(db, movement.id)
-    if u.id != current_user.id:
+    if CRUDMovement.read_user(db, movement.id).id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     CRUDMovement.delete(db, id)
 

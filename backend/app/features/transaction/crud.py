@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from sqlmodel import Session, select, col, or_, and_
 from sqlalchemy import desc
@@ -158,13 +159,18 @@ class CRUDTransaction(
         return cls.db_model.read(db, id).is_synced
 
     @classmethod
-    def create(cls, db: Session, new_schema_obj: TransactionApiIn) -> TransactionApiOut:
-        new_obj_out = super().create(db, new_schema_obj)
-        return new_obj_out
+    def create(cls, db: Session, transaction_in: TransactionApiIn) -> TransactionApiOut:
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = super().create(db, transaction_in)
+        account.crud.CRUDAccount.update_balance(
+            db, transaction_out.account_id, transaction_out.timestamp
+        )
+        return transaction_out
 
     @classmethod
     def update(
-        cls, db: Session, id: int, new_obj_in: TransactionApiIn
+        cls, db: Session, id: int, transaction_in: TransactionApiIn
     ) -> TransactionApiOut:
-        new_obj_out = super().update(db, id, new_obj_in)
-        return new_obj_out
+        if not transaction_in.account_balance:
+            transaction_in.account_balance = cls.read(db, id).account_balance
+        return super().update(db, id, transaction_in)

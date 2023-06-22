@@ -3,7 +3,10 @@ import { Placeholder } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { MovementCard } from "./MovementCard";
 
-export function Movement(props: { movement: MovementApiOut }) {
+export function Movement(props: {
+  movement: MovementApiOut;
+  onOpenEditForm: () => void;
+}) {
   const transactionsQuery =
     api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
       props.movement.id
@@ -44,6 +47,7 @@ export function Movement(props: { movement: MovementApiOut }) {
       outflows={outflows}
       name={firstTransaction.name}
       onDelete={handleDelete}
+      onOpenEditForm={props.onOpenEditForm}
       movement={props.movement}
     />
   );

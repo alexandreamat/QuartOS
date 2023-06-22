@@ -53,7 +53,6 @@ def user_read(users_db: Session) -> UserApiOut:
 def superuser_client(
     db: Session, client: TestClient, superuser_read: UserApiOut
 ) -> Generator[TestClient, None, None]:
-    print(superuser_read)
     app.dependency_overrides[get_current_user] = lambda: superuser_read
     client = TestClient(app)
     yield client

@@ -9,7 +9,7 @@ import EmptyTablePlaceholder from "components/TablePlaceholder";
 import CurrencyLabel from "components/CurrencyLabel";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import ActionButton from "components/ActionButton";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import AccountIcon from "features/account/components/Icon";
 
 function TransactionRow(
@@ -22,14 +22,13 @@ function TransactionRow(
           relatedTransactionId: number
         ) => void;
         onDelete: () => void;
+        onAddFlow?: () => void;
       }
     | {
         transaction: TransactionApiOut | TransactionApiIn;
       }
 ) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
 
   const hasActions = "onOpenEditForm" in props;
   const accountQueries = useAccountQueries(props.transaction.account_id);
@@ -47,13 +46,15 @@ function TransactionRow(
     if (hasActions) props.onDelete();
   };
 
-  function handleGoToCreateMovementForm(transaction: TransactionApiOut) {
-    var transactionIds = params.get("transactionIds")?.split(",").map(Number);
-    const transactionIdsSet = new Set(transactionIds).add(transaction.id);
-    transactionIds = Array.from(transactionIdsSet);
-    navigate(
-      `/movements/?isFormOpen=true&transactionIds=${transactionIds.join(",")}`
-    );
+  function handleGoToCreateMovementForm() {
+    if (!hasActions) return;
+    if (props.onAddFlow) {
+      props.onAddFlow();
+    } else {
+      navigate(
+        `/movements/?formMode=create&transactionId=${props.transaction.id}`
+      );
+    }
   }
 
   return (
@@ -98,7 +99,7 @@ function TransactionRow(
             <ActionButton
               disabled={Boolean(props.transaction.movement_id)}
               icon="linkify"
-              onClick={() => handleGoToCreateMovementForm(props.transaction)}
+              onClick={handleGoToCreateMovementForm}
             />
           </Table.Cell>
           <Table.Cell collapsing>
@@ -129,6 +130,7 @@ export default function TransactionsTable(
           relatedTransactionId: number
         ) => void;
         onMutation: () => void;
+        onAddFlow?: (x: TransactionApiOut) => void;
       }
     | {
         transactionPages: (TransactionApiOut | TransactionApiIn)[][];
@@ -164,6 +166,9 @@ export default function TransactionsTable(
                   onOpenEditForm={props.onOpenEditForm}
                   onOpenCreateForm={props.onOpenCreateForm}
                   onDelete={props.onMutation}
+                  onAddFlow={
+                    props.onAddFlow && (() => props.onAddFlow!(transaction))
+                  }
                 />
               ))
             )

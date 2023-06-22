@@ -1,83 +1,44 @@
 import { Flows } from "./Flows";
 import { useEffect, useState } from "react";
-import ManagedTable from "features/transaction/components/ManagedTable";
+import TransactionsManagedTable from "features/transaction/components/ManagedTable";
 import { Button, Modal } from "semantic-ui-react";
 import FlexColumn from "components/FlexColumn";
-import { TransactionApiOut, api } from "app/services/api";
+import { MovementApiOut, TransactionApiOut, api } from "app/services/api";
 import { logMutationError } from "utils/error";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useLocation, useNavigate } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
+import { SimpleQuery } from "interfaces";
 
-export default function Form(props: { open: boolean; onClose: () => void }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const [transactionIds, setTransactionIds] = useState<number[]>([]);
-  const [flows, setFlows] = useState<Record<number, TransactionApiOut>>({});
-
-  const transactionsQuery = api.endpoints.readManyApiTransactionsGet.useQuery(
-    transactionIds.length ? { ids: transactionIds.join() } : skipToken
-  );
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const transactionIdsStr = params.get("transactionIds");
-    if (!transactionIdsStr) return;
-
-    setTransactionIds((prevTransactionIds) => [
-      ...prevTransactionIds,
-      ...transactionIdsStr.split(",").map(Number),
-    ]);
-
-    params.delete("transactionIds");
-    navigate({ ...location, search: params.toString() }, { replace: true });
-  }, [location, navigate]);
-
-  useEffect(() => {
-    if (!transactionsQuery.isSuccess) return;
-    setFlows(
-      transactionsQuery.data.reduce((acc, t) => ({ ...acc, [t.id]: t }), {})
-    );
-  }, [transactionsQuery.isSuccess, transactionsQuery.data]);
+const Form = (props: {
+  onClose: () => void;
+  onSubmit: (x: TransactionApiOut[]) => Promise<void>;
+  query: SimpleQuery;
+  flows: Record<number, TransactionApiOut>;
+}) => {
+  const [flows, setFlows] = useState(props.flows);
 
   const outflows = Object.values(flows).filter((t) => t.amount < 0);
   const inflows = Object.values(flows).filter((t) => t.amount >= 0);
 
-  const [createMovement, createMovementResult] =
-    api.endpoints.createApiMovementsPost.useMutation();
-
   function handleClose() {
     setFlows({});
-    setTransactionIds([]);
     props.onClose();
   }
 
-  async function handleSubmit() {
-    // if (!outflows.length) return;
-    // if (!inflows.length) return;
-    try {
-      await createMovement(Object.keys(flows).map(Number)).unwrap();
-    } catch (error) {
-      logMutationError(error, createMovementResult);
-      return;
-    }
-    handleClose();
+  function handleAddFlow(transaction: TransactionApiOut) {
+    setFlows((prevFlows) => ({ [transaction.id]: transaction, ...prevFlows }));
   }
 
-  const handleMutation = (transaction: TransactionApiOut) => {
-    const transactionIdsSet = new Set(transactionIds).add(transaction.id);
-    setTransactionIds(Array.from(transactionIdsSet));
-  };
-
-  function handleRemoveFlow(transactionId: number) {
-    const newTxIds = transactionIds.filter((id) => id !== transactionId);
-    if (!newTxIds.length) setFlows([]);
-    setTransactionIds(transactionIds.filter((id) => id !== transactionId));
+  function handleRemoveFlow(transaction: TransactionApiOut) {
+    setFlows((prevFlows) => {
+      const { [transaction.id]: _, ...remaining } = prevFlows;
+      return remaining;
+    });
   }
 
   return (
-    <Modal open={props.open} onClose={handleClose} size="fullscreen">
+    <Modal open={true} onClose={handleClose} size="fullscreen">
       <Modal.Header>Create a Movement</Modal.Header>
       <Modal.Content>
         <div style={{ height: "70vh" }}>
@@ -87,11 +48,12 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
               outflows={outflows}
               onRemove={handleRemoveFlow}
             />
-            <QueryErrorMessage query={createMovementResult} />
+            <QueryErrorMessage query={props.query} />
             <FlexColumn.Auto>
-              <ManagedTable
+              <TransactionsManagedTable
                 relatedTransactions={Object.values(flows)}
-                onMutation={handleMutation}
+                onMutation={handleAddFlow}
+                onAddFlow={handleAddFlow}
               />
             </FlexColumn.Auto>
           </FlexColumn>
@@ -104,10 +66,111 @@ export default function Form(props: { open: boolean; onClose: () => void }) {
           type="submit"
           labelPosition="right"
           icon="checkmark"
-          onClick={handleSubmit}
+          onClick={async () => await props.onSubmit(Object.values(flows))}
           positive
         />
       </Modal.Actions>
     </Modal>
   );
-}
+};
+
+const FormCreate = (props: { onClose: () => void }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [transactionId, setTransactionId] = useState(0);
+  const [flow, setFlow] = useState<TransactionApiOut | undefined>();
+
+  const transactionQuery = api.endpoints.readApiTransactionsIdGet.useQuery(
+    transactionId || skipToken
+  );
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const transactionIdStr = params.get("transactionId");
+    if (!transactionIdStr) return;
+
+    setTransactionId(Number(transactionIdStr));
+
+    params.delete("transactionId");
+    navigate({ ...location, search: params.toString() }, { replace: true });
+  }, [location, navigate]);
+
+  useEffect(() => {
+    if (transactionQuery.isSuccess) setFlow(transactionQuery.data);
+  }, [transactionQuery.isSuccess, transactionQuery.data]);
+
+  const [createMovement, createMovementResult] =
+    api.endpoints.createApiMovementsPost.useMutation();
+
+  function handleClose() {
+    setFlow(undefined);
+    setTransactionId(0);
+    props.onClose();
+  }
+
+  async function handleSubmit(flows: TransactionApiOut[]) {
+    // if (!outflows.length) return;
+    // if (!inflows.length) return;
+    try {
+      await createMovement(flows.map((f) => f.id)).unwrap();
+    } catch (error) {
+      logMutationError(error, createMovementResult);
+      return;
+    }
+    handleClose();
+  }
+
+  return (
+    <Form
+      onClose={handleClose}
+      onSubmit={handleSubmit}
+      query={createMovementResult}
+      flows={flow ? { [flow.id]: flow } : {}}
+    />
+  );
+};
+
+const FormEdit = (props: { onClose: () => void; movement: MovementApiOut }) => {
+  const transactionsQuery =
+    api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
+      props.movement.id
+    );
+
+  const flows = transactionsQuery.isSuccess
+    ? Object.fromEntries(transactionsQuery.data.map((t) => [t.id, t]))
+    : {};
+
+  const [editMovement, editMovementResult] =
+    api.endpoints.updateApiMovementsIdPatch.useMutation();
+
+  async function handleSubmit(flows: TransactionApiOut[]) {
+    console.log(flows);
+    // if (!outflows.length) return;
+    // if (!inflows.length) return;
+    try {
+      await editMovement({
+        id: props.movement.id,
+        body: flows.map((f) => f.id),
+      }).unwrap();
+    } catch (error) {
+      logMutationError(error, editMovementResult);
+      return;
+    }
+    props.onClose();
+  }
+
+  return (
+    <Form
+      onClose={props.onClose}
+      flows={flows}
+      onSubmit={handleSubmit}
+      query={editMovementResult}
+    />
+  );
+};
+
+Form.Create = FormCreate;
+Form.Edit = FormEdit;
+
+export default Form;
