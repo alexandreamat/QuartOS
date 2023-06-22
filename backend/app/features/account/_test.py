@@ -46,7 +46,7 @@ def accounts_write(
             type="depository",
             user_id=user_read.id,
             userinstitutionlink_id=user_institution_links_read[0].id,
-            balance=123.12,
+            initial_balance=123.12,
             mask="1111",
         ),
         AccountApiIn(
@@ -55,7 +55,7 @@ def accounts_write(
             number="222",
             type="investment",
             userinstitutionlink_id=user_institution_links_read[1].id,
-            balance=123.12,
+            initial_balance=123.12,
             mask="2222",
         ),
         AccountApiIn(
@@ -64,7 +64,7 @@ def accounts_write(
             number="aaa",
             type="loan",
             userinstitutionlink_id=user_institution_links_read[2].id,
-            balance=123.12,
+            initial_balance=123.12,
             mask="3333",
         ),
         AccountApiIn(
@@ -73,7 +73,7 @@ def accounts_write(
             number="bbb",
             type="credit",
             userinstitutionlink_id=user_institution_links_read[0].id,
-            balance=123.12,
+            initial_balance=123.12,
             mask="4444",
         ),
         AccountApiIn(
@@ -82,7 +82,7 @@ def accounts_write(
             number="999",
             type="depository",
             userinstitutionlink_id=user_institution_links_read[1].id,
-            balance=123.12,
+            initial_balance=123.12,
             mask="5555",
         ),
     ]
