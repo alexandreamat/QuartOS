@@ -1,5 +1,5 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
-import { Icon, Table } from "semantic-ui-react";
+import { Icon, Popup, Table } from "semantic-ui-react";
 import LoadableQuery from "components/LoadableCell";
 import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
@@ -11,6 +11,7 @@ import FormattedTimestamp from "components/FormattedTimestamp";
 import ActionButton from "components/ActionButton";
 import { useNavigate } from "react-router-dom";
 import AccountIcon from "features/account/components/Icon";
+import { FormattedCurrency } from "components/FormattedCurrency";
 
 function TransactionRow(
   props:
@@ -75,9 +76,26 @@ function TransactionRow(
       </Table.Cell>
       <Table.Cell>{props.transaction.name}</Table.Cell>
       <Table.Cell collapsing>
-        <CurrencyLabel
-          amount={props.transaction.amount}
-          currencyCode={props.transaction.currency_code}
+        <Popup
+          disabled={!hasActions}
+          position="left center"
+          content={
+            <p>
+              Account balance:
+              <FormattedCurrency
+                amount={props.transaction.account_balance || 0}
+                currencyCode={props.transaction.currency_code}
+              />
+            </p>
+          }
+          trigger={
+            <div>
+              <CurrencyLabel
+                amount={props.transaction.amount}
+                currencyCode={props.transaction.currency_code}
+              />
+            </div>
+          }
         />
       </Table.Cell>
       <Table.Cell collapsing textAlign="center">

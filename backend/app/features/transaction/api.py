@@ -55,6 +55,7 @@ def read_many(
     timestamp: datetime | None = None,
     search: str | None = None,
     ids: str | None = None,
+    is_descending: bool = True,
 ) -> list[TransactionApiOut]:
     if ids:
         transactions = []
@@ -68,7 +69,7 @@ def read_many(
             transactions.append(transaction)
         return transactions
     return CRUDTransaction.read_many_by_user(
-        db, current_user.id, page, per_page, search, timestamp
+        db, current_user.id, page, per_page, search, timestamp, is_descending
     )
 
 

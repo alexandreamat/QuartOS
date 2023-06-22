@@ -65,6 +65,7 @@ def read_transactions(
     per_page: int = 0,
     timestamp: datetime | None = None,
     search: str | None = None,
+    is_descending: bool = True,
 ) -> list[TransactionApiOut]:
     from app.features import transaction
 
@@ -76,7 +77,7 @@ def read_transactions(
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
     return transaction.crud.CRUDTransaction.read_many_by_account(
-        db, account.id, page, per_page, search, timestamp
+        db, account.id, page, per_page, search, timestamp, is_descending
     )
 
 

@@ -21,6 +21,8 @@ export default function Bar(props: {
   onSearchChange: (x: string) => void;
   timestamp?: Date;
   onTimestampChange: (x: Date | undefined) => void;
+  isDescending: boolean;
+  onToggleIsDescending: () => void;
 }) {
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
@@ -95,6 +97,13 @@ export default function Bar(props: {
             <RemoveCircle onClick={() => props.onTimestampChange(undefined)} />
           </Menu.Item>
         )}
+      </Menu.Item>
+      <Menu.Item position="right">
+        <Button icon onClick={props.onToggleIsDescending}>
+          <Icon
+            name={props.isDescending ? "sort amount down" : "sort amount up"}
+          />
+        </Button>
       </Menu.Item>
       <Menu.Item position="right">
         <Button icon labelPosition="left" onClick={handleUpload}>

@@ -367,6 +367,7 @@ const injectedRtkApi = api
             per_page: queryArg.perPage,
             timestamp: queryArg.timestamp,
             search: queryArg.search,
+            is_descending: queryArg.isDescending,
           },
         }),
         providesTags: ["accounts"],
@@ -463,6 +464,7 @@ const injectedRtkApi = api
             timestamp: queryArg.timestamp,
             search: queryArg.search,
             ids: queryArg.ids,
+            is_descending: queryArg.isDescending,
           },
         }),
         providesTags: ["transactions"],
@@ -680,6 +682,7 @@ export type ReadTransactionsApiAccountsIdTransactionsGetApiArg = {
   perPage?: number;
   timestamp?: string;
   search?: string;
+  isDescending?: boolean;
 };
 export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiResponse =
   /** status 200 Successful Response */ TransactionApiIn[];
@@ -723,6 +726,7 @@ export type ReadManyApiTransactionsGetApiArg = {
   timestamp?: string;
   search?: string;
   ids?: string;
+  isDescending?: boolean;
 };
 export type CreateApiTransactionsPostApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];

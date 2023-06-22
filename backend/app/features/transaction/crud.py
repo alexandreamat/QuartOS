@@ -1,8 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlmodel import Session, select, col, or_, and_
-from sqlalchemy import desc
+from sqlmodel import Session, select, col, or_, and_, desc, asc
 
 from app.common.crud import CRUDBase, CRUDSyncable
 from app.features import account, userinstitutionlink, institution, user, movement
@@ -77,6 +76,7 @@ class CRUDTransaction(
         per_page: int,
         search: str | None,
         timestamp: datetime | None,
+        is_descending: bool,
     ) -> list[TransactionApiOut]:
         offset = (page - 1) * per_page if page and per_page else 0
 
@@ -92,16 +92,26 @@ class CRUDTransaction(
                     account.models.Account.NonInstitutionalAccount.user_id == user_id,
                 )
             )
-            .order_by(desc(Transaction.timestamp))
         )
 
-        if timestamp:
-            statement = statement.where(
-                and_(
-                    col(Transaction.timestamp).isnot(None),
-                    col(Transaction.timestamp) < timestamp,
+        if is_descending:
+            statement = statement.order_by(desc(Transaction.timestamp))
+            if timestamp:
+                statement = statement.where(
+                    and_(
+                        col(Transaction.timestamp).isnot(None),
+                        col(Transaction.timestamp) <= timestamp,
+                    )
                 )
-            )
+        else:
+            statement = statement.order_by(asc(Transaction.timestamp))
+            if timestamp:
+                statement = statement.where(
+                    and_(
+                        col(Transaction.timestamp).isnot(None),
+                        col(Transaction.timestamp) >= timestamp,
+                    )
+                )
 
         if search:
             search = f"%{search}%"
@@ -124,6 +134,7 @@ class CRUDTransaction(
         per_page: int,
         search: str | None,
         timestamp: datetime | None,
+        is_descending: bool,
     ) -> list[TransactionApiOut]:
         offset = (page - 1) * per_page if page and per_page else 0
 
@@ -131,16 +142,26 @@ class CRUDTransaction(
             select(Transaction)
             .join(account.models.Account)
             .filter(account.models.Account.id == account_id)
-            .order_by(desc(Transaction.timestamp))
         )
 
-        if timestamp:
-            statement = statement.where(
-                and_(
-                    col(Transaction.timestamp).isnot(None),
-                    col(Transaction.timestamp) < timestamp,
+        if is_descending:
+            statement = statement.order_by(desc(Transaction.timestamp))
+            if timestamp:
+                statement = statement.where(
+                    and_(
+                        col(Transaction.timestamp).isnot(None),
+                        col(Transaction.timestamp) <= timestamp,
+                    )
                 )
-            )
+        else:
+            statement = statement.order_by(asc(Transaction.timestamp))
+            if timestamp:
+                statement = statement.where(
+                    and_(
+                        col(Transaction.timestamp).isnot(None),
+                        col(Transaction.timestamp) >= timestamp,
+                    )
+                )
 
         if search:
             search = f"%{search}%"
