@@ -40,6 +40,7 @@ export function useTransactionsQuery(arg: {
   perPage?: number;
   page?: number;
   timestamp?: Date;
+  isDescending: boolean;
 }) {
   const transactionsQuery = arg.accountId
     ? api.endpoints.readTransactionsApiAccountsIdTransactionsGet.useQuery({
@@ -48,12 +49,14 @@ export function useTransactionsQuery(arg: {
         perPage: arg.perPage,
         timestamp: arg.timestamp && arg.timestamp.toISOString(),
         search: arg.search,
+        isDescending: arg.isDescending,
       })
     : api.endpoints.readManyApiTransactionsGet.useQuery({
         page: arg.page,
         perPage: arg.perPage,
         timestamp: arg.timestamp && arg.timestamp.toISOString(),
         search: arg.search,
+        isDescending: arg.isDescending,
       });
   return transactionsQuery;
 }

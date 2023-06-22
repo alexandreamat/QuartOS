@@ -23,6 +23,7 @@ export default function ManagedTable(props: {
   const [accountId, setAccountId] = useState(0);
   const [search, setSearch] = useState("");
   const [timestamp, setTimestamp] = useState<Date | undefined>(undefined);
+  const [isDescending, setIsDescending] = useState(true);
 
   const handleOpenCreateForm = (accountId: number) => {
     setSelectedAccountId(accountId);
@@ -41,7 +42,6 @@ export default function ManagedTable(props: {
     setSelectedTransaction(undefined);
     setIsFormOpen(false);
   };
-
   const handleAccountIdChange = (value: number) => {
     infiniteQuery.reset();
     setAccountId(value);
@@ -57,6 +57,11 @@ export default function ManagedTable(props: {
     setTimestamp(value);
   }
 
+  function handleToggleIsDescending() {
+    infiniteQuery.reset();
+    setIsDescending((prev) => !prev);
+  }
+
   const infiniteQuery = useInfiniteQuery<
     TransactionApiOut,
     Parameters<typeof useTransactionsQuery>[0]
@@ -66,6 +71,7 @@ export default function ManagedTable(props: {
       timestamp,
       accountId: accountId,
       search,
+      isDescending,
     },
     20,
     props.onMutation
@@ -82,6 +88,8 @@ export default function ManagedTable(props: {
           onSearchChange={handleSearchChange}
           timestamp={timestamp}
           onTimestampChange={handleTimestampChange}
+          isDescending={isDescending}
+          onToggleIsDescending={handleToggleIsDescending}
         />
         <FlexColumn.Auto reference={infiniteQuery.reference}>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
