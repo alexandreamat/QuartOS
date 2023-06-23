@@ -47,14 +47,20 @@ function TransactionRow(
     if (hasActions) props.onDelete();
   };
 
-  function handleGoToCreateMovementForm() {
+  function handleGoToMovementForm() {
     if (!hasActions) return;
     if (props.onAddFlow) {
       props.onAddFlow();
     } else {
-      navigate(
-        `/movements/?formMode=create&transactionId=${props.transaction.id}`
-      );
+      let params = new URLSearchParams();
+      if (props.transaction.movement_id) {
+        params.append("formMode", "edit");
+        params.append("movementId", props.transaction.movement_id.toString());
+      } else {
+        params.append("formMode", "create");
+        params.append("transactionId", props.transaction.id.toString());
+      }
+      navigate(`/movements/?${params.toString()}`);
     }
   }
 
@@ -114,10 +120,20 @@ function TransactionRow(
       {hasActions && (
         <>
           <Table.Cell collapsing>
-            <ActionButton
-              disabled={Boolean(props.transaction.movement_id)}
-              icon="linkify"
-              onClick={handleGoToCreateMovementForm}
+            <Popup
+              content={
+                props.transaction.movement_id
+                  ? "Edit Movement"
+                  : "Create movement"
+              }
+              trigger={
+                <div>
+                  <ActionButton
+                    icon="arrows alternate horizontal"
+                    onClick={handleGoToMovementForm}
+                  />
+                </div>
+              }
             />
           </Table.Cell>
           <Table.Cell collapsing>
