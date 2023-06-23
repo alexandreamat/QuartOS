@@ -3,7 +3,8 @@ from decimal import Decimal
 from datetime import datetime
 import pytz
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, Session
+from sqlmodel.sql.expression import SelectOfScalar
 from pydantic import validator
 
 from app.common.models import IdentifiableBase, CurrencyCode, PlaidBase, PlaidMaybeMixin
@@ -102,3 +103,33 @@ class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=Tr
     @property
     def is_synced(self) -> bool:
         return self.account.is_synced
+
+    @classmethod
+    def read_from_query(
+        cls,
+        db: Session,
+        page: int,
+        per_page: int,
+        search: str | None,
+        timestamp: datetime | None,
+        is_descending: bool,
+        statement: SelectOfScalar["Transaction"],
+    ) -> list["Transaction"]:
+        order_op = desc if is_descending else asc
+        order_clauses = order_op(Transaction.timestamp), order_op(Transaction.id)
+        statement = statement.order_by(*order_clauses)
+
+        if timestamp:
+            where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
+            where_clause = getattr(col(Transaction.timestamp), where_op)(timestamp)
+            statement = statement.where(where_clause)
+
+        if search:
+            search = f"%{search}%"
+            statement = statement.where(col(Transaction.name).like(search))
+
+        if per_page:
+            offset = (page - 1) * per_page
+            statement = statement.offset(offset).limit(per_page)
+        transactions: list["Transaction"] = db.exec(statement).all()
+        return transactions
