@@ -9,12 +9,15 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useLocation, useNavigate } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { SimpleQuery } from "interfaces";
+import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 
 const Form = (props: {
   onClose: () => void;
   onSubmit: (x: TransactionApiOut[]) => Promise<void>;
-  query: SimpleQuery;
+  editQuery: SimpleQuery;
   flows: Record<number, TransactionApiOut>;
+  onDelete?: () => Promise<void>;
+  deleteQuery?: SimpleQuery;
 }) => {
   const [flows, setFlows] = useState(props.flows);
 
@@ -58,7 +61,7 @@ const Form = (props: {
               outflows={outflows}
               onRemove={handleRemoveFlow}
             />
-            <QueryErrorMessage query={props.query} />
+            <QueryErrorMessage query={props.editQuery} />
             <FlexColumn.Auto>
               <TransactionsManagedTable
                 relatedTransactions={Object.values(flows)}
@@ -71,6 +74,12 @@ const Form = (props: {
         </div>
       </Modal.Content>
       <Modal.Actions>
+        {props.deleteQuery && props.onDelete && (
+          <ConfirmDeleteButtonModal
+            onDelete={props.onDelete!}
+            query={props.deleteQuery}
+          />
+        )}
         <Button onClick={handleClose}>Cancel</Button>
         <Button
           content="Save"
@@ -136,7 +145,7 @@ const FormCreate = (props: { onClose: () => void }) => {
     <Form
       onClose={handleClose}
       onSubmit={handleSubmit}
-      query={createMovementResult}
+      editQuery={createMovementResult}
       flows={flow ? { [flow.id]: flow } : {}}
     />
   );
@@ -155,6 +164,9 @@ const FormEdit = (props: { onClose: () => void; movement: MovementApiOut }) => {
   const [editMovement, editMovementResult] =
     api.endpoints.updateApiMovementsIdPatch.useMutation();
 
+  const [deleteMovement, deleteMovementResult] =
+    api.endpoints.deleteApiMovementsIdDelete.useMutation();
+
   async function handleSubmit(flows: TransactionApiOut[]) {
     // if (!outflows.length) return;
     // if (!inflows.length) return;
@@ -170,12 +182,24 @@ const FormEdit = (props: { onClose: () => void; movement: MovementApiOut }) => {
     props.onClose();
   }
 
+  const handleDelete = async () => {
+    try {
+      await deleteMovement(props.movement.id).unwrap();
+    } catch (error) {
+      logMutationError(error, deleteMovementResult);
+      return;
+    }
+    props.onClose();
+  };
+
   return (
     <Form
       onClose={props.onClose}
       flows={flows}
       onSubmit={handleSubmit}
-      query={editMovementResult}
+      editQuery={editMovementResult}
+      deleteQuery={deleteMovementResult}
+      onDelete={handleDelete}
     />
   );
 };

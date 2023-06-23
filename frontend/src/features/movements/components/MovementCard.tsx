@@ -1,15 +1,11 @@
 import { MovementApiOut, TransactionApiOut } from "app/services/api";
-import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import { Card, Grid, Header } from "semantic-ui-react";
 import { Flows } from "./Flows";
 import CurrencyLabel from "components/CurrencyLabel";
-import { SimpleQuery } from "interfaces";
 import EditActionButton from "components/EditActionButton";
 
 export function MovementCard(props: {
-  deleteQuery: SimpleQuery;
-  onDelete: () => Promise<void>;
   onOpenEditForm: () => void;
   name: string;
   outflows: TransactionApiOut[];
@@ -32,12 +28,6 @@ export function MovementCard(props: {
           </Grid.Column>
           <Grid.Column width={1} textAlign="center">
             <EditActionButton onOpenEditForm={props.onOpenEditForm} />
-          </Grid.Column>
-          <Grid.Column width={1} textAlign="center">
-            <ConfirmDeleteButton
-              query={props.deleteQuery}
-              onDelete={props.onDelete}
-            />
           </Grid.Column>
         </Grid>
         <Flows inflows={props.inflows} outflows={props.outflows} />
