@@ -1,4 +1,4 @@
-import { Button, SemanticICONS } from "semantic-ui-react";
+import { Button, SemanticCOLORS, SemanticICONS } from "semantic-ui-react";
 
 const ActionButton = (props: {
   onClick: () => void;
@@ -6,8 +6,10 @@ const ActionButton = (props: {
   disabled?: boolean;
   content?: string;
   loading?: boolean;
+  color?: SemanticCOLORS;
 }) => (
   <Button
+    color={props.color}
     loading={props.loading}
     disabled={props.disabled}
     circular

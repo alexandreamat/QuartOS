@@ -1,5 +1,5 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
-import { Icon, Popup, Table } from "semantic-ui-react";
+import { Checkbox, CheckboxProps, Icon, Popup, Table } from "semantic-ui-react";
 import LoadableQuery from "components/LoadableCell";
 import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
@@ -23,7 +23,8 @@ function TransactionRow(
           relatedTransactionId: number
         ) => void;
         onDelete: () => void;
-        onAddFlow?: () => void;
+        onCheckboxChange?: (x: boolean) => void;
+        checked?: boolean;
       }
     | {
         transaction: TransactionApiOut | TransactionApiIn;
@@ -47,21 +48,19 @@ function TransactionRow(
     if (hasActions) props.onDelete();
   };
 
-  function handleGoToMovementForm() {
+  function handleGoToCreateMovementForm() {
     if (!hasActions) return;
-    if (props.onAddFlow) {
-      props.onAddFlow();
-    } else {
-      let params = new URLSearchParams();
-      if (props.transaction.movement_id) {
-        params.append("formMode", "edit");
-        params.append("movementId", props.transaction.movement_id.toString());
-      } else {
-        params.append("formMode", "create");
-        params.append("transactionId", props.transaction.id.toString());
-      }
-      navigate(`/movements/?${params.toString()}`);
-    }
+    let params = new URLSearchParams();
+    params.append("formMode", "create");
+    params.append("transactionId", props.transaction.id.toString());
+    navigate(`/movements/?${params.toString()}`);
+  }
+
+  function handleGoToEditMovementForm() {
+    let params = new URLSearchParams();
+    params.append("formMode", "edit");
+    params.append("movementId", props.transaction.movement_id!.toString());
+    navigate(`/movements/?${params.toString()}`);
   }
 
   return (
@@ -120,21 +119,45 @@ function TransactionRow(
       {hasActions && (
         <>
           <Table.Cell collapsing>
-            <Popup
-              content={
-                props.transaction.movement_id
-                  ? "Edit Movement"
-                  : "Create movement"
-              }
-              trigger={
-                <div>
-                  <ActionButton
-                    icon="arrows alternate horizontal"
-                    onClick={handleGoToMovementForm}
+            {props.onCheckboxChange ? (
+              <Popup
+                content="Add to the movement"
+                trigger={
+                  <Checkbox
+                    checked={props.checked}
+                    onChange={(
+                      event: React.FormEvent<HTMLInputElement>,
+                      data: CheckboxProps
+                    ) => props.onCheckboxChange!(data.checked || false)}
                   />
-                </div>
-              }
-            />
+                }
+              />
+            ) : props.transaction.movement_id ? (
+              <Popup
+                content="Edit Movement"
+                trigger={
+                  <div>
+                    <ActionButton
+                      color="grey"
+                      icon="arrows alternate horizontal"
+                      onClick={handleGoToEditMovementForm}
+                    />
+                  </div>
+                }
+              />
+            ) : (
+              <Popup
+                content="Create movement"
+                trigger={
+                  <div>
+                    <ActionButton
+                      icon="arrows alternate horizontal"
+                      onClick={handleGoToCreateMovementForm}
+                    />
+                  </div>
+                }
+              />
+            )}
           </Table.Cell>
           <Table.Cell collapsing>
             <EditActionButton
@@ -164,7 +187,11 @@ export default function TransactionsTable(
           relatedTransactionId: number
         ) => void;
         onMutation: () => void;
-        onAddFlow?: (x: TransactionApiOut) => void;
+        onFlowCheckboxChange?: (
+          flow: TransactionApiOut,
+          checked: boolean
+        ) => void;
+        checked?: number[];
       }
     | {
         transactionPages: (TransactionApiOut | TransactionApiIn)[][];
@@ -193,16 +220,18 @@ export default function TransactionsTable(
       <Table.Body>
         {hasActions
           ? props.transactionPages.map((transactionPage, i) =>
-              transactionPage.map((transaction, j) => (
+              transactionPage.map((t, j) => (
                 <TransactionRow
                   key={i * 20 + j}
-                  transaction={transaction}
+                  transaction={t}
                   onOpenEditForm={props.onOpenEditForm}
                   onOpenCreateForm={props.onOpenCreateForm}
                   onDelete={props.onMutation}
-                  onAddFlow={
-                    props.onAddFlow && (() => props.onAddFlow!(transaction))
+                  onCheckboxChange={
+                    props.onFlowCheckboxChange &&
+                    ((c) => props.onFlowCheckboxChange!(t, c))
                   }
+                  checked={props.checked?.includes(t.id)}
                 />
               ))
             )
