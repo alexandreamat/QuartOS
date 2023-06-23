@@ -94,7 +94,7 @@ function MobileApp() {
 }
 
 function DesktopApp() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
