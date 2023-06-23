@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from sqlmodel import Session, select, col, or_, and_, desc, asc
+from sqlmodel import Session, select, or_
 
 from app.common.crud import CRUDBase, CRUDSyncable
 from app.features import account, userinstitutionlink, institution, user, movement
@@ -91,26 +91,9 @@ class CRUDTransaction(
                 )
             )
         )
-
-        order_op = desc if is_descending else asc
-        order_clauses = order_op(Transaction.timestamp), order_op(Transaction.id)
-        statement = statement.order_by(*order_clauses)
-
-        if timestamp:
-            where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
-            where_clause = getattr(col(Transaction.timestamp), where_op)(timestamp)
-            statement = statement.where(where_clause)
-
-        if search:
-            search = f"%{search}%"
-            statement = statement.where(col(Transaction.name).like(search))
-
-        if per_page:
-            offset = (page - 1) * per_page
-            statement = statement.offset(offset).limit(per_page)
-
-        transactions = db.exec(statement).all()
-
+        transactions = Transaction.read_from_query(
+            db, page, per_page, search, timestamp, is_descending, statement
+        )
         return [cls.api_out_model.from_orm(t) for t in transactions]
 
     @classmethod
@@ -129,26 +112,9 @@ class CRUDTransaction(
             .join(account.models.Account)
             .filter(account.models.Account.id == account_id)
         )
-
-        order_op = desc if is_descending else asc
-        order_clauses = order_op(Transaction.timestamp), order_op(Transaction.id)
-        statement = statement.order_by(*order_clauses)
-
-        if timestamp:
-            where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
-            where_clause = getattr(col(Transaction.timestamp), where_op)(timestamp)
-            statement = statement.where(where_clause)
-
-        if search:
-            search = f"%{search}%"
-            statement = statement.where(col(Transaction.name).like(search))
-
-        if per_page:
-            offset = (page - 1) * per_page
-            statement = statement.offset(offset).limit(per_page)
-
-        transactions = db.exec(statement).all()
-
+        transactions = Transaction.read_from_query(
+            db, page, per_page, search, timestamp, is_descending, statement
+        )
         return [cls.api_out_model.from_orm(t) for t in transactions]
 
     @classmethod
