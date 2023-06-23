@@ -46,8 +46,12 @@ export function MovementCard(props: {
         <Header as="h5" floated="right">
           Total:
           {Object.entries(props.movement.amounts).map(
-            ([currencyCode, amount]) => (
-              <CurrencyLabel amount={amount} currencyCode={currencyCode} />
+            ([currencyCode, amount], i) => (
+              <CurrencyLabel
+                key={i}
+                amount={amount}
+                currencyCode={currencyCode}
+              />
             )
           )}
         </Header>

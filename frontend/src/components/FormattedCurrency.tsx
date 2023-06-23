@@ -3,11 +3,11 @@ export function FormattedCurrency(props: {
   currencyCode: string;
 }) {
   return (
-    <p>
+    <>
       {props.amount.toLocaleString(undefined, {
         style: "currency",
         currency: props.currencyCode,
       })}
-    </p>
+    </>
   );
 }

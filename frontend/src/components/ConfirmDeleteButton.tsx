@@ -37,7 +37,7 @@ export default function ConfirmDeleteButton(props: {
           try {
             await props.onDelete();
           } catch (error) {
-            console.log(error);
+            console.error(error);
             return;
           }
           setConfirmOpen(false);
