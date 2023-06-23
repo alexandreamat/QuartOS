@@ -7,6 +7,7 @@ import Form from "./components/Form";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export default function Movements() {
   const location = useLocation();
@@ -19,18 +20,31 @@ export default function Movements() {
   const [selectedMovement, setSelectedMovement] = useState<
     MovementApiOut | undefined
   >(undefined);
+  const [movementId, setMovementId] = useState(0);
+
+  const movementQuery = api.endpoints.readApiMovementsIdGet.useQuery(
+    movementId || skipToken
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const formModeParam = params.get("formMode");
-    if (!formModeParam) return;
 
+    const formModeParam = params.get("formMode");
     if (formModeParam !== "create" && formModeParam !== "edit") return;
     setFormMode(formModeParam);
-
     params.delete("formMode");
+
+    if (formModeParam === "edit") {
+      setMovementId(Number(params.get("movementId")));
+      params.delete("movementId");
+    }
+
     navigate({ ...location, search: params.toString() }, { replace: true });
   }, [location, navigate]);
+
+  useEffect(() => {
+    if (movementQuery.isSuccess) setSelectedMovement(movementQuery.data);
+  }, [movementQuery.isSuccess, movementQuery.data]);
 
   const handleOpenCreateForm = () => {
     setSelectedMovement(undefined);

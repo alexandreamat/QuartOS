@@ -10,12 +10,14 @@ export default function EditActionButton(props: {
     <Popup
       content="Edit"
       trigger={
-        <ActionButton
-          loading={props.loading}
-          disabled={props.disabled}
-          icon="pencil"
-          onClick={() => props.onOpenEditForm()}
-        />
+        <div>
+          <ActionButton
+            loading={props.loading}
+            disabled={props.disabled}
+            icon="pencil"
+            onClick={() => props.onOpenEditForm()}
+          />
+        </div>
       }
     />
   );

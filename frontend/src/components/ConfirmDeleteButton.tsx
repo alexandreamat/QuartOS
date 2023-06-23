@@ -16,12 +16,14 @@ export default function ConfirmDeleteButton(props: {
       <Popup
         content="Delete"
         trigger={
-          <ActionButton
-            loading={props.query.isLoading}
-            disabled={props.disabled}
-            icon="trash"
-            onClick={() => setConfirmOpen(true)}
-          />
+          <div>
+            <ActionButton
+              loading={props.query.isLoading}
+              disabled={props.disabled}
+              icon="trash"
+              onClick={() => setConfirmOpen(true)}
+            />
+          </div>
         }
       />
       <Confirm
