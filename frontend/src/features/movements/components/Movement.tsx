@@ -1,6 +1,5 @@
 import { MovementApiOut, api } from "app/services/api";
 import { Placeholder } from "semantic-ui-react";
-import { logMutationError } from "utils/error";
 import { MovementCard } from "./MovementCard";
 
 export function Movement(props: {
@@ -11,18 +10,6 @@ export function Movement(props: {
     api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
       props.movement.id
     );
-
-  const [deleteMovement, deleteMovementResult] =
-    api.endpoints.deleteApiMovementsIdDelete.useMutation();
-
-  const handleDelete = async () => {
-    try {
-      await deleteMovement(props.movement.id).unwrap();
-    } catch (error) {
-      logMutationError(error, deleteMovementResult);
-      return;
-    }
-  };
 
   if (transactionsQuery.isLoading)
     return (
@@ -42,11 +29,9 @@ export function Movement(props: {
 
   return (
     <MovementCard
-      deleteQuery={deleteMovementResult}
       inflows={inflows}
       outflows={outflows}
       name={firstTransaction.name}
-      onDelete={handleDelete}
       onOpenEditForm={props.onOpenEditForm}
       movement={props.movement}
     />
