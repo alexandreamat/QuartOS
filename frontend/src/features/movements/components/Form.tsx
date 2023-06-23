@@ -39,6 +39,14 @@ const Form = (props: {
     });
   }
 
+  function handleFlowCheckboxChange(
+    transaction: TransactionApiOut,
+    checked: boolean
+  ) {
+    if (checked) handleAddFlow(transaction);
+    else handleRemoveFlow(transaction);
+  }
+
   return (
     <Modal open={true} onClose={handleClose} size="fullscreen">
       <Modal.Header>Create a Movement</Modal.Header>
@@ -55,7 +63,8 @@ const Form = (props: {
               <TransactionsManagedTable
                 relatedTransactions={Object.values(flows)}
                 onMutation={handleAddFlow}
-                onAddFlow={handleAddFlow}
+                onFlowCheckboxChange={handleFlowCheckboxChange}
+                checked={Object.keys(flows).map(Number)}
               />
             </FlexColumn.Auto>
           </FlexColumn>
