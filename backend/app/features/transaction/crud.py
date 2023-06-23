@@ -51,8 +51,8 @@ class CRUDTransaction(
     def read_many_by_movement(
         cls, db: Session, movement_id: int
     ) -> list[TransactionApiOut]:
-        m = movement.models.Movement.read(db, movement_id)
-        return [TransactionApiOut.from_orm(t) for t in m.transactions]
+        for t in movement.models.Movement.read(db, movement_id).transactions:
+            yield TransactionApiOut.from_orm(t)
 
     @classmethod
     def read_many_by_institution_link(
@@ -61,11 +61,9 @@ class CRUDTransaction(
         l = userinstitutionlink.models.UserInstitutionLink.read(
             db, userinstitutionlink_id
         )
-        return [
-            cls.api_out_model.from_orm(t)
-            for ia in l.institutionalaccounts
-            for t in ia.account.transactions
-        ]
+        for ia in l.institutionalaccounts:
+            for t in ia.account.transactions:
+                yield cls.api_out_model.from_orm(t)
 
     @classmethod
     def read_many_by_user(
@@ -91,10 +89,10 @@ class CRUDTransaction(
                 )
             )
         )
-        transactions = Transaction.read_from_query(
+        for t in Transaction.read_from_query(
             db, page, per_page, search, timestamp, is_descending, statement
-        )
-        return [cls.api_out_model.from_orm(t) for t in transactions]
+        ):
+            yield cls.api_out_model.from_orm(t)
 
     @classmethod
     def read_many_by_account(
@@ -112,10 +110,10 @@ class CRUDTransaction(
             .join(account.models.Account)
             .filter(account.models.Account.id == account_id)
         )
-        transactions = Transaction.read_from_query(
+        for t in Transaction.read_from_query(
             db, page, per_page, search, timestamp, is_descending, statement
-        )
-        return [cls.api_out_model.from_orm(t) for t in transactions]
+        ):
+            yield cls.api_out_model.from_orm(t)
 
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
