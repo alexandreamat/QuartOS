@@ -78,8 +78,6 @@ class CRUDTransaction(
         timestamp: datetime | None,
         is_descending: bool,
     ) -> list[TransactionApiOut]:
-        offset = (page - 1) * per_page if page and per_page else 0
-
         statement = (
             select(Transaction)
             .join(account.models.Account)
@@ -94,24 +92,14 @@ class CRUDTransaction(
             )
         )
 
-        if is_descending:
-            statement = statement.order_by(desc(Transaction.timestamp))
-            if timestamp:
-                statement = statement.where(
-                    and_(
-                        col(Transaction.timestamp).isnot(None),
-                        col(Transaction.timestamp) <= timestamp,
-                    )
-                )
-        else:
-            statement = statement.order_by(asc(Transaction.timestamp))
-            if timestamp:
-                statement = statement.where(
-                    and_(
-                        col(Transaction.timestamp).isnot(None),
-                        col(Transaction.timestamp) >= timestamp,
-                    )
-                )
+        order_op = desc if is_descending else asc
+        order_clauses = order_op(Transaction.timestamp), order_op(Transaction.id)
+        statement = statement.order_by(*order_clauses)
+
+        if timestamp:
+            where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
+            where_clause = getattr(col(Transaction.timestamp), where_op)(timestamp)
+            statement = statement.where(where_clause)
 
         if search:
             search = f"%{search}%"
@@ -136,32 +124,20 @@ class CRUDTransaction(
         timestamp: datetime | None,
         is_descending: bool,
     ) -> list[TransactionApiOut]:
-        offset = (page - 1) * per_page if page and per_page else 0
-
         statement = (
             select(Transaction)
             .join(account.models.Account)
             .filter(account.models.Account.id == account_id)
         )
 
-        if is_descending:
-            statement = statement.order_by(desc(Transaction.timestamp))
-            if timestamp:
-                statement = statement.where(
-                    and_(
-                        col(Transaction.timestamp).isnot(None),
-                        col(Transaction.timestamp) <= timestamp,
-                    )
-                )
-        else:
-            statement = statement.order_by(asc(Transaction.timestamp))
-            if timestamp:
-                statement = statement.where(
-                    and_(
-                        col(Transaction.timestamp).isnot(None),
-                        col(Transaction.timestamp) >= timestamp,
-                    )
-                )
+        order_op = desc if is_descending else asc
+        order_clauses = order_op(Transaction.timestamp), order_op(Transaction.id)
+        statement = statement.order_by(*order_clauses)
+
+        if timestamp:
+            where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
+            where_clause = getattr(col(Transaction.timestamp), where_op)(timestamp)
+            statement = statement.where(where_clause)
 
         if search:
             search = f"%{search}%"

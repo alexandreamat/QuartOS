@@ -249,7 +249,7 @@ class Account(_AccountBase, IdentifiableBase, table=True):
         from app.features.transaction.models import Transaction
 
         query = self.transactions
-        first_transaction: "Transaction" | None = query.order_by(desc(Transaction.timestamp)).first()  # type: ignore
+        first_transaction: "Transaction" | None = query.order_by(desc(Transaction.timestamp), desc(Transaction.id)).first()  # type: ignore
         if not first_transaction:
             return self.initial_balance
         return first_transaction.account_balance
