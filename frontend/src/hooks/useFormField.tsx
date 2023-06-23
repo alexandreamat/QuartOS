@@ -13,7 +13,7 @@ const useFormField = <T,>(
     if (optional) return true;
     const isValid = Boolean(value) && value !== undefined;
     setIsError(!isValid);
-    if (!isValid) console.log(`Value of type ${typeof value} is invalid`);
+    if (!isValid) console.error(`Value of type ${typeof value} is invalid`);
     return isValid;
   };
 
