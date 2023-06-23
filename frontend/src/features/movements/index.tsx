@@ -4,14 +4,13 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { Bar } from "./components/Bar";
 import { Movement } from "./components/Movement";
 import Form from "./components/Form";
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 
 export default function Movements() {
   const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const formModeParam = params.get("formModeParam") === "true";
+  const navigate = useNavigate();
 
   const [formMode, setFormMode] = useState<"create" | "edit" | undefined>(
     undefined
@@ -20,6 +19,18 @@ export default function Movements() {
   const [selectedMovement, setSelectedMovement] = useState<
     MovementApiOut | undefined
   >(undefined);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const formModeParam = params.get("formMode");
+    if (!formModeParam) return;
+
+    if (formModeParam !== "create" && formModeParam !== "edit") return;
+    setFormMode(formModeParam);
+
+    params.delete("formMode");
+    navigate({ ...location, search: params.toString() }, { replace: true });
+  }, [location, navigate]);
 
   const handleOpenCreateForm = () => {
     setSelectedMovement(undefined);

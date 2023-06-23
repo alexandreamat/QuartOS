@@ -21,6 +21,8 @@ const Form = (props: {
   const outflows = Object.values(flows).filter((t) => t.amount < 0);
   const inflows = Object.values(flows).filter((t) => t.amount >= 0);
 
+  useEffect(() => setFlows(props.flows), [props.flows]);
+
   function handleClose() {
     setFlows({});
     props.onClose();
@@ -87,10 +89,10 @@ const FormCreate = (props: { onClose: () => void }) => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const transactionIdStr = params.get("transactionId");
-    if (!transactionIdStr) return;
+    const transactionIdParam = params.get("transactionId");
+    if (!transactionIdParam) return;
 
-    setTransactionId(Number(transactionIdStr));
+    setTransactionId(Number(transactionIdParam));
 
     params.delete("transactionId");
     navigate({ ...location, search: params.toString() }, { replace: true });
@@ -145,7 +147,6 @@ const FormEdit = (props: { onClose: () => void; movement: MovementApiOut }) => {
     api.endpoints.updateApiMovementsIdPatch.useMutation();
 
   async function handleSubmit(flows: TransactionApiOut[]) {
-    console.log(flows);
     // if (!outflows.length) return;
     // if (!inflows.length) return;
     try {
