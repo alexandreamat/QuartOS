@@ -40,10 +40,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
                 )
             )
             .group_by(Movement.id)
-            .order_by(
-                desc(transaction.models.Transaction.timestamp),
-                desc(transaction.models.Transaction.id),
-            )
+            .order_by(*transaction.models.Transaction.get_desc_clauses())
         )
 
         if search:

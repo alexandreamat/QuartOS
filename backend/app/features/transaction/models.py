@@ -5,6 +5,7 @@ import pytz
 
 from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, Session
 from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy.sql.expression import ClauseElement
 from pydantic import validator
 
 from app.common.models import IdentifiableBase, CurrencyCode, PlaidBase, PlaidMaybeMixin
@@ -105,6 +106,14 @@ class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=Tr
         return self.account.is_synced
 
     @classmethod
+    def get_desc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
+        return desc(cls.timestamp), desc(cls.id)
+
+    @classmethod
+    def get_asc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
+        return asc(cls.timestamp), asc(cls.id)
+
+    @classmethod
     def read_from_query(
         cls,
         db: Session,
@@ -115,9 +124,9 @@ class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=Tr
         is_descending: bool,
         statement: SelectOfScalar["Transaction"],
     ) -> list["Transaction"]:
-        order_op = desc if is_descending else asc
-        order_clauses = order_op(Transaction.timestamp), order_op(Transaction.id)
-        statement = statement.order_by(*order_clauses)
+        statement = statement.order_by(
+            *(cls.get_desc_clauses() if is_descending else cls.get_asc_clauses())
+        )
 
         if timestamp:
             where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
