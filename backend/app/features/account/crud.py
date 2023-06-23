@@ -104,7 +104,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         if timestamp:
             prev_transaction: Transaction = (
                 transactions_query.where(Transaction.timestamp < timestamp)  # type: ignore
-                .order_by(desc(Transaction.timestamp), desc(Transaction.id))
+                .order_by(*Transaction.get_desc_clauses())
                 .first()
             )
             if prev_transaction:
