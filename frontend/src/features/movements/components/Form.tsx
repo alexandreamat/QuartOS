@@ -21,8 +21,8 @@ const Form = (props: {
 }) => {
   const [flows, setFlows] = useState(props.flows);
 
-  const outflows = Object.values(flows).filter((t) => t.amount < 0);
-  const inflows = Object.values(flows).filter((t) => t.amount >= 0);
+  const outflows = Object.values(flows).filter((f) => f.amount < 0);
+  const inflows = Object.values(flows).filter((f) => f.amount >= 0);
 
   useEffect(() => setFlows(props.flows), [props.flows]);
 

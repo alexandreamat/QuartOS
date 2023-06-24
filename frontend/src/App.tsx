@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import {
   Container,
   Grid,
@@ -18,6 +18,7 @@ import { throttle } from "lodash";
 import {
   setCredentials,
   setCurrentUser,
+  unsetCredentials,
   unsetCurrentUser,
 } from "features/auth/slice";
 import { api } from "app/services/api";
@@ -124,6 +125,7 @@ function UnauthenticatedApp() {
 }
 
 function AuthenticatedApp() {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const updateMedia = useCallback(() => {
@@ -140,6 +142,13 @@ function AuthenticatedApp() {
       dispatch(unsetCurrentUser());
     }
   }, [dispatch, meQuery.data]);
+
+  useEffect(() => {
+    if (!meQuery.isError) return;
+    dispatch(unsetCredentials());
+    dispatch(unsetCurrentUser());
+    navigate("/");
+  }, [meQuery.isError, dispatch, navigate]);
 
   useEffect(() => {
     window.addEventListener("resize", throttledUpdate);
