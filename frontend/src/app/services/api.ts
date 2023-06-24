@@ -450,7 +450,7 @@ const injectedRtkApi = api
           method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ["movements"],
+        invalidatesTags: ["movements", "transactions"],
       }),
       readManyApiTransactionsGet: build.query<
         ReadManyApiTransactionsGetApiResponse,
@@ -478,7 +478,7 @@ const injectedRtkApi = api
           method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ["transactions"],
+        invalidatesTags: ["transactions", "accounts"],
       }),
       readApiTransactionsIdGet: build.query<
         ReadApiTransactionsIdGetApiResponse,
@@ -496,7 +496,7 @@ const injectedRtkApi = api
           method: "PUT",
           body: queryArg.transactionApiIn,
         }),
-        invalidatesTags: ["transactions"],
+        invalidatesTags: ["transactions", "accounts"],
       }),
       deleteApiTransactionsIdDelete: build.mutation<
         DeleteApiTransactionsIdDeleteApiResponse,

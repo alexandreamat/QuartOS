@@ -121,9 +121,14 @@ function TransactionRow(
           <Table.Cell collapsing>
             {props.onCheckboxChange ? (
               <Popup
-                content="Add to the movement"
+                content={
+                  props.transaction.movement_id
+                    ? "Transaction already part of a movement"
+                    : "Add to the movement"
+                }
                 trigger={
                   <Checkbox
+                    disabled={Boolean(props.transaction.movement_id)}
                     checked={props.checked}
                     onChange={(
                       event: React.FormEvent<HTMLInputElement>,

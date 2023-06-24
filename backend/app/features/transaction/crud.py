@@ -132,6 +132,17 @@ class CRUDTransaction(
     def update(
         cls, db: Session, id: int, transaction_in: TransactionApiIn
     ) -> TransactionApiOut:
-        if not transaction_in.account_balance:
-            transaction_in.account_balance = cls.read(db, id).account_balance
-        return super().update(db, id, transaction_in)
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = super().update(db, id, transaction_in)
+        account.crud.CRUDAccount.update_balance(
+            db, transaction_out.account_id, transaction_out.timestamp
+        )
+        return transaction_out
+
+    @classmethod
+    def delete(cls, db: Session, id: int) -> None:
+        transaction = cls.read(db, id)
+        super().delete(db, id)
+        account.crud.CRUDAccount.update_balance(
+            db, transaction.account_id, transaction.timestamp
+        )
