@@ -92,18 +92,18 @@ export default function Bar(props: {
             props.onTimestampChange(stringToDate(data.value))
           }
         />
+        <Menu.Item fitted>
+          <Button icon onClick={props.onToggleIsDescending}>
+            <Icon
+              name={props.isDescending ? "sort amount down" : "sort amount up"}
+            />
+          </Button>
+        </Menu.Item>
         {props.timestamp && (
           <Menu.Item fitted>
             <RemoveCircle onClick={() => props.onTimestampChange(undefined)} />
           </Menu.Item>
         )}
-      </Menu.Item>
-      <Menu.Item position="right">
-        <Button icon onClick={props.onToggleIsDescending}>
-          <Icon
-            name={props.isDescending ? "sort amount down" : "sort amount up"}
-          />
-        </Button>
       </Menu.Item>
       <Menu.Item position="right">
         <Button icon labelPosition="left" onClick={handleUpload}>
