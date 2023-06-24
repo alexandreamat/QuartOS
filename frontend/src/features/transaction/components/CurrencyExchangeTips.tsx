@@ -1,3 +1,4 @@
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { TransactionApiOut, api } from "app/services/api";
 import { renderCurrency } from "utils/currency";
 
@@ -10,18 +11,21 @@ function CurrencyExchangeTip(props: {
   const toCurrency = props.currencyCode;
 
   const exchangeRateQuery =
-    api.endpoints.readExchangeRateApiExchangerateGet.useQuery({
-      fromCurrency,
-      toCurrency,
-      date: props.relatedTransaction.timestamp.split("T")[0],
-    });
-
-  if (!exchangeRateQuery.isSuccess) return <></>;
+    api.endpoints.readExchangeRateApiExchangerateGet.useQuery(
+      fromCurrency !== toCurrency
+        ? {
+            fromCurrency,
+            toCurrency,
+            date: props.relatedTransaction.timestamp.split("T")[0],
+          }
+        : skipToken
+    );
 
   return (
     <p>
       Related amount was {renderCurrency(amount, fromCurrency)}
       {toCurrency !== fromCurrency &&
+        exchangeRateQuery.isSuccess &&
         ` = ${renderCurrency(exchangeRateQuery.data * amount, toCurrency)}`}
     </p>
   );

@@ -15,7 +15,7 @@ from app.features.account.crud import CRUDAccount
 router = APIRouter()
 
 
-@router.post("/")
+@router.post("/", tags=["accounts"])
 def create(
     db: DBSession,
     current_user: CurrentUser,
@@ -73,7 +73,7 @@ def read_many(
     )
 
 
-@router.put("/{id}")
+@router.put("/{id}", tags=["accounts"])
 def update(
     db: DBSession,
     current_user: CurrentUser,
@@ -97,7 +97,7 @@ def update(
     return CRUDTransaction.update(db, id, transaction)
 
 
-@router.delete("/{id}")
+@router.delete("/{id}", tags=["accounts"])
 def delete(
     db: DBSession,
     current_user: CurrentUser,

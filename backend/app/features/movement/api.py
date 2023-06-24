@@ -98,7 +98,7 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     CRUDMovement.delete(db, id)
 
 
-@router.post("/")
+@router.post("/", tags=["transactions"])
 def create(
     db: DBSession, current_user: CurrentUser, transaction_ids: list[int]
 ) -> MovementApiOut:
