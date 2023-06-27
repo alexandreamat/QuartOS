@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from datetime import datetime
 from decimal import Decimal
 
@@ -50,14 +52,14 @@ class CRUDTransaction(
     @classmethod
     def read_many_by_movement(
         cls, db: Session, movement_id: int
-    ) -> list[TransactionApiOut]:
+    ) -> Iterable[TransactionApiOut]:
         for t in movement.models.Movement.read(db, movement_id).transactions:
             yield TransactionApiOut.from_orm(t)
 
     @classmethod
     def read_many_by_institution_link(
         cls, db: Session, userinstitutionlink_id: int
-    ) -> list[TransactionApiOut]:
+    ) -> Iterable[TransactionApiOut]:
         l = userinstitutionlink.models.UserInstitutionLink.read(
             db, userinstitutionlink_id
         )
@@ -75,7 +77,7 @@ class CRUDTransaction(
         search: str | None,
         timestamp: datetime | None,
         is_descending: bool,
-    ) -> list[TransactionApiOut]:
+    ) -> Iterable[TransactionApiOut]:
         statement = (
             select(Transaction)
             .join(account.models.Account)
@@ -104,7 +106,7 @@ class CRUDTransaction(
         search: str | None,
         timestamp: datetime | None,
         is_descending: bool,
-    ) -> list[TransactionApiOut]:
+    ) -> Iterable[TransactionApiOut]:
         statement = (
             select(Transaction)
             .join(account.models.Account)

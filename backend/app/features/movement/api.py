@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Iterable
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
@@ -19,7 +20,7 @@ router = APIRouter()
 @router.get("/{id}/transactions")
 def read_transactions(
     db: DBSession, current_user: CurrentUser, id: int
-) -> list[TransactionApiOut]:
+) -> Iterable[TransactionApiOut]:
     from app.features import transaction
 
     try:
@@ -37,7 +38,7 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> MovementApiOut:
     try:
         movement = CRUDMovement.read(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
     u = CRUDMovement.read_user(db, movement.id)
     if u.id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
@@ -72,7 +73,7 @@ def update(
         except NoResultFound:
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND,
-                "Transaction ID not found: %d" % transaction_id,
+                "Transaction ID not found: %u" % transaction_id,
             )
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
@@ -92,7 +93,7 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     try:
         movement = CRUDMovement.read(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
     if CRUDMovement.read_user(db, movement.id).id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     CRUDMovement.delete(db, id)
@@ -109,7 +110,7 @@ def create(
         try:
             user = transaction.crud.CRUDTransaction.read_user(db, transaction_id)
         except NoResultFound:
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         transaction_db = transaction.crud.CRUDTransaction.read(db, transaction_id)

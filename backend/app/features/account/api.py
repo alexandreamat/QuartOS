@@ -1,6 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Iterable
 
 
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
@@ -66,7 +66,7 @@ def read_transactions(
     timestamp: datetime | None = None,
     search: str | None = None,
     is_descending: bool = True,
-) -> list[TransactionApiOut]:
+) -> Iterable[TransactionApiOut]:
     from app.features import transaction
 
     try:
@@ -87,7 +87,7 @@ def upload_transactions_sheet(
     current_user: CurrentUser,
     id: int,
     file: Annotated[UploadFile, File(...)],
-) -> list[TransactionApiIn]:
+) -> Iterable[TransactionApiIn]:
     from app.features import transaction
 
     try:
@@ -109,7 +109,7 @@ def upload_transactions_sheet(
 
 
 @router.get("/")
-def read_many(db: DBSession, current_user: CurrentUser) -> list[AccountApiOut]:
+def read_many(db: DBSession, current_user: CurrentUser) -> Iterable[AccountApiOut]:
     return CRUDAccount.read_many_by_user(db, current_user.id)
 
 

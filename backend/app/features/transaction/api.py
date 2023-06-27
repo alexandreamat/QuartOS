@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Iterable
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
@@ -10,7 +11,7 @@ from app.database.deps import DBSession
 from .crud import CRUDTransaction
 from .models import TransactionApiOut, TransactionApiIn
 
-from app.features.account.crud import CRUDAccount
+from app.features import account, movement
 
 router = APIRouter()
 
@@ -24,10 +25,10 @@ def create(
     results = []
     for transaction in transactions:
         try:
-            user = CRUDAccount.read_user(db, transaction.account_id)
+            user = account.crud.CRUDAccount.read_user(db, transaction.account_id)
         except NoResultFound:
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
-        if CRUDAccount.is_synced(db, transaction.account_id):
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Account not found")
+        if account.crud.CRUDAccount.is_synced(db, transaction.account_id):
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
@@ -56,7 +57,7 @@ def read_many(
     search: str | None = None,
     ids: str | None = None,
     is_descending: bool = True,
-) -> list[TransactionApiOut]:
+) -> Iterable[TransactionApiOut]:
     if ids:
         transactions = []
         for id in map(int, ids.split(",")):
@@ -83,15 +84,15 @@ def update(
     try:
         user = CRUDTransaction.read_user(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
     if user.id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     if CRUDTransaction.is_synced(db, id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     try:
-        user = CRUDAccount.read_user(db, transaction.account_id)
+        user = account.crud.CRUDAccount.read_user(db, transaction.account_id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Account not found")
     if user.id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDTransaction.update(db, id, transaction)
