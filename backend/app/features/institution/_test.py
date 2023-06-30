@@ -1,3 +1,5 @@
+from typing import Iterable
+
 import pytest
 from pydantic import ValidationError
 from fastapi.testclient import TestClient
@@ -39,7 +41,7 @@ def institutions_db(db: Session, institutions_write: list[InstitutionApiIn]) -> 
 
 
 @pytest.fixture
-def institutions_read(institutions_db: Session) -> list[InstitutionApiOut]:
+def institutions_read(institutions_db: Session) -> Iterable[InstitutionApiOut]:
     return CRUDInstitution.read_many(institutions_db)
 
 

@@ -1,3 +1,5 @@
+from typing import Iterable
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -98,7 +100,7 @@ def accounts_db(db: Session, accounts_write: list[AccountApiIn]) -> Session:
 @pytest.fixture
 def accounts_read(
     accounts_db: Session,
-) -> list[AccountApiOut]:
+) -> Iterable[AccountApiOut]:
     return CRUDAccount.read_many(accounts_db)
 
 

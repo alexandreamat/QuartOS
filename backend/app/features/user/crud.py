@@ -16,9 +16,9 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     def create(cls, db: Session, new_schema_obj: UserApiIn) -> UserApiOut:
         hashed_password = get_password_hash(new_schema_obj.password)
         del new_schema_obj.password
-        db_obj_in = cls.db_model.from_schema(new_schema_obj)
+        db_obj_in = User.from_schema(new_schema_obj)
         db_obj_in.hashed_password = hashed_password
-        db_obj_out = User.create_or_update(db, db_obj_in)
+        db_obj_out = User.create(db, db_obj_in)
         return UserApiOut.from_orm(db_obj_out)
 
     @classmethod
@@ -29,11 +29,9 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     def update(cls, db: Session, id: int, new_schema_obj: UserApiIn) -> UserApiOut:
         hashed_password = get_password_hash(new_schema_obj.password)
         del new_schema_obj.password
-        db_obj_in = User.read(db, id)
+        db_obj_in = User.from_schema(new_schema_obj)
         db_obj_in.hashed_password = hashed_password
-        for key, value in jsonable_encoder(new_schema_obj).items():
-            setattr(db_obj_in, key, value)
-        db_obj_out = User.create_or_update(db, db_obj_in)
+        db_obj_out = User.update(db, id, db_obj_in)
         return UserApiOut.from_orm(db_obj_out)
 
     @classmethod

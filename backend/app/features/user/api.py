@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
@@ -84,7 +86,7 @@ def read_many(
     current_user: CurrentSuperuser,
     skip: int = 0,
     limit: int = 100,
-) -> list[UserApiOut]:
+) -> Iterable[UserApiOut]:
     """
     Retrieve users.
     """

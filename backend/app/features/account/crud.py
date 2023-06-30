@@ -77,7 +77,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     @classmethod
     def sync(cls, db: Session, account: AccountPlaidIn) -> AccountPlaidOut:
         db_account_in = Account(**account.dict())
-        db_account_out = Account.create_or_update(db, db_account_in)
+        db_account_out = Account.create(db, db_account_in)
         return AccountPlaidOut.from_orm(db_account_out)
 
     @classmethod
@@ -123,9 +123,8 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
         for result in transactions_query:
             transaction: Transaction = result
-            transaction_in = TransactionApiIn(**transaction.dict())
-            transaction_in.account_balance = prev_balance + transaction.amount
-            Transaction.update(db, transaction.id, transaction_in)
+            transaction.account_balance = prev_balance + transaction.amount
+            Transaction.update(db, transaction.id, transaction)
             prev_balance = transaction.account_balance
 
         return cls.read(db, id)

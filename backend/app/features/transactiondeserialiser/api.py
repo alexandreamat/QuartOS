@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
@@ -34,7 +36,7 @@ def read(db: DBSession, id: int) -> TransactionDeserialiserApiOut:
 
 
 @router.get("/")
-def read_many(db: DBSession) -> list[TransactionDeserialiserApiOut]:
+def read_many(db: DBSession) -> Iterable[TransactionDeserialiserApiOut]:
     """
     Retrieve deserialisers.
     """

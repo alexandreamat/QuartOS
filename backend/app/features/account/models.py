@@ -191,7 +191,7 @@ class Account(_AccountBase, IdentifiableBase, table=True):
         raise ValueError
 
     @classmethod
-    def update(cls, db: Session, id: int, obj_in: AccountApiIn) -> "Account":  # type: ignore[override]
+    def update(cls, db: Session, id: int, obj_in: "Account") -> "Account":
         obj = cls.read(db, id)
         obj_in_dict = obj_in.dict(
             exclude={"institutionalaccount", "noninstitutionalaccount"}

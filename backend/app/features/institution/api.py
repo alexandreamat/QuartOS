@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
@@ -46,7 +48,7 @@ def read(db: DBSession, id: int) -> InstitutionApiOut:
 
 
 @router.get("/")
-def read_many(db: DBSession) -> list[InstitutionApiOut]:
+def read_many(db: DBSession) -> Iterable[InstitutionApiOut]:
     """
     Retrieve institutions.
     """

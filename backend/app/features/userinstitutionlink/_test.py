@@ -1,3 +1,5 @@
+from typing import Iterable
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -68,7 +70,7 @@ def user_institution_links_db(
 @pytest.fixture
 def user_institution_links_read(
     user_institution_links_db: Session,
-) -> list[UserInstitutionLinkApiOut]:
+) -> Iterable[UserInstitutionLinkApiOut]:
     return CRUDUserInstitutionLink.read_many(user_institution_links_db)
 
 
