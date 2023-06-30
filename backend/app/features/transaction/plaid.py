@@ -8,7 +8,7 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_response import TransactionsSyncResponse
 
 from app.features.plaid.client import client
-from app.features import account, userinstitutionlink
+from app.features import account, userinstitutionlink, movement
 
 from .models import TransactionPlaidIn
 from .crud import CRUDTransaction
@@ -87,15 +87,19 @@ def sync_transactions(
     while has_more:
         sync_result = get_transaction_changes(user_institution_link, accounts)
         for transaction in sync_result.added:
-            CRUDTransaction.sync(db, transaction)
+            movement.crud.CRUDMovement.sync(db, transaction)
         for transaction_in in sync_result.modified:
             db_transaction = CRUDTransaction.read_by_plaid_id(
                 db, transaction_in.plaid_id
             )
-            CRUDTransaction.resync(db, db_transaction.id, transaction_in)
+            movement.crud.CRUDMovement.resync_transaction(
+                db, db_transaction.movement_id, db_transaction.id, transaction_in
+            )
         for plaid_id in sync_result.removed:
             db_transaction = CRUDTransaction.read_by_plaid_id(db, plaid_id)
-            CRUDTransaction.delete(db, db_transaction.id)
+            movement.crud.CRUDMovement.delete_transaction(
+                db, db_transaction.movement_id, db_transaction.id
+            )
         user_institution_link.cursor = sync_result.new_cursor
         user_institution_link_new = (
             userinstitutionlink.models.UserInstitutionLinkPlaidIn(

@@ -7,14 +7,25 @@ from sqlalchemy.exc import NoResultFound
 from app.features.user.deps import CurrentUser
 from app.database.deps import DBSession
 
+from app.features import account
 
-from .models import MovementApiOut, MovementApiIn
+from .models import MovementApiOut
 from .crud import CRUDMovement
 
 # forward references, only for annotations
-from app.features.transaction.models import TransactionApiOut
+from app.features.transaction.models import TransactionApiOut, TransactionApiIn
 
 router = APIRouter()
+
+
+@router.post("/{id}/transactions", tags=["transactions"])
+def add_transaction(
+    db: DBSession, current_user: CurrentUser, id: int, transaction: TransactionApiIn
+) -> TransactionApiOut:
+    try:
+        return CRUDMovement.add_transaction(db, id, transaction)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
 
 
 @router.get("/{id}/transactions")
@@ -26,11 +37,70 @@ def read_transactions(
     try:
         movement = CRUDMovement.read(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
     u = CRUDMovement.read_user(db, movement.id)
     if u.id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return transaction.crud.CRUDTransaction.read_many_by_movement(db, id)
+
+
+@router.put("/{id}/transactions/{transaction_id}", tags=["transactions"])
+def update_transaction(
+    db: DBSession,
+    current_user: CurrentUser,
+    id: int,
+    transaction_id: int,
+    transaction: TransactionApiIn,
+) -> TransactionApiOut:
+    from app.features.transaction.crud import CRUDTransaction
+
+    # Check movement ownership
+    try:
+        user = CRUDMovement.read_user(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
+    if user.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    if CRUDTransaction.is_synced(db, id):
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+
+    # Check new account existence and ownership
+    try:
+        user = account.crud.CRUDAccount.read_user(db, transaction.account_id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Account not found")
+    if user.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+
+    # Check new movement existence and ownership
+    if not transaction.movement_id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Movement ID not specified")
+    try:
+        user = CRUDMovement.read_user(db, transaction.movement_id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
+    if user.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+
+    return CRUDMovement.update_transaction(db, id, transaction_id, transaction)
+
+
+@router.delete("/{id}/transactions/{transaction_id}", tags=["transactions"])
+def delete_transaction(
+    db: DBSession, current_user: CurrentUser, id: int, transaction_id: int
+) -> None:
+    from app.features.transaction.crud import CRUDTransaction
+
+    try:
+        user = CRUDMovement.read_user(db, id)
+    except NoResultFound:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
+    if user.id != current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    if CRUDTransaction.is_synced(db, id):
+        raise HTTPException(status.HTTP_403_FORBIDDEN)
+
+    return CRUDMovement.delete_transaction(db, id, transaction_id)
 
 
 @router.get("/{id}")
@@ -45,50 +115,7 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> MovementApiOut:
     return movement
 
 
-@router.patch("/{id}")
-def update(
-    db: DBSession, current_user: CurrentUser, id: int, transaction_ids: list[int]
-) -> MovementApiOut:
-    from app.features.transaction.crud import CRUDTransaction
-    from app.features.transaction.models import TransactionApiIn
-
-    try:
-        movement = CRUDMovement.read(db, id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
-    if CRUDMovement.read_user(db, movement.id).id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-
-    # Unlink existing transactions
-    for movement_transaction in CRUDTransaction.read_many_by_movement(db, id):
-        transaction_in = TransactionApiIn(
-            **movement_transaction.dict(exclude={"movement_id"})
-        )
-        CRUDTransaction.update(db, movement_transaction.id, transaction_in)
-
-    # Link new transactions
-    for transaction_id in transaction_ids:
-        try:
-            user = CRUDTransaction.read_user(db, transaction_id)
-        except NoResultFound:
-            raise HTTPException(
-                status.HTTP_404_NOT_FOUND,
-                "Transaction ID not found: %u" % transaction_id,
-            )
-        if user.id != current_user.id:
-            raise HTTPException(status.HTTP_403_FORBIDDEN)
-        transaction_db = CRUDTransaction.read(db, transaction_id)
-        if transaction_db.movement_id:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST)
-        transaction_in = TransactionApiIn(
-            **transaction_db.dict(exclude_none=True), movement_id=movement.id
-        )
-        CRUDTransaction.update(db, transaction_db.id, transaction_in)
-
-    return movement
-
-
-@router.delete("/{id}")
+@router.delete("/{id}", tags=["transactions"])
 def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     try:
         movement = CRUDMovement.read(db, id)
@@ -101,27 +128,20 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
 
 @router.post("/", tags=["transactions"])
 def create(
-    db: DBSession, current_user: CurrentUser, transaction_ids: list[int]
+    db: DBSession,
+    current_user: CurrentUser,
+    transactions: list[TransactionApiIn],
 ) -> MovementApiOut:
-    from app.features import transaction
-
-    movement = CRUDMovement.create(db, MovementApiIn())
-    for transaction_id in transaction_ids:
+    for transaction in transactions:
         try:
-            user = transaction.crud.CRUDTransaction.read_user(db, transaction_id)
+            user = account.crud.CRUDAccount.read_user(db, transaction.account_id)
         except NoResultFound:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Account not found")
+        if account.crud.CRUDAccount.is_synced(db, transaction.account_id):
+            raise HTTPException(status.HTTP_403_FORBIDDEN)
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
-        transaction_db = transaction.crud.CRUDTransaction.read(db, transaction_id)
-        if transaction_db.movement_id:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST)
-        transaction_in = transaction.models.TransactionApiIn(
-            **transaction_db.dict(exclude_none=True), movement_id=movement.id
-        )
-        transaction.crud.CRUDTransaction.update(db, transaction_db.id, transaction_in)
-
-    return movement
+    return CRUDMovement.create(db, transactions)
 
 
 @router.get("/")

@@ -27,7 +27,10 @@ class MovementApiIn(__MovementBase):
 
 
 class Movement(__MovementBase, IdentifiableBase, table=True):
-    transactions: list["Transaction"] = Relationship(back_populates="movement")
+    transactions: list["Transaction"] = Relationship(
+        back_populates="movement",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
 
     @property
     def user(self) -> "User":

@@ -1,7 +1,8 @@
-from sqlmodel import select, or_, desc, col, Session
+from typing import TYPE_CHECKING
+
+from sqlmodel import select, or_, col, Session
 
 from app.common.crud import CRUDBase
-
 from app.features import account, userinstitutionlink
 
 from .models import Movement, MovementApiIn, MovementApiOut
@@ -9,10 +10,43 @@ from .models import Movement, MovementApiIn, MovementApiOut
 
 from app.features import user
 
+if TYPE_CHECKING:
+    from app.features.transaction.models import (
+        TransactionApiIn,
+        TransactionApiOut,
+        TransactionPlaidIn,
+        TransactionPlaidOut,
+    )
+
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     db_model = Movement
     api_out_model = MovementApiOut
+
+    @classmethod
+    def create(  # type: ignore [override]
+        cls,
+        db: Session,
+        transactions: list["TransactionApiIn"],
+    ) -> MovementApiOut:
+        from app.features import transaction
+
+        movement = super().create(db, MovementApiIn())
+        for transaction_in in transactions:
+            transaction_in.movement_id = movement.id
+            transaction.crud.CRUDTransaction.create(db, transaction_in)
+
+        return movement
+
+    @classmethod
+    def sync(cls, db: Session, transaction: "TransactionPlaidIn") -> MovementApiOut:
+        from app.features.transaction.crud import CRUDTransaction
+
+        movement = super().create(db, MovementApiIn())
+        transaction.movement_id = movement.id
+        CRUDTransaction.sync(db, transaction)
+
+        return movement
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
@@ -58,7 +92,48 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return [MovementApiOut.from_orm(m) for m in movements]
 
     @classmethod
-    def unlink_transactions(cls, db: Session, id: int) -> None:
-        movement_db = Movement.read(db, id)
-        for transaction in movement_db.transactions:
-            transaction.movement_id = None
+    def add_transaction(
+        cls, db: Session, id: int, transaction_in: "TransactionApiIn"
+    ) -> "TransactionApiOut":
+        from app.features.transaction.crud import CRUDTransaction
+
+        movement = Movement.read(db, id)
+        transaction_in.movement_id = movement.id
+        return CRUDTransaction.create(db, transaction_in)
+
+    @classmethod
+    def update_transaction(
+        cls,
+        db: Session,
+        id: int,
+        transaction_id: int,
+        transaction_in: "TransactionApiIn",
+    ) -> "TransactionApiOut":
+        from app.features.transaction.crud import CRUDTransaction
+
+        movement = Movement.read(db, id)
+        transaction_out = CRUDTransaction.update(db, transaction_id, transaction_in)
+        if not movement.transactions:
+            cls.delete(db, id)
+        return transaction_out
+
+    @classmethod
+    def resync_transaction(
+        cls,
+        db: Session,
+        id: int,
+        transaction_id: int,
+        transaction_in: "TransactionPlaidIn",
+    ) -> "TransactionPlaidOut":
+        from app.features.transaction.crud import CRUDTransaction
+
+        return CRUDTransaction.resync(db, transaction_id, transaction_in)
+
+    @classmethod
+    def delete_transaction(cls, db: Session, id: int, transaction_id: int) -> None:
+        from app.features.transaction.crud import CRUDTransaction
+
+        movement = Movement.read(db, id)
+        CRUDTransaction.delete(db, transaction_id)
+        if not movement.transactions:
+            cls.delete(db, id)
