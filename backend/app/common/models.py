@@ -14,17 +14,19 @@ class IdentifiableBase(SQLModel):
     id: int = Field(primary_key=True)
 
     @classmethod
-    def from_schema(cls: Type[ModelType], obj_in: ApiInModel) -> ModelType:
-        return cls(**obj_in.dict())
-
-    @classmethod
-    def create_or_update(
-        cls: Type[ModelType], db: Session, obj: ModelType
-    ) -> ModelType:
+    def __add(cls: Type[ModelType], db: Session, obj: ModelType) -> ModelType:
         db.add(obj)
         db.flush()
         db.refresh(obj)
         return obj
+
+    @classmethod
+    def from_schema(cls: Type[ModelType], obj_in: ApiInModel) -> ModelType:
+        return cls(**obj_in.dict())
+
+    @classmethod
+    def create(cls: Type[ModelType], db: Session, obj: ModelType) -> ModelType:
+        return cls.__add(db, obj)
 
     @classmethod
     def read(cls: Type[ModelType], db: Session, id: int) -> ModelType:
@@ -41,12 +43,12 @@ class IdentifiableBase(SQLModel):
 
     @classmethod
     def update(
-        cls: Type[ModelType], db: Session, id: int, obj_in: ApiInModel
+        cls: Type[ModelType], db: Session, id: int, obj_in: ModelType
     ) -> ModelType:
         db_obj = cls.read(db, id)
-        for key, value in obj_in.dict().items():
+        for key, value in obj_in.dict(exclude={"id"}).items():
             setattr(db_obj, key, value)
-        return db_obj
+        return cls.__add(db, db_obj)
 
     @classmethod
     def delete(cls: Type[ModelType], db: Session, id: int) -> None:
