@@ -21,7 +21,7 @@ router = APIRouter()
 @router.post("/{id}/transactions", tags=["transactions"])
 def add_transaction(
     db: DBSession, current_user: CurrentUser, id: int, transaction: TransactionApiIn
-) -> TransactionApiOut:
+) -> MovementApiOut:
     try:
         return CRUDMovement.add_transaction(db, id, transaction)
     except NoResultFound:
@@ -131,17 +131,31 @@ def create(
     db: DBSession,
     current_user: CurrentUser,
     transactions: list[TransactionApiIn],
+    transaction_ids: list[int],
 ) -> MovementApiOut:
-    for transaction in transactions:
+    from app.features.transaction.crud import CRUDTransaction
+
+    for transaction_in in transactions:
         try:
-            user = account.crud.CRUDAccount.read_user(db, transaction.account_id)
+            user = account.crud.CRUDAccount.read_user(db, transaction_in.account_id)
         except NoResultFound:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Account not found")
-        if account.crud.CRUDAccount.is_synced(db, transaction.account_id):
+        if account.crud.CRUDAccount.is_synced(db, transaction_in.account_id):
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
-    return CRUDMovement.create(db, transactions)
+
+    for transaction_id in transaction_ids:
+        try:
+            transaction_out = CRUDTransaction.read(db, transaction_id)
+        except NoResultFound:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
+        if account.crud.CRUDAccount.is_synced(db, transaction_out.account_id):
+            raise HTTPException(status.HTTP_403_FORBIDDEN)
+        if CRUDTransaction.read_user(db, transaction_out.id).id != current_user.id:
+            raise HTTPException(status.HTTP_403_FORBIDDEN)
+
+    return CRUDMovement.create(db, transactions, transaction_ids)
 
 
 @router.get("/")
