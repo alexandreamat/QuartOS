@@ -28,15 +28,26 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         cls,
         db: Session,
         transactions: list["TransactionApiIn"],
+        transaction_ids: list[int],
     ) -> MovementApiOut:
-        from app.features import transaction
+        from app.features.transaction.crud import CRUDTransaction
+        from app.features.transaction.models import Transaction
 
-        movement = super().create(db, MovementApiIn())
+        new_movement = super().create(db, MovementApiIn())
+
         for transaction_in in transactions:
-            transaction_in.movement_id = movement.id
-            transaction.crud.CRUDTransaction.create(db, transaction_in)
+            transaction_in.movement_id = new_movement.id
+            CRUDTransaction.create(db, transaction_in)
 
-        return movement
+        for transaction_id in transaction_ids:
+            transaction_db = Transaction.read(db, transaction_id)
+            old_movement = Movement.read(db, transaction_db.movement_id)
+            transaction_db.movement_id = new_movement.id
+            Transaction.update(db, transaction_id, transaction_db)
+            if not old_movement.transactions:
+                Movement.delete(db, old_movement.id)
+
+        return CRUDMovement.read(db, new_movement.id)
 
     @classmethod
     def sync(cls, db: Session, transaction: "TransactionPlaidIn") -> MovementApiOut:
@@ -46,7 +57,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         transaction.movement_id = movement.id
         CRUDTransaction.sync(db, transaction)
 
-        return movement
+        return CRUDMovement.read(db, movement.id)
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
@@ -94,12 +105,13 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     @classmethod
     def add_transaction(
         cls, db: Session, id: int, transaction_in: "TransactionApiIn"
-    ) -> "TransactionApiOut":
+    ) -> MovementApiOut:
         from app.features.transaction.crud import CRUDTransaction
 
         movement = Movement.read(db, id)
         transaction_in.movement_id = movement.id
-        return CRUDTransaction.create(db, transaction_in)
+        CRUDTransaction.create(db, transaction_in)
+        return CRUDMovement.read(db, id)
 
     @classmethod
     def update_transaction(
