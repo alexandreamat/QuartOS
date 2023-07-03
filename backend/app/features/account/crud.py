@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from datetime import datetime
 
 from sqlmodel import Session, asc, desc
@@ -63,16 +65,13 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         return [AccountPlaidOut.from_orm(ia.account) for ia in l.institutionalaccounts]
 
     @classmethod
-    def read_many_by_user(cls, db: Session, user_id: int) -> list[AccountApiOut]:
+    def read_many_by_user(cls, db: Session, user_id: int) -> Iterable[AccountApiOut]:
         db_user = user.models.User.read(db, user_id)
-        return [
-            AccountApiOut.from_orm(ia.account)
-            for l in db_user.institution_links
-            for ia in l.institutionalaccounts
-        ] + [
-            AccountApiOut.from_orm(nia.account)
-            for nia in db_user.noninstitutionalaccounts
-        ]
+        for l in db_user.institution_links:
+            for ia in l.institutionalaccounts:
+                yield AccountApiOut.from_orm(ia.account)
+        for nia in db_user.noninstitutionalaccounts:
+            yield AccountApiOut.from_orm(nia.account)
 
     @classmethod
     def sync(cls, db: Session, account: AccountPlaidIn) -> AccountPlaidOut:

@@ -110,7 +110,7 @@ def upload_transactions_sheet(
 
 @router.get("/")
 def read_many(db: DBSession, current_user: CurrentUser) -> Iterable[AccountApiOut]:
-    return CRUDAccount.read_many_by_user(db, current_user.id)
+    yield from CRUDAccount.read_many_by_user(db, current_user.id)
 
 
 @router.put("/{id}")
