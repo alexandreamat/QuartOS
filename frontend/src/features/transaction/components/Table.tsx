@@ -2,8 +2,6 @@ import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import { Checkbox, CheckboxProps, Icon, Popup, Table } from "semantic-ui-react";
 import LoadableQuery from "components/LoadableCell";
 import EditActionButton from "components/EditActionButton";
-import ConfirmDeleteButton from "components/ConfirmDeleteButton";
-import { logMutationError } from "utils/error";
 import { useAccountQueries } from "features/account/hooks";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import CurrencyLabel from "components/CurrencyLabel";
@@ -23,7 +21,8 @@ function TransactionRow(
           relatedTransactionId: number
         ) => void;
         onDelete: () => void;
-        onCheckboxChange?: (x: boolean) => void;
+        onCheckboxChange?: (x: boolean) => Promise<void>;
+        checkBoxDisabled?: boolean;
         checked?: boolean;
       }
     | {
@@ -35,30 +34,9 @@ function TransactionRow(
   const hasActions = "onOpenEditForm" in props;
   const accountQueries = useAccountQueries(props.transaction.account_id);
 
-  const [deleteTransaction, deleteTransactionResult] =
-    api.endpoints.deleteApiTransactionsIdDelete.useMutation();
-
-  const handleDelete = async (transaction: TransactionApiOut) => {
-    try {
-      await deleteTransaction(transaction.id).unwrap();
-    } catch (error) {
-      logMutationError(error, deleteTransactionResult);
-      return;
-    }
-    if (hasActions) props.onDelete();
-  };
-
-  function handleGoToCreateMovementForm() {
-    if (!hasActions) return;
-    let params = new URLSearchParams();
-    params.append("formMode", "create");
-    params.append("transactionId", props.transaction.id.toString());
-    navigate(`/movements/?${params.toString()}`);
-  }
-
   function handleGoToEditMovementForm() {
     let params = new URLSearchParams();
-    params.append("formMode", "edit");
+    params.append("isFormOpen", "true");
     params.append("movementId", props.transaction.movement_id!.toString());
     navigate(`/movements/?${params.toString()}`);
   }
@@ -122,22 +100,21 @@ function TransactionRow(
             {props.onCheckboxChange ? (
               <Popup
                 content={
-                  props.transaction.movement_id
-                    ? "Transaction already part of a movement"
+                  props.checked
+                    ? "Remove from the movement"
                     : "Add to the movement"
                 }
                 trigger={
                   <Checkbox
-                    disabled={Boolean(props.transaction.movement_id)}
+                    disabled={props.checkBoxDisabled}
                     checked={props.checked}
-                    onChange={(
-                      event: React.FormEvent<HTMLInputElement>,
-                      data: CheckboxProps
-                    ) => props.onCheckboxChange!(data.checked || false)}
+                    onChange={async (_: unknown, data: CheckboxProps) =>
+                      await props.onCheckboxChange!(data.checked || false)
+                    }
                   />
                 }
               />
-            ) : props.transaction.movement_id ? (
+            ) : (
               <Popup
                 content="Edit Movement"
                 trigger={
@@ -150,30 +127,11 @@ function TransactionRow(
                   </div>
                 }
               />
-            ) : (
-              <Popup
-                content="Create movement"
-                trigger={
-                  <div>
-                    <ActionButton
-                      icon="arrows alternate horizontal"
-                      onClick={handleGoToCreateMovementForm}
-                    />
-                  </div>
-                }
-              />
             )}
           </Table.Cell>
           <Table.Cell collapsing>
             <EditActionButton
               onOpenEditForm={() => props.onOpenEditForm(props.transaction)}
-            />
-          </Table.Cell>
-          <Table.Cell collapsing>
-            <ConfirmDeleteButton
-              disabled={accountQueries.account?.is_synced !== false}
-              query={deleteTransactionResult}
-              onDelete={async () => await handleDelete(props.transaction)}
             />
           </Table.Cell>
         </>
@@ -195,7 +153,7 @@ export default function TransactionsTable(
         onFlowCheckboxChange?: (
           flow: TransactionApiOut,
           checked: boolean
-        ) => void;
+        ) => Promise<void>;
         checked?: number[];
       }
     | {
@@ -225,20 +183,24 @@ export default function TransactionsTable(
       <Table.Body>
         {hasActions
           ? props.transactionPages.map((transactionPage, i) =>
-              transactionPage.map((t, j) => (
-                <TransactionRow
-                  key={i * 20 + j}
-                  transaction={t}
-                  onOpenEditForm={props.onOpenEditForm}
-                  onOpenCreateForm={props.onOpenCreateForm}
-                  onDelete={props.onMutation}
-                  onCheckboxChange={
-                    props.onFlowCheckboxChange &&
-                    ((c) => props.onFlowCheckboxChange!(t, c))
-                  }
-                  checked={props.checked?.includes(t.id)}
-                />
-              ))
+              transactionPage.map((t, j) => {
+                const checked = props.checked?.includes(t.id);
+                return (
+                  <TransactionRow
+                    key={i * 20 + j}
+                    transaction={t}
+                    onOpenEditForm={props.onOpenEditForm}
+                    onOpenCreateForm={props.onOpenCreateForm}
+                    onDelete={props.onMutation}
+                    onCheckboxChange={
+                      props.onFlowCheckboxChange &&
+                      (async (c) => await props.onFlowCheckboxChange!(t, c))
+                    }
+                    checked={checked}
+                    checkBoxDisabled={checked && props.checked?.length === 1}
+                  />
+                );
+              })
             )
           : props.transactionPages.map((transactionPage, i) =>
               transactionPage.map((transaction, j) => (

@@ -14,7 +14,6 @@ import { dateToString, stringToDate } from "utils/time";
 import { RemoveCircle } from "features/movements/components/RemoveCircle";
 
 export default function Bar(props: {
-  onOpenCreateForm: (accountId: number) => void;
   accountId: number;
   onAccountIdChange: (x: number) => void;
   search: string;
@@ -38,17 +37,6 @@ export default function Bar(props: {
 
   return (
     <Menu secondary style={{ width: "100%" }}>
-      <Menu.Item>
-        <Button
-          icon
-          labelPosition="left"
-          primary
-          onClick={() => props.onOpenCreateForm(props.accountId)}
-        >
-          <Icon name="plus" />
-          Add
-        </Button>
-      </Menu.Item>
       <Menu.Item>
         <Input
           icon="search"

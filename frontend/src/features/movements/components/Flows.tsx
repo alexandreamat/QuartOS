@@ -119,10 +119,10 @@ export function Flows(props: {
   onRemove?: (x: TransactionApiOut) => void;
 }) {
   return (
-    <Step.Group fluid widths={2} style={{ margin: 10 }}>
-      <Step style={{ padding: stepPadding }}>
-        <Step.Content style={{ width: "100%" }}>
-          {props.outflows.length ? (
+    <Step.Group fluid widths={2}>
+      {props.outflows.length !== 0 && (
+        <Step style={{ padding: stepPadding }}>
+          <Step.Content style={{ width: "100%" }}>
             <Grid>
               {props.outflows.map((transaction) => (
                 <Outflow
@@ -136,14 +136,12 @@ export function Flows(props: {
                 />
               ))}
             </Grid>
-          ) : (
-            <Step.Title>Select outflows</Step.Title>
-          )}
-        </Step.Content>
-      </Step>
-      <Step style={{ padding: stepPadding }}>
-        <Step.Content style={{ width: "100%" }}>
-          {props.inflows.length ? (
+          </Step.Content>
+        </Step>
+      )}
+      {props.inflows.length !== 0 && (
+        <Step style={{ padding: stepPadding }}>
+          <Step.Content style={{ width: "100%" }}>
             <Grid>
               {props.inflows.map((transaction) => (
                 <Inflow
@@ -157,11 +155,9 @@ export function Flows(props: {
                 />
               ))}
             </Grid>
-          ) : (
-            <Step.Title>Select inflows</Step.Title>
-          )}
-        </Step.Content>
-      </Step>
+          </Step.Content>
+        </Step>
+      )}
     </Step.Group>
   );
 }

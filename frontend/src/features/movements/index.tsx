@@ -7,58 +7,47 @@ import Form from "./components/Form";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
-import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export default function Movements() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [formMode, setFormMode] = useState<"create" | "edit" | undefined>(
-    undefined
-  );
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedMovement, setSelectedMovement] = useState<
-    MovementApiOut | undefined
-  >(undefined);
-  const [movementId, setMovementId] = useState(0);
 
-  const movementQuery = api.endpoints.readApiMovementsIdGet.useQuery(
-    movementId || skipToken
-  );
+  const [movementId, setMovementId] = useState(0);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
 
-    const formModeParam = params.get("formMode");
-    if (formModeParam !== "create" && formModeParam !== "edit") return;
-    setFormMode(formModeParam);
-    params.delete("formMode");
-
-    if (formModeParam === "edit") {
-      setMovementId(Number(params.get("movementId")));
-      params.delete("movementId");
+    const isFormOpenParam = params.get("isFormOpen");
+    if (isFormOpenParam) {
+      setIsFormOpen(isFormOpenParam === "true");
+      params.delete("isFormOpen");
+      navigate({ ...location, search: params.toString() }, { replace: true });
     }
 
-    navigate({ ...location, search: params.toString() }, { replace: true });
+    const movementIdParam = params.get("movementId");
+    if (movementIdParam) {
+      setMovementId(Number(movementIdParam));
+      params.delete("movementId");
+      navigate({ ...location, search: params.toString() }, { replace: true });
+    }
   }, [location, navigate]);
 
-  useEffect(() => {
-    if (movementQuery.isSuccess) setSelectedMovement(movementQuery.data);
-  }, [movementQuery.isSuccess, movementQuery.data]);
-
   const handleOpenCreateForm = () => {
-    setSelectedMovement(undefined);
-    setFormMode("create");
+    setMovementId(0);
+    setIsFormOpen(true);
   };
 
   function handleOpenEditForm(movement: MovementApiOut) {
-    setSelectedMovement(movement);
-    setFormMode("edit");
+    setMovementId(movement.id);
+    setIsFormOpen(true);
   }
 
   const handleCloseForm = () => {
-    setSelectedMovement(undefined);
-    setFormMode(undefined);
+    setIsFormOpen(false);
+    setMovementId(0);
   };
 
   const handleSearchChange = (value: string) => {
@@ -101,11 +90,11 @@ export default function Movements() {
           </>
         </FlexColumn.Auto>
       </FlexColumn>
-
-      {formMode === "create" && <Form.Create onClose={handleCloseForm} />}
-      {selectedMovement && formMode === "edit" && (
-        <Form.Edit onClose={handleCloseForm} movement={selectedMovement} />
-      )}
+      <Form
+        open={isFormOpen}
+        onClose={handleCloseForm}
+        movementId={movementId}
+      />
     </>
   );
 }

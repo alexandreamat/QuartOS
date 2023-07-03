@@ -60,9 +60,12 @@ def update_transaction(
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-    if CRUDTransaction.is_synced(db, id):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "New movement does not belong to the current user",
+        )
+    if CRUDTransaction.is_synced(db, transaction_id):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Transaction is synched")
 
     # Check new account existence and ownership
     try:
@@ -70,7 +73,9 @@ def update_transaction(
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Account not found")
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, "New account does not belong to the current user"
+        )
 
     # Check new movement existence and ownership
     if not transaction.movement_id:
@@ -80,7 +85,10 @@ def update_transaction(
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "New movement does not belong the the current user",
+        )
 
     return CRUDMovement.update_transaction(db, id, transaction_id, transaction)
 
@@ -97,7 +105,7 @@ def delete_transaction(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
     if user.id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
-    if CRUDTransaction.is_synced(db, id):
+    if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
     return CRUDMovement.delete_transaction(db, id, transaction_id)
@@ -132,18 +140,19 @@ def create(
     current_user: CurrentUser,
     transactions: list[TransactionApiIn],
     transaction_ids: list[int],
-) -> MovementApiOut:
+) -> Iterable[MovementApiOut]:
     from app.features.transaction.crud import CRUDTransaction
 
-    for transaction_in in transactions:
+    for transaction in transactions:
         try:
-            user = account.crud.CRUDAccount.read_user(db, transaction_in.account_id)
+            user = account.crud.CRUDAccount.read_user(db, transaction.account_id)
         except NoResultFound:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Account not found")
-        if account.crud.CRUDAccount.is_synced(db, transaction_in.account_id):
+        if account.crud.CRUDAccount.is_synced(db, transaction.account_id):
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         if user.id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
+        yield CRUDMovement.create(db, transaction)
 
     for transaction_id in transaction_ids:
         try:
@@ -154,8 +163,7 @@ def create(
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         if CRUDTransaction.read_user(db, transaction_out.id).id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
-
-    return CRUDMovement.create(db, transactions, transaction_ids)
+        yield CRUDMovement.create(db, transaction_id)
 
 
 @router.get("/")

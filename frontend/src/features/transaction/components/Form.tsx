@@ -1,5 +1,10 @@
 import { skipToken } from "@reduxjs/toolkit/dist/query";
-import { TransactionApiOut, api } from "app/services/api";
+import {
+  MovementApiOut,
+  TransactionApiIn,
+  TransactionApiOut,
+  api,
+} from "app/services/api";
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDateTimeInput from "components/FormDateTimeInput";
 import FormDropdownInput from "components/FormDropdownInput";
@@ -16,14 +21,17 @@ import { codeOptions, paymentChannelOptions } from "../options";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
+import { SimpleQuery } from "interfaces";
 
 export default function Form(props: {
-  transaction?: TransactionApiOut;
-  accountId?: number;
-  relatedTransactions?: TransactionApiOut[];
+  title: string;
   open: boolean;
   onClose: () => void;
-  onMutation: (x: TransactionApiOut) => void;
+  accountId?: number;
+  movementId?: number;
+  transaction?: TransactionApiOut;
+  onSubmit: (x: TransactionApiIn) => Promise<void>;
+  resultQuery: SimpleQuery;
 }) {
   const isEdit = props.transaction !== undefined;
 
@@ -41,32 +49,33 @@ export default function Form(props: {
     form.accountId.value || skipToken
   );
 
+  const movementQuery = api.endpoints.readApiMovementsIdGet.useQuery(
+    props.movementId || skipToken
+  );
+
+  const relatedTransactionsQuery =
+    api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
+      props.movementId || skipToken
+    );
+
   const disableSynced = isEdit && accountQuery.data?.is_synced;
 
   const accountOptions = useAccountOptions();
 
   useEffect(() => {
-    const isEdit = props.transaction !== undefined;
-    const txs = props.relatedTransactions;
-    if (!txs) return;
-    if (!isEdit) {
-      const timestamp = txs.reduce(
-        (acc, tx) => (tx.timestamp && acc > tx.timestamp ? tx.timestamp : acc),
-        new Date().toISOString()
-      );
-      form.timestamp.set(timestamp ? new Date(timestamp) : new Date());
-      form.name.set(txs.find((tx) => tx.name)?.name || "");
-      form.code.set(
-        txs.find((tx) => tx.payment_channel)?.payment_channel || "null"
-      );
-      form.paymentChannel.set(txs.find((tx) => tx.code)?.code || "other");
-    }
-  }, [props.relatedTransactions]);
+    if (props.transaction !== undefined) return;
+    if (!movementQuery.isSuccess) return;
+    const movement = movementQuery.data;
+    const timestamp = movement.latest_timestamp;
+    form.timestamp.set(timestamp ? new Date(timestamp) : new Date());
+    form.code.set("transfer");
+    form.paymentChannel.set("other");
+  }, [movementQuery.isSuccess, movementQuery.data]);
 
   useEffect(() => {
     accountQuery.isSuccess &&
       form.currencyCode.set(accountQuery.data.currency_code);
-  }, [accountQuery]);
+  }, [accountQuery.isSuccess, accountQuery.data]);
 
   useEffect(() => {
     props.transaction && transactionApiOutToForm(props.transaction, form);
@@ -76,60 +85,30 @@ export default function Form(props: {
     props.accountId && form.accountId.set(props.accountId);
   }, [props.accountId]);
 
-  const [createTransaction, createTransactionResult] =
-    api.endpoints.createApiTransactionsPost.useMutation();
-  const [updateTransaction, updateTransactionResult] =
-    api.endpoints.updateApiTransactionsIdPut.useMutation();
-
-  const handleClose = () => {
-    Object.values(form).forEach((field) => field.reset());
-    props.onClose();
-  };
-
   const handleSubmit = async () => {
     const invalidFields = Object.values(form).filter(
       (field) => !field.validate()
     );
     if (invalidFields.length > 0) return;
     const transactionIn = transactionFormToApiIn(form);
-    if (props.transaction) {
-      try {
-        const transactionOut = await updateTransaction({
-          id: props.transaction.id,
-          transactionApiIn: transactionIn,
-        }).unwrap();
-        props.onMutation(transactionOut);
-      } catch (error) {
-        logMutationError(error, updateTransactionResult);
-        return;
-      }
-    } else {
-      try {
-        const transactionsOut = await createTransaction([
-          transactionIn,
-        ]).unwrap();
-        props.onMutation(transactionsOut[0]);
-      } catch (error) {
-        logMutationError(error, createTransactionResult);
-        return;
-      }
+    try {
+      await props.onSubmit(transactionIn);
+    } catch (error) {
+      return;
     }
     handleClose();
   };
 
-  function getModalTitle(isEdit: boolean) {
-    if (isEdit) {
-      return "Edit a Transaction";
-    } else {
-      return "Add a Transaction";
-    }
-  }
+  const handleClose = () => {
+    Object.values(form).forEach((field) => field.reset());
+    props.onClose();
+  };
 
   return (
     <FormModal
       open={props.open}
       onClose={handleClose}
-      title={getModalTitle(isEdit)}
+      title={props.title}
       onSubmit={handleSubmit}
     >
       <FormDropdownInput
@@ -144,9 +123,9 @@ export default function Form(props: {
         currency={form.currencyCode.value || "USD"}
         readOnly={disableSynced}
       />
-      {props.relatedTransactions && form.currencyCode.value && (
+      {relatedTransactionsQuery.isSuccess && form.currencyCode.value && (
         <CurrencyExchangeTips
-          relatedTransactions={props.relatedTransactions}
+          relatedTransactions={relatedTransactionsQuery.data}
           currencyCode={form.currencyCode.value}
         />
       )}
@@ -163,17 +142,131 @@ export default function Form(props: {
       <FormTextInput field={form.name} readOnly={disableSynced} />
       <FormDateTimeInput field={form.timestamp} readOnly={disableSynced} />
       <FormValidationError fields={Object.values(form)} />
-      <QueryErrorMessage query={createTransactionResult} />
-      <QueryErrorMessage query={updateTransactionResult} />
+      <QueryErrorMessage query={props.resultQuery} />
       {disableSynced && (
         <Message info icon>
           <Icon name="info circle" />
           <Message.Content>
-            This transaction is synchronised with your institution. Synchronised
-            transactions are not fully editable.
+            This transaction is synchronised with your institution, and is not
+            fully editable.
           </Message.Content>
         </Message>
       )}
     </FormModal>
   );
 }
+
+function FromCreate(props: {
+  accountId?: number;
+  open: boolean;
+  onClose: () => void;
+  onCreated: (x: MovementApiOut) => void;
+}) {
+  const [createMovement, createMovementResult] =
+    api.endpoints.createApiMovementsPost.useMutation();
+
+  const handleSubmit = async (transaction: TransactionApiIn) => {
+    try {
+      const [movement] = await createMovement({
+        transactions: [transaction],
+        transaction_ids: [],
+      }).unwrap();
+      props.onCreated(movement);
+    } catch (error) {
+      logMutationError(error, createMovementResult);
+      return;
+    }
+  };
+
+  return (
+    <Form
+      title="Create a Transaction"
+      open={props.open}
+      onClose={props.onClose}
+      accountId={props.accountId}
+      onSubmit={handleSubmit}
+      resultQuery={createMovementResult}
+    />
+  );
+}
+
+function FromAdd(props: {
+  accountId?: number;
+  open: boolean;
+  movementId: number;
+  onClose: () => void;
+  onAdded: (x: MovementApiOut) => void;
+}) {
+  const [addTransaction, addTransactionResult] =
+    api.endpoints.addTransactionApiMovementsIdTransactionsPost.useMutation();
+
+  const handleSubmit = async (transaction: TransactionApiIn) => {
+    try {
+      const movement = await addTransaction({
+        id: props.movementId,
+        transactionApiIn: transaction,
+      }).unwrap();
+      props.onAdded(movement);
+    } catch (error) {
+      logMutationError(error, addTransactionResult);
+      return;
+    }
+  };
+
+  return (
+    <Form
+      title="Add a Transaction to Movement"
+      open={props.open}
+      onClose={props.onClose}
+      accountId={props.accountId}
+      movementId={props.movementId}
+      onSubmit={handleSubmit}
+      resultQuery={addTransactionResult}
+    />
+  );
+}
+
+function FromEdit(props: {
+  transaction: TransactionApiOut;
+  accountId?: number;
+  relatedTransactions?: TransactionApiOut[];
+  open: boolean;
+  onClose: () => void;
+  onEdit: (x: TransactionApiOut) => void;
+  movementId: number;
+}) {
+  const [updateTransaction, updateTransactionResult] =
+    api.endpoints.updateTransactionApiMovementsIdTransactionsTransactionIdPut.useMutation();
+
+  const handleSubmit = async (transactionIn: TransactionApiIn) => {
+    try {
+      const movementId = props.transaction.movement_id;
+      const transactionOut = await updateTransaction({
+        id: movementId,
+        transactionId: props.transaction.id,
+        transactionApiIn: { ...transactionIn, movement_id: movementId },
+      }).unwrap();
+      props.onEdit(transactionOut);
+    } catch (error) {
+      logMutationError(error, updateTransactionResult);
+      throw error;
+    }
+  };
+
+  return (
+    <Form
+      title="Edit a Transaction"
+      open={props.open}
+      onClose={props.onClose}
+      accountId={props.accountId}
+      movementId={props.movementId}
+      transaction={props.transaction}
+      onSubmit={handleSubmit}
+      resultQuery={updateTransactionResult}
+    />
+  );
+}
+
+Form.Create = FromCreate;
+Form.Add = FromAdd;
+Form.Edit = FromEdit;
