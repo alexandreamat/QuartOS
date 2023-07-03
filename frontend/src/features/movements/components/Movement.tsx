@@ -1,10 +1,12 @@
-import { MovementApiOut, api } from "app/services/api";
+import { MovementApiOut, TransactionApiOut, api } from "app/services/api";
 import { Placeholder } from "semantic-ui-react";
 import { MovementCard } from "./MovementCard";
 
 export function Movement(props: {
   movement: MovementApiOut;
-  onOpenEditForm: () => void;
+  onOpenEditForm?: () => void;
+  onOpenCreateTransactionForm?: () => void;
+  onRemoveTransaction?: (x: TransactionApiOut) => void;
 }) {
   const transactionsQuery =
     api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
@@ -29,11 +31,13 @@ export function Movement(props: {
 
   return (
     <MovementCard
+      movement={props.movement}
       inflows={inflows}
       outflows={outflows}
       name={firstTransaction.name}
       onOpenEditForm={props.onOpenEditForm}
-      movement={props.movement}
+      onAddTransaction={props.onOpenCreateTransactionForm}
+      onRemoveTransaction={props.onRemoveTransaction}
     />
   );
 }

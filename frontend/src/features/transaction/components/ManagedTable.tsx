@@ -11,7 +11,10 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 export default function ManagedTable(props: {
   relatedTransactions?: TransactionApiOut[];
   onMutation?: (x: TransactionApiOut) => void;
-  onFlowCheckboxChange?: (flow: TransactionApiOut, checked: boolean) => void;
+  onFlowCheckboxChange?: (
+    flow: TransactionApiOut,
+    checked: boolean
+  ) => Promise<void>;
   checked?: number[];
 }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -43,6 +46,7 @@ export default function ManagedTable(props: {
     setSelectedTransaction(undefined);
     setIsFormOpen(false);
   };
+
   const handleAccountIdChange = (value: number) => {
     infiniteQuery.reset();
     setAccountId(value);
@@ -82,7 +86,6 @@ export default function ManagedTable(props: {
     <>
       <FlexColumn>
         <Bar
-          onOpenCreateForm={handleOpenCreateForm}
           accountId={accountId}
           onAccountIdChange={handleAccountIdChange}
           search={search}
@@ -104,14 +107,16 @@ export default function ManagedTable(props: {
           />
         </FlexColumn.Auto>
       </FlexColumn>
-      <Form
-        relatedTransactions={props.relatedTransactions}
-        transaction={selectedTransaction}
-        open={isFormOpen}
-        onClose={handleCloseForm}
-        accountId={selectedAccountId}
-        onMutation={infiniteQuery.mutate}
-      />
+      {selectedTransaction && (
+        <Form.Edit
+          open={isFormOpen}
+          onClose={handleCloseForm}
+          accountId={selectedAccountId}
+          movementId={selectedTransaction.movement_id}
+          transaction={selectedTransaction}
+          onEdit={infiniteQuery.mutate}
+        />
+      )}
     </>
   );
 }

@@ -69,14 +69,17 @@ export default function Uploader(props: {
     }
   };
 
-  const [createTransactions, createTransactionsResult] =
-    api.endpoints.createApiTransactionsPost.useMutation();
+  const [createMovements, createMovementsResult] =
+    api.endpoints.createApiMovementsPost.useMutation();
 
   const handleCreateTransactions = async () => {
     try {
-      await createTransactions(uploadResult.data!).unwrap();
+      await createMovements({
+        transactions: uploadResult.data!,
+        transaction_ids: [],
+      }).unwrap();
     } catch (error) {
-      logMutationError(error, createTransactionsResult);
+      logMutationError(error, createMovementsResult);
       return;
     }
     handleClose();
@@ -134,7 +137,7 @@ export default function Uploader(props: {
             <Table transactionPages={[uploadResult.data]} />
           )}
           <QueryErrorMessage query={uploadResult} />
-          <QueryErrorMessage query={createTransactionsResult} />
+          <QueryErrorMessage query={createMovementsResult} />
         </Form>
       </Modal.Content>
       <Modal.Actions>

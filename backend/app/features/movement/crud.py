@@ -27,23 +27,21 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def create(  # type: ignore [override]
         cls,
         db: Session,
-        transactions: list["TransactionApiIn"],
-        transaction_ids: list[int],
+        transaction: "TransactionApiIn | int",
     ) -> MovementApiOut:
         from app.features.transaction.crud import CRUDTransaction
-        from app.features.transaction.models import Transaction
+        from app.features.transaction.models import Transaction, TransactionApiIn
 
         new_movement = super().create(db, MovementApiIn())
 
-        for transaction_in in transactions:
-            transaction_in.movement_id = new_movement.id
-            CRUDTransaction.create(db, transaction_in)
-
-        for transaction_id in transaction_ids:
-            transaction_db = Transaction.read(db, transaction_id)
+        if isinstance(transaction, TransactionApiIn):
+            transaction.movement_id = new_movement.id
+            CRUDTransaction.create(db, transaction)
+        else:  # int
+            transaction_db = Transaction.read(db, transaction)
             old_movement = Movement.read(db, transaction_db.movement_id)
             transaction_db.movement_id = new_movement.id
-            Transaction.update(db, transaction_id, transaction_db)
+            Transaction.update(db, transaction, transaction_db)
             if not old_movement.transactions:
                 Movement.delete(db, old_movement.id)
 
