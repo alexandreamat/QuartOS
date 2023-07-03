@@ -14,6 +14,9 @@ requests_cache.install_cache("exchange_rates_cache", expire_after=None)
 
 
 def get_exchange_rate(from_currency: str, to_currency: str, date: date) -> Decimal:
+    if from_currency == to_currency:
+        return Decimal(1)
+
     api_url = f"{BASE_URL}/historical/{date.isoformat()}.json?app_id={API_KEY}"
 
     with requests_cache.CachedSession() as session:
