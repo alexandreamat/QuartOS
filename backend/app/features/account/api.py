@@ -6,10 +6,10 @@ from typing import Annotated, Iterable
 from fastapi import APIRouter, HTTPException, status, UploadFile, File
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.deps import CurrentUser, CurrentSuperuser
 from app.database.deps import DBSession
+from app.api import api_router
 
-
+from app.features.user.deps import CurrentUser, CurrentSuperuser
 from app.features import userinstitutionlink
 
 from .crud import CRUDAccount
@@ -17,6 +17,8 @@ from .models import AccountApiOut, AccountApiIn
 
 # Forward references, only for type annotations
 from app.features.transaction.models import TransactionApiOut, TransactionApiIn
+
+ACCOUNTS = "accounts"
 
 router = APIRouter()
 
@@ -163,3 +165,6 @@ def delete(
 def update_balances(db: DBSession, current_user: CurrentSuperuser) -> None:
     for account in CRUDAccount.read_many(db):
         CRUDAccount.update_balance(db, account.id)
+
+
+api_router.include_router(router, prefix=f"/{ACCOUNTS}", tags=[ACCOUNTS])

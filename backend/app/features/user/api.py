@@ -4,10 +4,13 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from app.database.deps import DBSession
+from app.api import api_router
 
 from .deps import CurrentUser, CurrentSuperuser
 from .crud import CRUDUser
 from .models import UserApiOut, UserApiIn
+
+USERS = "users"
 
 router = APIRouter()
 
@@ -98,3 +101,6 @@ def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
     if current_user.id == id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
     CRUDUser.delete(db, id)
+
+
+api_router.include_router(router, prefix=f"/{USERS}", tags=[USERS])

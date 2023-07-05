@@ -5,11 +5,14 @@ from sqlalchemy.exc import NoResultFound
 
 from app.features.user.deps import CurrentSuperuser
 from app.database.deps import DBSession
+from app.api import api_router
 
 from app.features import institution
 
 from .crud import CRUDInstitution
 from .models import InstitutionApiOut, InstitutionApiIn
+
+INSTITUTIONS = "institutions"
 
 router = APIRouter()
 
@@ -80,3 +83,6 @@ def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
         CRUDInstitution.delete(db, id=id)
     except NoResultFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+
+api_router.include_router(router, prefix=f"/{INSTITUTIONS}", tags=[INSTITUTIONS])

@@ -5,9 +5,12 @@ from sqlalchemy.exc import NoResultFound
 
 from app.database.deps import DBSession
 from app.features.user.deps import CurrentSuperuser
+from app.api import api_router
 
 from .crud import CRUDTransactionDeserialiser
 from .models import TransactionDeserialiserApiIn, TransactionDeserialiserApiOut
+
+TRANSACTION_DESERIALISERS = "transaction-deserialisers"
 
 router = APIRouter()
 
@@ -68,3 +71,10 @@ def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
         CRUDTransactionDeserialiser.delete(db, id=id)
     except NoResultFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+
+api_router.include_router(
+    router,
+    prefix=f"/{TRANSACTION_DESERIALISERS}",
+    tags=[TRANSACTION_DESERIALISERS],
+)

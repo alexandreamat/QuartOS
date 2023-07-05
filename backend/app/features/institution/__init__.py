@@ -7,4 +7,4 @@ from .models import (
     InstitutionPlaidOut,
 )
 from .plaid import fetch_institution
-from .api import router
+from .api import INSTITUTIONS

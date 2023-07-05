@@ -4,17 +4,24 @@ from datetime import date
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.deps import CurrentUser
 from app.database.deps import DBSession
 from app.common.models import CurrencyCode
+from app.api import api_router
 
+from app.features.user.deps import CurrentUser
 from app.features import account
 
 from .models import MovementApiOut, PLStatement
 from .crud import CRUDMovement
 
-from app.features.transaction.models import TransactionApiOut, TransactionApiIn
-from app.features.transaction.crud import CRUDTransaction
+from app.features.transaction import (  # type: ignore[attr-defined]
+    TransactionApiOut,
+    TransactionApiIn,
+    CRUDTransaction,
+    TRANSACTIONS,
+)
+
+MOVEMENTS = "movements"
 
 router = APIRouter()
 
@@ -32,7 +39,7 @@ def get_aggregate(
     )
 
 
-@router.post("/{id}/transactions", tags=["transactions"])
+@router.post("/{id}/transactions", tags=[TRANSACTIONS])
 def add_transaction(
     db: DBSession, current_user: CurrentUser, id: int, transaction: TransactionApiIn
 ) -> MovementApiOut:
@@ -57,7 +64,7 @@ def read_transactions(
     return CRUDMovement.read_transactions(db, id)
 
 
-@router.put("/{id}/transactions/{transaction_id}", tags=["transactions"])
+@router.put("/{id}/transactions/{transaction_id}", tags=[TRANSACTIONS])
 def update_transaction(
     db: DBSession,
     current_user: CurrentUser,
@@ -104,7 +111,7 @@ def update_transaction(
     return CRUDMovement.update_transaction(db, id, transaction_id, transaction)
 
 
-@router.delete("/{id}/transactions/{transaction_id}", tags=["transactions"])
+@router.delete("/{id}/transactions/{transaction_id}", tags=[TRANSACTIONS])
 def delete_transaction(
     db: DBSession, current_user: CurrentUser, id: int, transaction_id: int
 ) -> None:
@@ -132,7 +139,7 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> MovementApiOut:
     return movement
 
 
-@router.delete("/{id}", tags=["transactions"])
+@router.delete("/{id}", tags=[TRANSACTIONS])
 def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     try:
         movement = CRUDMovement.read(db, id)
@@ -144,7 +151,7 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     CRUDMovement.delete(db, id)
 
 
-@router.post("/", tags=["transactions"])
+@router.post("/", tags=[TRANSACTIONS])
 def create(
     db: DBSession,
     current_user: CurrentUser,
@@ -183,3 +190,6 @@ def read_many(
     search: str | None = None,
 ) -> Iterable[MovementApiOut]:
     return CRUDMovement.read_many_by_user(db, current_user.id, page, per_page, search)
+
+
+api_router.include_router(router, prefix=f"/{MOVEMENTS}", tags=[MOVEMENTS])

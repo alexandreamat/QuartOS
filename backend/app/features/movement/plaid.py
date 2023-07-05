@@ -7,7 +7,7 @@ from plaid.model.transaction import Transaction
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_response import TransactionsSyncResponse
 
-from app.features.plaid.client import client
+from app.common.plaid import client
 from app.features.account.models import AccountPlaidOut
 from app.features.account.crud import CRUDAccount
 from app.features.userinstitutionlink.models import (

@@ -4,7 +4,11 @@ from datetime import date
 import requests
 from fastapi import APIRouter, HTTPException, status
 
+from app.api import api_router
+
 from .client import get_exchange_rate
+
+EXCHANGERATE = "exchangerate"
 
 router = APIRouter()
 
@@ -17,3 +21,6 @@ def read_exchange_rate(from_currency: str, to_currency: str, date: date) -> Deci
         raise HTTPException(status_code=exc.response.status_code)
     except KeyError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
+
+
+api_router.include_router(router, prefix=f"/{EXCHANGERATE}", tags=[EXCHANGERATE])
