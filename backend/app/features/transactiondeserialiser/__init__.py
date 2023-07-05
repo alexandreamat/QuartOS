@@ -4,4 +4,4 @@ from .models import (
     TransactionDeserialiserApiIn,
     TransactionDeserialiserApiOut,
 )
-from .api import router
+from .api import TRANSACTION_DESERIALISERS

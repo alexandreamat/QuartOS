@@ -6,4 +6,4 @@ from .models import (
     TransactionPlaidIn,
     TransactionPlaidOut,
 )
-from .api import router
+from .api import TRANSACTIONS

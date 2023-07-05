@@ -4,13 +4,15 @@ from typing import Iterable
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.deps import CurrentUser
 from app.database.deps import DBSession
+from app.api import api_router
 
+from app.features.user.deps import CurrentUser
 
 from .crud import CRUDTransaction
 from .models import TransactionApiOut
 
+TRANSACTIONS = "transactions"
 
 router = APIRouter()
 
@@ -39,3 +41,6 @@ def read_many(
     return CRUDTransaction.read_many_by_user(
         db, current_user.id, page, per_page, search, timestamp, is_descending
     )
+
+
+api_router.include_router(router, prefix=f"/{TRANSACTIONS}", tags=[TRANSACTIONS])

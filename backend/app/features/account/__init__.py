@@ -7,4 +7,4 @@ from .models import (
     AccountPlaidOut,
 )
 from .plaid import fetch_accounts
-from .api import router
+from .api import ACCOUNTS

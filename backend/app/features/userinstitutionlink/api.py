@@ -6,10 +6,11 @@ from fastapi import APIRouter, HTTPException, status
 
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from app.features.user.deps import CurrentUser
 from app.database.deps import DBSession
+from app.api import api_router
 
-from app.features import institution
+from app.features.user.deps import CurrentUser
+from app.features.institution import CRUDInstitution  # type: ignore[attr-defined]
 
 from .crud import CRUDUserInstitutionLink
 from .models import (
@@ -19,6 +20,8 @@ from .models import (
 
 # forward refereneces, only for annotations
 from app.features.account.models import AccountApiOut
+
+INSTITUTION_LINKS = "institution-links"
 
 router = APIRouter()
 
@@ -30,7 +33,7 @@ def create(
     user_institution_link: UserInstitutionLinkApiIn,
 ) -> UserInstitutionLinkApiOut:
     try:
-        institution.crud.CRUDInstitution.read(db, user_institution_link.institution_id)
+        CRUDInstitution.read(db, user_institution_link.institution_id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     user_institution_link.user_id = current_user.id
@@ -117,3 +120,8 @@ def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
         sync_transactions(db, curr_institution_link)
     except urllib3.exceptions.ReadTimeoutError:
         raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
+
+
+api_router.include_router(
+    router, prefix=f"/{INSTITUTION_LINKS}", tags=[INSTITUTION_LINKS]
+)

@@ -4,6 +4,7 @@ from app import initial_data
 from app.settings import settings
 from app.api import api_router
 
+
 initial_data.main()
 
 app = FastAPI(

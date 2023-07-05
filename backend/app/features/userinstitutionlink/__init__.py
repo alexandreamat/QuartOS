@@ -7,4 +7,4 @@ from .models import (
     UserInstitutionLinkPlaidOut,
 )
 from .plaid import fetch_user_institution_link
-from .api import router
+from .api import INSTITUTION_LINKS

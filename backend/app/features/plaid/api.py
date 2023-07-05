@@ -1,22 +1,25 @@
 from fastapi import APIRouter
-
 from sqlalchemy.exc import NoResultFound
+
 from app.database.deps import DBSession
-from app.features.user.deps import CurrentUser
-
-from app.features.institution import CRUDInstitution, fetch_institution  # type: ignore[attr-defined]
-from app.features.userinstitutionlink import (  # type: ignore[attr-defined]
-    CRUDUserInstitutionLink,
-    fetch_user_institution_link,
-)
-
-from app.features.account import CRUDAccount, fetch_accounts  # type: ignore[attr-defined]
-
+from app.api import api_router
 
 from app.common.plaid import (
     create_link_token,
     exchange_public_token,
 )
+
+from app.features.user.deps import CurrentUser
+from app.features.institution import CRUDInstitution, fetch_institution, INSTITUTIONS  # type: ignore[attr-defined]
+from app.features.userinstitutionlink import (  # type: ignore[attr-defined]
+    CRUDUserInstitutionLink,
+    fetch_user_institution_link,
+    INSTITUTION_LINKS,
+)
+from app.features.account import CRUDAccount, fetch_accounts, ACCOUNTS  # type: ignore[attr-defined]
+from app.features.transaction import TRANSACTIONS  # type: ignore[attr-defined]
+
+PLAID = "plaid"
 
 router = APIRouter()
 
@@ -52,3 +55,10 @@ def set_public_token(
     accounts_in = fetch_accounts(user_institution_link_out)
     for account_in in accounts_in:
         CRUDAccount.sync(db, account_in)
+
+
+api_router.include_router(
+    router,
+    prefix=f"/{PLAID}",
+    tags=[PLAID, INSTITUTION_LINKS, INSTITUTIONS, ACCOUNTS, TRANSACTIONS],
+)
