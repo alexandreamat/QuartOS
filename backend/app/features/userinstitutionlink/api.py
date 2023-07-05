@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Iterable
 
 import urllib3
 from fastapi import APIRouter, HTTPException, status
@@ -39,7 +40,7 @@ def create(
 @router.get("/{id}/accounts")
 def read_accounts(
     db: DBSession, current_user: CurrentUser, id: int
-) -> list[AccountApiOut]:
+) -> Iterable[AccountApiOut]:
     from app.features.account.crud import CRUDAccount
 
     try:
@@ -65,7 +66,7 @@ def read(
 @router.get("/")
 def read_many(
     db: DBSession, current_user: CurrentUser
-) -> list[UserInstitutionLinkApiOut]:
+) -> Iterable[UserInstitutionLinkApiOut]:
     return CRUDUserInstitutionLink.read_many_by_user(db, current_user.id)
 
 
@@ -104,7 +105,7 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
 
 @router.post("/{id}/sync")
 def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
-    from app.features.transaction.plaid import sync_transactions
+    from app.features.movement.plaid import sync_transactions
 
     try:
         curr_institution_link = CRUDUserInstitutionLink.read_plaid(db, id)

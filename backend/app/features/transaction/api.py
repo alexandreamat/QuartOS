@@ -9,9 +9,8 @@ from app.database.deps import DBSession
 
 
 from .crud import CRUDTransaction
-from .models import TransactionApiOut, TransactionApiIn
+from .models import TransactionApiOut
 
-from app.features import account
 
 router = APIRouter()
 

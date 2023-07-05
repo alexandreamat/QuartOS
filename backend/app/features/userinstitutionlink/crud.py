@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from sqlmodel import Session
 from app.common.crud import CRUDBase, CRUDSyncable
 
@@ -24,9 +26,10 @@ class CRUDUserInstitutionLink(
     @classmethod
     def read_many_by_user(
         cls, db: Session, user_id: int
-    ) -> list[UserInstitutionLinkApiOut]:
+    ) -> Iterable[UserInstitutionLinkApiOut]:
         db_user = user.models.User.read(db, user_id)
-        return [cls.api_out_model.from_orm(obj) for obj in db_user.institution_links]
+        for obj in db_user.institution_links:
+            yield cls.api_out_model.from_orm(obj)
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:

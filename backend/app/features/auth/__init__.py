@@ -1,1 +1,1 @@
-from . import api, models
+from .api import router

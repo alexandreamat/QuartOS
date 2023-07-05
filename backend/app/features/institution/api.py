@@ -30,7 +30,7 @@ def sync(db: DBSession, current_user: CurrentSuperuser, id: int) -> InstitutionA
         institution_db = CRUDInstitution.read_plaid(db, id=id)
     except NoResultFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    institution_in = institution.plaid.get_institution(institution_db.plaid_id)
+    institution_in = institution.plaid.fetch_institution(institution_db.plaid_id)
     CRUDInstitution.resync(db, id, institution_in)
     institution_out = CRUDInstitution.read(db, id)
     return institution_out

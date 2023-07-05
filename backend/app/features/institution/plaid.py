@@ -7,12 +7,12 @@ from plaid.model.institutions_get_by_id_request_options import (
 )
 from plaid.model.institutions_get_by_id_response import InstitutionsGetByIdResponse
 
-from app.features.plaid.client import client, country_codes
+from app.common.plaid import client, country_codes
 
 from .models import InstitutionPlaidIn
 
 
-def get_institution(plaid_id: str) -> InstitutionPlaidIn:
+def fetch_institution(plaid_id: str) -> InstitutionPlaidIn:
     request = InstitutionsGetByIdRequest(
         institution_id=plaid_id,
         country_codes=country_codes,

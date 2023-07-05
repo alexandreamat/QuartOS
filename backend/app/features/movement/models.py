@@ -1,15 +1,21 @@
 from decimal import Decimal
-from datetime import datetime
-from typing import TYPE_CHECKING
-from sqlmodel import SQLModel, Relationship
+from datetime import datetime, date
+from typing import Iterable
+from sqlmodel import SQLModel, Relationship, Session, and_, or_, col, func, select
 
 from app.common.models import IdentifiableBase, CurrencyCode
-
 from app.features.exchangerate.client import get_exchange_rate
+from app.features.user import User  # type: ignore[attr-defined]
+from app.features.userinstitutionlink import UserInstitutionLink  # type: ignore[attr-defined]
+from app.features.account import Account  # type: ignore[attr-defined]
+from app.features.transaction import Transaction  # type: ignore[attr-defined]
 
-if TYPE_CHECKING:
-    from app.features.transaction.models import Transaction
-    from app.features.user.models import User
+
+class PLStatement(SQLModel):
+    start_date: date
+    end_date: date
+    income: Decimal
+    expenses: Decimal
 
 
 class __MovementBase(SQLModel):
@@ -33,22 +39,17 @@ class Movement(__MovementBase, IdentifiableBase, table=True):
     )
 
     @property
-    def user(self) -> "User":
-        return self.transactions[0].user
+    def users(self) -> Iterable[User]:
+        for transaction in self.transactions:
+            yield transaction.user
 
     @property
-    def earliest_timestamp(self) -> datetime | None:
-        try:
-            return min(t.timestamp for t in self.transactions if t.timestamp)
-        except ValueError:
-            return None
+    def earliest_timestamp(self) -> datetime:
+        return min(t.timestamp for t in self.transactions if t.timestamp)
 
     @property
-    def latest_timestamp(self) -> datetime | None:
-        try:
-            return max(t.timestamp for t in self.transactions if t.timestamp)
-        except ValueError:
-            return None
+    def latest_timestamp(self) -> datetime:
+        return max(t.timestamp for t in self.transactions if t.timestamp)
 
     @property
     def amounts(self) -> dict[CurrencyCode, Decimal]:
@@ -62,3 +63,96 @@ class Movement(__MovementBase, IdentifiableBase, table=True):
             )
             for c in {t.currency_code for t in self.transactions}
         }
+
+    @classmethod
+    def read_many_by_user(
+        cls, db: Session, user_id: int, page: int, per_page: int, search: str | None
+    ) -> Iterable["Movement"]:
+        offset = (page - 1) * per_page if page and per_page else 0
+
+        statement = (
+            select(cls)
+            .join(Transaction)
+            .join(Account)
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
+            .where(
+                or_(
+                    UserInstitutionLink.user_id == user_id,
+                    Account.NonInstitutionalAccount.user_id == user_id,
+                )
+            )
+            .group_by(Movement.id)
+            .order_by(*Transaction.get_desc_clauses())
+        )
+
+        if search:
+            search = f"%{search}%"
+            statement = statement.where(col(Transaction.name).like(search))
+
+        if per_page:
+            offset = (page - 1) * per_page
+            statement = statement.offset(offset).limit(per_page)
+
+        return db.exec(statement).all()
+
+    @classmethod
+    def get_aggregates(
+        cls,
+        db: Session,
+        user_id: int,
+        start_date: date,
+        end_date: date,
+        currency_code: CurrencyCode,
+    ) -> PLStatement:
+        subquery = (
+            select(
+                [
+                    cls,
+                    func.min(Transaction.timestamp).label("earliest_timestamp"),
+                ]
+            )
+            .join(Transaction)
+            .join(Account)
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
+            .where(
+                or_(
+                    UserInstitutionLink.user_id == user_id,
+                    Account.NonInstitutionalAccount.user_id == user_id,
+                )
+            )
+            .group_by(cls.id)
+        ).subquery()
+
+        statement = (
+            select(cls)
+            .join(subquery, cls.id == subquery.c.id)
+            .where(
+                and_(
+                    subquery.c.earliest_timestamp >= start_date,
+                    subquery.c.earliest_timestamp < end_date,
+                )
+            )
+        )
+
+        movements = db.exec(statement).all()
+
+        income_total = Decimal(0)
+        expense_total = Decimal(0)
+
+        for movement in movements:
+            amount = movement.amounts.get(currency_code, Decimal(0))
+            if amount >= Decimal(0):
+                income_total += amount
+            else:
+                expense_total += amount
+
+        return PLStatement(
+            start_date=start_date,
+            end_date=end_date,
+            income=income_total,
+            expenses=expense_total,
+        )

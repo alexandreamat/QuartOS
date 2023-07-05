@@ -2,13 +2,13 @@ from plaid.model.account_base import AccountBase
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 
-from app.features.plaid.client import client
+from app.common.plaid import client
 from app.features import userinstitutionlink
 
 from .models import AccountPlaidIn
 
 
-def get_accounts(
+def fetch_accounts(
     user_institution_link: userinstitutionlink.models.UserInstitutionLinkPlaidOut,
 ) -> list[AccountPlaidIn]:
     request = AccountsGetRequest(access_token=user_institution_link.access_token)

@@ -1,22 +1,23 @@
-from typing import TYPE_CHECKING
+from typing import Iterable
+from datetime import date
 
-from sqlmodel import select, or_, col, Session
+from sqlmodel import Session
 
 from app.common.crud import CRUDBase
-from app.features import account, userinstitutionlink
+from app.common.models import CurrencyCode
 
-from .models import Movement, MovementApiIn, MovementApiOut
+from app.features.user import UserApiOut  # type: ignore [attr-defined]
+from app.features.transaction import (  # type: ignore [attr-defined]
+    Transaction,
+    TransactionApiIn,
+    TransactionApiOut,
+    TransactionPlaidIn,
+    TransactionPlaidOut,
+    CRUDTransaction,
+    CRUDTransaction,
+)
 
-
-from app.features import user
-
-if TYPE_CHECKING:
-    from app.features.transaction.models import (
-        TransactionApiIn,
-        TransactionApiOut,
-        TransactionPlaidIn,
-        TransactionPlaidOut,
-    )
+from .models import Movement, MovementApiIn, MovementApiOut, PLStatement
 
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
@@ -27,11 +28,8 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def create(  # type: ignore [override]
         cls,
         db: Session,
-        transaction: "TransactionApiIn | int",
+        transaction: TransactionApiIn | int,
     ) -> MovementApiOut:
-        from app.features.transaction.crud import CRUDTransaction
-        from app.features.transaction.models import Transaction, TransactionApiIn
-
         new_movement = super().create(db, MovementApiIn())
 
         if isinstance(transaction, TransactionApiIn):
@@ -48,9 +46,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return CRUDMovement.read(db, new_movement.id)
 
     @classmethod
-    def sync(cls, db: Session, transaction: "TransactionPlaidIn") -> MovementApiOut:
-        from app.features.transaction.crud import CRUDTransaction
-
+    def sync(cls, db: Session, transaction: TransactionPlaidIn) -> MovementApiOut:
         movement = super().create(db, MovementApiIn())
         transaction.movement_id = movement.id
         CRUDTransaction.sync(db, transaction)
@@ -58,58 +54,32 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return CRUDMovement.read(db, movement.id)
 
     @classmethod
-    def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
-        return user.models.UserApiOut.from_orm(Movement.read(db, id).user)
+    def read_users(cls, db: Session, id: int) -> Iterable[UserApiOut]:
+        for user in Movement.read(db, id).users:
+            yield UserApiOut.from_orm(user)
 
     @classmethod
     def read_many_by_user(
         cls, db: Session, user_id: int, page: int, per_page: int, search: str | None
-    ) -> list[MovementApiOut]:
-        from app.features import transaction
-
-        offset = (page - 1) * per_page if page and per_page else 0
-        MovementApiOut.update_forward_refs()
-        statement = (
-            select(Movement)
-            .join(transaction.models.Transaction)
-            .join(account.models.Account)
-            .outerjoin(account.models.Account.InstitutionalAccount)
-            .outerjoin(account.models.Account.NonInstitutionalAccount)
-            .outerjoin(userinstitutionlink.models.UserInstitutionLink)
-            .where(
-                or_(
-                    userinstitutionlink.models.UserInstitutionLink.user_id == user_id,
-                    account.models.Account.NonInstitutionalAccount.user_id == user_id,
-                )
-            )
-            .group_by(Movement.id)
-            .order_by(*transaction.models.Transaction.get_desc_clauses())
-        )
-
-        if search:
-            search = f"%{search}%"
-            statement = statement.where(
-                col(transaction.models.Transaction.name).like(search)
-            )
-
-        if per_page:
-            offset = (page - 1) * per_page
-            statement = statement.offset(offset).limit(per_page)
-
-        movements = db.exec(statement).all()
-
-        return [MovementApiOut.from_orm(m) for m in movements]
+    ) -> Iterable[MovementApiOut]:
+        for m in Movement.read_many_by_user(db, user_id, page, per_page, search):
+            yield MovementApiOut.from_orm(m)
 
     @classmethod
     def add_transaction(
-        cls, db: Session, id: int, transaction_in: "TransactionApiIn"
+        cls, db: Session, id: int, transaction_in: TransactionApiIn
     ) -> MovementApiOut:
-        from app.features.transaction.crud import CRUDTransaction
-
         movement = Movement.read(db, id)
         transaction_in.movement_id = movement.id
         CRUDTransaction.create(db, transaction_in)
         return CRUDMovement.read(db, id)
+
+    @classmethod
+    def read_transactions(
+        cls, db: Session, movement_id: int
+    ) -> Iterable[TransactionApiOut]:
+        for t in Movement.read(db, movement_id).transactions:
+            yield TransactionApiOut.from_orm(t)
 
     @classmethod
     def update_transaction(
@@ -117,10 +87,8 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         db: Session,
         id: int,
         transaction_id: int,
-        transaction_in: "TransactionApiIn",
-    ) -> "TransactionApiOut":
-        from app.features.transaction.crud import CRUDTransaction
-
+        transaction_in: TransactionApiIn,
+    ) -> TransactionApiOut:
         movement = Movement.read(db, id)
         transaction_out = CRUDTransaction.update(db, transaction_id, transaction_in)
         if not movement.transactions:
@@ -133,17 +101,24 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         db: Session,
         id: int,
         transaction_id: int,
-        transaction_in: "TransactionPlaidIn",
-    ) -> "TransactionPlaidOut":
-        from app.features.transaction.crud import CRUDTransaction
-
+        transaction_in: TransactionPlaidIn,
+    ) -> TransactionPlaidOut:
         return CRUDTransaction.resync(db, transaction_id, transaction_in)
 
     @classmethod
     def delete_transaction(cls, db: Session, id: int, transaction_id: int) -> None:
-        from app.features.transaction.crud import CRUDTransaction
-
         movement = Movement.read(db, id)
         CRUDTransaction.delete(db, transaction_id)
         if not movement.transactions:
             cls.delete(db, id)
+
+    @classmethod
+    def get_aggregates(
+        cls,
+        db: Session,
+        user_id: int,
+        start_date: date,
+        end_date: date,
+        currency_code: CurrencyCode,
+    ) -> PLStatement:
+        return Movement.get_aggregates(db, user_id, start_date, end_date, currency_code)

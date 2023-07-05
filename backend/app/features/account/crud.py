@@ -2,13 +2,16 @@ from typing import Iterable
 
 from datetime import datetime
 
-from sqlmodel import Session, asc, desc
+from sqlmodel import Session, asc
 from app.common.crud import CRUDBase
 
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Query
 
-from app.features import user, institution, userinstitutionlink, transactiondeserialiser
+from app.features.user import User, UserApiOut  # type: ignore[attr-defined]
+from app.features.institution import InstitutionApiOut  # type: ignore[attr-defined]
+from app.features.userinstitutionlink import UserInstitutionLink  # type: ignore[attr-defined]
+from app.features.transactiondeserialiser import TransactionDeserialiserApiOut  # type: ignore[attr-defined]
 
 from .models import (
     Account,
@@ -24,49 +27,41 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     api_out_model = AccountApiOut
 
     @classmethod
-    def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
-        return user.models.UserApiOut.from_orm(Account.read(db, id).user)
+    def read_user(cls, db: Session, id: int) -> UserApiOut:
+        return UserApiOut.from_orm(Account.read(db, id).user)
 
     @classmethod
-    def read_institution(
-        cls, db: Session, id: int
-    ) -> institution.models.InstitutionApiOut:
-        return institution.models.InstitutionApiOut.from_orm(
-            Account.read(db, id).institution
-        )
+    def read_institution(cls, db: Session, id: int) -> InstitutionApiOut:
+        return InstitutionApiOut.from_orm(Account.read(db, id).institution)
 
     @classmethod
     def read_transaction_deserialiser(
         cls, db: Session, id: int
-    ) -> transactiondeserialiser.models.TransactionDeserialiserApiOut:
+    ) -> TransactionDeserialiserApiOut:
         db_deserialiser = Account.read(db, id).transactiondeserialiser
         if not db_deserialiser:
             raise NoResultFound
-        return transactiondeserialiser.models.TransactionDeserialiserApiOut.from_orm(
-            db_deserialiser
-        )
+        return TransactionDeserialiserApiOut.from_orm(db_deserialiser)
 
     @classmethod
     def read_many_by_institution_link(
         cls, db: Session, userinstitutionlink_id: int
-    ) -> list[AccountApiOut]:
-        l = userinstitutionlink.models.UserInstitutionLink.read(
-            db, userinstitutionlink_id
-        )
-        return [AccountApiOut.from_orm(ia.account) for ia in l.institutionalaccounts]
+    ) -> Iterable[AccountApiOut]:
+        l = UserInstitutionLink.read(db, userinstitutionlink_id)
+        for ia in l.institutionalaccounts:
+            yield AccountApiOut.from_orm(ia.account)
 
     @classmethod
     def read_many_by_institution_link_plaid(
         cls, db: Session, userinstitutionlink_id: int
-    ) -> list[AccountPlaidOut]:
-        l = userinstitutionlink.models.UserInstitutionLink.read(
-            db, userinstitutionlink_id
-        )
-        return [AccountPlaidOut.from_orm(ia.account) for ia in l.institutionalaccounts]
+    ) -> Iterable[AccountPlaidOut]:
+        l = UserInstitutionLink.read(db, userinstitutionlink_id)
+        for ia in l.institutionalaccounts:
+            yield AccountPlaidOut.from_orm(ia.account)
 
     @classmethod
     def read_many_by_user(cls, db: Session, user_id: int) -> Iterable[AccountApiOut]:
-        db_user = user.models.User.read(db, user_id)
+        db_user = User.read(db, user_id)
         for l in db_user.institution_links:
             for ia in l.institutionalaccounts:
                 yield AccountApiOut.from_orm(ia.account)

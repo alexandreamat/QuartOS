@@ -6,7 +6,11 @@ from decimal import Decimal
 from sqlmodel import Session, select, or_
 
 from app.common.crud import CRUDBase, CRUDSyncable
-from app.features import account, userinstitutionlink, institution, user, movement
+
+from app.features.user import UserApiOut  # type: ignore[attr-defined]
+from app.features.account import AccountApiOut, Account, CRUDAccount  # type: ignore[attr-defined]
+from app.features.institution import InstitutionApiOut  # type: ignore[attr-defined]
+from app.features.userinstitutionlink import UserInstitutionLink  # type: ignore[attr-defined]
 
 from .models import (
     Transaction,
@@ -26,43 +30,26 @@ class CRUDTransaction(
     plaid_out_model = TransactionPlaidOut
 
     @classmethod
-    def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
-        return user.models.UserApiOut.from_orm(cls.db_model.read(db, id).user)
+    def read_user(cls, db: Session, id: int) -> UserApiOut:
+        return UserApiOut.from_orm(cls.db_model.read(db, id).user)
 
     @classmethod
-    def read_account(cls, db: Session, id: int) -> account.models.AccountApiOut:
-        return account.models.AccountApiOut.from_orm(cls.db_model.read(db, id).account)
+    def read_account(cls, db: Session, id: int) -> AccountApiOut:
+        return AccountApiOut.from_orm(cls.db_model.read(db, id).account)
 
     @classmethod
-    def read_user_institution_link(
-        cls, db: Session, id: int
-    ) -> institution.models.InstitutionApiOut:
-        return institution.models.InstitutionApiOut.from_orm(
-            cls.db_model.read(db, id).userinstitutionlink
-        )
+    def read_user_institution_link(cls, db: Session, id: int) -> InstitutionApiOut:
+        return InstitutionApiOut.from_orm(cls.db_model.read(db, id).userinstitutionlink)
 
     @classmethod
-    def read_institution(
-        cls, db: Session, id: int
-    ) -> institution.models.InstitutionApiOut:
-        return institution.models.InstitutionApiOut.from_orm(
-            cls.db_model.read(db, id).institution
-        )
-
-    @classmethod
-    def read_many_by_movement(
-        cls, db: Session, movement_id: int
-    ) -> Iterable[TransactionApiOut]:
-        for t in movement.models.Movement.read(db, movement_id).transactions:
-            yield TransactionApiOut.from_orm(t)
+    def read_institution(cls, db: Session, id: int) -> InstitutionApiOut:
+        return InstitutionApiOut.from_orm(cls.db_model.read(db, id).institution)
 
     @classmethod
     def read_many_by_institution_link(
         cls, db: Session, userinstitutionlink_id: int
     ) -> Iterable[TransactionApiOut]:
-        l = userinstitutionlink.models.UserInstitutionLink.read(
-            db, userinstitutionlink_id
-        )
+        l = UserInstitutionLink.read(db, userinstitutionlink_id)
         for ia in l.institutionalaccounts:
             for t in ia.account.transactions:
                 yield cls.api_out_model.from_orm(t)
@@ -80,14 +67,14 @@ class CRUDTransaction(
     ) -> Iterable[TransactionApiOut]:
         statement = (
             select(Transaction)
-            .join(account.models.Account)
-            .outerjoin(account.models.Account.InstitutionalAccount)
-            .outerjoin(account.models.Account.NonInstitutionalAccount)
-            .outerjoin(userinstitutionlink.models.UserInstitutionLink)
+            .join(Account)
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
             .where(
                 or_(
-                    userinstitutionlink.models.UserInstitutionLink.user_id == user_id,
-                    account.models.Account.NonInstitutionalAccount.user_id == user_id,
+                    UserInstitutionLink.user_id == user_id,
+                    Account.NonInstitutionalAccount.user_id == user_id,
                 )
             )
         )
@@ -107,11 +94,7 @@ class CRUDTransaction(
         timestamp: datetime | None,
         is_descending: bool,
     ) -> Iterable[TransactionApiOut]:
-        statement = (
-            select(Transaction)
-            .join(account.models.Account)
-            .filter(account.models.Account.id == account_id)
-        )
+        statement = select(Transaction).join(Account).filter(Account.id == account_id)
         for t in Transaction.read_from_query(
             db, page, per_page, search, timestamp, is_descending, statement
         ):
@@ -125,7 +108,7 @@ class CRUDTransaction(
     def create(cls, db: Session, transaction_in: TransactionApiIn) -> TransactionApiOut:
         transaction_in.account_balance = Decimal(0)
         transaction_out = super().create(db, transaction_in)
-        account.crud.CRUDAccount.update_balance(
+        CRUDAccount.update_balance(
             db, transaction_out.account_id, transaction_out.timestamp
         )
         return transaction_out
@@ -136,7 +119,7 @@ class CRUDTransaction(
     ) -> TransactionApiOut:
         transaction_in.account_balance = Decimal(0)
         transaction_out = super().update(db, id, transaction_in)
-        account.crud.CRUDAccount.update_balance(
+        CRUDAccount.update_balance(
             db, transaction_out.account_id, transaction_out.timestamp
         )
         return transaction_out
@@ -145,6 +128,4 @@ class CRUDTransaction(
     def delete(cls, db: Session, id: int) -> None:
         transaction = cls.read(db, id)
         super().delete(db, id)
-        account.crud.CRUDAccount.update_balance(
-            db, transaction.account_id, transaction.timestamp
-        )
+        CRUDAccount.update_balance(db, transaction.account_id, transaction.timestamp)

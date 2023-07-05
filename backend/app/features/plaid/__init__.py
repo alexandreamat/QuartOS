@@ -1,1 +1,1 @@
-from . import api, client
+from .api import router
