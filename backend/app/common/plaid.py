@@ -1,6 +1,5 @@
 import os
 
-
 import plaid
 from plaid.api.plaid_api import PlaidApi
 from plaid.model.products import Products

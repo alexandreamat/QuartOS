@@ -4,7 +4,7 @@ from plaid.model.item import Item
 from plaid.model.item_get_request import ItemGetRequest
 from plaid.model.item_get_response import ItemGetResponse
 
-from app.features.plaid.client import client
+from app.common.plaid import client
 
 from app.features import institution
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from app.features.user.models import UserApiOut
 
 
-def get_user_institution_link(
+def fetch_user_institution_link(
     access_token: str,
     current_user: "UserApiOut",
     institution: institution.models.InstitutionPlaidOut,

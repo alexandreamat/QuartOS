@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from enum import Enum
 from decimal import Decimal
 from datetime import datetime
@@ -13,7 +14,9 @@ from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
 from app.features.account.models import Account
-from app.features.movement.models import Movement
+
+if TYPE_CHECKING:
+    from app.features.movement.models import Movement
 
 
 class PaymentChannel(str, Enum):
@@ -83,7 +86,7 @@ class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=Tr
     account_balance: Decimal
 
     account: Account = Relationship(back_populates="transactions")
-    movement: Movement = Relationship(back_populates="transactions")
+    movement: "Movement" = Relationship(back_populates="transactions")
 
     @validator("timestamp", pre=True)
     def convert_to_utc_naive(cls, v: datetime | None) -> datetime | None:
