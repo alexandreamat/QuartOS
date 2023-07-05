@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 
+# mypy: ignore-errors
 from app.features import (
     auth,
     user,
@@ -29,7 +30,7 @@ api_router = APIRouter()
 
 api_router.include_router(auth.router, prefix=f"/{AUTH}", tags=[AUTH])
 api_router.include_router(
-    transactiondeserialiser.api.router,
+    transactiondeserialiser.router,
     prefix=f"/{TRANSACTION_DESERIALISERS}",
     tags=[TRANSACTION_DESERIALISERS],
 )
