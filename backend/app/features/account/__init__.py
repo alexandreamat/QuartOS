@@ -7,4 +7,5 @@ from .models import (
     AccountPlaidOut,
 )
 from .plaid import fetch_accounts
+from .exceptions import AccountNotFound, ForbiddenAccount
 from .api import ACCOUNTS

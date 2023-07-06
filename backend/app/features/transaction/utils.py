@@ -7,15 +7,15 @@ from typing import Iterable
 
 from .models import TransactionApiIn
 
-from app.features.transactiondeserialiser.models import TransactionDeserialiserApiOut
+from app.features.transactiondeserialiser import TransactionDeserialiserApiOut  # type: ignore[attr-defined]
 
 
-def sanitise_row(row: list[str]) -> None:
+def __sanitise_row(row: list[str]) -> None:
     for i in range(len(row)):
         row[i] = re.sub(r"[\s\t]+", " ", row[i]).strip()
 
 
-def create_instances_from_csv(
+def get_transactions_from_csv(
     deserialiser: TransactionDeserialiserApiOut, file: Iterable[str], account_id: int
 ) -> list[TransactionApiIn]:
     instances = []
@@ -34,7 +34,7 @@ def create_instances_from_csv(
     for row in reader:
         if len(row) != deserialiser.columns:
             break
-        sanitise_row(row)
+        __sanitise_row(row)
         deserialized_row = {
             field: deserializer(row) for field, deserializer in deserializers.items()
         }
