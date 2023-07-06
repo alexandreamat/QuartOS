@@ -19,7 +19,7 @@ from .models import (
 )
 
 # forward refereneces, only for annotations
-from app.features.account.models import AccountApiOut
+from app.features.account import AccountApiOut  # type: ignore[attr-defined]
 
 INSTITUTION_LINKS = "institution-links"
 

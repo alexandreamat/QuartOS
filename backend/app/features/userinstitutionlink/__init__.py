@@ -7,4 +7,9 @@ from .models import (
     UserInstitutionLinkPlaidOut,
 )
 from .plaid import fetch_user_institution_link
+from .exceptions import (
+    SyncedEntity,
+    UserInstitutionLinkNotFound,
+    ForbiddenUserInstitutionLink,
+)
 from .api import INSTITUTION_LINKS

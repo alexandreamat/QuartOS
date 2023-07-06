@@ -3,20 +3,30 @@ from datetime import datetime
 from typing import Annotated, Iterable
 
 
-from fastapi import APIRouter, HTTPException, status, UploadFile, File
+from fastapi import APIRouter, UploadFile, File
 from sqlalchemy.exc import NoResultFound
 
 from app.database.deps import DBSession
 from app.api import api_router
+from app.common.exceptions import UnknownError
 
 from app.features.user.deps import CurrentUser, CurrentSuperuser
-from app.features import userinstitutionlink
+from app.features.userinstitutionlink import (  # type: ignore[attr-defined]
+    CRUDUserInstitutionLink,
+    UserInstitutionLinkNotFound,
+    ForbiddenUserInstitutionLink,
+    SyncedEntity,
+)
 
 from .crud import CRUDAccount
 from .models import AccountApiOut, AccountApiIn
+from .exceptions import AccountNotFound, ForbiddenAccount
 
 # Forward references, only for type annotations
-from app.features.transaction.models import TransactionApiOut, TransactionApiIn
+from app.features.transaction import (  # type: ignore[attr-defined]
+    TransactionApiOut,
+    TransactionApiIn,
+)
 
 ACCOUNTS = "accounts"
 
@@ -31,17 +41,17 @@ def create(
 ) -> AccountApiOut:
     if institutional_account := account.institutionalaccount:
         try:
-            user = userinstitutionlink.crud.CRUDUserInstitutionLink.read_user(
+            user = CRUDUserInstitutionLink.read_user(
                 db, institutional_account.userinstitutionlink_id
             )
         except NoResultFound:
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
+            raise AccountNotFound()
         if user.id != current_user.id:
-            raise HTTPException(status.HTTP_403_FORBIDDEN)
-        if userinstitutionlink.crud.CRUDUserInstitutionLink.is_synced(
+            raise ForbiddenAccount()
+        if CRUDUserInstitutionLink.is_synced(
             db, institutional_account.userinstitutionlink_id
         ):
-            raise HTTPException(status.HTTP_403_FORBIDDEN)
+            raise SyncedEntity()
     if account.noninstitutionalaccount:
         account.noninstitutionalaccount.user_id = current_user.id
     return CRUDAccount.create(db, account)
@@ -52,9 +62,9 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> AccountApiOut:
     try:
         account = CRUDAccount.read(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise AccountNotFound()
     if CRUDAccount.read_user(db, account.id).id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise ForbiddenAccount()
     return account
 
 
@@ -69,16 +79,16 @@ def read_transactions(
     search: str | None = None,
     is_descending: bool = True,
 ) -> Iterable[TransactionApiOut]:
-    from app.features import transaction
+    from app.features.transaction import CRUDTransaction  # type: ignore[attr-defined]
 
     try:
         account = CRUDAccount.read(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise AccountNotFound()
     if CRUDAccount.read_user(db, account.id).id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise ForbiddenAccount()
 
-    return transaction.crud.CRUDTransaction.read_many_by_account(
+    return CRUDTransaction.read_many_by_account(
         db, account.id, page, per_page, search, timestamp, is_descending
     )
 
@@ -90,24 +100,22 @@ def upload_transactions_sheet(
     id: int,
     file: Annotated[UploadFile, File(...)],
 ) -> Iterable[TransactionApiIn]:
-    from app.features import transaction
+    from app.features.transaction import get_transactions_from_csv  # type: ignore[attr-defined]
 
     try:
         user = CRUDAccount.read_user(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise AccountNotFound()
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise ForbiddenAccount()
     if CRUDAccount.is_synced(db, id):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise SyncedEntity()
     deserialiser = CRUDAccount.read_transaction_deserialiser(db, id)
     try:
         text_file = file.file.read().decode().splitlines()
-        return transaction.utils.create_instances_from_csv(deserialiser, text_file, id)
+        return get_transactions_from_csv(deserialiser, text_file, id)
     except Exception as e:
-        exc_message = getattr(e, "message", str(e))
-        error_message = f"{type(e).__name__}: {exc_message}"
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, error_message)
+        raise UnknownError(e)
 
 
 @router.get("/")
@@ -125,20 +133,20 @@ def update(
     try:
         user = CRUDAccount.read_user(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise AccountNotFound()
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise ForbiddenAccount()
     if CRUDAccount.is_synced(db, id):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise SyncedEntity()
     if institutional_account := account.institutionalaccount:
         try:
-            user = userinstitutionlink.crud.CRUDUserInstitutionLink.read_user(
+            user = CRUDUserInstitutionLink.read_user(
                 db, institutional_account.userinstitutionlink_id
             )
         except NoResultFound:
-            raise HTTPException(status.HTTP_404_NOT_FOUND)
+            raise UserInstitutionLinkNotFound()
         if user.id != current_user.id:
-            raise HTTPException(status.HTTP_403_FORBIDDEN)
+            raise ForbiddenUserInstitutionLink()
     if account.noninstitutionalaccount:
         account.noninstitutionalaccount.user_id = current_user.id
     return CRUDAccount.update(db, id, account)
@@ -153,11 +161,11 @@ def delete(
     try:
         user = CRUDAccount.read_user(db, id)
     except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise AccountNotFound()
     if user.id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise ForbiddenAccount()
     if CRUDAccount.is_synced(db, id):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise SyncedEntity()
     return CRUDAccount.delete(db, id)
 
 
