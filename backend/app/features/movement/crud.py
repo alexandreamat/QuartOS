@@ -113,7 +113,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             cls.delete(db, id)
 
     @classmethod
-    def get_aggregates(
+    def get_aggregate(
         cls,
         db: Session,
         user_id: int,
@@ -121,4 +121,4 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         end_date: date,
         currency_code: CurrencyCode,
     ) -> PLStatement:
-        return Movement.get_aggregates(db, user_id, start_date, end_date, currency_code)
+        return Movement.get_aggregate(db, user_id, start_date, end_date, currency_code)

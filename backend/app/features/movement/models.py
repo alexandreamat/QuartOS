@@ -51,18 +51,19 @@ class Movement(__MovementBase, IdentifiableBase, table=True):
     def latest_timestamp(self) -> datetime:
         return max(t.timestamp for t in self.transactions if t.timestamp)
 
+    def amount(self, currency_code: CurrencyCode) -> Decimal:
+        return sum(
+            [
+                t.amount
+                * get_exchange_rate(t.currency_code, currency_code, t.timestamp.date())
+                for t in self.transactions
+            ],
+            Decimal(0),
+        )
+
     @property
     def amounts(self) -> dict[CurrencyCode, Decimal]:
-        return {
-            c: sum(
-                [
-                    t.amount * get_exchange_rate(t.currency_code, c, t.timestamp.date())
-                    for t in self.transactions
-                ],
-                Decimal(0),
-            )
-            for c in {t.currency_code for t in self.transactions}
-        }
+        return {c: self.amount(c) for c in {t.currency_code for t in self.transactions}}
 
     @classmethod
     def read_many_by_user(
@@ -98,7 +99,7 @@ class Movement(__MovementBase, IdentifiableBase, table=True):
         return db.exec(statement).all()
 
     @classmethod
-    def get_aggregates(
+    def get_aggregate(
         cls,
         db: Session,
         user_id: int,
@@ -144,7 +145,7 @@ class Movement(__MovementBase, IdentifiableBase, table=True):
         expense_total = Decimal(0)
 
         for movement in movements:
-            amount = movement.amounts.get(currency_code, Decimal(0))
+            amount = movement.amount(currency_code)
             if amount >= Decimal(0):
                 income_total += amount
             else:
