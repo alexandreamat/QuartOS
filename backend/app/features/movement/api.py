@@ -26,7 +26,7 @@ MOVEMENTS = "movements"
 router = APIRouter()
 
 
-@router.get("/aggregates/{start_date}/{end_date}")
+@router.get("/aggregate/{start_date}/{end_date}")
 def get_aggregate(
     db: DBSession,
     current_user: CurrentUser,
@@ -34,7 +34,7 @@ def get_aggregate(
     end_date: date,
     currency_code: CurrencyCode,
 ) -> PLStatement:
-    return CRUDMovement.get_aggregates(
+    return CRUDMovement.get_aggregate(
         db, current_user.id, start_date, end_date, currency_code
     )
 
