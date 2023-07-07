@@ -5,12 +5,12 @@ from sqlmodel import Session, SQLModel, Field, select
 from sqlalchemy.exc import NoResultFound
 
 
-ModelType = TypeVar("ModelType", bound="IdentifiableBase")
-PlaidModelType = TypeVar("PlaidModelType", bound="PlaidMaybeMixin")
+ModelType = TypeVar("ModelType", bound="Base")
+SyncableModelType = TypeVar("SyncableModelType", bound="SyncableBase")
 ApiInModel = TypeVar("ApiInModel", bound=SQLModel)
 
 
-class IdentifiableBase(SQLModel):
+class Base(SQLModel):
     id: int = Field(primary_key=True)
 
     @classmethod
@@ -57,23 +57,28 @@ class IdentifiableBase(SQLModel):
         db.flush()
 
 
-class PlaidBase(SQLModel):
-    plaid_id: str = Field(unique=True)
+class SyncedMixin(SQLModel):
+    plaid_id: str
     plaid_metadata: str
 
 
-class PlaidMaybeMixin(SQLModel):
+class SyncableBase(Base):
     plaid_id: str | None = Field(unique=True)
     plaid_metadata: str | None
 
     @classmethod
     def read_by_plaid_id(
-        cls: Type[PlaidModelType], db: Session, plaid_id: str
-    ) -> PlaidModelType:
+        cls: Type[SyncableModelType], db: Session, plaid_id: str
+    ) -> SyncableModelType:
         obj = db.exec(select(cls).where(cls.plaid_id == plaid_id)).first()
         if not obj:
             raise NoResultFound
         return obj
+
+
+class SyncedBase(SyncableBase):
+    plaid_id: str = Field(unique=True)
+    plaid_metadata: str
 
 
 class CurrencyCode(str):

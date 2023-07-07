@@ -48,9 +48,10 @@ def create(
             raise AccountNotFound()
         if user.id != current_user.id:
             raise ForbiddenAccount()
-        if CRUDUserInstitutionLink.is_synced(
+        user_institution_link = CRUDUserInstitutionLink.read(
             db, institutional_account.userinstitutionlink_id
-        ):
+        )
+        if user_institution_link.plaid_id:
             raise SyncedEntity()
     if account.noninstitutionalaccount:
         account.noninstitutionalaccount.user_id = current_user.id

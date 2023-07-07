@@ -1,20 +1,17 @@
 from typing import Generic, Type, TypeVar, Iterable
 
 from sqlmodel import Session, SQLModel
-from fastapi.encoders import jsonable_encoder
 
-from . import models
+from .models import Base, SyncableBase, SyncedBase, SyncedMixin
 
-DBModelType = TypeVar("DBModelType", bound=models.IdentifiableBase)
+DBModelType = TypeVar("DBModelType", bound=Base)
 ApiInModel = TypeVar("ApiInModel", bound=SQLModel)
-ApiOutModel = TypeVar("ApiOutModel", bound=models.IdentifiableBase)
-PlaidInModel = TypeVar("PlaidInModel", bound=models.PlaidBase)
-PlaidOutModel = TypeVar("PlaidOutModel", bound=models.IdentifiableBase)
+ApiOutModel = TypeVar("ApiOutModel", bound=Base)
 
 
 class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
     db_model: Type[DBModelType]
-    api_out_model: Type[ApiOutModel]
+    out_model: Type[ApiOutModel]
 
     @classmethod
     def create(
@@ -24,12 +21,12 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
     ) -> ApiOutModel:
         db_obj_in = cls.db_model.from_schema(new_schema_obj)
         db_obj_out = cls.db_model.create(db, db_obj_in)
-        api_out_obj: ApiOutModel = cls.api_out_model.from_orm(db_obj_out)
+        api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj_out)
         return api_out_obj
 
     @classmethod
     def read(cls, db: Session, id: int) -> ApiOutModel:
-        api_out_obj: ApiOutModel = cls.api_out_model.from_orm(cls.db_model.read(db, id))
+        api_out_obj: ApiOutModel = cls.out_model.from_orm(cls.db_model.read(db, id))
         return api_out_obj
 
     @classmethod
@@ -37,13 +34,13 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
         cls, db: Session, skip: int = 0, limit: int = 100
     ) -> Iterable[ApiOutModel]:
         for s in cls.db_model.read_many(db, skip, limit):
-            yield cls.api_out_model.from_orm(s)
+            yield cls.out_model.from_orm(s)
 
     @classmethod
     def update(cls, db: Session, id: int, new_obj: ApiInModel) -> ApiOutModel:
         db_obj_in = cls.db_model.from_schema(new_obj)
         db_obj_out = cls.db_model.update(db, id, db_obj_in)
-        api_out_obj: ApiOutModel = cls.api_out_model.from_orm(db_obj_out)
+        api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj_out)
         return api_out_obj
 
     @classmethod
@@ -51,45 +48,22 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
         cls.db_model.delete(db, id)
 
 
-class CRUDSyncable(Generic[DBModelType, PlaidOutModel, PlaidInModel]):
-    db_model: Type[DBModelType]
-    plaid_out_model: Type[PlaidOutModel]
+DBSyncableModelType = TypeVar("DBSyncableModelType", bound=SyncableBase)
+PlaidInModel = TypeVar("PlaidInModel", bound=SyncedMixin)
+PlaidOutModel = TypeVar("PlaidOutModel", bound=SyncedBase)
 
-    @classmethod
-    def sync(cls, db: Session, obj: PlaidInModel) -> PlaidOutModel:
-        db_obj_in = cls.db_model(**obj.dict())
-        db_obj_out = cls.db_model.create(db, db_obj_in)
-        plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(db_obj_out)
-        return plaid_out_obj
 
-    @classmethod
-    def resync(cls, db: Session, id: int, new_obj: PlaidInModel) -> PlaidOutModel:
-        db_obj_in = cls.db_model(**new_obj.dict())
-        db_obj_out = cls.db_model.update(db, id, db_obj_in)
-        plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(db_obj_out)
-        return plaid_out_obj
+class CRUDSyncedBase(
+    Generic[DBSyncableModelType, PlaidOutModel, PlaidInModel],
+    CRUDBase[DBSyncableModelType, PlaidOutModel, PlaidInModel],
+):
+    db_model: Type[DBSyncableModelType]
+    out_model: Type[PlaidOutModel]
 
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
         return cls.db_model.read(db, id).is_synced
 
     @classmethod
-    def read_by_plaid_id(cls, db: Session, name: str) -> PlaidOutModel:
-        plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(
-            cls.db_model.read_by_plaid_id(db, name)
-        )
-        return plaid_out_obj
-
-    @classmethod
-    def read_many_plaid(
-        cls, db: Session, skip: int = 0, limit: int = 100
-    ) -> Iterable[PlaidOutModel]:
-        for s in cls.db_model.read_many(db, skip, limit):
-            yield cls.plaid_out_model.from_orm(s)
-
-    @classmethod
-    def read_plaid(cls, db: Session, id: int) -> PlaidOutModel:
-        plaid_out_obj: PlaidOutModel = cls.plaid_out_model.from_orm(
-            cls.db_model.read(db, id)
-        )
-        return plaid_out_obj
+    def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModel:
+        return cls.out_model.from_orm(cls.db_model.read_by_plaid_id(db, id))

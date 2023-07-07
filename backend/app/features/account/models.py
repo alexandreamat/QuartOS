@@ -1,13 +1,14 @@
 from typing import TYPE_CHECKING, Any
 from decimal import Decimal
 from enum import Enum
+from datetime import datetime
 
 from sqlmodel import Field, Relationship, SQLModel, Session
-from sqlmodel import desc
+from sqlmodel import desc, asc
 from pydantic import root_validator, validator
 import pycountry
 
-from app.common.models import IdentifiableBase, CurrencyCode, PlaidBase, PlaidMaybeMixin
+from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -73,13 +74,11 @@ class AccountApiIn(_AccountBase):
     noninstitutionalaccount: NonInstitutionalAccount | None
 
 
-class AccountApiOut(_AccountBase, IdentifiableBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, IdentifiableBase):
+class AccountApiOut(_AccountBase, Base):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, Base):
         ...
 
-    class NonInstitutionalAccount(
-        _AccountBase.NonInstitutionalAccount, IdentifiableBase
-    ):
+    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, Base):
         user_id: int
 
     institutionalaccount: InstitutionalAccount | None
@@ -89,27 +88,22 @@ class AccountApiOut(_AccountBase, IdentifiableBase):
 
 
 class AccountPlaidIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidBase):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncedMixin):
         ...
 
     institutionalaccount: InstitutionalAccount
 
 
-class AccountPlaidOut(_AccountBase, IdentifiableBase):
-    class InstitutionalAccount(
-        _AccountBase.InstitutionalAccount, IdentifiableBase, PlaidBase
-    ):
+class AccountPlaidOut(_AccountBase, Base):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncedBase):
         ...
 
     institutionalaccount: InstitutionalAccount
 
 
-class Account(_AccountBase, IdentifiableBase, table=True):
+class Account(_AccountBase, Base, table=True):
     class InstitutionalAccount(
-        _AccountBase.InstitutionalAccount,
-        IdentifiableBase,
-        PlaidMaybeMixin,
-        table=True,
+        _AccountBase.InstitutionalAccount, SyncableBase, table=True
     ):
         userinstitutionlink_id: int = Field(foreign_key="userinstitutionlink.id")
 
@@ -138,7 +132,7 @@ class Account(_AccountBase, IdentifiableBase, table=True):
             return self.userinstitutionlink.is_synced
 
     class NonInstitutionalAccount(
-        _AccountBase.NonInstitutionalAccount, IdentifiableBase, table=True
+        _AccountBase.NonInstitutionalAccount, Base, table=True
     ):
         user_id: int = Field(foreign_key="user.id")
         user: User = Relationship(back_populates="noninstitutionalaccounts")
@@ -211,6 +205,43 @@ class Account(_AccountBase, IdentifiableBase, table=True):
             return obj
 
         raise ValueError
+
+    @classmethod
+    def update_balance(
+        cls, db: Session, id: int, timestamp: datetime | None = None
+    ) -> "Account":
+        from app.features.transaction import Transaction  # type: ignore[attr-defined]
+
+        account = Account.read(db, id)
+        transactions_query: Query = account.transactions  # type: ignore
+
+        if timestamp:
+            prev_transaction: Transaction = (
+                transactions_query.where(Transaction.timestamp < timestamp)  # type: ignore
+                .order_by(*Transaction.get_desc_clauses())
+                .first()
+            )
+            if prev_transaction:
+                prev_balance = prev_transaction.account_balance
+            else:
+                prev_balance = account.initial_balance
+            transactions_query = transactions_query.where(
+                Transaction.timestamp >= timestamp
+            )
+        else:
+            prev_balance = account.initial_balance
+
+        transactions_query = transactions_query.order_by(
+            asc(Transaction.timestamp)
+        ).yield_per(100)
+
+        for result in transactions_query:
+            transaction: Transaction = result
+            transaction.account_balance = prev_balance + transaction.amount
+            Transaction.update(db, transaction.id, transaction)
+            prev_balance = transaction.account_balance
+
+        return cls.read(db, id)
 
     @property
     def user(self) -> User:

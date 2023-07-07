@@ -1,4 +1,4 @@
-from .crud import CRUDInstitution
+from .crud import CRUDInstitution, CRUDSyncableInstitution
 from .models import (
     Institution,
     InstitutionApiIn,

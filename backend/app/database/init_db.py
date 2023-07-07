@@ -7,7 +7,7 @@ from app.features.user.crud import CRUDUser
 from app.features.user.models import UserApiIn
 
 # 1. Import base model
-from app.common.models import IdentifiableBase
+from app.common.models import Base
 
 # 2. Import inheritors of the base model
 from app.features.user.models import User
@@ -22,7 +22,7 @@ from .deps import engine
 
 def init_db(db: Session) -> None:
     # 3. Retrieve inheritors from base through metadata
-    IdentifiableBase.metadata.create_all(engine)
+    Base.metadata.create_all(engine)
 
     try:
         CRUDUser.read_by_email(db, email=settings.FIRST_SUPERUSER)
