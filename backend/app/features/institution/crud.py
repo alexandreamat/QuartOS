@@ -1,4 +1,4 @@
-from app.common.crud import CRUDBase, CRUDSyncable
+from app.common.crud import CRUDBase, CRUDSyncedBase
 
 from .models import (
     Institution,
@@ -11,8 +11,13 @@ from .models import (
 
 class CRUDInstitution(
     CRUDBase[Institution, InstitutionApiOut, InstitutionApiIn],
-    CRUDSyncable[Institution, InstitutionPlaidOut, InstitutionPlaidIn],
 ):
     db_model = Institution
-    api_out_model = InstitutionApiOut
-    plaid_out_model = InstitutionPlaidOut
+    out_model = InstitutionApiOut
+
+
+class CRUDSyncableInstitution(
+    CRUDSyncedBase[Institution, InstitutionPlaidOut, InstitutionPlaidIn],
+):
+    db_model = Institution
+    out_model = InstitutionPlaidOut

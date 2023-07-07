@@ -7,9 +7,10 @@ from app.features.user.deps import CurrentSuperuser
 from app.database.deps import DBSession
 from app.api import api_router
 
-from app.features import institution
+from app.features.institution import fetch_institution  # type: ignore[attr-defined]
 
-from .crud import CRUDInstitution
+
+from .crud import CRUDInstitution, CRUDSyncableInstitution
 from .models import InstitutionApiOut, InstitutionApiIn
 
 INSTITUTIONS = "institutions"
@@ -30,11 +31,13 @@ def create(
 @router.post("/{id}/sync")
 def sync(db: DBSession, current_user: CurrentSuperuser, id: int) -> InstitutionApiOut:
     try:
-        institution_db = CRUDInstitution.read_plaid(db, id=id)
+        institution_db = CRUDInstitution.read(db, id=id)
     except NoResultFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    institution_in = institution.plaid.fetch_institution(institution_db.plaid_id)
-    CRUDInstitution.resync(db, id, institution_in)
+    if not institution_db.plaid_id:
+        raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED)
+    institution_in = fetch_institution(institution_db.plaid_id)
+    CRUDSyncableInstitution.update(db, id, institution_in)
     institution_out = CRUDInstitution.read(db, id)
     return institution_out
 

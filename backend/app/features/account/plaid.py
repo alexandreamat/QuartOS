@@ -3,13 +3,13 @@ from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 
 from app.common.plaid import client
-from app.features import userinstitutionlink
+from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut  # type: ignore[attr-defined]
 
 from .models import AccountPlaidIn
 
 
 def fetch_accounts(
-    user_institution_link: userinstitutionlink.models.UserInstitutionLinkPlaidOut,
+    user_institution_link: UserInstitutionLinkPlaidOut,
 ) -> list[AccountPlaidIn]:
     request = AccountsGetRequest(access_token=user_institution_link.access_token)
     response: AccountsGetResponse = client.accounts_get(request)

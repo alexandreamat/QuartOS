@@ -24,7 +24,7 @@ from .models import (
 
 class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     db_model = Account
-    api_out_model = AccountApiOut
+    out_model = AccountApiOut
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> UserApiOut:
@@ -81,44 +81,12 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     @classmethod
     def update(cls, db: Session, id: int, new_obj: AccountApiIn) -> AccountApiOut:
         super().update(db, id, new_obj)
-        return cls.update_balance(db, id)
+        account_out = Account.update_balance(db, id)
+        return AccountApiOut.from_orm(account_out)
 
     @classmethod
     def update_balance(
         cls, db: Session, id: int, timestamp: datetime | None = None
     ) -> AccountApiOut:
-        from app.features.transaction.models import (
-            Transaction,
-            TransactionApiIn,
-        )
-
-        account = Account.read(db, id)
-        transactions_query: Query = account.transactions  # type: ignore
-
-        if timestamp:
-            prev_transaction: Transaction = (
-                transactions_query.where(Transaction.timestamp < timestamp)  # type: ignore
-                .order_by(*Transaction.get_desc_clauses())
-                .first()
-            )
-            if prev_transaction:
-                prev_balance = prev_transaction.account_balance
-            else:
-                prev_balance = account.initial_balance
-            transactions_query = transactions_query.where(
-                Transaction.timestamp >= timestamp
-            )
-        else:
-            prev_balance = account.initial_balance
-
-        transactions_query = transactions_query.order_by(
-            asc(Transaction.timestamp)
-        ).yield_per(100)
-
-        for result in transactions_query:
-            transaction: Transaction = result
-            transaction.account_balance = prev_balance + transaction.amount
-            Transaction.update(db, transaction.id, transaction)
-            prev_balance = transaction.account_balance
-
-        return cls.read(db, id)
+        account_out = Account.update_balance(db, id, timestamp)
+        return AccountApiOut.from_orm(account_out)

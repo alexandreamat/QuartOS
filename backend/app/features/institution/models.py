@@ -5,7 +5,7 @@ from pydantic import HttpUrl, validator, constr
 from sqlmodel import Relationship, SQLModel, Field
 import pycountry
 
-from app.common.models import IdentifiableBase, PlaidBase, PlaidMaybeMixin
+from app.common.models import SyncedMixin, SyncableBase, SyncedBase
 from app.features.transactiondeserialiser.models import TransactionDeserialiser
 
 if TYPE_CHECKING:
@@ -26,8 +26,9 @@ class __InstitutionBase(SQLModel):
         return value
 
 
-class InstitutionApiOut(__InstitutionBase, IdentifiableBase):
+class InstitutionApiOut(__InstitutionBase, SyncableBase):
     logo_base64: str | None
+    is_synced: bool
 
     @classmethod
     def from_orm(
@@ -43,15 +44,15 @@ class InstitutionApiIn(__InstitutionBase):
     url: HttpUrl
 
 
-class InstitutionPlaidOut(__InstitutionBase, PlaidBase, IdentifiableBase):
+class InstitutionPlaidOut(__InstitutionBase, SyncedBase):
     logo: bytes | None
 
 
-class InstitutionPlaidIn(__InstitutionBase, PlaidBase):
+class InstitutionPlaidIn(__InstitutionBase, SyncedMixin):
     logo: bytes | None
 
 
-class Institution(__InstitutionBase, IdentifiableBase, PlaidMaybeMixin, table=True):
+class Institution(__InstitutionBase, SyncableBase, table=True):
     logo: bytes | None
     transactiondeserialiser_id: int | None = Field(
         foreign_key="transactiondeserialiser.id"
@@ -63,3 +64,7 @@ class Institution(__InstitutionBase, IdentifiableBase, PlaidMaybeMixin, table=Tr
     transactiondeserialiser: TransactionDeserialiser | None = Relationship(
         back_populates="institutions"
     )
+
+    @property
+    def is_synced(self) -> bool:
+        return self.plaid_id is not None
