@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Table, Loader, Message, Icon } from "semantic-ui-react";
 import AccountForm from "./components/Form";
-import { AccountApiOut, InstitutionApiOut, api } from "app/services/api";
+import { AccountApiOut, api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
-import TableHeader from "components/TableHeader";
 import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import LoadableQuery from "components/LoadableCell";
@@ -68,8 +67,9 @@ function AccountRow(props: { account: AccountApiOut; onEdit: () => void }) {
       </Table.Cell>
       <Table.Cell collapsing>
         <ActionButton
+          tooltip="upload"
           onClick={() => {}}
-          disabled={props.account.is_synced !== false}
+          disabled={true}
           icon="upload"
         />
       </Table.Cell>

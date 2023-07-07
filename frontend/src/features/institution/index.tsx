@@ -73,6 +73,7 @@ const InstitutionsTable = (props: {
             </Table.Cell>
             <Table.Cell collapsing>
               <ActionButton
+                tooltip="Sync"
                 icon="sync"
                 onClick={async () => await handleSync(institution)}
                 disabled={false}
