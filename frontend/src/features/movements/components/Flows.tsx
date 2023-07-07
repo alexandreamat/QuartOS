@@ -114,17 +114,18 @@ function Inflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
 }
 
 export function Flows(props: {
-  outflows: TransactionApiOut[];
-  inflows: TransactionApiOut[];
+  transactions: TransactionApiOut[];
   onRemove?: (x: TransactionApiOut) => void;
 }) {
+  const outflows = props.transactions.filter((t) => t.amount < 0) || [];
+  const inflows = props.transactions.filter((t) => t.amount >= 0) || [];
   return (
     <Step.Group fluid widths={2}>
-      {props.outflows.length !== 0 && (
+      {outflows.length !== 0 && (
         <Step style={{ padding: stepPadding }}>
           <Step.Content style={{ width: "100%" }}>
             <Grid>
-              {props.outflows.map((transaction) => (
+              {outflows.map((transaction) => (
                 <Outflow
                   key={transaction.id}
                   flow={transaction}
@@ -139,11 +140,11 @@ export function Flows(props: {
           </Step.Content>
         </Step>
       )}
-      {props.inflows.length !== 0 && (
+      {inflows.length !== 0 && (
         <Step style={{ padding: stepPadding }}>
           <Step.Content style={{ width: "100%" }}>
             <Grid>
-              {props.inflows.map((transaction) => (
+              {inflows.map((transaction) => (
                 <Inflow
                   key={transaction.id}
                   flow={transaction}
