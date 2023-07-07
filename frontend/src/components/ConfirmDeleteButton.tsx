@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Confirm, Popup } from "semantic-ui-react";
+import { Confirm } from "semantic-ui-react";
 import ActionButton from "./ActionButton";
 import { SimpleQuery } from "interfaces";
 import { renderErrorMessage } from "utils/error";
@@ -13,18 +13,12 @@ export default function ConfirmDeleteButton(props: {
   const [confirmOpen, setConfirmOpen] = useState(false);
   return (
     <>
-      <Popup
-        content="Delete"
-        trigger={
-          <div>
-            <ActionButton
-              loading={props.query.isLoading}
-              disabled={props.disabled}
-              icon="trash"
-              onClick={() => setConfirmOpen(true)}
-            />
-          </div>
-        }
+      <ActionButton
+        tooltip="delete"
+        loading={props.query.isLoading}
+        disabled={props.disabled}
+        icon="trash"
+        onClick={() => setConfirmOpen(true)}
       />
       <Confirm
         open={confirmOpen}

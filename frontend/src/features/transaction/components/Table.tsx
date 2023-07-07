@@ -115,17 +115,11 @@ function TransactionRow(
                 }
               />
             ) : (
-              <Popup
-                content="Edit Movement"
-                trigger={
-                  <div>
-                    <ActionButton
-                      color="grey"
-                      icon="arrows alternate horizontal"
-                      onClick={handleGoToEditMovementForm}
-                    />
-                  </div>
-                }
+              <ActionButton
+                tooltip="Edit Movement"
+                color="grey"
+                icon="arrows alternate horizontal"
+                onClick={handleGoToEditMovementForm}
               />
             )}
           </Table.Cell>

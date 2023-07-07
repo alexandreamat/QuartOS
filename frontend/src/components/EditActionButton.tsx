@@ -1,4 +1,3 @@
-import { Popup } from "semantic-ui-react";
 import ActionButton from "./ActionButton";
 
 export default function EditActionButton(props: {
@@ -7,18 +6,12 @@ export default function EditActionButton(props: {
   loading?: boolean;
 }) {
   return (
-    <Popup
-      content="Edit"
-      trigger={
-        <div>
-          <ActionButton
-            loading={props.loading}
-            disabled={props.disabled}
-            icon="pencil"
-            onClick={() => props.onOpenEditForm()}
-          />
-        </div>
-      }
+    <ActionButton
+      tooltip="Edit"
+      loading={props.loading}
+      disabled={props.disabled}
+      icon="pencil"
+      onClick={() => props.onOpenEditForm()}
     />
   );
 }

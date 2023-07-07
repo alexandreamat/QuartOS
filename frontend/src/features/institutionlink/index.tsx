@@ -75,14 +75,17 @@ function InstitutionLinkRow(props: {
       </Table.Cell>
       <Table.Cell collapsing>
         <ActionButton
+          tooltip="Sync"
           disabled={!props.institutionLink.is_synced}
           loading={syncLinkResult.isLoading}
           icon="sync"
           onClick={async () => await handleSync(props.institutionLink)}
         />
+        <QueryErrorMessage query={syncLinkResult} />
       </Table.Cell>
       <Table.Cell collapsing>
         <ActionButton
+          tooltip="Add account"
           disabled={props.institutionLink.is_synced}
           icon="credit card"
           content="Add"
