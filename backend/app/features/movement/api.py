@@ -26,6 +26,18 @@ MOVEMENTS = "movements"
 router = APIRouter()
 
 
+def check_user(
+    db: DBSession,
+    user_id: int,
+    movement_id: int,
+) -> None:
+    if not any(u.id == user_id for u in CRUDMovement.read_users(db, movement_id)):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "The requested movement does not belong to the user",
+        )
+
+
 @router.get("/aggregate/{start_date}/{end_date}")
 def get_aggregate(
     db: DBSession,
@@ -57,10 +69,7 @@ def read_transactions(
         movement = CRUDMovement.read(db, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
-    if not any(
-        u.id != current_user.id for u in CRUDMovement.read_users(db, movement.id)
-    ):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    check_user(db, current_user.id, movement.id)
     return CRUDMovement.read_transactions(db, id)
 
 
@@ -74,16 +83,11 @@ def update_transaction(
 ) -> TransactionApiOut:
     # Check movement ownership
     try:
-        users = CRUDMovement.read_users(db, id)
+        check_user(db, current_user.id, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
-    if not any(u.id != current_user.id for u in CRUDMovement.read_users(db, id)):
-        raise HTTPException(
-            status.HTTP_403_FORBIDDEN,
-            "New movement does not belong to the current user",
-        )
     if CRUDTransaction.is_synced(db, transaction_id):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Transaction is synched")
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Transaction is synced")
 
     # Check new account existence and ownership
     try:
@@ -99,14 +103,9 @@ def update_transaction(
     if not transaction.movement_id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Movement ID not specified")
     try:
-        users = CRUDMovement.read_users(db, transaction.movement_id)
+        check_user(db, current_user.id, transaction.movement_id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
-    if not any(u.id != current_user.id for u in users):
-        raise HTTPException(
-            status.HTTP_403_FORBIDDEN,
-            "New movement does not belong the the current user",
-        )
 
     return CRUDMovement.update_transaction(db, id, transaction_id, transaction)
 
@@ -116,11 +115,9 @@ def delete_transaction(
     db: DBSession, current_user: CurrentUser, id: int, transaction_id: int
 ) -> None:
     try:
-        users = CRUDMovement.read_users(db, id)
+        check_user(db, current_user.id, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
-    if not any(u.id != current_user.id for u in users):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
     if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
@@ -133,21 +130,16 @@ def read(db: DBSession, current_user: CurrentUser, id: int) -> MovementApiOut:
         movement = CRUDMovement.read(db, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
-    users = CRUDMovement.read_users(db, movement.id)
-    if not any(u.id != current_user.id for u in users):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    check_user(db, current_user.id, movement.id)
     return movement
 
 
 @router.delete("/{id}", tags=[TRANSACTIONS])
 def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     try:
-        movement = CRUDMovement.read(db, id)
+        check_user(db, current_user.id, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Movement not found")
-    users = CRUDMovement.read_users(db, movement.id)
-    if not any(u.id != current_user.id for u in users):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
     CRUDMovement.delete(db, id)
 
 
