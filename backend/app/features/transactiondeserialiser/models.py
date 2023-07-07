@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlmodel import SQLModel
-from app.common.models import IdentifiableBase, CodeSnippet
+from app.common.models import Base, CodeSnippet
 
 if TYPE_CHECKING:
     from app.features.institution.models import Institution
@@ -26,13 +26,11 @@ class TransactionDeserialiserApiIn(__TransactionDeserialiserBase):
     ...
 
 
-class TransactionDeserialiserApiOut(__TransactionDeserialiserBase, IdentifiableBase):
+class TransactionDeserialiserApiOut(__TransactionDeserialiserBase, Base):
     ...
 
 
-class TransactionDeserialiser(
-    __TransactionDeserialiserBase, IdentifiableBase, table=True
-):
+class TransactionDeserialiser(__TransactionDeserialiserBase, Base, table=True):
     institutions: list["Institution"] = Relationship(
         back_populates="transactiondeserialiser"
     )

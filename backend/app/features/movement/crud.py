@@ -14,7 +14,7 @@ from app.features.transaction import (  # type: ignore [attr-defined]
     TransactionPlaidIn,
     TransactionPlaidOut,
     CRUDTransaction,
-    CRUDTransaction,
+    CRUDSyncableTransaction,
 )
 
 from .models import Movement, MovementApiIn, MovementApiOut, PLStatement
@@ -22,7 +22,7 @@ from .models import Movement, MovementApiIn, MovementApiOut, PLStatement
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     db_model = Movement
-    api_out_model = MovementApiOut
+    out_model = MovementApiOut
 
     @classmethod
     def create(  # type: ignore [override]
@@ -30,7 +30,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         db: Session,
         transaction: TransactionApiIn | int,
     ) -> MovementApiOut:
-        new_movement = super().create(db, MovementApiIn())
+        new_movement = Movement.create(db)
 
         if isinstance(transaction, TransactionApiIn):
             transaction.movement_id = new_movement.id
@@ -46,11 +46,12 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return CRUDMovement.read(db, new_movement.id)
 
     @classmethod
-    def sync(cls, db: Session, transaction: TransactionPlaidIn) -> MovementApiOut:
-        movement = super().create(db, MovementApiIn())
+    def create_syncable(
+        cls, db: Session, transaction: TransactionPlaidIn
+    ) -> MovementApiOut:
+        movement = Movement.create(db)
         transaction.movement_id = movement.id
-        CRUDTransaction.sync(db, transaction)
-
+        CRUDSyncableTransaction.create(db, transaction)
         return CRUDMovement.read(db, movement.id)
 
     @classmethod
@@ -96,14 +97,14 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return transaction_out
 
     @classmethod
-    def resync_transaction(
+    def update_syncable(
         cls,
         db: Session,
         id: int,
         transaction_id: int,
         transaction_in: TransactionPlaidIn,
     ) -> TransactionPlaidOut:
-        return CRUDTransaction.resync(db, transaction_id, transaction_in)
+        return CRUDSyncableTransaction.update(db, transaction_id, transaction_in)
 
     @classmethod
     def delete_transaction(cls, db: Session, id: int, transaction_id: int) -> None:

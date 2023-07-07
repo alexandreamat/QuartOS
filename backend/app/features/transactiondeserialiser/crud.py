@@ -15,4 +15,4 @@ class CRUDTransactionDeserialiser(
     ],
 ):
     db_model = TransactionDeserialiser
-    api_out_model = TransactionDeserialiserApiOut
+    out_model = TransactionDeserialiserApiOut

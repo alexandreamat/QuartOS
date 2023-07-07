@@ -1,4 +1,4 @@
-from .crud import CRUDTransaction
+from .crud import CRUDTransaction, CRUDSyncableTransaction
 from .models import (
     Transaction,
     TransactionApiIn,

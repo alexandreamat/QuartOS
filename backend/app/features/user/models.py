@@ -4,7 +4,7 @@ from sqlalchemy.exc import NoResultFound
 
 from sqlmodel import Relationship, SQLModel, Session, select
 
-from app.common.models import IdentifiableBase
+from app.common.models import Base
 from app.utils import verify_password
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ class __UserBase(SQLModel):
     is_superuser: bool
 
 
-class UserApiOut(__UserBase, IdentifiableBase):
+class UserApiOut(__UserBase, Base):
     ...
 
 
@@ -28,7 +28,7 @@ class UserApiIn(__UserBase):
     password: str
 
 
-class User(__UserBase, IdentifiableBase, table=True):
+class User(__UserBase, Base, table=True):
     hashed_password: str
 
     institution_links: list["UserInstitutionLink"] = Relationship(

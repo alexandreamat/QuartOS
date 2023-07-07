@@ -10,9 +10,13 @@ from app.common.plaid import (
 )
 
 from app.features.user.deps import CurrentUser
-from app.features.institution import CRUDInstitution, fetch_institution, INSTITUTIONS  # type: ignore[attr-defined]
+from app.features.institution import (  # type: ignore[attr-defined]
+    CRUDSyncableInstitution,
+    fetch_institution,
+    INSTITUTIONS,
+)
 from app.features.userinstitutionlink import (  # type: ignore[attr-defined]
-    CRUDUserInstitutionLink,
+    CRUDSyncableUserInstitutionLink,
     fetch_user_institution_link,
     INSTITUTION_LINKS,
 )
@@ -38,9 +42,11 @@ def set_public_token(
 ) -> None:
     # 1. Get or create institution
     try:
-        institution_obj = CRUDInstitution.read_by_plaid_id(db, institution_plaid_id)
+        institution_obj = CRUDSyncableInstitution.read_by_plaid_id(
+            db, institution_plaid_id
+        )
     except NoResultFound:
-        institution_obj = CRUDInstitution.sync(
+        institution_obj = CRUDSyncableInstitution.create(
             db, fetch_institution(institution_plaid_id)
         )
     # 2. Create user institution link
@@ -48,7 +54,7 @@ def set_public_token(
     user_institution_link_in = fetch_user_institution_link(
         access_token, current_user, institution_obj
     )
-    user_institution_link_out = CRUDUserInstitutionLink.sync(
+    user_institution_link_out = CRUDSyncableUserInstitutionLink.create(
         db, user_institution_link_in
     )
     # 3. Create accounts

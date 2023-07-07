@@ -10,7 +10,7 @@ from .models import User, UserApiOut, UserApiIn
 
 class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     db_model = User
-    api_out_model = UserApiOut
+    out_model = UserApiOut
 
     @classmethod
     def create(cls, db: Session, new_schema_obj: UserApiIn) -> UserApiOut:

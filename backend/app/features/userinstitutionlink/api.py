@@ -12,7 +12,7 @@ from app.api import api_router
 from app.features.user.deps import CurrentUser
 from app.features.institution import CRUDInstitution  # type: ignore[attr-defined]
 
-from .crud import CRUDUserInstitutionLink
+from .crud import CRUDUserInstitutionLink, CRUDSyncableUserInstitutionLink
 from .models import (
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
@@ -86,7 +86,7 @@ def update(
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
-    if CRUDUserInstitutionLink.is_synced(db, id):
+    if curr_institution_link.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     user_institution_link.user_id = current_user.id
     try:
@@ -111,13 +111,18 @@ def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
     from app.features.movement.plaid import sync_transactions
 
     try:
-        curr_institution_link = CRUDUserInstitutionLink.read_plaid(db, id)
+        curr_institution_link = CRUDUserInstitutionLink.read(db, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
+    if not curr_institution_link.plaid_id:
+        raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED)
+    syncable_institution_link = CRUDSyncableUserInstitutionLink.read_by_plaid_id(
+        db, curr_institution_link.plaid_id
+    )
     try:
-        sync_transactions(db, curr_institution_link)
+        sync_transactions(db, syncable_institution_link)
     except urllib3.exceptions.ReadTimeoutError:
         raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
 

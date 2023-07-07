@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
-from app.common.models import IdentifiableBase, PlaidBase, PlaidMaybeMixin
+from app.common.models import SyncedMixin, SyncableBase, SyncedBase
 from app.features.institution.models import Institution
 from app.features.user.models import User
 
@@ -17,35 +17,30 @@ class __UserInstitutionLinkBase(SQLModel):
     user_id: int | None
 
 
-class __UserInstitutionLinkPlaidMixin(PlaidBase):
+class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
     access_token: str
     cursor: str | None
+    user_id: int
 
 
 class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
     ...
 
 
-class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, IdentifiableBase):
+class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableBase):
     user_id: int
     is_synced: bool
 
 
-class UserInstitutionLinkPlaidIn(
-    __UserInstitutionLinkBase, __UserInstitutionLinkPlaidMixin
-):
-    user_id: int
+class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, SyncedMixin):
+    ...
 
 
-class UserInstitutionLinkPlaidOut(
-    __UserInstitutionLinkBase, __UserInstitutionLinkPlaidMixin, IdentifiableBase
-):
-    user_id: int
+class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, SyncedBase):
+    ...
 
 
-class UserInstitutionLink(
-    __UserInstitutionLinkBase, IdentifiableBase, PlaidMaybeMixin, table=True
-):
+class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
     user_id: int = Field(foreign_key="user.id")
     institution_id: int = Field(foreign_key="institution.id")
     access_token: str | None

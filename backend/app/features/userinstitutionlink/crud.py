@@ -1,7 +1,7 @@
 from typing import Iterable
 
 from sqlmodel import Session
-from app.common.crud import CRUDBase, CRUDSyncable
+from app.common.crud import CRUDBase, CRUDSyncedBase
 
 from app.features import user, institution
 from .models import (
@@ -15,13 +15,9 @@ from .models import (
 
 class CRUDUserInstitutionLink(
     CRUDBase[UserInstitutionLink, UserInstitutionLinkApiOut, UserInstitutionLinkApiIn],
-    CRUDSyncable[
-        UserInstitutionLink, UserInstitutionLinkPlaidOut, UserInstitutionLinkPlaidIn
-    ],
 ):
     db_model = UserInstitutionLink
-    api_out_model = UserInstitutionLinkApiOut
-    plaid_out_model = UserInstitutionLinkPlaidOut
+    out_model = UserInstitutionLinkApiOut
 
     @classmethod
     def read_many_by_user(
@@ -29,7 +25,7 @@ class CRUDUserInstitutionLink(
     ) -> Iterable[UserInstitutionLinkApiOut]:
         db_user = user.models.User.read(db, user_id)
         for obj in db_user.institution_links:
-            yield cls.api_out_model.from_orm(obj)
+            yield cls.out_model.from_orm(obj)
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> user.models.UserApiOut:
@@ -42,3 +38,12 @@ class CRUDUserInstitutionLink(
         return institution.models.InstitutionApiOut.from_orm(
             cls.db_model.read(db, id).institution
         )
+
+
+class CRUDSyncableUserInstitutionLink(
+    CRUDSyncedBase[
+        UserInstitutionLink, UserInstitutionLinkPlaidOut, UserInstitutionLinkPlaidIn
+    ]
+):
+    db_model = UserInstitutionLink
+    out_model = UserInstitutionLinkPlaidOut
