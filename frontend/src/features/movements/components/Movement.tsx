@@ -1,6 +1,11 @@
 import { MovementApiOut, TransactionApiOut, api } from "app/services/api";
-import { Placeholder } from "semantic-ui-react";
-import { MovementCard } from "./MovementCard";
+import { Card, Grid, Header, Placeholder } from "semantic-ui-react";
+import FormattedTimestamp from "components/FormattedTimestamp";
+import EditActionButton from "components/EditActionButton";
+import { Flows } from "./Flows";
+import CreateNewButton from "components/CreateNewButton";
+import CurrencyLabel from "components/CurrencyLabel";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export function Movement(props: {
   movement: MovementApiOut;
@@ -20,24 +25,60 @@ export function Movement(props: {
       </Placeholder>
     );
 
-  if (!transactionsQuery.isSuccess) return <></>;
-
-  if (transactionsQuery.data.length === 0) return <></>;
-
-  const firstTransaction = transactionsQuery.data[0];
-
-  const outflows = transactionsQuery.data.filter((t) => t.amount < 0);
-  const inflows = transactionsQuery.data.filter((t) => t.amount >= 0);
+  // const firstTransaction = transactionsQuery.data[0];
 
   return (
-    <MovementCard
-      movement={props.movement}
-      inflows={inflows}
-      outflows={outflows}
-      name={firstTransaction.name}
-      onOpenEditForm={props.onOpenEditForm}
-      onAddTransaction={props.onOpenCreateTransactionForm}
-      onRemoveTransaction={props.onRemoveTransaction}
-    />
+    <Card fluid color="teal">
+      <Card.Content>
+        <Grid columns="equal">
+          <Grid.Column width={3}>
+            <Card.Meta>
+              <FormattedTimestamp
+                timestamp={props.movement.earliest_timestamp}
+              />
+            </Card.Meta>
+          </Grid.Column>
+          {/* <Grid.Column>
+            <Header as="h4">{firstTransaction.name}</Header>
+          </Grid.Column> */}
+          {props.onOpenEditForm && (
+            <Grid.Column width={1} textAlign="center">
+              <EditActionButton onOpenEditForm={props.onOpenEditForm} />
+            </Grid.Column>
+          )}
+        </Grid>
+        {transactionsQuery.isSuccess && (
+          <Flows
+            transactions={transactionsQuery.data}
+            onRemove={props.onRemoveTransaction}
+          />
+        )}
+        {transactionsQuery.isError && (
+          <QueryErrorMessage query={transactionsQuery} />
+        )}
+      </Card.Content>
+      <Card.Content extra>
+        {props.onOpenCreateTransactionForm && (
+          <CreateNewButton
+            floated="left"
+            compact
+            onCreate={props.onOpenCreateTransactionForm}
+            content="Add Transaction"
+          />
+        )}
+        <Header as="h5" floated="right">
+          Total:
+          {Object.entries(props.movement.amounts).map(
+            ([currencyCode, amount], i) => (
+              <CurrencyLabel
+                key={i}
+                amount={amount}
+                currencyCode={currencyCode}
+              />
+            )
+          )}
+        </Header>
+      </Card.Content>
+    </Card>
   );
 }
