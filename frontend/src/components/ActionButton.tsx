@@ -1,9 +1,11 @@
+import { SimpleQuery } from "interfaces";
 import {
   Button,
   Popup,
   SemanticCOLORS,
   SemanticICONS,
 } from "semantic-ui-react";
+import { renderErrorMessage } from "utils/error";
 
 const ActionButton = (props: {
   onClick: () => void;
@@ -11,15 +13,20 @@ const ActionButton = (props: {
   icon: SemanticICONS;
   disabled?: boolean;
   content?: string;
-  loading?: boolean;
+  query?: SimpleQuery;
   color?: SemanticCOLORS;
 }) => (
   <Popup
-    content={props.tooltip}
+    content={
+      props.query?.isError
+        ? renderErrorMessage(props.query!.error!)
+        : props.tooltip
+    }
     trigger={
       <Button
         color={props.color}
-        loading={props.loading}
+        loading={props.query?.isLoading}
+        negative={props.query?.isError}
         circular
         basic
         size="tiny"

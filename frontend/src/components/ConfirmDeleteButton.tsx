@@ -15,7 +15,7 @@ export default function ConfirmDeleteButton(props: {
     <>
       <ActionButton
         tooltip="delete"
-        loading={props.query.isLoading}
+        query={props.query}
         disabled={props.disabled}
         icon="trash"
         onClick={() => setConfirmOpen(true)}
