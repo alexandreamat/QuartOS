@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from sqlmodel import Session, select, or_
 
-from app.common.crud import CRUDBase, CRUDSyncable
+from app.common.crud import CRUDBase, CRUDSyncedBase
 
 from app.features.user import UserApiOut  # type: ignore[attr-defined]
 from app.features.account import AccountApiOut, Account, CRUDAccount  # type: ignore[attr-defined]
@@ -21,13 +21,18 @@ from .models import (
 )
 
 
-class CRUDTransaction(
-    CRUDBase[Transaction, TransactionApiOut, TransactionApiIn],
-    CRUDSyncable[Transaction, TransactionPlaidOut, TransactionPlaidIn],
-):
+class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]):
     db_model = Transaction
-    api_out_model = TransactionApiOut
-    plaid_out_model = TransactionPlaidOut
+    out_model = TransactionApiOut
+
+    @classmethod
+    def create(cls, db: Session, transaction_in: TransactionApiIn) -> TransactionApiOut:
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = super().create(db, transaction_in)
+        CRUDAccount.update_balance(
+            db, transaction_out.account_id, transaction_out.timestamp
+        )
+        return transaction_out
 
     @classmethod
     def read_user(cls, db: Session, id: int) -> UserApiOut:
@@ -52,7 +57,7 @@ class CRUDTransaction(
         l = UserInstitutionLink.read(db, userinstitutionlink_id)
         for ia in l.institutionalaccounts:
             for t in ia.account.transactions:
-                yield cls.api_out_model.from_orm(t)
+                yield cls.out_model.from_orm(t)
 
     @classmethod
     def read_many_by_user(
@@ -81,7 +86,7 @@ class CRUDTransaction(
         for t in Transaction.read_from_query(
             db, page, per_page, search, timestamp, is_descending, statement
         ):
-            yield cls.api_out_model.from_orm(t)
+            yield cls.out_model.from_orm(t)
 
     @classmethod
     def read_many_by_account(
@@ -98,20 +103,7 @@ class CRUDTransaction(
         for t in Transaction.read_from_query(
             db, page, per_page, search, timestamp, is_descending, statement
         ):
-            yield cls.api_out_model.from_orm(t)
-
-    @classmethod
-    def is_synced(cls, db: Session, id: int) -> bool:
-        return cls.db_model.read(db, id).is_synced
-
-    @classmethod
-    def create(cls, db: Session, transaction_in: TransactionApiIn) -> TransactionApiOut:
-        transaction_in.account_balance = Decimal(0)
-        transaction_out = super().create(db, transaction_in)
-        CRUDAccount.update_balance(
-            db, transaction_out.account_id, transaction_out.timestamp
-        )
-        return transaction_out
+            yield cls.out_model.from_orm(t)
 
     @classmethod
     def update(
@@ -125,7 +117,40 @@ class CRUDTransaction(
         return transaction_out
 
     @classmethod
+    def is_synced(cls, db: Session, id: int) -> bool:
+        return cls.db_model.read(db, id).is_synced
+
+    @classmethod
     def delete(cls, db: Session, id: int) -> None:
         transaction = cls.read(db, id)
         super().delete(db, id)
         CRUDAccount.update_balance(db, transaction.account_id, transaction.timestamp)
+
+
+class CRUDSyncableTransaction(
+    CRUDSyncedBase[Transaction, TransactionPlaidOut, TransactionPlaidIn],
+):
+    db_model = Transaction
+    out_model = TransactionPlaidOut
+
+    @classmethod
+    def create(
+        cls, db: Session, transaction_in: TransactionPlaidIn
+    ) -> TransactionPlaidOut:
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = super().create(db, transaction_in)
+        CRUDAccount.update_balance(
+            db, transaction_out.account_id, transaction_out.timestamp
+        )
+        return transaction_out
+
+    @classmethod
+    def update(
+        cls, db: Session, id: int, transaction_in: TransactionPlaidIn
+    ) -> TransactionPlaidOut:
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = super().update(db, id, transaction_in)
+        CRUDAccount.update_balance(
+            db, transaction_out.account_id, transaction_out.timestamp
+        )
+        return transaction_out

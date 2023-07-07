@@ -3,7 +3,7 @@ from datetime import datetime, date
 from typing import Iterable
 from sqlmodel import SQLModel, Relationship, Session, and_, or_, col, func, select
 
-from app.common.models import IdentifiableBase, CurrencyCode
+from app.common.models import Base, CurrencyCode
 from app.features.exchangerate.client import get_exchange_rate
 from app.features.user import User  # type: ignore[attr-defined]
 from app.features.userinstitutionlink import UserInstitutionLink  # type: ignore[attr-defined]
@@ -22,7 +22,7 @@ class __MovementBase(SQLModel):
     ...
 
 
-class MovementApiOut(__MovementBase, IdentifiableBase):
+class MovementApiOut(__MovementBase, Base):
     earliest_timestamp: datetime | None
     latest_timestamp: datetime | None
     amounts: dict[CurrencyCode, Decimal]
@@ -32,7 +32,7 @@ class MovementApiIn(__MovementBase):
     ...
 
 
-class Movement(__MovementBase, IdentifiableBase, table=True):
+class Movement(__MovementBase, Base, table=True):
     transactions: list["Transaction"] = Relationship(
         back_populates="movement",
         sa_relationship_kwargs={"cascade": "all, delete"},
@@ -64,6 +64,10 @@ class Movement(__MovementBase, IdentifiableBase, table=True):
     @property
     def amounts(self) -> dict[CurrencyCode, Decimal]:
         return {c: self.amount(c) for c in {t.currency_code for t in self.transactions}}
+
+    @classmethod
+    def create(cls, db: Session) -> "Movement":  # type: ignore[override]
+        return super().create(db, cls())
 
     @classmethod
     def read_many_by_user(

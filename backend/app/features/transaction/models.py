@@ -9,7 +9,7 @@ from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
 from pydantic import validator
 
-from app.common.models import IdentifiableBase, CurrencyCode, PlaidBase, PlaidMaybeMixin
+from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
 from app.features.institution.models import Institution
 from app.features.user.models import User
 from app.features.userinstitutionlink.models import UserInstitutionLink
@@ -53,7 +53,7 @@ class __TransactionBase(SQLModel):
     movement_id: int | None
 
 
-class TransactionApiOut(__TransactionBase, IdentifiableBase):
+class TransactionApiOut(__TransactionBase, Base):
     account_balance: Decimal
     movement_id: int
 
@@ -72,15 +72,15 @@ class TransactionApiIn(__TransactionBase):
     #     return v
 
 
-class TransactionPlaidIn(__TransactionBase, PlaidBase):
+class TransactionPlaidIn(TransactionApiIn, SyncedMixin):
     ...
 
 
-class TransactionPlaidOut(__TransactionBase, PlaidBase, IdentifiableBase):
+class TransactionPlaidOut(TransactionApiOut, SyncedBase):
     movement_id: int
 
 
-class Transaction(__TransactionBase, IdentifiableBase, PlaidMaybeMixin, table=True):
+class Transaction(__TransactionBase, SyncableBase, table=True):
     account_id: int = Field(foreign_key="account.id")
     movement_id: int = Field(foreign_key="movement.id")
     account_balance: Decimal

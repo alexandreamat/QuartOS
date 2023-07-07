@@ -1,4 +1,4 @@
-from .crud import CRUDUserInstitutionLink
+from .crud import CRUDUserInstitutionLink, CRUDSyncableUserInstitutionLink
 from .models import (
     UserInstitutionLink,
     UserInstitutionLinkApiIn,
