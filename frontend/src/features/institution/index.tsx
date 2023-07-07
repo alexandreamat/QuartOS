@@ -77,7 +77,7 @@ const InstitutionsTable = (props: {
                 icon="sync"
                 onClick={async () => await handleSync(institution)}
                 disabled={false}
-                loading={false}
+                query={syncInstitutionResult}
               />
             </Table.Cell>
             <Table.Cell collapsing>

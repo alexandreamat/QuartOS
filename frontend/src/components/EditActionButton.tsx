@@ -1,14 +1,15 @@
+import { SimpleQuery } from "interfaces";
 import ActionButton from "./ActionButton";
 
 export default function EditActionButton(props: {
   onOpenEditForm: () => void;
   disabled?: boolean;
-  loading?: boolean;
+  query?: SimpleQuery;
 }) {
   return (
     <ActionButton
       tooltip="Edit"
-      loading={props.loading}
+      query={props.query}
       disabled={props.disabled}
       icon="pencil"
       onClick={() => props.onOpenEditForm()}
