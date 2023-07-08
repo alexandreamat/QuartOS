@@ -423,15 +423,6 @@ const injectedRtkApi = api
         }),
         providesTags: ["movements"],
       }),
-      readTransactionsApiMovementsIdTransactionsGet: build.query<
-        ReadTransactionsApiMovementsIdTransactionsGetApiResponse,
-        ReadTransactionsApiMovementsIdTransactionsGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/movements/${queryArg}/transactions`,
-        }),
-        providesTags: ["movements"],
-      }),
       addTransactionApiMovementsIdTransactionsPost: build.mutation<
         AddTransactionApiMovementsIdTransactionsPostApiResponse,
         AddTransactionApiMovementsIdTransactionsPostApiArg
@@ -712,9 +703,6 @@ export type GetAggregateApiMovementsAggregateStartDateEndDateGetApiArg = {
   endDate: string;
   currencyCode: string;
 };
-export type ReadTransactionsApiMovementsIdTransactionsGetApiResponse =
-  /** status 200 Successful Response */ TransactionApiOut[];
-export type ReadTransactionsApiMovementsIdTransactionsGetApiArg = number;
 export type AddTransactionApiMovementsIdTransactionsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
 export type AddTransactionApiMovementsIdTransactionsPostApiArg = {
@@ -822,12 +810,15 @@ export type TransactionDeserialiserApiIn = {
 };
 export type InstitutionApiOut = {
   id: number;
+  plaid_id?: string;
+  plaid_metadata?: string;
   name: string;
   country_code: string;
   url?: string;
   transactiondeserialiser_id?: number;
   colour?: string;
   logo_base64?: string;
+  is_synced: boolean;
 };
 export type InstitutionApiIn = {
   name: string;
@@ -927,6 +918,8 @@ export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
 };
 export type UserInstitutionLinkApiOut = {
   id: number;
+  plaid_id?: string;
+  plaid_metadata?: string;
   institution_id: number;
   user_id: number;
   is_synced: boolean;
@@ -945,6 +938,7 @@ export type MovementApiOut = {
   id: number;
   earliest_timestamp?: string;
   latest_timestamp?: string;
+  transactions: TransactionApiOut[];
   amounts: {
     [key: string]: number;
   };

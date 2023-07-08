@@ -2,14 +2,14 @@ import { TransactionApiOut } from "app/services/api";
 import { useState } from "react";
 import { useTransactionsQuery } from "../hooks";
 import Bar from "./Bar";
-import Table from "./Table";
 import FlexColumn from "components/FlexColumn";
 import Form from "./Form";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { useNavigate } from "react-router-dom";
+import { TransactionCard } from "./TransactionCard";
 
-export default function ManagedTable(props: {
-  relatedTransactions?: TransactionApiOut[];
+export default function ManagedTransactions(props: {
   onMutation?: (x: TransactionApiOut) => void;
   onFlowCheckboxChange?: (
     flow: TransactionApiOut,
@@ -29,11 +29,14 @@ export default function ManagedTable(props: {
   const [timestamp, setTimestamp] = useState<Date | undefined>(undefined);
   const [isDescending, setIsDescending] = useState(true);
 
-  const handleOpenCreateForm = (accountId: number) => {
-    setSelectedAccountId(accountId);
-    setSelectedTransaction(undefined);
-    setIsFormOpen(true);
-  };
+  const navigate = useNavigate();
+
+  function handleGoToMovement(transaction: TransactionApiOut) {
+    let params = new URLSearchParams();
+    params.append("isFormOpen", "true");
+    params.append("movementId", transaction.movement_id.toString());
+    navigate(`/movements/?${params.toString()}`);
+  }
 
   const handleOpenEditForm = (transaction: TransactionApiOut) => {
     setSelectedAccountId(0);
@@ -97,14 +100,37 @@ export default function ManagedTable(props: {
         />
         <FlexColumn.Auto reference={infiniteQuery.reference}>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-          <Table
-            transactionPages={Object.values(infiniteQuery.pages)}
-            onOpenEditForm={handleOpenEditForm}
-            onOpenCreateForm={handleOpenCreateForm}
-            onMutation={infiniteQuery.reset}
-            onFlowCheckboxChange={props.onFlowCheckboxChange}
-            checked={props.checked}
-          />
+          <div style={{ padding: 1 }}>
+            {Object.values(infiniteQuery.pages).map((transactionPage, i) =>
+              transactionPage.map((t, j) => {
+                if (props.onFlowCheckboxChange) {
+                  const checked = props.checked?.includes(t.id);
+                  return (
+                    <TransactionCard
+                      key={i * 20 + j}
+                      transaction={t}
+                      onOpenEditForm={() => handleOpenEditForm(t)}
+                      onCheckboxChange={
+                        props.onFlowCheckboxChange &&
+                        (async (c) => await props.onFlowCheckboxChange!(t, c))
+                      }
+                      checkBoxDisabled={checked && props.checked?.length === 1}
+                      checked={checked}
+                    />
+                  );
+                } else {
+                  return (
+                    <TransactionCard
+                      key={i * 20 + j}
+                      transaction={t}
+                      onGoMovement={() => handleGoToMovement(t)}
+                      onOpenEditForm={() => handleOpenEditForm(t)}
+                    />
+                  );
+                }
+              })
+            )}
+          </div>
         </FlexColumn.Auto>
       </FlexColumn>
       {selectedTransaction && (

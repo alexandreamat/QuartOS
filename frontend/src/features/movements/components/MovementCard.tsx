@@ -1,31 +1,18 @@
-import { MovementApiOut, TransactionApiOut, api } from "app/services/api";
-import { Card, Grid, Header, Placeholder } from "semantic-ui-react";
+import { MovementApiOut, TransactionApiOut } from "app/services/api";
+import { Card, Grid, Header } from "semantic-ui-react";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import EditActionButton from "components/EditActionButton";
 import { Flows } from "./Flows";
 import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
 
-export function Movement(props: {
+export function MovementCard(props: {
   movement: MovementApiOut;
   onOpenEditForm?: () => void;
   onOpenCreateTransactionForm?: () => void;
   onRemoveTransaction?: (x: TransactionApiOut) => void;
 }) {
-  const transactionsQuery =
-    api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
-      props.movement.id
-    );
-
-  if (transactionsQuery.isLoading)
-    return (
-      <Placeholder>
-        <Placeholder.Line />
-      </Placeholder>
-    );
-
-  // const firstTransaction = transactionsQuery.data[0];
+  const firstTransaction = props.movement.transactions[0];
 
   return (
     <Card fluid color="teal">
@@ -38,24 +25,19 @@ export function Movement(props: {
               />
             </Card.Meta>
           </Grid.Column>
-          {/* <Grid.Column>
+          <Grid.Column>
             <Header as="h4">{firstTransaction.name}</Header>
-          </Grid.Column> */}
+          </Grid.Column>
           {props.onOpenEditForm && (
             <Grid.Column width={1} textAlign="center">
               <EditActionButton onOpenEditForm={props.onOpenEditForm} />
             </Grid.Column>
           )}
         </Grid>
-        {transactionsQuery.isSuccess && (
-          <Flows
-            transactions={transactionsQuery.data}
-            onRemove={props.onRemoveTransaction}
-          />
-        )}
-        {transactionsQuery.isError && (
-          <QueryErrorMessage query={transactionsQuery} />
-        )}
+        <Flows
+          transactions={props.movement.transactions}
+          onRemove={props.onRemoveTransaction}
+        />
       </Card.Content>
       <Card.Content extra>
         {props.onOpenCreateTransactionForm && (

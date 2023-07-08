@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import TransactionsManagedTable from "features/transaction/components/ManagedTable";
+import TransactionsManagedTable from "features/transaction/components/Transactions";
 import { Button, Divider, Header, Modal, Segment } from "semantic-ui-react";
 import FlexColumn from "components/FlexColumn";
 import { TransactionApiOut, api } from "app/services/api";
@@ -9,8 +9,7 @@ import { skipToken } from "@reduxjs/toolkit/dist/query";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import CreateNewButton from "components/CreateNewButton";
 import TransactionForm from "features/transaction/components/Form";
-import { Movement } from "./Movement";
-import { tr } from "date-fns/locale";
+import { MovementCard } from "./MovementCard";
 
 export default function Form(props: {
   open: boolean;
@@ -24,11 +23,6 @@ export default function Form(props: {
     movementId || skipToken
   );
 
-  const transactionsQuery =
-    api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
-      movementId || skipToken
-    );
-
   const [createMovement, createMovementResult] =
     api.endpoints.createApiMovementsPost.useMutation();
 
@@ -37,8 +31,6 @@ export default function Form(props: {
 
   const [deleteMovement, deleteMovementResult] =
     api.endpoints.deleteApiMovementsIdDelete.useMutation();
-
-  const transactions = transactionsQuery.data || [];
 
   useEffect(() => {
     if (props.movementId) setMovementId(props.movementId);
@@ -140,11 +132,13 @@ export default function Form(props: {
         <div style={{ height: "70vh" }}>
           <FlexColumn>
             {movementQuery.isSuccess ? (
-              <Movement
+              <MovementCard
                 movement={movementQuery.data}
                 onOpenCreateTransactionForm={handleOpenCreateTransactionForm}
                 onRemoveTransaction={
-                  transactions.length > 1 ? handleRemoveTransaction : undefined
+                  movementQuery.data.transactions.length > 1
+                    ? handleRemoveTransaction
+                    : undefined
                 }
               />
             ) : (
@@ -163,14 +157,14 @@ export default function Form(props: {
               <TransactionsManagedTable
                 onMutation={handleOpenCreateTransactionForm}
                 onFlowCheckboxChange={handleFlowCheckboxChange}
-                checked={transactions.map((t) => t.id)}
+                checked={movementQuery.data?.transactions.map((t) => t.id)}
               />
             </FlexColumn.Auto>
           </FlexColumn>
         </div>
       </Modal.Content>
       <Modal.Actions>
-        {movementId && (
+        {movementId !== 0 && (
           <ConfirmDeleteButtonModal
             onDelete={handleDelete}
             query={deleteMovementResult}
