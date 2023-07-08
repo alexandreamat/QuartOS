@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import TransactionsManagedTable from "features/transaction/components/Transactions";
+import TransactionCards from "features/transaction/components/TransactionCards";
 import { Button, Divider, Header, Modal, Segment } from "semantic-ui-react";
 import FlexColumn from "components/FlexColumn";
 import { TransactionApiOut, api } from "app/services/api";
@@ -154,7 +154,7 @@ export default function Form(props: {
             <QueryErrorMessage query={deleteMovementResult} />
             <FlexColumn.Auto>
               <Divider horizontal>or pick existing ones</Divider>
-              <TransactionsManagedTable
+              <TransactionCards
                 onMutation={handleOpenCreateTransactionForm}
                 onFlowCheckboxChange={handleFlowCheckboxChange}
                 checked={movementQuery.data?.transactions.map((t) => t.id)}

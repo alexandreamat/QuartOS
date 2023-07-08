@@ -1,9 +1,9 @@
-import ManagedTransactions from "./components/Transactions";
+import TransactionCards from "./components/TransactionCards";
 
 export default function Transactions() {
   return (
     <div style={{ height: "100%" }}>
-      <ManagedTransactions />
+      <TransactionCards />
     </div>
   );
 }

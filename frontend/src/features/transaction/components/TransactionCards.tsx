@@ -9,7 +9,7 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useNavigate } from "react-router-dom";
 import { TransactionCard } from "./TransactionCard";
 
-export default function ManagedTransactions(props: {
+export default function TransactionCards(props: {
   onMutation?: (x: TransactionApiOut) => void;
   onFlowCheckboxChange?: (
     flow: TransactionApiOut,
