@@ -13,10 +13,10 @@ import {
   Modal,
   Segment,
 } from "semantic-ui-react";
-import Table from "./Table";
 import { useAccountOptions } from "features/account/hooks";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { logMutationError } from "utils/error";
+import TransactionsPreview from "./TransactionsPreview";
 
 export default function Uploader(props: {
   open: boolean;
@@ -134,7 +134,7 @@ export default function Uploader(props: {
             </Segment>
           )}
           {uploadResult.isSuccess && (
-            <Table transactionPages={[uploadResult.data]} />
+            <TransactionsPreview transactionPages={[uploadResult.data]} />
           )}
           <QueryErrorMessage query={uploadResult} />
           <QueryErrorMessage query={createMovementsResult} />

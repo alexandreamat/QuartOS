@@ -2,11 +2,12 @@ import { MovementApiOut, api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { Bar } from "./components/Bar";
-import { Movement } from "./components/Movement";
+import { MovementCard } from "./components/MovementCard";
 import Form from "./components/Form";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
+import { TransactionCard } from "features/transaction/components/TransactionCard";
 
 export default function Movements() {
   const location = useLocation();
@@ -79,13 +80,20 @@ export default function Movements() {
               <QueryErrorMessage query={infiniteQuery} />
             )}
             {Object.values(infiniteQuery.pages).map((movements) =>
-              movements.map((movement) => (
-                <Movement
-                  key={movement.id}
-                  movement={movement}
-                  onOpenEditForm={() => handleOpenEditForm(movement)}
-                />
-              ))
+              movements.map((movement) =>
+                movement.transactions.length === 1 ? (
+                  <TransactionCard
+                    transaction={movement.transactions[0]}
+                    onOpenEditForm={() => handleOpenEditForm(movement)}
+                  />
+                ) : (
+                  <MovementCard
+                    key={movement.id}
+                    movement={movement}
+                    onOpenEditForm={() => handleOpenEditForm(movement)}
+                  />
+                )
+              )
             )}
           </>
         </FlexColumn.Auto>

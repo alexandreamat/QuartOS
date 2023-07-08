@@ -34,7 +34,7 @@ const AccountLogo = (props: {
 );
 
 const Amount = (props: { amount: number; currencyCode: string }) => (
-  <Grid.Column width={4} textAlign="center" verticalAlign="middle">
+  <Grid.Column width={5} textAlign="center" verticalAlign="middle">
     <CurrencyLabel amount={props.amount} currencyCode={props.currencyCode} />
   </Grid.Column>
 );

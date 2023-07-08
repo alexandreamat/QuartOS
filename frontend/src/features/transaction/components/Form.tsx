@@ -53,11 +53,6 @@ export default function Form(props: {
     props.movementId || skipToken
   );
 
-  const relatedTransactionsQuery =
-    api.endpoints.readTransactionsApiMovementsIdTransactionsGet.useQuery(
-      props.movementId || skipToken
-    );
-
   const disableSynced = isEdit && accountQuery.data?.is_synced;
 
   const accountOptions = useAccountOptions();
@@ -123,9 +118,9 @@ export default function Form(props: {
         currency={form.currencyCode.value || "USD"}
         readOnly={disableSynced}
       />
-      {relatedTransactionsQuery.isSuccess && form.currencyCode.value && (
+      {movementQuery.isSuccess && form.currencyCode.value && (
         <CurrencyExchangeTips
-          relatedTransactions={relatedTransactionsQuery.data}
+          relatedTransactions={movementQuery.data.transactions}
           currencyCode={form.currencyCode.value}
         />
       )}
