@@ -8,7 +8,7 @@ from app.features.exchangerate.client import get_exchange_rate
 from app.features.user import User  # type: ignore[attr-defined]
 from app.features.userinstitutionlink import UserInstitutionLink  # type: ignore[attr-defined]
 from app.features.account import Account  # type: ignore[attr-defined]
-from app.features.transaction import Transaction  # type: ignore[attr-defined]
+from app.features.transaction import Transaction, TransactionApiOut  # type: ignore[attr-defined]
 
 
 class PLStatement(SQLModel):
@@ -25,6 +25,7 @@ class __MovementBase(SQLModel):
 class MovementApiOut(__MovementBase, Base):
     earliest_timestamp: datetime | None
     latest_timestamp: datetime | None
+    transactions: list[TransactionApiOut]
     amounts: dict[CurrencyCode, Decimal]
 
 
@@ -33,7 +34,7 @@ class MovementApiIn(__MovementBase):
 
 
 class Movement(__MovementBase, Base, table=True):
-    transactions: list["Transaction"] = Relationship(
+    transactions: list[Transaction] = Relationship(
         back_populates="movement",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
