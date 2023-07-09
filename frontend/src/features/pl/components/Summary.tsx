@@ -1,21 +1,20 @@
 import { api } from "app/services/api";
 import CurrencyLabel from "components/CurrencyLabel";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { addDays, addMonths, format } from "date-fns";
-import { useParams } from "react-router-dom";
+import { addDays, format } from "date-fns";
 import { Card, Loader, Step } from "semantic-ui-react";
 
-export default function Summary() {
-  const { year, month } = useParams();
-
-  const startDate = new Date(Number(year), Number(month), 1);
-  const endDate = addMonths(startDate, 1);
-
+export default function Summary(props: {
+  startDate: Date;
+  endDate: Date;
+  onClickIncome: () => void;
+  onClickExpenses: () => void;
+}) {
   const aggregateQuery =
     api.endpoints.getAggregateApiMovementsAggregatesStartDateEndDateGet.useQuery(
       {
-        startDate: format(startDate, "yyyy-MM-dd"),
-        endDate: format(endDate, "yyyy-MM-dd"),
+        startDate: format(props.startDate, "yyyy-MM-dd"),
+        endDate: format(props.endDate, "yyyy-MM-dd"),
         currencyCode: "EUR",
       }
     );
@@ -31,15 +30,17 @@ export default function Summary() {
   return (
     <Card fluid color="teal">
       <Card.Content>
-        <Card.Header>{format(new Date(startDate), "MMMM yyyy")}</Card.Header>
+        <Card.Header>
+          {format(new Date(props.startDate), "MMMM yyyy")}
+        </Card.Header>
         <Card.Meta>
-          {`From ${startDate.toLocaleDateString()}
-      to ${addDays(endDate, -1).toLocaleDateString()}`}
+          {`From ${props.startDate.toLocaleDateString()}
+      to ${addDays(props.endDate, -1).toLocaleDateString()}`}
         </Card.Meta>
       </Card.Content>
       <Card.Content extra>
         <Step.Group fluid widths={3}>
-          <Step>
+          <Step onClick={props.onClickIncome}>
             <Step.Title>Income</Step.Title>
             <Step.Content>
               <CurrencyLabel
@@ -48,7 +49,7 @@ export default function Summary() {
               />
             </Step.Content>
           </Step>
-          <Step>
+          <Step onClick={props.onClickExpenses}>
             <Step.Title>Expenses</Step.Title>
             <Step.Content>
               <CurrencyLabel

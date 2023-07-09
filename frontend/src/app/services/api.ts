@@ -413,13 +413,27 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["institution-links"],
       }),
-      getAggregateApiMovementsAggregateStartDateEndDateGet: build.query<
-        GetAggregateApiMovementsAggregateStartDateEndDateGetApiResponse,
-        GetAggregateApiMovementsAggregateStartDateEndDateGetApiArg
+      getAggregateApiMovementsAggregatesStartDateEndDateGet: build.query<
+        GetAggregateApiMovementsAggregatesStartDateEndDateGetApiResponse,
+        GetAggregateApiMovementsAggregatesStartDateEndDateGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/movements/aggregate/${queryArg.startDate}/${queryArg.endDate}`,
+          url: `/api/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}`,
           params: { currency_code: queryArg.currencyCode },
+        }),
+        providesTags: ["movements"],
+      }),
+      getManyAggregatesApiMovementsAggregatesGet: build.query<
+        GetManyAggregatesApiMovementsAggregatesGetApiResponse,
+        GetManyAggregatesApiMovementsAggregatesGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/movements/aggregates`,
+          params: {
+            currency_code: queryArg.currencyCode,
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+          },
         }),
         providesTags: ["movements"],
       }),
@@ -483,7 +497,13 @@ const injectedRtkApi = api
           params: {
             page: queryArg.page,
             per_page: queryArg.perPage,
+            start_date: queryArg.startDate,
+            end_date: queryArg.endDate,
             search: queryArg.search,
+            amount_gt: queryArg.amountGt,
+            amount_lt: queryArg.amountLt,
+            is_descending: queryArg.isDescending,
+            sort_by: queryArg.sortBy,
           },
         }),
         providesTags: ["movements"],
@@ -696,12 +716,19 @@ export type DeleteApiInstitutionLinksIdDeleteApiArg = number;
 export type SyncApiInstitutionLinksIdSyncPostApiResponse =
   /** status 200 Successful Response */ null;
 export type SyncApiInstitutionLinksIdSyncPostApiArg = number;
-export type GetAggregateApiMovementsAggregateStartDateEndDateGetApiResponse =
+export type GetAggregateApiMovementsAggregatesStartDateEndDateGetApiResponse =
   /** status 200 Successful Response */ PlStatement;
-export type GetAggregateApiMovementsAggregateStartDateEndDateGetApiArg = {
+export type GetAggregateApiMovementsAggregatesStartDateEndDateGetApiArg = {
   startDate: string;
   endDate: string;
   currencyCode: string;
+};
+export type GetManyAggregatesApiMovementsAggregatesGetApiResponse =
+  /** status 200 Successful Response */ PlStatement[];
+export type GetManyAggregatesApiMovementsAggregatesGetApiArg = {
+  currencyCode: string;
+  page?: number;
+  perPage?: number;
 };
 export type AddTransactionApiMovementsIdTransactionsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
@@ -735,7 +762,13 @@ export type ReadManyApiMovementsGetApiResponse =
 export type ReadManyApiMovementsGetApiArg = {
   page?: number;
   perPage?: number;
+  startDate?: string;
+  endDate?: string;
   search?: string;
+  amountGt?: number;
+  amountLt?: number;
+  isDescending?: boolean;
+  sortBy?: MovementFields;
 };
 export type CreateApiMovementsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
@@ -933,6 +966,7 @@ export type PlStatement = {
   end_date: string;
   income: number;
   expenses: number;
+  currency_code: string;
 };
 export type MovementApiOut = {
   id: number;
@@ -943,6 +977,7 @@ export type MovementApiOut = {
     [key: string]: number;
   };
 };
+export type MovementFields = "timestamp" | "amount";
 export type BodyCreateApiMovementsPost = {
   transactions: TransactionApiIn[];
   transaction_ids: number[];
