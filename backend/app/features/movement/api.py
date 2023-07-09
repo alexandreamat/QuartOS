@@ -1,5 +1,6 @@
 from typing import Iterable
 from datetime import date
+from decimal import Decimal
 
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
@@ -17,7 +18,7 @@ from app.features.transaction import (  # type: ignore[attr-defined]
     TRANSACTIONS,
 )
 
-from .models import MovementApiOut, PLStatement
+from .models import MovementApiOut, PLStatement, MovementFields
 from .crud import CRUDMovement
 from .exceptions import MovementNotFound
 
@@ -38,7 +39,7 @@ def check_user(
         )
 
 
-@router.get("/aggregate/{start_date}/{end_date}")
+@router.get("/aggregates/{start_date}/{end_date}")
 def get_aggregate(
     db: DBSession,
     current_user: CurrentUser,
@@ -46,8 +47,25 @@ def get_aggregate(
     end_date: date,
     currency_code: CurrencyCode,
 ) -> PLStatement:
-    return CRUDMovement.get_aggregate(
-        db, current_user.id, start_date, end_date, currency_code
+    return CRUDMovement.get_monthly_aggregate(
+        db,
+        current_user.id,
+        start_date,
+        end_date,
+        currency_code,
+    )
+
+
+@router.get("/aggregates")
+def get_many_aggregates(
+    db: DBSession,
+    current_user: CurrentUser,
+    currency_code: CurrencyCode,
+    page: int = 0,
+    per_page: int = 12,
+) -> Iterable[PLStatement]:
+    return CRUDMovement.get_many_monthly_aggregates(
+        db, current_user.id, currency_code, page, per_page
     )
 
 
@@ -161,11 +179,29 @@ def create(
 def read_many(
     db: DBSession,
     current_user: CurrentUser,
-    page: int = 1,
+    page: int = 0,
     per_page: int = 0,
+    start_date: date | None = None,
+    end_date: date | None = None,
     search: str | None = None,
+    amount_gt: Decimal | None = None,
+    amount_lt: Decimal | None = None,
+    is_descending: bool = True,
+    sort_by: MovementFields = MovementFields.TIMESTAMP,
 ) -> Iterable[MovementApiOut]:
-    return CRUDMovement.read_many_by_user(db, current_user.id, page, per_page, search)
+    return CRUDMovement.read_many_by_user(
+        db,
+        current_user.id,
+        page,
+        per_page,
+        start_date,
+        end_date,
+        search,
+        amount_gt,
+        amount_lt,
+        is_descending,
+        sort_by,
+    )
 
 
 api_router.include_router(router, prefix=f"/{MOVEMENTS}", tags=[MOVEMENTS])

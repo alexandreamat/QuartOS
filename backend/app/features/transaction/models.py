@@ -109,11 +109,11 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         return self.account.is_synced
 
     @classmethod
-    def get_desc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
+    def get_timestamp_desc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
         return desc(cls.timestamp), desc(cls.id)
 
     @classmethod
-    def get_asc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
+    def get_timestamp_asc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
         return asc(cls.timestamp), asc(cls.id)
 
     @classmethod
@@ -128,7 +128,11 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         statement: SelectOfScalar["Transaction"],
     ) -> list["Transaction"]:
         statement = statement.order_by(
-            *(cls.get_desc_clauses() if is_descending else cls.get_asc_clauses())
+            *(
+                cls.get_timestamp_desc_clauses()
+                if is_descending
+                else cls.get_timestamp_asc_clauses()
+            )
         )
 
         if timestamp:
