@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
+import { formatDateParam } from "utils/time";
 
 export default function Movements() {
   const location = useLocation();
@@ -15,6 +16,9 @@ export default function Movements() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [isDescending, setIsDescending] = useState(true);
 
   const [movementId, setMovementId] = useState(0);
 
@@ -56,9 +60,29 @@ export default function Movements() {
     setSearch(value);
   };
 
+  function handleStartDateChange(value: Date | undefined) {
+    infiniteQuery.reset();
+    setStartDate(value);
+  }
+
+  function handleEndDateChange(value: Date | undefined) {
+    infiniteQuery.reset();
+    setEndDate(value);
+  }
+
+  function handleToggleIsDescending() {
+    infiniteQuery.reset();
+    setIsDescending((prev) => !prev);
+  }
+
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiMovementsGet.useQuery,
-    { search },
+    {
+      search,
+      isDescending,
+      startDate: startDate && formatDateParam(startDate),
+      endDate: endDate && formatDateParam(endDate),
+    },
     10,
     () => {}
   );
@@ -70,6 +94,12 @@ export default function Movements() {
           onOpenCreateForm={handleOpenCreateForm}
           search={search}
           onSearchChange={handleSearchChange}
+          startDate={startDate}
+          onStartDateChange={handleStartDateChange}
+          endDate={endDate}
+          onEndDateChange={handleEndDateChange}
+          isDescending={isDescending}
+          onToggleIsDescending={handleToggleIsDescending}
         />
         <FlexColumn.Auto
           style={{ padding: 1 }}
