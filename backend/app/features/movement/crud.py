@@ -1,5 +1,6 @@
 from typing import Iterable
 from datetime import date
+from decimal import Decimal
 
 from sqlmodel import Session
 
@@ -17,7 +18,7 @@ from app.features.transaction import (  # type: ignore [attr-defined]
     CRUDSyncableTransaction,
 )
 
-from .models import Movement, MovementApiIn, MovementApiOut, PLStatement
+from .models import Movement, MovementApiIn, MovementApiOut, PLStatement, MovementFields
 
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
@@ -61,9 +62,32 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
 
     @classmethod
     def read_many_by_user(
-        cls, db: Session, user_id: int, page: int, per_page: int, search: str | None
+        cls,
+        db: Session,
+        user_id: int,
+        page: int,
+        per_page: int,
+        start_date: date | None,
+        end_date: date | None,
+        search: str | None,
+        amount_gt: Decimal | None,
+        amount_lt: Decimal | None,
+        is_descending: bool,
+        sort_by: MovementFields,
     ) -> Iterable[MovementApiOut]:
-        for m in Movement.read_many_by_user(db, user_id, page, per_page, search):
+        for m in Movement.read_many_by_user(
+            db,
+            user_id,
+            page,
+            per_page,
+            start_date,
+            end_date,
+            search,
+            amount_gt,
+            amount_lt,
+            is_descending,
+            sort_by,
+        ):
             yield MovementApiOut.from_orm(m)
 
     @classmethod
@@ -114,7 +138,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             cls.delete(db, id)
 
     @classmethod
-    def get_aggregate(
+    def get_monthly_aggregate(
         cls,
         db: Session,
         user_id: int,
@@ -122,4 +146,20 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         end_date: date,
         currency_code: CurrencyCode,
     ) -> PLStatement:
-        return Movement.get_aggregate(db, user_id, start_date, end_date, currency_code)
+        return Movement.get_monthly_aggregate(
+            db, user_id, start_date, end_date, currency_code
+        )
+
+    @classmethod
+    def get_many_monthly_aggregates(
+        cls,
+        db: Session,
+        user_id: int,
+        currency_code: CurrencyCode,
+        page: int,
+        per_page: int,
+    ) -> Iterable[PLStatement]:
+        for pl in Movement.get_many_monthly_aggregates(
+            db, user_id, currency_code, page, per_page
+        ):
+            yield PLStatement.from_orm(pl)

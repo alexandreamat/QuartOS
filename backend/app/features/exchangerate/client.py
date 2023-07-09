@@ -25,5 +25,4 @@ def get_exchange_rate(from_currency: str, to_currency: str, date: date) -> Decim
         data = response.json()
         from_rate = Decimal(data["rates"][from_currency])
         to_rate = Decimal(data["rates"][to_currency])
-        rate = to_rate / from_rate
-        return rate
+        return to_rate / from_rate

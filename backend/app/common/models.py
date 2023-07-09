@@ -2,6 +2,7 @@ from typing import TypeVar, Type, Any, Generator, Callable
 
 import pycountry
 from sqlmodel import Session, SQLModel, Field, select
+from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.exc import NoResultFound
 
 
@@ -19,6 +20,10 @@ class Base(SQLModel):
         db.flush()
         db.refresh(obj)
         return obj
+
+    @classmethod
+    def select(cls: Type[ModelType]) -> SelectOfScalar[ModelType]:
+        return select(cls)
 
     @classmethod
     def from_schema(cls: Type[ModelType], obj_in: ApiInModel) -> ModelType:

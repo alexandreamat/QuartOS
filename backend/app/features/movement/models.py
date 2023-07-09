@@ -1,6 +1,9 @@
+from enum import Enum
 from decimal import Decimal
 from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
 from typing import Iterable
+
 from sqlmodel import SQLModel, Relationship, Session, and_, or_, col, func, select
 
 from app.common.models import Base, CurrencyCode
@@ -16,10 +19,16 @@ class PLStatement(SQLModel):
     end_date: date
     income: Decimal
     expenses: Decimal
+    currency_code: CurrencyCode
 
 
 class __MovementBase(SQLModel):
     ...
+
+
+class MovementFields(str, Enum):
+    TIMESTAMP = "timestamp"
+    AMOUNT = "amount"
 
 
 class MovementApiOut(__MovementBase, Base):
@@ -72,39 +81,83 @@ class Movement(__MovementBase, Base, table=True):
 
     @classmethod
     def read_many_by_user(
-        cls, db: Session, user_id: int, page: int, per_page: int, search: str | None
+        cls,
+        db: Session,
+        user_id: int,
+        page: int,
+        per_page: int,
+        start_date: date | None,
+        end_date: date | None,
+        search: str | None,
+        amount_gt: Decimal | None,
+        amount_lt: Decimal | None,
+        is_descending: bool,
+        sort_by: MovementFields,
     ) -> Iterable["Movement"]:
-        offset = (page - 1) * per_page if page and per_page else 0
-
         statement = (
-            select(cls)
+            cls.select()
             .join(Transaction)
             .join(Account)
             .outerjoin(Account.InstitutionalAccount)
             .outerjoin(Account.NonInstitutionalAccount)
             .outerjoin(UserInstitutionLink)
-            .where(
-                or_(
-                    UserInstitutionLink.user_id == user_id,
-                    Account.NonInstitutionalAccount.user_id == user_id,
-                )
-            )
-            .group_by(Movement.id)
-            .order_by(*Transaction.get_desc_clauses())
         )
 
+        # WHERE
+        statement = statement.where(
+            or_(
+                UserInstitutionLink.user_id == user_id,
+                Account.NonInstitutionalAccount.user_id == user_id,
+            )
+        )
+        if start_date:
+            statement = statement.where(col(Transaction.timestamp) >= start_date)
+        if end_date:
+            statement = statement.where(col(Transaction.timestamp) < end_date)
         if search:
             search = f"%{search}%"
             statement = statement.where(col(Transaction.name).like(search))
 
+        # GROUP BY
+        statement = statement.group_by(Movement.id)
+
+        # ORDER BY
+        if sort_by is MovementFields.TIMESTAMP:
+            if is_descending:
+                order_clauses = Transaction.get_timestamp_desc_clauses()
+            else:
+                order_clauses = Transaction.get_timestamp_asc_clauses()
+            statement = statement.order_by(*order_clauses)
+
+        # LIMIT OFFSET
         if per_page:
-            offset = (page - 1) * per_page
+            offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
 
-        return db.exec(statement).all()
+        movements = db.exec(statement).all()
+
+        # Filter by amount is done on the queried objects
+        if amount_gt is not None:
+            movements = [
+                m for m in movements if m.amount(CurrencyCode("USD")) > amount_gt
+            ]
+
+        if amount_lt is not None:
+            movements = [
+                m for m in movements if m.amount(CurrencyCode("USD")) < amount_lt
+            ]
+
+        if sort_by is MovementFields.AMOUNT:
+            movements = sorted(
+                movements,
+                key=lambda m: m.amount(CurrencyCode("USD")),
+                reverse=is_descending,
+            )
+
+        return movements
 
     @classmethod
-    def get_aggregate(
+    def get_monthly_aggregate(
         cls,
         db: Session,
         user_id: int,
@@ -134,7 +187,7 @@ class Movement(__MovementBase, Base, table=True):
         ).subquery()
 
         statement = (
-            select(cls)
+            cls.select()
             .join(subquery, cls.id == subquery.c.id)
             .where(
                 and_(
@@ -161,4 +214,24 @@ class Movement(__MovementBase, Base, table=True):
             end_date=end_date,
             income=income_total,
             expenses=expense_total,
+            currency_code=currency_code,
         )
+
+    @classmethod
+    def get_many_monthly_aggregates(
+        cls,
+        db: Session,
+        user_id: int,
+        currency_code: CurrencyCode,
+        page: int,
+        per_page: int,
+    ) -> Iterable[PLStatement]:
+        today = date.today()
+        last_start_date = today.replace(day=1)
+        offset = per_page * page
+        for i in range(offset, offset + per_page):
+            start_date = last_start_date - relativedelta(months=i)
+            end_date = min(start_date + relativedelta(months=1), today)
+            yield cls.get_monthly_aggregate(
+                db, user_id, start_date, end_date, currency_code
+            )

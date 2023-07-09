@@ -217,8 +217,8 @@ class Account(_AccountBase, Base, table=True):
 
         if timestamp:
             prev_transaction: Transaction = (
-                transactions_query.where(Transaction.timestamp < timestamp)  # type: ignore
-                .order_by(*Transaction.get_desc_clauses())
+                transactions_query.where(Transaction.timestamp < timestamp)
+                .order_by(*Transaction.get_timestamp_desc_clauses())
                 .first()
             )
             if prev_transaction:
@@ -281,7 +281,7 @@ class Account(_AccountBase, Base, table=True):
 
         query = self.transactions
         first_transaction: "Transaction" | None = query.order_by(  # type: ignore
-            *Transaction.get_desc_clauses()
+            *Transaction.get_timestamp_desc_clauses()
         ).first()
         if not first_transaction:
             return self.initial_balance
