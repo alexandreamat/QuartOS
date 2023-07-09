@@ -8,6 +8,8 @@ import Users from "features/user";
 import { SemanticICONS } from "semantic-ui-react";
 import TransactionDeserialisers from "features/transactiondeserialiser";
 import Movements from "features/movements";
+import PL from "features/pl";
+import plDetail from "features/pl/components/Detail";
 
 export interface RouteI {
   path: string;
@@ -16,6 +18,7 @@ export interface RouteI {
   icon: SemanticICONS;
   component: React.FC;
   requires_superuser: boolean;
+  routes?: RouteI[];
 }
 
 export default [
@@ -55,6 +58,22 @@ export default [
     icon: "arrows alternate horizontal",
     component: Movements,
     requires_superuser: false,
+  },
+  {
+    path: "/pl-statements",
+    label: "P&L Statements",
+    icon: "dollar",
+    component: PL,
+    requires_superuser: false,
+    routes: [
+      {
+        path: "/:year/:month",
+        label: "P&L Statement Detail",
+        icon: "file alternate",
+        component: plDetail,
+        requires_superuser: false,
+      },
+    ],
   },
   {
     path: "/institutions",

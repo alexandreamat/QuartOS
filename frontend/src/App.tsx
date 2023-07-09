@@ -9,7 +9,7 @@ import {
   Sidebar,
 } from "semantic-ui-react";
 import SidebarMenu from "components/SidebarMenu";
-import routes from "./router";
+import routes, { RouteI } from "./router";
 import { useAppDispatch, useAppSelector } from "app/store";
 import TopBar from "components/TopBar";
 import Login from "features/auth/components/Login";
@@ -26,10 +26,24 @@ import { renderErrorMessage } from "utils/error";
 import Profile from "features/profile";
 import FlexColumn from "components/FlexColumn";
 
+function flattenRoutes(routes?: RouteI[], parent?: RouteI) {
+  if (!routes) return [];
+
+  const flatPath = parent ? parent.path : "";
+  let flatRoutes: RouteI[] = [];
+  for (let route of routes)
+    flatRoutes = [
+      { ...route, path: flatPath + route.path },
+      ...flattenRoutes(route.routes, route),
+      ...flatRoutes,
+    ];
+  return flatRoutes;
+}
+
 function Content() {
   return (
     <Routes>
-      {routes.map((route) => (
+      {flattenRoutes(routes).map((route) => (
         <Route
           key={route.label}
           path={route.path}
@@ -42,7 +56,7 @@ function Content() {
               }}
             >
               <Header as="h2">{route.label}</Header>
-              <div style={{ flex: 1, overflow: "hidden" }}>
+              <div style={{ flex: 1, overflow: "hidden", padding: 1 }}>
                 <route.component />
               </div>
             </div>
