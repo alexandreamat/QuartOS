@@ -88,51 +88,47 @@ export default function Movements() {
   );
 
   return (
-    <>
-      <FlexColumn>
-        <Bar
-          onOpenCreateForm={handleOpenCreateForm}
-          search={search}
-          onSearchChange={handleSearchChange}
-          startDate={startDate}
-          onStartDateChange={handleStartDateChange}
-          endDate={endDate}
-          onEndDateChange={handleEndDateChange}
-          isDescending={isDescending}
-          onToggleIsDescending={handleToggleIsDescending}
-        />
-        <FlexColumn.Auto
-          style={{ padding: 1 }}
-          reference={infiniteQuery.reference}
-        >
-          <>
-            {infiniteQuery.isError && (
-              <QueryErrorMessage query={infiniteQuery} />
-            )}
-            {Object.values(infiniteQuery.pages).map((movements) =>
-              movements.map((movement) =>
-                movement.transactions.length === 1 ? (
-                  <TransactionCard
-                    transaction={movement.transactions[0]}
-                    onOpenEditForm={() => handleOpenEditForm(movement)}
-                  />
-                ) : (
-                  <MovementCard
-                    key={movement.id}
-                    movement={movement}
-                    onOpenEditForm={() => handleOpenEditForm(movement)}
-                  />
-                )
-              )
-            )}
-          </>
-        </FlexColumn.Auto>
-      </FlexColumn>
+    <FlexColumn>
       <Form
         open={isFormOpen}
         onClose={handleCloseForm}
         movementId={movementId}
       />
-    </>
+      <Bar
+        onOpenCreateForm={handleOpenCreateForm}
+        search={search}
+        onSearchChange={handleSearchChange}
+        startDate={startDate}
+        onStartDateChange={handleStartDateChange}
+        endDate={endDate}
+        onEndDateChange={handleEndDateChange}
+        isDescending={isDescending}
+        onToggleIsDescending={handleToggleIsDescending}
+      />
+      <FlexColumn.Auto
+        style={{ padding: 1 }}
+        reference={infiniteQuery.reference}
+      >
+        <>
+          {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
+          {Object.values(infiniteQuery.pages).map((movements) =>
+            movements.map((movement) =>
+              movement.transactions.length === 1 ? (
+                <TransactionCard
+                  transaction={movement.transactions[0]}
+                  onOpenEditForm={() => handleOpenEditForm(movement)}
+                />
+              ) : (
+                <MovementCard
+                  key={movement.id}
+                  movement={movement}
+                  onOpenEditForm={() => handleOpenEditForm(movement)}
+                />
+              )
+            )
+          )}
+        </>
+      </FlexColumn.Auto>
+    </FlexColumn>
   );
 }

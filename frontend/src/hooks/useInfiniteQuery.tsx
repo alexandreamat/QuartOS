@@ -11,7 +11,7 @@ export function useInfiniteQuery<T, U>(
 ) {
   const reference = useRef<HTMLDivElement | null>(null);
 
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [pages, setPages] = useState<Record<number, T[]>>({});
   const [resetKey, setResetKey] = useState(0);
 
@@ -24,7 +24,7 @@ export function useInfiniteQuery<T, U>(
 
   const handleReset = () => {
     setPages([]);
-    setPage(1);
+    setPage(0);
   };
 
   useEffect(() => handleReset(), [resetKey]);

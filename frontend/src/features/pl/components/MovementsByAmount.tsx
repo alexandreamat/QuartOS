@@ -2,7 +2,7 @@ import { api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { MovementCard } from "features/movements/components/MovementCard";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
-import { Loader } from "semantic-ui-react";
+import { Card, Loader } from "semantic-ui-react";
 import { formatDateParam } from "utils/time";
 
 export function MovementsByAmount(props: {
@@ -26,7 +26,7 @@ export function MovementsByAmount(props: {
   const movements = movementsQuery.data;
 
   return (
-    <>
+    <Card.Group>
       {movements.map((movement) =>
         movement.transactions.length === 1 ? (
           <TransactionCard transaction={movement.transactions[0]} />
@@ -34,6 +34,6 @@ export function MovementsByAmount(props: {
           <MovementCard key={movement.id} movement={movement} />
         )
       )}
-    </>
+    </Card.Group>
   );
 }
