@@ -39,6 +39,7 @@ export default function Detail(props: {}) {
         <Summary
           startDate={startDate}
           endDate={endDate}
+          showIncome={showIncome}
           onClickIncome={handleClickIncome}
           onClickExpenses={handleClickExpenses}
         />

@@ -7,6 +7,7 @@ import { Card, Loader, Step } from "semantic-ui-react";
 export default function Summary(props: {
   startDate: Date;
   endDate: Date;
+  showIncome: boolean;
   onClickIncome: () => void;
   onClickExpenses: () => void;
 }) {
@@ -40,7 +41,7 @@ export default function Summary(props: {
       </Card.Content>
       <Card.Content extra>
         <Step.Group fluid widths={3}>
-          <Step onClick={props.onClickIncome}>
+          <Step onClick={props.onClickIncome} active={props.showIncome}>
             <Step.Title>Income</Step.Title>
             <Step.Content>
               <CurrencyLabel
@@ -49,7 +50,7 @@ export default function Summary(props: {
               />
             </Step.Content>
           </Step>
-          <Step onClick={props.onClickExpenses}>
+          <Step onClick={props.onClickExpenses} active={!props.showIncome}>
             <Step.Title>Expenses</Step.Title>
             <Step.Content>
               <CurrencyLabel

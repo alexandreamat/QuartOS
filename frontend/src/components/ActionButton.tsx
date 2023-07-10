@@ -3,6 +3,7 @@ import {
   Button,
   Popup,
   SemanticCOLORS,
+  SemanticFLOATS,
   SemanticICONS,
 } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
@@ -15,6 +16,7 @@ const ActionButton = (props: {
   content?: string;
   query?: SimpleQuery;
   color?: SemanticCOLORS;
+  floated?: SemanticFLOATS;
 }) => (
   <Popup
     content={
@@ -24,6 +26,7 @@ const ActionButton = (props: {
     }
     trigger={
       <Button
+        floated={props.floated}
         color={props.color}
         loading={props.query?.isLoading}
         negative={props.query?.isError}

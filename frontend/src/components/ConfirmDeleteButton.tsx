@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Confirm } from "semantic-ui-react";
+import { Confirm, SemanticFLOATS } from "semantic-ui-react";
 import ActionButton from "./ActionButton";
 import { SimpleQuery } from "interfaces";
 import { renderErrorMessage } from "utils/error";
@@ -9,11 +9,13 @@ export default function ConfirmDeleteButton(props: {
   confirmContent?: string;
   disabled?: boolean;
   query: SimpleQuery;
+  floated?: SemanticFLOATS;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   return (
     <>
       <ActionButton
+        floated={props.floated}
         tooltip="delete"
         query={props.query}
         disabled={props.disabled}
