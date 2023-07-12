@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
 import { formatDateParam } from "utils/time";
+import { Card } from "semantic-ui-react";
 
 export default function Movements() {
   const location = useLocation();
@@ -18,6 +19,7 @@ export default function Movements() {
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const [accountId, setAccountId] = useState(0);
   const [isDescending, setIsDescending] = useState(true);
 
   const [movementId, setMovementId] = useState(0);
@@ -70,6 +72,11 @@ export default function Movements() {
     setEndDate(value);
   }
 
+  function handleAccountIdChange(value: number) {
+    infiniteQuery.reset();
+    setAccountId(value);
+  }
+
   function handleToggleIsDescending() {
     infiniteQuery.reset();
     setIsDescending((prev) => !prev);
@@ -82,6 +89,7 @@ export default function Movements() {
       isDescending,
       startDate: startDate && formatDateParam(startDate),
       endDate: endDate && formatDateParam(endDate),
+      accountId,
     },
     10,
     () => {}
@@ -102,14 +110,13 @@ export default function Movements() {
         onStartDateChange={handleStartDateChange}
         endDate={endDate}
         onEndDateChange={handleEndDateChange}
+        accountId={accountId}
+        onAccountIdChange={handleAccountIdChange}
         isDescending={isDescending}
         onToggleIsDescending={handleToggleIsDescending}
       />
-      <FlexColumn.Auto
-        style={{ padding: 1 }}
-        reference={infiniteQuery.reference}
-      >
-        <>
+      <FlexColumn.Auto reference={infiniteQuery.reference}>
+        <Card.Group>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
           {Object.values(infiniteQuery.pages).map((movements) =>
             movements.map((movement) =>
@@ -127,7 +134,7 @@ export default function Movements() {
               )
             )
           )}
-        </>
+        </Card.Group>
       </FlexColumn.Auto>
     </FlexColumn>
   );

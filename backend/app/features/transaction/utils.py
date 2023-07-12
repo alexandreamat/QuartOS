@@ -17,8 +17,7 @@ def __sanitise_row(row: list[str]) -> None:
 
 def get_transactions_from_csv(
     deserialiser: TransactionDeserialiserApiOut, file: Iterable[str], account_id: int
-) -> list[TransactionApiIn]:
-    instances = []
+) -> Iterable[TransactionApiIn]:
     deserializers = {}
     for field, value in vars(deserialiser).items():
         if "_deserialiser" not in field:
@@ -40,5 +39,4 @@ def get_transactions_from_csv(
         }
         deserialized_row["account_id"] = account_id
         instance = TransactionApiIn(**deserialized_row)
-        instances.append(instance)
-    return instances
+        yield instance

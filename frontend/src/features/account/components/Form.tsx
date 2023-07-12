@@ -1,4 +1,4 @@
-import { CheckboxProps, Form } from "semantic-ui-react";
+import { Button, CheckboxProps, Form, Modal } from "semantic-ui-react";
 import { useEffect } from "react";
 import {
   AccountApiOut,
@@ -7,7 +7,6 @@ import {
   NonInstitutionalAccountType,
   api,
 } from "app/services/api";
-import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import FormTextInput from "components/FormTextInput";
 import FormCurrencyInputs from "components/FormCurrencyInputs";
@@ -18,6 +17,7 @@ import { capitaliseFirstLetter } from "utils/string";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { FormValidationError } from "components/FormValidationError";
 import { logMutationError } from "utils/error";
+import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
@@ -38,6 +38,9 @@ export default function AccountForm(props: {
   const institutionLinkIdParam = params.get("institutionLinkId");
 
   const institutionLinkOptions = useInstitutionLinkOptions();
+
+  const [deleteAccount, deleteAccountResult] =
+    api.endpoints.deleteApiAccountsIdDelete.useMutation();
 
   useEffect(() => {
     institutionLinkId.set(Number(institutionLinkIdParam));
@@ -107,7 +110,7 @@ export default function AccountForm(props: {
     text: capitaliseFirstLetter(type),
   }));
 
-  const handleSubmit = async () => {
+  async function handleSubmit() {
     const formFields = [
       ...requiredFields,
       ...(isInstitutional.value
@@ -158,61 +161,90 @@ export default function AccountForm(props: {
       }
     }
     handleClose();
-  };
+  }
+
+  async function handleDelete() {
+    if (!props.account) return;
+    try {
+      await deleteAccount(props.account.id).unwrap();
+    } catch (error) {
+      console.error(deleteAccountResult.originalArgs);
+      throw error;
+    }
+    handleClose();
+  }
 
   return (
-    <FormModal
-      open={props.open}
-      onClose={handleClose}
-      title={(props.account ? "Edit" : "Add") + " an Account"}
-      onSubmit={handleSubmit}
-    >
-      <FormTextInput label="Account Name" field={name} />
-      <Form.Checkbox
-        label="Link to a financial institution"
-        checked={isInstitutional.value}
-        onChange={(
-          event: React.FormEvent<HTMLInputElement>,
-          data: CheckboxProps
-        ) => {
-          institutionalType.reset();
-          nonInstitutionalType.reset();
-          isInstitutional.reset();
-          isInstitutional.set(data.checked);
-        }}
-      />
-      {isInstitutional.value ? (
-        <>
-          <FormDropdownInput
-            label="Institution"
-            field={institutionLinkId}
-            options={institutionLinkOptions.data || []}
-            query={institutionLinkOptions}
+    <Modal open={props.open} onClose={handleClose} size="small">
+      <Modal.Header>
+        {(props.account ? "Edit" : "Add") + " an Account"}
+      </Modal.Header>
+      <Modal.Content>
+        <Form>
+          <FormTextInput label="Account Name" field={name} />
+          <Form.Checkbox
+            label="Link to a financial institution"
+            checked={isInstitutional.value}
+            onChange={(
+              event: React.FormEvent<HTMLInputElement>,
+              data: CheckboxProps
+            ) => {
+              institutionalType.reset();
+              nonInstitutionalType.reset();
+              isInstitutional.reset();
+              isInstitutional.set(data.checked);
+            }}
           />
-          <FormDropdownInput
-            label="Type"
-            field={institutionalType}
-            options={institutionalTypeOptions}
+          {isInstitutional.value ? (
+            <>
+              <FormDropdownInput
+                label="Institution"
+                field={institutionLinkId}
+                options={institutionLinkOptions.data || []}
+                query={institutionLinkOptions}
+              />
+              <FormDropdownInput
+                label="Type"
+                field={institutionalType}
+                options={institutionalTypeOptions}
+              />
+              <FormTextInput label="Account Number" field={mask} />
+            </>
+          ) : (
+            <>
+              <FormDropdownInput
+                label="Type"
+                field={nonInstitutionalType}
+                options={nonInstitutionalTypeOptions}
+              />
+            </>
+          )}
+          <FormCurrencyInputs
+            label="Current Balance"
+            amount={initialBalanceStr}
+            currency={currencyCode}
           />
-          <FormTextInput label="Account Number" field={mask} />
-        </>
-      ) : (
-        <>
-          <FormDropdownInput
-            label="Type"
-            field={nonInstitutionalType}
-            options={nonInstitutionalTypeOptions}
-          />
-        </>
-      )}
-      <FormCurrencyInputs
-        label="Current Balance"
-        amount={initialBalanceStr}
-        currency={currencyCode}
-      />
-      <FormValidationError fields={requiredFields} />
-      <QueryErrorMessage query={createAccountResult} />
-      <QueryErrorMessage query={updateAccountResult} />
-    </FormModal>
+          <FormValidationError fields={requiredFields} />
+          <QueryErrorMessage query={createAccountResult} />
+          <QueryErrorMessage query={updateAccountResult} />
+        </Form>
+      </Modal.Content>
+      <Modal.Actions>
+        <ConfirmDeleteButtonModal
+          disabled={props.account?.is_synced}
+          onDelete={handleDelete}
+          query={deleteAccountResult}
+        />
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button
+          content="Save"
+          type="submit"
+          labelPosition="right"
+          icon="checkmark"
+          onClick={handleSubmit}
+          positive
+        />
+      </Modal.Actions>
+    </Modal>
   );
 }

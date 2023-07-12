@@ -91,6 +91,7 @@ class Movement(__MovementBase, Base, table=True):
         search: str | None,
         amount_gt: Decimal | None,
         amount_lt: Decimal | None,
+        account_id: int,
         is_descending: bool,
         sort_by: MovementFields,
     ) -> Iterable["Movement"]:
@@ -111,12 +112,14 @@ class Movement(__MovementBase, Base, table=True):
             )
         )
         if start_date:
-            statement = statement.where(col(Transaction.timestamp) >= start_date)
+            statement = statement.where(Transaction.timestamp >= start_date)
         if end_date:
-            statement = statement.where(col(Transaction.timestamp) < end_date)
+            statement = statement.where(Transaction.timestamp < end_date)
         if search:
             search = f"%{search}%"
             statement = statement.where(col(Transaction.name).like(search))
+        if account_id:
+            statement = statement.where(Account.id == account_id)
 
         # GROUP BY
         statement = statement.group_by(Movement.id)

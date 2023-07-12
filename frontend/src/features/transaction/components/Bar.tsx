@@ -1,5 +1,4 @@
 import { useAccountOptions } from "features/account/hooks";
-import { useState } from "react";
 import {
   Button,
   Dropdown,
@@ -9,7 +8,6 @@ import {
   InputOnChangeData,
   Menu,
 } from "semantic-ui-react";
-import Uploader from "./Uploader";
 import { dateToString, stringToDate } from "utils/time";
 import { RemoveCircle } from "features/movements/components/RemoveCircle";
 
@@ -23,16 +21,6 @@ export default function Bar(props: {
   isDescending: boolean;
   onToggleIsDescending: () => void;
 }) {
-  const [isUploaderOpen, setIsUploaderOpen] = useState(false);
-
-  const handleUpload = () => {
-    setIsUploaderOpen(true);
-  };
-
-  const handleCloseUploader = () => {
-    setIsUploaderOpen(false);
-  };
-
   const accountOptions = useAccountOptions();
 
   return (
@@ -93,17 +81,6 @@ export default function Bar(props: {
           </Menu.Item>
         )}
       </Menu.Item>
-      <Menu.Item position="right">
-        <Button icon labelPosition="left" onClick={handleUpload}>
-          <Icon name="upload" />
-          Upload Transactions Sheet
-        </Button>
-      </Menu.Item>
-      <Uploader
-        open={isUploaderOpen}
-        accountId={props.accountId}
-        onClose={handleCloseUploader}
-      />
     </Menu>
   );
 }

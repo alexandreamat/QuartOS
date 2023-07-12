@@ -72,6 +72,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         search: str | None,
         amount_gt: Decimal | None,
         amount_lt: Decimal | None,
+        account_id: int,
         is_descending: bool,
         sort_by: MovementFields,
     ) -> Iterable[MovementApiOut]:
@@ -85,6 +86,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             search,
             amount_gt,
             amount_lt,
+            account_id,
             is_descending,
             sort_by,
         ):
