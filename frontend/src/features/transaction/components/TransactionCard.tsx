@@ -8,7 +8,6 @@ import {
   Popup,
 } from "semantic-ui-react";
 import LoadableQuery from "components/LoadableCell";
-import EditActionButton from "components/EditActionButton";
 import { useAccountQueries } from "features/account/hooks";
 import CurrencyLabel from "components/CurrencyLabel";
 import FormattedTimestamp from "components/FormattedTimestamp";
@@ -16,6 +15,7 @@ import ActionButton from "components/ActionButton";
 import AccountIcon from "features/account/components/Icon";
 import { FormattedCurrency } from "components/FormattedCurrency";
 import { limitString } from "utils/string";
+import MutateActionButton from "components/MutateActionButton";
 
 export function TransactionCard(
   props:
@@ -85,7 +85,6 @@ export function TransactionCard(
             <Grid.Column width={1} textAlign="center">
               <ActionButton
                 tooltip="Edit Movement"
-                color="grey"
                 icon="arrows alternate horizontal"
                 onClick={props.onGoMovement}
               />
@@ -93,7 +92,7 @@ export function TransactionCard(
           )}
           {"onOpenEditForm" in props && (
             <Grid.Column width={1} textAlign="center">
-              <EditActionButton onOpenEditForm={props.onOpenEditForm} />
+              <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
             </Grid.Column>
           )}
         </Grid>

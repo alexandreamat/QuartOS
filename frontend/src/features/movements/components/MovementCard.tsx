@@ -1,15 +1,16 @@
 import { MovementApiOut, TransactionApiOut } from "app/services/api";
 import { Card, Grid, Header } from "semantic-ui-react";
 import FormattedTimestamp from "components/FormattedTimestamp";
-import EditActionButton from "components/EditActionButton";
 import { Flows } from "./Flows";
 import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
+import MutateActionButton from "components/MutateActionButton";
 
 export function MovementCard(props: {
   movement: MovementApiOut;
   onOpenEditForm?: () => void;
   onOpenCreateTransactionForm?: () => void;
+  onOpenEditTransactionForm?: (x: TransactionApiOut) => void;
   onRemoveTransaction?: (x: TransactionApiOut) => void;
 }) {
   const firstTransaction = props.movement.transactions[0];
@@ -30,13 +31,14 @@ export function MovementCard(props: {
           </Grid.Column>
           {props.onOpenEditForm && (
             <Grid.Column width={1} textAlign="center">
-              <EditActionButton onOpenEditForm={props.onOpenEditForm} />
+              <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
             </Grid.Column>
           )}
         </Grid>
         <Flows
           transactions={props.movement.transactions}
           onRemove={props.onRemoveTransaction}
+          onOpenEditForm={props.onOpenEditTransactionForm}
         />
       </Card.Content>
       <Card.Content extra>

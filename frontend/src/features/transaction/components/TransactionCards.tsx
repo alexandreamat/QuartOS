@@ -100,7 +100,7 @@ export default function TransactionCards(props: {
           accountId={selectedAccountId}
           movementId={selectedTransaction.movement_id}
           transaction={selectedTransaction}
-          onEdit={infiniteQuery.mutate}
+          onEdited={infiniteQuery.mutate}
         />
       )}
       <Bar

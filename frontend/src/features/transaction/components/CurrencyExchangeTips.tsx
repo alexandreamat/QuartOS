@@ -1,5 +1,6 @@
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { TransactionApiOut, api } from "app/services/api";
+import { Label } from "semantic-ui-react";
 import { renderCurrency } from "utils/currency";
 
 function CurrencyExchangeTip(props: {
@@ -22,12 +23,15 @@ function CurrencyExchangeTip(props: {
     );
 
   return (
-    <p>
-      Related amount was {renderCurrency(amount, fromCurrency)}
+    <Label
+      circular
+      color={amount > 0 ? "green" : amount < 0 ? "orange" : "grey"}
+    >
+      {renderCurrency(amount, fromCurrency)}
       {toCurrency !== fromCurrency &&
         exchangeRateQuery.isSuccess &&
         ` = ${renderCurrency(exchangeRateQuery.data * amount, toCurrency)}`}
-    </p>
+    </Label>
   );
 }
 
@@ -36,14 +40,15 @@ export default function CurrencyExchangeTips(props: {
   currencyCode: string;
 }) {
   return (
-    <>
-      {props.relatedTransactions.map((transaction) => (
+    <p style={{ lineHeight: 2 }}>
+      Related amounts were{" "}
+      {props.relatedTransactions.map((transaction, i) => (
         <CurrencyExchangeTip
           key={transaction.id}
           relatedTransaction={transaction}
           currencyCode={props.currencyCode}
         />
       ))}
-    </>
+    </p>
   );
 }

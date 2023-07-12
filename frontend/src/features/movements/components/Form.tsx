@@ -18,6 +18,9 @@ export default function Form(props: {
 }) {
   const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
   const [movementId, setMovementId] = useState(props.movementId || 0);
+  const [selectedTransaction, setSelectedTransaction] = useState<
+    TransactionApiOut | undefined
+  >(undefined);
 
   const movementQuery = api.endpoints.readApiMovementsIdGet.useQuery(
     movementId || skipToken
@@ -38,11 +41,18 @@ export default function Form(props: {
 
   function handleClose() {
     setMovementId(0);
+    setSelectedTransaction(undefined);
     setIsTransactionFormOpen(false);
     props.onClose();
   }
 
   function handleOpenCreateTransactionForm() {
+    setSelectedTransaction(undefined);
+    setIsTransactionFormOpen(true);
+  }
+
+  function handleOpenEditTransactionForm(transaction: TransactionApiOut) {
+    setSelectedTransaction(transaction);
     setIsTransactionFormOpen(true);
   }
 
@@ -114,12 +124,23 @@ export default function Form(props: {
   return (
     <Modal open={props.open} onClose={handleClose} size="fullscreen">
       {movementId ? (
-        <TransactionForm.Add
-          open={isTransactionFormOpen}
-          onClose={() => setIsTransactionFormOpen(false)}
-          movementId={movementId}
-          onAdded={(m) => setMovementId(m.id)}
-        />
+        <>
+          {selectedTransaction ? (
+            <TransactionForm.Edit
+              movementId={movementId}
+              onClose={() => setIsTransactionFormOpen(false)}
+              open={isTransactionFormOpen}
+              transaction={selectedTransaction}
+            />
+          ) : (
+            <TransactionForm.Add
+              open={isTransactionFormOpen}
+              onClose={() => setIsTransactionFormOpen(false)}
+              movementId={movementId}
+              onAdded={(m) => setMovementId(m.id)}
+            />
+          )}
+        </>
       ) : (
         <TransactionForm.Create
           open={isTransactionFormOpen}
@@ -135,6 +156,7 @@ export default function Form(props: {
               <MovementCard
                 movement={movementQuery.data}
                 onOpenCreateTransactionForm={handleOpenCreateTransactionForm}
+                onOpenEditTransactionForm={handleOpenEditTransactionForm}
                 onRemoveTransaction={
                   movementQuery.data.transactions.length > 1
                     ? handleRemoveTransaction

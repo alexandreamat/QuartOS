@@ -11,6 +11,7 @@ import { useAccountQueries } from "features/account/hooks";
 import { Grid, Popup, Step } from "semantic-ui-react";
 import { RemoveCircle } from "./RemoveCircle";
 import { SimpleQuery } from "interfaces";
+import { EllipsisCircle } from "../../../components/EllipsisCircle";
 
 const flowPadding = 5;
 const stepPadding = 18;
@@ -18,6 +19,12 @@ const stepPadding = 18;
 const RemoveFlow = (props: { onRemoveFlow: () => void }) => (
   <Grid.Column width={1} verticalAlign="middle">
     <RemoveCircle onClick={props.onRemoveFlow} />
+  </Grid.Column>
+);
+
+const EditFlow = (props: { onOpenEditForm: () => void }) => (
+  <Grid.Column width={2} textAlign="center" verticalAlign="middle">
+    <EllipsisCircle onClick={props.onOpenEditForm}></EllipsisCircle>
   </Grid.Column>
 );
 
@@ -45,7 +52,11 @@ const AccountName = (props: { query: SimpleQuery; name: string }) => (
   </Grid.Column>
 );
 
-function Outflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
+function Outflow(props: {
+  flow: TransactionApiOut;
+  onRemove?: () => void;
+  onOpenEditForm?: () => void;
+}) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
   return (
@@ -60,6 +71,9 @@ function Outflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
       trigger={
         <Grid.Row columns="equal" style={{ padding: flowPadding }}>
           {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+          {props.onOpenEditForm && (
+            <EditFlow onOpenEditForm={props.onOpenEditForm} />
+          )}
           <AccountLogo
             query={accountQueries}
             account={accountQueries.account!}
@@ -79,7 +93,11 @@ function Outflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
   );
 }
 
-function Inflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
+function Inflow(props: {
+  flow: TransactionApiOut;
+  onRemove?: () => void;
+  onOpenEditForm?: () => void;
+}) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
   return (
@@ -106,6 +124,9 @@ function Inflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
             account={accountQueries.account!}
             institution={accountQueries.institution!}
           />
+          {props.onOpenEditForm && (
+            <EditFlow onOpenEditForm={props.onOpenEditForm} />
+          )}
           {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
         </Grid.Row>
       }
@@ -116,6 +137,7 @@ function Inflow(props: { flow: TransactionApiOut; onRemove?: () => void }) {
 export function Flows(props: {
   transactions: TransactionApiOut[];
   onRemove?: (x: TransactionApiOut) => void;
+  onOpenEditForm?: (x: TransactionApiOut) => void;
 }) {
   const outflows = props.transactions.filter((t) => t.amount < 0) || [];
   const inflows = props.transactions.filter((t) => t.amount >= 0) || [];
@@ -130,9 +152,11 @@ export function Flows(props: {
                   key={transaction.id}
                   flow={transaction}
                   onRemove={
-                    props.onRemove
-                      ? () => props.onRemove!(transaction)
-                      : undefined
+                    props.onRemove && (() => props.onRemove!(transaction))
+                  }
+                  onOpenEditForm={
+                    props.onOpenEditForm &&
+                    (() => props.onOpenEditForm!(transaction))
                   }
                 />
               ))}
@@ -152,6 +176,10 @@ export function Flows(props: {
                     props.onRemove
                       ? () => props.onRemove!(transaction)
                       : undefined
+                  }
+                  onOpenEditForm={
+                    props.onOpenEditForm &&
+                    (() => props.onOpenEditForm!(transaction))
                   }
                 />
               ))}
