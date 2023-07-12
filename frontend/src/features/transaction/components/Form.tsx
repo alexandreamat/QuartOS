@@ -8,22 +8,22 @@ import {
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDateTimeInput from "components/FormDateTimeInput";
 import FormDropdownInput from "components/FormDropdownInput";
-import FormModal from "components/FormModal";
 import FormTextInput from "components/FormTextInput";
 import { FormValidationError } from "components/FormValidationError";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useAccountOptions } from "features/account/hooks";
 import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
-import { Icon, Message } from "semantic-ui-react";
+import { Icon, Message, Modal, Form, Button } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { codeOptions, paymentChannelOptions } from "../options";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
 import { SimpleQuery } from "interfaces";
+import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 
-export default function Form(props: {
+export default function TransactionForm(props: {
   title: string;
   open: boolean;
   onClose: () => void;
@@ -32,6 +32,8 @@ export default function Form(props: {
   transaction?: TransactionApiOut;
   onSubmit: (x: TransactionApiIn) => Promise<void>;
   resultQuery: SimpleQuery;
+  onDelete?: () => Promise<void>;
+  deleteQuery?: SimpleQuery;
 }) {
   const isEdit = props.transaction !== undefined;
 
@@ -100,54 +102,71 @@ export default function Form(props: {
   };
 
   return (
-    <FormModal
-      open={props.open}
-      onClose={handleClose}
-      title={props.title}
-      onSubmit={handleSubmit}
-    >
-      <FormDropdownInput
-        field={form.accountId}
-        options={accountOptions.data || []}
-        query={accountOptions}
-        readOnly={disableSynced}
-      />
-      <FormCurrencyInput
-        query={accountQuery}
-        field={form.amountStr}
-        currency={form.currencyCode.value || "USD"}
-        readOnly={disableSynced}
-      />
-      {movementQuery.isSuccess && form.currencyCode.value && (
-        <CurrencyExchangeTips
-          relatedTransactions={movementQuery.data.transactions}
-          currencyCode={form.currencyCode.value}
+    <Modal open={props.open} onClose={handleClose} size="small">
+      <Modal.Header>{props.title}</Modal.Header>
+      <Modal.Content>
+        <Form>
+          <FormDropdownInput
+            field={form.accountId}
+            options={accountOptions.data || []}
+            query={accountOptions}
+            readOnly={disableSynced}
+          />
+          <FormCurrencyInput
+            query={accountQuery}
+            field={form.amountStr}
+            currency={form.currencyCode.value || "USD"}
+            readOnly={disableSynced}
+          />
+          {movementQuery.isSuccess && form.currencyCode.value && (
+            <CurrencyExchangeTips
+              relatedTransactions={movementQuery.data.transactions}
+              currencyCode={form.currencyCode.value}
+            />
+          )}
+          <FormDropdownInput
+            field={form.code}
+            options={codeOptions}
+            // readOnly={disableSynced}
+          />
+          <FormDropdownInput
+            field={form.paymentChannel}
+            options={paymentChannelOptions}
+            readOnly={disableSynced}
+          />
+          <FormTextInput field={form.name} readOnly={disableSynced} />
+          <FormDateTimeInput field={form.timestamp} readOnly={disableSynced} />
+          <FormValidationError fields={Object.values(form)} />
+          <QueryErrorMessage query={props.resultQuery} />
+          {disableSynced && (
+            <Message info icon>
+              <Icon name="info circle" />
+              <Message.Content>
+                This transaction is synchronised with your institution, and is
+                not fully editable.
+              </Message.Content>
+            </Message>
+          )}
+        </Form>
+      </Modal.Content>
+      <Modal.Actions>
+        {props.onDelete && props.deleteQuery && (
+          <ConfirmDeleteButtonModal
+            onDelete={props.onDelete}
+            query={props.deleteQuery}
+          />
+        )}
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button
+          content="Save"
+          type="submit"
+          labelPosition="right"
+          icon="checkmark"
+          onClick={handleSubmit}
+          positive
         />
-      )}
-      <FormDropdownInput
-        field={form.code}
-        options={codeOptions}
-        // readOnly={disableSynced}
-      />
-      <FormDropdownInput
-        field={form.paymentChannel}
-        options={paymentChannelOptions}
-        readOnly={disableSynced}
-      />
-      <FormTextInput field={form.name} readOnly={disableSynced} />
-      <FormDateTimeInput field={form.timestamp} readOnly={disableSynced} />
-      <FormValidationError fields={Object.values(form)} />
-      <QueryErrorMessage query={props.resultQuery} />
-      {disableSynced && (
-        <Message info icon>
-          <Icon name="info circle" />
-          <Message.Content>
-            This transaction is synchronised with your institution, and is not
-            fully editable.
-          </Message.Content>
-        </Message>
-      )}
-    </FormModal>
+      </Modal.Actions>
+    </Modal>
   );
 }
 
@@ -174,7 +193,7 @@ function FromCreate(props: {
   };
 
   return (
-    <Form
+    <TransactionForm
       title="Create a Transaction"
       open={props.open}
       onClose={props.onClose}
@@ -209,7 +228,7 @@ function FromAdd(props: {
   };
 
   return (
-    <Form
+    <TransactionForm
       title="Add a Transaction to Movement"
       open={props.open}
       onClose={props.onClose}
@@ -227,11 +246,14 @@ function FromEdit(props: {
   relatedTransactions?: TransactionApiOut[];
   open: boolean;
   onClose: () => void;
-  onEdit: (x: TransactionApiOut) => void;
+  onEdited?: (x: TransactionApiOut) => void;
   movementId: number;
 }) {
   const [updateTransaction, updateTransactionResult] =
     api.endpoints.updateTransactionApiMovementsIdTransactionsTransactionIdPut.useMutation();
+
+  const [deleteTransaction, deleteTransactionResult] =
+    api.endpoints.deleteTransactionApiMovementsIdTransactionsTransactionIdDelete.useMutation();
 
   const handleSubmit = async (transactionIn: TransactionApiIn) => {
     try {
@@ -241,15 +263,26 @@ function FromEdit(props: {
         transactionId: props.transaction.id,
         transactionApiIn: { ...transactionIn, movement_id: movementId },
       }).unwrap();
-      props.onEdit(transactionOut);
+      props.onEdited && props.onEdited(transactionOut);
     } catch (error) {
       logMutationError(error, updateTransactionResult);
       throw error;
     }
   };
 
+  async function handleDelete() {
+    try {
+      await deleteTransaction({
+        id: props.movementId,
+        transactionId: props.transaction.id,
+      });
+    } catch (error) {
+      logMutationError(error, deleteTransactionResult);
+    }
+  }
+
   return (
-    <Form
+    <TransactionForm
       title="Edit a Transaction"
       open={props.open}
       onClose={props.onClose}
@@ -258,10 +291,12 @@ function FromEdit(props: {
       transaction={props.transaction}
       onSubmit={handleSubmit}
       resultQuery={updateTransactionResult}
+      onDelete={handleDelete}
+      deleteQuery={deleteTransactionResult}
     />
   );
 }
 
-Form.Create = FromCreate;
-Form.Add = FromAdd;
-Form.Edit = FromEdit;
+TransactionForm.Create = FromCreate;
+TransactionForm.Add = FromAdd;
+TransactionForm.Edit = FromEdit;
