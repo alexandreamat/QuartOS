@@ -1,5 +1,5 @@
 import { TransactionApiOut } from "app/services/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTransactionsQuery } from "../hooks";
 import Bar from "./Bar";
 import FlexColumn from "components/FlexColumn";
@@ -8,6 +8,7 @@ import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useNavigate } from "react-router-dom";
 import { TransactionCard } from "./TransactionCard";
+import { Card } from "semantic-ui-react";
 
 export default function TransactionCards(props: {
   onMutation?: (x: TransactionApiOut) => void;
@@ -16,6 +17,7 @@ export default function TransactionCards(props: {
     checked: boolean
   ) => Promise<void>;
   checked?: number[];
+  accountId?: number;
 }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -24,12 +26,16 @@ export default function TransactionCards(props: {
   >(undefined);
 
   const [selectedAccountId, setSelectedAccountId] = useState(0);
-  const [accountId, setAccountId] = useState(0);
+  const [accountId, setAccountId] = useState(props.accountId || 0);
   const [search, setSearch] = useState("");
   const [timestamp, setTimestamp] = useState<Date | undefined>(undefined);
   const [isDescending, setIsDescending] = useState(true);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (props.accountId) setAccountId(props.accountId);
+  }, [props.accountId]);
 
   function handleGoToMovement(transaction: TransactionApiOut) {
     let params = new URLSearchParams();
@@ -86,53 +92,7 @@ export default function TransactionCards(props: {
   );
 
   return (
-    <>
-      <FlexColumn>
-        <Bar
-          accountId={accountId}
-          onAccountIdChange={handleAccountIdChange}
-          search={search}
-          onSearchChange={handleSearchChange}
-          timestamp={timestamp}
-          onTimestampChange={handleTimestampChange}
-          isDescending={isDescending}
-          onToggleIsDescending={handleToggleIsDescending}
-        />
-        <FlexColumn.Auto reference={infiniteQuery.reference}>
-          {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-          <div style={{ padding: 1 }}>
-            {Object.values(infiniteQuery.pages).map((transactionPage, i) =>
-              transactionPage.map((t, j) => {
-                if (props.onFlowCheckboxChange) {
-                  const checked = props.checked?.includes(t.id);
-                  return (
-                    <TransactionCard
-                      key={i * 20 + j}
-                      transaction={t}
-                      onOpenEditForm={() => handleOpenEditForm(t)}
-                      onCheckboxChange={
-                        props.onFlowCheckboxChange &&
-                        (async (c) => await props.onFlowCheckboxChange!(t, c))
-                      }
-                      checkBoxDisabled={checked && props.checked?.length === 1}
-                      checked={checked}
-                    />
-                  );
-                } else {
-                  return (
-                    <TransactionCard
-                      key={i * 20 + j}
-                      transaction={t}
-                      onGoMovement={() => handleGoToMovement(t)}
-                      onOpenEditForm={() => handleOpenEditForm(t)}
-                    />
-                  );
-                }
-              })
-            )}
-          </div>
-        </FlexColumn.Auto>
-      </FlexColumn>
+    <FlexColumn>
       {selectedTransaction && (
         <Form.Edit
           open={isFormOpen}
@@ -143,6 +103,50 @@ export default function TransactionCards(props: {
           onEdit={infiniteQuery.mutate}
         />
       )}
-    </>
+      <Bar
+        accountId={accountId}
+        onAccountIdChange={handleAccountIdChange}
+        search={search}
+        onSearchChange={handleSearchChange}
+        timestamp={timestamp}
+        onTimestampChange={handleTimestampChange}
+        isDescending={isDescending}
+        onToggleIsDescending={handleToggleIsDescending}
+      />
+      <FlexColumn.Auto reference={infiniteQuery.reference}>
+        {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
+        <Card.Group>
+          {Object.values(infiniteQuery.pages).map((transactionPage, i) =>
+            transactionPage.map((t, j) => {
+              if (props.onFlowCheckboxChange) {
+                const checked = props.checked?.includes(t.id);
+                return (
+                  <TransactionCard
+                    key={i * 20 + j}
+                    transaction={t}
+                    onOpenEditForm={() => handleOpenEditForm(t)}
+                    onCheckboxChange={
+                      props.onFlowCheckboxChange &&
+                      (async (c) => await props.onFlowCheckboxChange!(t, c))
+                    }
+                    checkBoxDisabled={checked && props.checked?.length === 1}
+                    checked={checked}
+                  />
+                );
+              } else {
+                return (
+                  <TransactionCard
+                    key={i * 20 + j}
+                    transaction={t}
+                    onGoMovement={() => handleGoToMovement(t)}
+                    onOpenEditForm={() => handleOpenEditForm(t)}
+                  />
+                );
+              }
+            })
+          )}
+        </Card.Group>
+      </FlexColumn.Auto>
+    </FlexColumn>
   );
 }

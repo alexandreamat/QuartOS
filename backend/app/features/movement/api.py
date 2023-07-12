@@ -168,8 +168,6 @@ def create(
             transaction_out = CRUDTransaction.read(db, transaction_id)
         except NoResultFound:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
-        if CRUDAccount.is_synced(db, transaction_out.account_id):
-            raise HTTPException(status.HTTP_403_FORBIDDEN)
         if CRUDTransaction.read_user(db, transaction_out.id).id != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         yield CRUDMovement.create(db, transaction_id)
@@ -186,6 +184,7 @@ def read_many(
     search: str | None = None,
     amount_gt: Decimal | None = None,
     amount_lt: Decimal | None = None,
+    account_id: int = 0,
     is_descending: bool = True,
     sort_by: MovementFields = MovementFields.TIMESTAMP,
 ) -> Iterable[MovementApiOut]:
@@ -199,6 +198,7 @@ def read_many(
         search,
         amount_gt,
         amount_lt,
+        account_id,
         is_descending,
         sort_by,
     )

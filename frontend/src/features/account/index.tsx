@@ -8,9 +8,8 @@ import {
   api,
 } from "app/services/api";
 import EditActionButton from "components/EditActionButton";
-import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import LoadableQuery from "components/LoadableCell";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 import { capitaliseFirstLetter } from "utils/string";
 import CurrencyLabel from "components/CurrencyLabel";
@@ -19,26 +18,37 @@ import { accountTypeToIconName } from "./utils";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import FlexColumn from "components/FlexColumn";
 import CreateNewButton from "components/CreateNewButton";
+import ActionButton from "components/ActionButton";
+import Uploader from "./components/Uploader";
 
 function AccountCard(props: { account: AccountApiOut; onEdit: () => void }) {
+  const navigate = useNavigate();
+
   const institutionLinkQueries = useInstitutionLinkQueries(
     props.account.institutionalaccount?.userinstitutionlink_id
   );
 
-  const [deleteAccount, deleteAccountResult] =
-    api.endpoints.deleteApiAccountsIdDelete.useMutation();
+  const [isUploaderOpen, setIsUploaderOpen] = useState(false);
 
-  const handleDelete = async (account: AccountApiOut) => {
-    try {
-      await deleteAccount(account.id).unwrap();
-    } catch (error) {
-      console.error(deleteAccountResult.originalArgs);
-      throw error;
-    }
+  const handleUpload = () => {
+    setIsUploaderOpen(true);
   };
+
+  const handleCloseUploader = () => {
+    setIsUploaderOpen(false);
+  };
+
+  function handleGoToTransactions() {
+    navigate(`/transactions/?accountId=${props.account.id}`);
+  }
 
   return (
     <Card color="teal">
+      <Uploader
+        open={isUploaderOpen}
+        account={props.account}
+        onClose={handleCloseUploader}
+      />
       <Card.Content>
         <LoadableQuery query={institutionLinkQueries}>
           <InstitutionLogo
@@ -61,12 +71,21 @@ function AccountCard(props: { account: AccountApiOut; onEdit: () => void }) {
           disabled={props.account.is_synced !== false}
           onOpenEditForm={props.onEdit}
         />
-        <ConfirmDeleteButton
+        <ActionButton
+          icon="exchange"
+          tooltip="See transactions"
           floated="left"
-          disabled={props.account.is_synced !== false}
-          query={deleteAccountResult}
-          onDelete={async () => await handleDelete(props.account)}
+          onClick={handleGoToTransactions}
         />
+
+        {!props.account.is_synced && props.account.institutionalaccount && (
+          <ActionButton
+            floated="left"
+            icon="upload"
+            onClick={handleUpload}
+            tooltip="Upload transactions sheet"
+          />
+        )}
         <CurrencyLabel
           amount={props.account.balance}
           currencyCode={props.account.currency_code}
