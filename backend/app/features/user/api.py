@@ -87,13 +87,13 @@ def create(
 def read_many(
     db: DBSession,
     current_user: CurrentSuperuser,
-    skip: int = 0,
+    offset: int = 0,
     limit: int = 100,
 ) -> Iterable[UserApiOut]:
     """
     Retrieve users.
     """
-    return CRUDUser.read_many(db, skip=skip, limit=limit)
+    return CRUDUser.read_many(db, offset, limit)
 
 
 @router.delete("/{id}")

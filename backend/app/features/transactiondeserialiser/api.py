@@ -43,7 +43,7 @@ def read_many(db: DBSession) -> Iterable[TransactionDeserialiserApiOut]:
     """
     Retrieve deserialisers.
     """
-    return CRUDTransactionDeserialiser.read_many(db)
+    return CRUDTransactionDeserialiser.read_many(db, 0, 0)
 
 
 @router.put("/{id}")

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from typing import Iterable
 
 from fastapi import APIRouter, HTTPException, status
@@ -34,7 +34,7 @@ def read_many(
     current_user: CurrentUser,
     page: int = 1,
     per_page: int = 0,
-    timestamp: datetime | None = None,
+    timestamp: date | None = None,
     search: str | None = None,
     is_descending: bool = True,
 ) -> Iterable[TransactionApiOut]:

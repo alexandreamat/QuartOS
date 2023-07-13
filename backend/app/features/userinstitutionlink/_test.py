@@ -71,7 +71,7 @@ def user_institution_links_db(
 def user_institution_links_read(
     user_institution_links_db: Session,
 ) -> Iterable[UserInstitutionLinkApiOut]:
-    return CRUDUserInstitutionLink.read_many(user_institution_links_db)
+    return CRUDUserInstitutionLink.read_many(user_institution_links_db, 0, 0)
 
 
 def test_create(

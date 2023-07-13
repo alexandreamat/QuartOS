@@ -1,13 +1,10 @@
 from typing import TYPE_CHECKING
-from enum import Enum
 from decimal import Decimal
-from datetime import datetime
-import pytz
+from datetime import date
 
 from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, Session
 from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
-from pydantic import validator
 
 from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
 from app.features.institution.models import Institution
@@ -21,7 +18,7 @@ if TYPE_CHECKING:
 
 class __TransactionBase(SQLModel):
     amount: Decimal
-    timestamp: datetime
+    timestamp: date
     name: str
     currency_code: CurrencyCode
     account_id: int
@@ -33,19 +30,9 @@ class TransactionApiOut(__TransactionBase, Base):
     account_balance: Decimal
     movement_id: int
 
-    @validator("timestamp", pre=True)
-    def convert_to_utc_aware(cls, v: datetime | None) -> datetime | None:
-        return v.replace(tzinfo=pytz.UTC) if v else None
-
 
 class TransactionApiIn(__TransactionBase):
     ...
-
-    # @validator("timestamp")
-    # def validate_utc(cls, v: datetime) -> datetime:
-    #     if v.tzinfo is None or v.tzinfo.utcoffset(v) != timedelta(0):
-    #         raise ValueError("Expected timestamp in UTC timezone")
-    #     return v
 
 
 class TransactionPlaidIn(TransactionApiIn, SyncedMixin):
@@ -63,10 +50,6 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
 
     account: Account = Relationship(back_populates="transactions")
     movement: "Movement" = Relationship(back_populates="transactions")
-
-    @validator("timestamp", pre=True)
-    def convert_to_utc_naive(cls, v: datetime | None) -> datetime | None:
-        return v.astimezone(pytz.UTC).replace(tzinfo=None) if v else None
 
     @property
     def user(self) -> User:
@@ -99,7 +82,7 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         page: int,
         per_page: int,
         search: str | None,
-        timestamp: datetime | None,
+        timestamp: date | None,
         is_descending: bool,
         statement: SelectOfScalar["Transaction"],
     ) -> list["Transaction"]:

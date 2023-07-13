@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import date
 from typing import Annotated, Iterable
 
 
@@ -76,7 +76,7 @@ def read_transactions(
     id: int,
     page: int = 1,
     per_page: int = 0,
-    timestamp: datetime | None = None,
+    timestamp: date | None = None,
     search: str | None = None,
     is_descending: bool = True,
 ) -> Iterable[TransactionApiOut]:
@@ -172,7 +172,7 @@ def delete(
 
 @router.post("/update-balances")
 def update_balances(db: DBSession, current_user: CurrentSuperuser) -> None:
-    for account in CRUDAccount.read_many(db):
+    for account in CRUDAccount.read_many(db, 0, 0):
         CRUDAccount.update_balance(db, account.id)
 
 

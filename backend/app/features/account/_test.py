@@ -101,7 +101,7 @@ def accounts_db(db: Session, accounts_write: list[AccountApiIn]) -> Session:
 def accounts_read(
     accounts_db: Session,
 ) -> Iterable[AccountApiOut]:
-    return CRUDAccount.read_many(accounts_db)
+    return CRUDAccount.read_many(accounts_db, 0, 0)
 
 
 def test_read_many(

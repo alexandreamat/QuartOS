@@ -1,12 +1,11 @@
 from typing import Iterable
 
-from datetime import datetime
+from datetime import date
 
-from sqlmodel import Session, asc
-from app.common.crud import CRUDBase
-
+from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Query
+
+from app.common.crud import CRUDBase
 
 from app.features.user import User, UserApiOut  # type: ignore[attr-defined]
 from app.features.institution import InstitutionApiOut  # type: ignore[attr-defined]
@@ -86,7 +85,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
     @classmethod
     def update_balance(
-        cls, db: Session, id: int, timestamp: datetime | None = None
+        cls, db: Session, id: int, timestamp: date | None = None
     ) -> AccountApiOut:
         account_out = Account.update_balance(db, id, timestamp)
         return AccountApiOut.from_orm(account_out)

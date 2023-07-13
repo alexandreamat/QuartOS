@@ -75,7 +75,7 @@ def deserialize_name(row: list[str]) -> str:
 def deserialize_amount(row: list[str]) -> Decimal:
     return ${transactionDeserialiser.amount_deserialiser}
 
-def deserialize_timestamp(row: list[str]) -> datetime:
+def deserialize_timestamp(row: list[str]) -> date:
     return ${transactionDeserialiser.timestamp_deserialiser}
 
 def deserialize_currency_code(row: list[str]) -> str:

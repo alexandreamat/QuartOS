@@ -58,7 +58,7 @@ def read_many(db: DBSession) -> Iterable[InstitutionApiOut]:
     """
     Retrieve institutions.
     """
-    return CRUDInstitution.read_many(db)
+    return CRUDInstitution.read_many(db, 0, 0)
 
 
 @router.put("/{id}")

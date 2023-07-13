@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any
 from decimal import Decimal
 from enum import Enum
-from datetime import datetime
+from datetime import date
 
 from sqlmodel import Field, Relationship, SQLModel, Session
 from sqlmodel import desc, asc
@@ -208,7 +208,7 @@ class Account(_AccountBase, Base, table=True):
 
     @classmethod
     def update_balance(
-        cls, db: Session, id: int, timestamp: datetime | None = None
+        cls, db: Session, id: int, timestamp: date | None = None
     ) -> "Account":
         from app.features.transaction import Transaction  # type: ignore[attr-defined]
 
