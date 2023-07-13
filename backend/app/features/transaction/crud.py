@@ -1,6 +1,6 @@
 from typing import Iterable
 
-from datetime import datetime
+from datetime import date
 from decimal import Decimal
 
 from sqlmodel import Session, select, or_
@@ -67,7 +67,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         page: int,
         per_page: int,
         search: str | None,
-        timestamp: datetime | None,
+        timestamp: date | None,
         is_descending: bool,
     ) -> Iterable[TransactionApiOut]:
         statement = (
@@ -96,7 +96,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         page: int,
         per_page: int,
         search: str | None,
-        timestamp: datetime | None,
+        timestamp: date | None,
         is_descending: bool,
     ) -> Iterable[TransactionApiOut]:
         statement = select(Transaction).join(Account).filter(Account.id == account_id)

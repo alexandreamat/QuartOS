@@ -1,4 +1,5 @@
-import datetime
+from datetime import date
+from typing import Iterable
 
 from sqlmodel import Session
 from pydantic import BaseModel
@@ -9,34 +10,16 @@ from plaid.model.transactions_sync_request_options import TransactionsSyncReques
 from plaid.model.transactions_sync_response import TransactionsSyncResponse
 
 from app.common.plaid import client
-from app.features.account.models import AccountPlaidOut
-from app.features.account.crud import CRUDAccount
 from app.features.userinstitutionlink.models import (
     UserInstitutionLinkPlaidOut,
     UserInstitutionLinkPlaidIn,
 )
 from app.features.userinstitutionlink import CRUDSyncableUserInstitutionLink  # type: ignore[attr-defined]
 from app.features.transaction import CRUDSyncableTransaction, TransactionPlaidIn  # type: ignore[attr-defined]
-
+from app.features.userinstitutionlink.plaid import get_account_ids_map
+from app.features.transaction.plaid import create_transaction_plaid_in
 
 from .crud import CRUDMovement
-
-
-def __create_transaction_plaid_in(
-    transaction: Transaction,
-    accounts: dict[str, AccountPlaidOut],
-) -> TransactionPlaidIn:
-    return TransactionPlaidIn(
-        account_id=accounts[transaction.account_id].id,
-        amount=-transaction.amount,
-        currency_code=getattr(transaction, "iso_currency_code", None)
-        or transaction.unofficial_currency_code,
-        name=getattr(transaction, "merchant_name", None) or transaction.name,
-        plaid_id=transaction.transaction_id,
-        timestamp=getattr(transaction, "datetime", None)
-        or datetime.datetime.combine(transaction.date, datetime.time()),
-        plaid_metadata=transaction.to_str(),
-    )
 
 
 class __TransactionsSyncResult(BaseModel):
@@ -48,8 +31,8 @@ class __TransactionsSyncResult(BaseModel):
 
 
 def __get_transaction_changes(
+    db: Session,
     user_institution_link: UserInstitutionLinkPlaidOut,
-    accounts: dict[str, AccountPlaidOut],
 ) -> __TransactionsSyncResult:
     options = TransactionsSyncRequestOptions(
         include_personal_finance_category=True,
@@ -67,13 +50,14 @@ def __get_transaction_changes(
             options=options,
         )
     response: TransactionsSyncResponse = client.transactions_sync(request)
+    accounts = get_account_ids_map(db, user_institution_link.id)
     return __TransactionsSyncResult(
         added=[
-            __create_transaction_plaid_in(transaction, accounts)
+            create_transaction_plaid_in(transaction, accounts[transaction.account_id])
             for transaction in response.added
         ],
         modified=[
-            __create_transaction_plaid_in(transaction, accounts)
+            create_transaction_plaid_in(transaction, accounts[transaction.account_id])
             for transaction in response.modified
         ],
         removed=[
@@ -89,15 +73,9 @@ def sync_transactions(
     db: Session,
     user_institution_link: UserInstitutionLinkPlaidOut,
 ) -> None:
-    accounts = {
-        account.institutionalaccount.plaid_id: account
-        for account in CRUDAccount.read_many_by_institution_link_plaid(
-            db, user_institution_link.id
-        )
-    }
     has_more = True
     while has_more:
-        sync_result = __get_transaction_changes(user_institution_link, accounts)
+        sync_result = __get_transaction_changes(db, user_institution_link)
         for transaction in sync_result.added:
             CRUDMovement.create_syncable(db, transaction)
         for transaction_in in sync_result.modified:

@@ -30,10 +30,8 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
         return api_out_obj
 
     @classmethod
-    def read_many(
-        cls, db: Session, skip: int = 0, limit: int = 100
-    ) -> Iterable[ApiOutModel]:
-        for s in cls.db_model.read_many(db, skip, limit):
+    def read_many(cls, db: Session, offset: int, limit: int) -> Iterable[ApiOutModel]:
+        for s in cls.db_model.read_many(db, offset, limit):
             yield cls.out_model.from_orm(s)
 
     @classmethod

@@ -42,9 +42,17 @@ class Base(SQLModel):
 
     @classmethod
     def read_many(
-        cls: Type[ModelType], db: Session, skip: int = 0, limit: int = 100
+        cls: Type[ModelType],
+        db: Session,
+        offset: int,
+        limit: int,
     ) -> list[ModelType]:
-        return db.query(cls).offset(skip).limit(limit).all()
+        statement = cls.select()
+        if offset:
+            statement = statement.offset(offset)
+        if limit:
+            statement = statement.limit(limit)
+        return db.exec(statement).all()
 
     @classmethod
     def update(

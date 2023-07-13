@@ -1,7 +1,7 @@
 import csv
 import re
-from decimal import Decimal
-from datetime import datetime
+import decimal
+import datetime
 
 from typing import Iterable
 

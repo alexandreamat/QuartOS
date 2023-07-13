@@ -8,3 +8,4 @@ from .models import (
 )
 from .api import TRANSACTIONS
 from .utils import get_transactions_from_csv
+from .plaid import create_transaction_plaid_in

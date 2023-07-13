@@ -1,6 +1,6 @@
 from enum import Enum
 from decimal import Decimal
-from datetime import datetime, date
+from datetime import date
 from dateutil.relativedelta import relativedelta
 from typing import Iterable
 
@@ -32,8 +32,8 @@ class MovementFields(str, Enum):
 
 
 class MovementApiOut(__MovementBase, Base):
-    earliest_timestamp: datetime | None
-    latest_timestamp: datetime | None
+    earliest_timestamp: date | None
+    latest_timestamp: date | None
     transactions: list[TransactionApiOut]
     amounts: dict[CurrencyCode, Decimal]
 
@@ -54,18 +54,18 @@ class Movement(__MovementBase, Base, table=True):
             yield transaction.user
 
     @property
-    def earliest_timestamp(self) -> datetime:
+    def earliest_timestamp(self) -> date:
         return min(t.timestamp for t in self.transactions if t.timestamp)
 
     @property
-    def latest_timestamp(self) -> datetime:
+    def latest_timestamp(self) -> date:
         return max(t.timestamp for t in self.transactions if t.timestamp)
 
     def amount(self, currency_code: CurrencyCode) -> Decimal:
         return sum(
             [
                 t.amount
-                * get_exchange_rate(t.currency_code, currency_code, t.timestamp.date())
+                * get_exchange_rate(t.currency_code, currency_code, t.timestamp)
                 for t in self.transactions
             ],
             Decimal(0),

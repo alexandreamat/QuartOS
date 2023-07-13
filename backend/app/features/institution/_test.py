@@ -42,7 +42,7 @@ def institutions_db(db: Session, institutions_write: list[InstitutionApiIn]) -> 
 
 @pytest.fixture
 def institutions_read(institutions_db: Session) -> Iterable[InstitutionApiOut]:
-    return CRUDInstitution.read_many(institutions_db)
+    return CRUDInstitution.read_many(institutions_db, 0, 0)
 
 
 def test_read(client: TestClient, institutions_db: Session) -> None:
