@@ -35,8 +35,6 @@ def __create_transaction_plaid_in(
         plaid_id=transaction.transaction_id,
         timestamp=getattr(transaction, "datetime", None)
         or datetime.datetime.combine(transaction.date, datetime.time()),
-        payment_channel=transaction.payment_channel,
-        code=transaction.transaction_code,
         plaid_metadata=transaction.to_str(),
     )
 

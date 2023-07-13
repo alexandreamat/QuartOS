@@ -19,36 +19,12 @@ if TYPE_CHECKING:
     from app.features.movement.models import Movement
 
 
-class PaymentChannel(str, Enum):
-    ONLINE = "online"
-    IN_STORE = "in store"
-    OTHER = "other"
-
-
-class TransactionCode(str, Enum):
-    ADJUSTMENT = "adjustment"
-    ATM = "atm"
-    BANK_CHARGE = "bank charge"
-    BILL_PAYMENT = "bill payment"
-    CASH = "cash"
-    CASHBACK = "cashback"
-    CHEQUE = "cheque"
-    DIRECT_DEBIT = "direct debit"
-    INTEREST = "interest"
-    PURCHASE = "purchase"
-    STANDING_ORDER = "standing order"
-    TRANSFER = "transfer"
-    NULL = "null"
-
-
 class __TransactionBase(SQLModel):
     amount: Decimal
     timestamp: datetime
     name: str
     currency_code: CurrencyCode
     account_id: int
-    payment_channel: PaymentChannel
-    code: TransactionCode | None
     account_balance: Decimal | None
     movement_id: int | None
 
@@ -63,7 +39,7 @@ class TransactionApiOut(__TransactionBase, Base):
 
 
 class TransactionApiIn(__TransactionBase):
-    code: TransactionCode | None
+    ...
 
     # @validator("timestamp")
     # def validate_utc(cls, v: datetime) -> datetime:

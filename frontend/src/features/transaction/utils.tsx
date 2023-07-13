@@ -1,17 +1,10 @@
-import {
-  PaymentChannel,
-  TransactionApiIn,
-  TransactionApiOut,
-  TransactionCode,
-} from "app/services/api";
+import { TransactionApiIn, TransactionApiOut } from "app/services/api";
 import { TransactionApiInForm } from "./types";
 
 export function transactionApiOutToForm(
   transaction: TransactionApiOut,
   form: TransactionApiInForm
 ) {
-  form.paymentChannel.set(transaction.payment_channel);
-  form.code.set(transaction.code);
   // form.relatedTransactionId.set(transaction.related_transaction_id || 0);
   form.amountStr.set(transaction.amount.toFixed(2));
   form.timestamp.set(
@@ -26,8 +19,6 @@ export function transactionFormToApiIn(
   form: TransactionApiInForm
 ): TransactionApiIn {
   return {
-    code: form.code.value! as TransactionCode,
-    payment_channel: form.paymentChannel.value! as PaymentChannel,
     amount: Number(form.amountStr.value!),
     timestamp: form.timestamp.value!.toISOString(),
     name: form.name.value!,

@@ -24,8 +24,6 @@ export default function TransactionDeserialiserForm(props: {
   const amount = useFormField("");
   const timestamp = useFormField("");
   const currencyCode = useFormField("");
-  const paymentChannel = useFormField("");
-  const code = useFormField("");
 
   const fields = [
     moduleName,
@@ -35,8 +33,6 @@ export default function TransactionDeserialiserForm(props: {
     amount,
     timestamp,
     currencyCode,
-    paymentChannel,
-    code,
   ];
 
   const [createTransactionDeserialiser, createTransactionDeserialiserResult] =
@@ -53,10 +49,6 @@ export default function TransactionDeserialiserForm(props: {
     amount.set(props.transactionDeserialiser.amount_deserialiser);
     timestamp.set(props.transactionDeserialiser.timestamp_deserialiser);
     currencyCode.set(props.transactionDeserialiser.currency_code_deserialiser);
-    paymentChannel.set(
-      props.transactionDeserialiser.payment_channel_deserialiser
-    );
-    code.set(props.transactionDeserialiser.code_deserialiser);
   }, [props.transactionDeserialiser]);
 
   const handleClose = () => {
@@ -75,8 +67,6 @@ export default function TransactionDeserialiserForm(props: {
       amount_deserialiser: amount.value!,
       timestamp_deserialiser: timestamp.value!,
       currency_code_deserialiser: currencyCode.value!,
-      payment_channel_deserialiser: paymentChannel.value!,
-      code_deserialiser: code.value!,
     };
     if (props.transactionDeserialiser) {
       try {
@@ -120,11 +110,6 @@ export default function TransactionDeserialiserForm(props: {
             label="deserialise_currency_code = lambda row:"
             field={currencyCode}
           />
-          <FormTextArea
-            label="deserialise_payment_channel = lambda row:"
-            field={paymentChannel}
-          />
-          <FormTextArea label="deserialise_code = lambda row:" field={code} />
           <FormValidationError fields={fields} />
           <QueryErrorMessage query={createTransactionDeserialiserResult} />
           <QueryErrorMessage query={updateTransactionDeserialiserResult} />

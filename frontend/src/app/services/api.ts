@@ -827,8 +827,6 @@ export type TransactionDeserialiserApiOut = {
   timestamp_deserialiser: string;
   name_deserialiser: string;
   currency_code_deserialiser: string;
-  payment_channel_deserialiser: string;
-  code_deserialiser: string;
   skip_rows: number;
   columns: number;
 };
@@ -838,8 +836,6 @@ export type TransactionDeserialiserApiIn = {
   timestamp_deserialiser: string;
   name_deserialiser: string;
   currency_code_deserialiser: string;
-  payment_channel_deserialiser: string;
-  code_deserialiser: string;
   skip_rows: number;
   columns: number;
 };
@@ -862,21 +858,6 @@ export type InstitutionApiIn = {
   transactiondeserialiser_id?: number;
   colour?: string;
 };
-export type PaymentChannel = "online" | "in store" | "other";
-export type TransactionCode =
-  | "adjustment"
-  | "atm"
-  | "bank charge"
-  | "bill payment"
-  | "cash"
-  | "cashback"
-  | "cheque"
-  | "direct debit"
-  | "interest"
-  | "purchase"
-  | "standing order"
-  | "transfer"
-  | "null";
 export type TransactionApiOut = {
   id: number;
   amount: number;
@@ -884,8 +865,6 @@ export type TransactionApiOut = {
   name: string;
   currency_code: string;
   account_id: number;
-  payment_channel: PaymentChannel;
-  code?: TransactionCode;
   account_balance: number;
   movement_id: number;
 };
@@ -943,8 +922,6 @@ export type TransactionApiIn = {
   name: string;
   currency_code: string;
   account_id: number;
-  payment_channel: PaymentChannel;
-  code?: TransactionCode;
   account_balance?: number;
   movement_id?: number;
 };
