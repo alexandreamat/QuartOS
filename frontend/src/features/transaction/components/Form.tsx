@@ -16,7 +16,6 @@ import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
 import { Icon, Message, Modal, Form, Button } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
-import { codeOptions, paymentChannelOptions } from "../options";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
@@ -43,8 +42,6 @@ export default function TransactionForm(props: {
     name: useFormField("", "name"),
     currencyCode: useFormField("", "currency"),
     accountId: useFormField(0, "account"),
-    paymentChannel: useFormField("", "payment channel"),
-    code: useFormField("", "code"),
   };
 
   const accountQuery = api.endpoints.readApiAccountsIdGet.useQuery(
@@ -65,8 +62,6 @@ export default function TransactionForm(props: {
     const movement = movementQuery.data;
     const timestamp = movement.latest_timestamp;
     form.timestamp.set(timestamp ? new Date(timestamp) : new Date());
-    form.code.set("transfer");
-    form.paymentChannel.set("other");
   }, [movementQuery.isSuccess, movementQuery.data]);
 
   useEffect(() => {
@@ -124,16 +119,6 @@ export default function TransactionForm(props: {
               currencyCode={form.currencyCode.value}
             />
           )}
-          <FormDropdownInput
-            field={form.code}
-            options={codeOptions}
-            // readOnly={disableSynced}
-          />
-          <FormDropdownInput
-            field={form.paymentChannel}
-            options={paymentChannelOptions}
-            readOnly={disableSynced}
-          />
           <FormTextInput field={form.name} readOnly={disableSynced} />
           <FormDateTimeInput field={form.timestamp} readOnly={disableSynced} />
           <FormValidationError fields={Object.values(form)} />

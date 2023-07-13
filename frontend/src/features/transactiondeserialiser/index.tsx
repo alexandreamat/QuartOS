@@ -78,14 +78,8 @@ def deserialize_amount(row: list[str]) -> Decimal:
 def deserialize_timestamp(row: list[str]) -> datetime:
     return ${transactionDeserialiser.timestamp_deserialiser}
 
-def deserialize_code(row: list[str]) -> str:
-    return ${transactionDeserialiser.code_deserialiser}
-
 def deserialize_currency_code(row: list[str]) -> str:
     return ${transactionDeserialiser.currency_code_deserialiser}
-
-def deserialize_payment_channel(row: list[str]) -> str:
-    return ${transactionDeserialiser.payment_channel_deserialiser}
 `}
                   </SyntaxHighlighter>
                 </Card.Content>
