@@ -6,10 +6,10 @@ from sqlmodel import Relationship, SQLModel, Field
 import pycountry
 
 from app.common.models import SyncedMixin, SyncableBase, SyncedBase
-from app.features.transactiondeserialiser.models import TransactionDeserialiser
+from app.features.transactiondeserialiser import TransactionDeserialiser
 
 if TYPE_CHECKING:
-    from app.features.userinstitutionlink.models import UserInstitutionLink
+    from app.features.userinstitutionlink import UserInstitutionLink
 
 
 class __InstitutionBase(SQLModel):

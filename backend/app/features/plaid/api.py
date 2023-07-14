@@ -9,21 +9,28 @@ from app.common.plaid import (
     exchange_public_token,
 )
 
-from app.features.user.deps import CurrentUser
-from app.features.institution import (  # type: ignore[attr-defined]
+from app.features.user import CurrentUser
+from app.features.institution import (
     CRUDSyncableInstitution,
     fetch_institution,
-    INSTITUTIONS,
 )
-from app.features.userinstitutionlink import (  # type: ignore[attr-defined]
+from app.features.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
     fetch_user_institution_link,
-    INSTITUTION_LINKS,
+    api,
 )
-from app.features.account import CRUDAccount, fetch_accounts, ACCOUNTS  # type: ignore[attr-defined]
-from app.features.transaction import TRANSACTIONS  # type: ignore[attr-defined]
+from app.features.account import CRUDAccount, fetch_accounts
+
+from app.features.transaction import api as transaction_api
+from app.features.account import api as account_api
+from app.features.userinstitutionlink import api as userinstitutionlink_api
+from app.features.institution import api as institution_api
 
 PLAID = "plaid"
+INSTITUTION_LINKS = userinstitutionlink_api.INSTITUTION_LINKS
+INSTITUTIONS = institution_api.INSTITUTIONS
+ACCOUNTS = account_api.ACCOUNTS
+TRANSACTIONS = transaction_api.TRANSACTIONS
 
 router = APIRouter()
 
@@ -66,5 +73,11 @@ def set_public_token(
 api_router.include_router(
     router,
     prefix=f"/{PLAID}",
-    tags=[PLAID, INSTITUTION_LINKS, INSTITUTIONS, ACCOUNTS, TRANSACTIONS],
+    tags=[
+        PLAID,
+        INSTITUTION_LINKS,
+        INSTITUTIONS,
+        ACCOUNTS,
+        TRANSACTIONS,
+    ],
 )

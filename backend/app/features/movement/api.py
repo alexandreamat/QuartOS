@@ -9,20 +9,21 @@ from app.database.deps import DBSession
 from app.common.models import CurrencyCode
 from app.api import api_router
 
-from app.features.user.deps import CurrentUser
-from app.features.account import CRUDAccount, AccountNotFound, ForbiddenAccount  # type: ignore[attr-defined]
-from app.features.transaction import (  # type: ignore[attr-defined]
+from app.features.user import CurrentUser, CRUDUser
+from app.features.account import CRUDAccount, AccountNotFound, ForbiddenAccount
+from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
     CRUDTransaction,
-    TRANSACTIONS,
+    api,
 )
 
-from .models import MovementApiOut, PLStatement, MovementFields
+from .models import MovementApiOut, PLStatement, MovementField
 from .crud import CRUDMovement
 from .exceptions import MovementNotFound
 
 MOVEMENTS = "movements"
+TRANSACTIONS = api.TRANSACTIONS
 
 router = APIRouter()
 
@@ -32,7 +33,7 @@ def check_user(
     user_id: int,
     movement_id: int,
 ) -> None:
-    if not any(u.id == user_id for u in CRUDMovement.read_users(db, movement_id)):
+    if not any(uid == user_id for uid in CRUDMovement.read_user_ids(db, movement_id)):
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             "The requested movement does not belong to the user",
@@ -47,7 +48,7 @@ def get_aggregate(
     end_date: date,
     currency_code: CurrencyCode,
 ) -> PLStatement:
-    return CRUDMovement.get_monthly_aggregate(
+    return CRUDUser.get_movement_aggregate(
         db,
         current_user.id,
         start_date,
@@ -64,8 +65,8 @@ def get_many_aggregates(
     page: int = 0,
     per_page: int = 12,
 ) -> Iterable[PLStatement]:
-    return CRUDMovement.get_many_monthly_aggregates(
-        db, current_user.id, currency_code, page, per_page
+    return CRUDUser.get_many_movement_aggregates(
+        db, current_user.id, page, per_page, currency_code
     )
 
 
@@ -95,10 +96,10 @@ def update_transaction(
 
     # Check new account existence and ownership
     try:
-        user = CRUDAccount.read_user(db, transaction.account_id)
+        user_id = CRUDAccount.read_user_id(db, transaction.account_id)
     except NoResultFound:
         raise AccountNotFound()
-    if user.id != current_user.id:
+    if user_id != current_user.id:
         raise ForbiddenAccount()
 
     # Check new movement existence and ownership
@@ -154,12 +155,12 @@ def create(
 ) -> Iterable[MovementApiOut]:
     for transaction in transactions:
         try:
-            user = CRUDAccount.read_user(db, transaction.account_id)
+            user_id = CRUDAccount.read_user_id(db, transaction.account_id)
         except NoResultFound:
             raise AccountNotFound()
         if CRUDAccount.is_synced(db, transaction.account_id):
             raise HTTPException(status.HTTP_403_FORBIDDEN)
-        if user.id != current_user.id:
+        if user_id != current_user.id:
             raise ForbiddenAccount()
         yield CRUDMovement.create(db, transaction)
 
@@ -168,7 +169,7 @@ def create(
             transaction_out = CRUDTransaction.read(db, transaction_id)
         except NoResultFound:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
-        if CRUDTransaction.read_user(db, transaction_out.id).id != current_user.id:
+        if CRUDTransaction.read_user_id(db, transaction_out.id) != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         yield CRUDMovement.create(db, transaction_id)
 
@@ -177,6 +178,7 @@ def create(
 def read_many(
     db: DBSession,
     current_user: CurrentUser,
+    account_id: int = 0,
     page: int = 0,
     per_page: int = 0,
     start_date: date | None = None,
@@ -184,13 +186,13 @@ def read_many(
     search: str | None = None,
     amount_gt: Decimal | None = None,
     amount_lt: Decimal | None = None,
-    account_id: int = 0,
     is_descending: bool = True,
-    sort_by: MovementFields = MovementFields.TIMESTAMP,
+    sort_by: MovementField = MovementField.TIMESTAMP,
 ) -> Iterable[MovementApiOut]:
-    return CRUDMovement.read_many_by_user(
+    return CRUDUser.read_movements(
         db,
         current_user.id,
+        account_id,
         page,
         per_page,
         start_date,
@@ -198,7 +200,6 @@ def read_many(
         search,
         amount_gt,
         amount_lt,
-        account_id,
         is_descending,
         sort_by,
     )

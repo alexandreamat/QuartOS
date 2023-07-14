@@ -1,5 +1,13 @@
-from .models import Movement, MovementApiIn, MovementApiOut
+from .models import Movement, MovementApiIn, MovementApiOut, MovementField, PLStatement
 from .crud import CRUDMovement
-from .plaid import sync_transactions
-from .api import MOVEMENTS
 from .exceptions import MovementNotFound
+
+__all__ = [
+    "Movement",
+    "MovementApiIn",
+    "MovementApiOut",
+    "CRUDMovement",
+    "MovementNotFound",
+    "MovementField",
+    "PLStatement",
+]

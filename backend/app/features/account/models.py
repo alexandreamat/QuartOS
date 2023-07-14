@@ -1,21 +1,24 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Iterable, Any
 from decimal import Decimal
 from enum import Enum
 from datetime import date
 
 from sqlmodel import Field, Relationship, SQLModel, Session
-from sqlmodel import desc, asc
+from sqlmodel import asc
+from sqlmodel.sql.expression import SelectOfScalar
 from pydantic import root_validator, validator
 import pycountry
 
 from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
-from app.features.institution.models import Institution
-from app.features.user.models import User
-from app.features.userinstitutionlink.models import UserInstitutionLink
-from app.features.transactiondeserialiser.models import TransactionDeserialiser
+
+from app.features.transaction import Transaction
+from app.features.transactiondeserialiser import TransactionDeserialiser
+from app.features.movement import Movement
 
 if TYPE_CHECKING:
-    from app.features.transaction.models import Transaction
+    from app.features.institution import Institution
+    from app.features.user import User
+    from app.features.userinstitutionlink import UserInstitutionLink
 
 
 class _AccountBase(SQLModel):
@@ -107,7 +110,7 @@ class Account(_AccountBase, Base, table=True):
     ):
         userinstitutionlink_id: int = Field(foreign_key="userinstitutionlink.id")
 
-        userinstitutionlink: UserInstitutionLink = Relationship(
+        userinstitutionlink: "UserInstitutionLink" = Relationship(
             back_populates="institutionalaccounts"
         )
         account: "Account" = Relationship(
@@ -116,11 +119,11 @@ class Account(_AccountBase, Base, table=True):
         )
 
         @property
-        def user(self) -> User:
+        def user(self) -> "User":
             return self.userinstitutionlink.user
 
         @property
-        def institution(self) -> Institution:
+        def institution(self) -> "Institution":
             return self.userinstitutionlink.institution
 
         @property
@@ -135,7 +138,7 @@ class Account(_AccountBase, Base, table=True):
         _AccountBase.NonInstitutionalAccount, Base, table=True
     ):
         user_id: int = Field(foreign_key="user.id")
-        user: User = Relationship(back_populates="noninstitutionalaccounts")
+        user: "User" = Relationship(back_populates="noninstitutionalaccounts")
         account: "Account" = Relationship(
             back_populates="noninstitutionalaccount",
             sa_relationship_kwargs={"uselist": False},
@@ -155,7 +158,7 @@ class Account(_AccountBase, Base, table=True):
         sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
     )
 
-    transactions: list["Transaction"] = Relationship(
+    transactions: list[Transaction] = Relationship(
         back_populates="account",
         sa_relationship_kwargs={
             "cascade": "all, delete",
@@ -210,8 +213,6 @@ class Account(_AccountBase, Base, table=True):
     def update_balance(
         cls, db: Session, id: int, timestamp: date | None = None
     ) -> "Account":
-        from app.features.transaction import Transaction  # type: ignore[attr-defined]
-
         account = Account.read(db, id)
         transactions_query: Query = account.transactions  # type: ignore
 
@@ -243,8 +244,38 @@ class Account(_AccountBase, Base, table=True):
 
         return cls.read(db, id)
 
+    @classmethod
+    def select_transactions(
+        cls,
+        statement: SelectOfScalar[Transaction],
+        id: int,
+    ) -> SelectOfScalar[Transaction]:
+        return statement.join(Account).where(Account.id == id)
+
+    @classmethod
+    def read_transactions(
+        cls, db: Session, id: int, *args: Any, **kwargs: Any
+    ) -> Iterable[Transaction]:
+        statement = cls.select_transactions(Transaction.select(), id)
+        return Transaction.read_from_query(db, statement, *args, **kwargs)
+
+    @classmethod
+    def select_movements(
+        cls,
+        statement: SelectOfScalar[Movement],
+        id: int,
+    ) -> SelectOfScalar[Movement]:
+        return statement.join(Transaction).join(Account).filter(Account.id == id)
+
+    @classmethod
+    def read_movements(
+        cls, db: Session, id: int, *args: Any, **kwargs: Any
+    ) -> Iterable[Movement]:
+        statement = cls.select_movements(Movement.select(), id)
+        return Movement.read_from_query(db, statement, *args, **kwargs)
+
     @property
-    def user(self) -> User:
+    def user(self) -> "User":
         if self.institutionalaccount:
             return self.institutionalaccount.userinstitutionlink.user
         if self.noninstitutionalaccount:
@@ -258,13 +289,13 @@ class Account(_AccountBase, Base, table=True):
         return None
 
     @property
-    def institution(self) -> Institution | None:
+    def institution(self) -> "Institution | None":
         if self.institutionalaccount:
             return self.institutionalaccount.institution
         return None
 
     @property
-    def userinstitutionlink(self) -> UserInstitutionLink | None:
+    def userinstitutionlink(self) -> "UserInstitutionLink | None":
         if self.institutionalaccount:
             return self.institutionalaccount.userinstitutionlink
         return None
@@ -277,10 +308,8 @@ class Account(_AccountBase, Base, table=True):
 
     @property
     def balance(self) -> Decimal:
-        from app.features.transaction.models import Transaction
-
         query = self.transactions
-        first_transaction: "Transaction" | None = query.order_by(  # type: ignore
+        first_transaction: Transaction | None = query.order_by(  # type: ignore
             *Transaction.get_timestamp_desc_clauses()
         ).first()
         if not first_transaction:

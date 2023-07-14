@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import Iterable
 from datetime import date
 
@@ -10,19 +9,18 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from app.database.deps import DBSession
 from app.api import api_router
 
-from app.features.user.deps import CurrentUser, CurrentSuperuser
-from app.features.institution import CRUDInstitution  # type: ignore[attr-defined]
+from app.features.institution import CRUDInstitution
+from app.features.user import CRUDUser, CurrentUser, CurrentSuperuser
+from app.features.account import AccountApiOut
+from app.features.transaction import TransactionPlaidIn
 
 from .crud import CRUDUserInstitutionLink, CRUDSyncableUserInstitutionLink
 from .models import (
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
 )
-from .plaid import get_transactions
+from .plaid import fetch_transactions
 
-# forward refereneces, only for annotations
-from app.features.account import AccountApiOut  # type: ignore[attr-defined]
-from app.features.transaction import TransactionPlaidIn  # type: ignore[attr-defined]
 
 INSTITUTION_LINKS = "institution-links"
 
@@ -47,13 +45,11 @@ def create(
 def read_accounts(
     db: DBSession, current_user: CurrentUser, id: int
 ) -> Iterable[AccountApiOut]:
-    from app.features.account.crud import CRUDAccount
-
     try:
         institution_link = CRUDUserInstitutionLink.read(db, id)
     except NoResultFound:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
-    return CRUDAccount.read_many_by_institution_link(db, institution_link.id)
+    return CRUDUserInstitutionLink.read_accounts(db, institution_link.id)
 
 
 @router.get("/{id}")
@@ -73,7 +69,7 @@ def read(
 def read_many(
     db: DBSession, current_user: CurrentUser
 ) -> Iterable[UserInstitutionLinkApiOut]:
-    return CRUDUserInstitutionLink.read_many_by_user(db, current_user.id)
+    return CRUDUser.read_user_institution_links(db, current_user.id)
 
 
 @router.put("/{id}")
@@ -139,7 +135,7 @@ def read_many_plaid_transactions(
     end_date: date,
 ) -> Iterable[TransactionPlaidIn]:
     user_institution_link = CRUDSyncableUserInstitutionLink.read(db, id)
-    return get_transactions(db, user_institution_link, start_date, end_date)
+    return fetch_transactions(db, user_institution_link, start_date, end_date)
 
 
 api_router.include_router(

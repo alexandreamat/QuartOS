@@ -7,7 +7,7 @@ from typing import Iterable
 
 from .models import TransactionApiIn
 
-from app.features.transactiondeserialiser import TransactionDeserialiserApiOut  # type: ignore[attr-defined]
+from app.features.transactiondeserialiser import TransactionDeserialiserApiOut
 
 
 def __sanitise_row(row: list[str]) -> None:

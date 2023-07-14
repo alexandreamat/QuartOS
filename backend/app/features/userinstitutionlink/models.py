@@ -2,14 +2,11 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 from app.common.models import SyncedMixin, SyncableBase, SyncedBase
-from app.features.institution.models import Institution
-from app.features.user.models import User
+from app.features.account import Account
 
 if TYPE_CHECKING:
-    # from app.features.account.models.Account import InstitutionalAccount
-    from app.features.account.models import Account
-
-    InstitutionalAccount = Account.InstitutionalAccount
+    from app.features.institution import Institution
+    from app.features.user import User
 
 
 class __UserInstitutionLinkBase(SQLModel):
@@ -46,9 +43,9 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
     access_token: str | None
     cursor: str | None
 
-    user: User = Relationship(back_populates="institution_links")
-    institution: Institution = Relationship(back_populates="user_links")
-    institutionalaccounts: list["InstitutionalAccount"] = Relationship(
+    user: "User" = Relationship(back_populates="institution_links")
+    institution: "Institution" = Relationship(back_populates="user_links")
+    institutionalaccounts: list[Account.InstitutionalAccount] = Relationship(
         back_populates="userinstitutionlink",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )

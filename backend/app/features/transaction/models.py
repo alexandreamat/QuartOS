@@ -7,13 +7,13 @@ from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
 
 from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
-from app.features.institution.models import Institution
-from app.features.user.models import User
-from app.features.userinstitutionlink.models import UserInstitutionLink
-from app.features.account.models import Account
 
 if TYPE_CHECKING:
-    from app.features.movement.models import Movement
+    from app.features.institution import Institution
+    from app.features.user import User
+    from app.features.userinstitutionlink import UserInstitutionLink
+    from app.features.account import Account
+    from app.features.movement import Movement
 
 
 class __TransactionBase(SQLModel):
@@ -48,19 +48,19 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
     movement_id: int = Field(foreign_key="movement.id")
     account_balance: Decimal
 
-    account: Account = Relationship(back_populates="transactions")
+    account: "Account" = Relationship(back_populates="transactions")
     movement: "Movement" = Relationship(back_populates="transactions")
 
     @property
-    def user(self) -> User:
+    def user(self) -> "User":
         return self.account.user
 
     @property
-    def institution(self) -> Institution | None:
+    def institution(self) -> "Institution | None":
         return self.account.institution
 
     @property
-    def userinstitutionlink(self) -> UserInstitutionLink | None:
+    def userinstitutionlink(self) -> "UserInstitutionLink | None":
         return self.account.userinstitutionlink
 
     @property
@@ -79,12 +79,12 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
     def read_from_query(
         cls,
         db: Session,
+        statement: SelectOfScalar["Transaction"],
         page: int,
         per_page: int,
         search: str | None,
         timestamp: date | None,
         is_descending: bool,
-        statement: SelectOfScalar["Transaction"],
     ) -> list["Transaction"]:
         statement = statement.order_by(
             *(

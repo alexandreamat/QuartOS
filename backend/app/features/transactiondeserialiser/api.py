@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
 from app.database.deps import DBSession
-from app.features.user.deps import CurrentSuperuser
+from app.features.user import CurrentSuperuser
 from app.api import api_router
 
 from .crud import CRUDTransactionDeserialiser
