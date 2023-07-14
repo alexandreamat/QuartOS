@@ -1,15 +1,19 @@
+from typing import TYPE_CHECKING
+
 from plaid.model.account_base import AccountBase
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 
 from app.common.plaid import client
-from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut  # type: ignore[attr-defined]
 
 from .models import AccountPlaidIn
 
+if TYPE_CHECKING:
+    from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
+
 
 def fetch_accounts(
-    user_institution_link: UserInstitutionLinkPlaidOut,
+    user_institution_link: "UserInstitutionLinkPlaidOut",
 ) -> list[AccountPlaidIn]:
     request = AccountsGetRequest(access_token=user_institution_link.access_token)
     response: AccountsGetResponse = client.accounts_get(request)

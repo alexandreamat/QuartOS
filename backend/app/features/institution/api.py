@@ -7,7 +7,7 @@ from app.features.user.deps import CurrentSuperuser
 from app.database.deps import DBSession
 from app.api import api_router
 
-from app.features.institution import fetch_institution  # type: ignore[attr-defined]
+from app.features.institution import fetch_institution
 
 
 from .crud import CRUDInstitution, CRUDSyncableInstitution

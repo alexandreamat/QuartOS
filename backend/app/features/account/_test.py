@@ -5,8 +5,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
-from app.features.user.models import UserApiOut
-from app.features.institution.models import InstitutionApiOut
+from app.features.user import UserApiOut
+from app.features.institution import InstitutionApiOut
 
 from app._test import client, db
 from app.features.user._test import (

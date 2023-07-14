@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Any
 
 from datetime import date
 
@@ -7,10 +7,8 @@ from sqlalchemy.exc import NoResultFound
 
 from app.common.crud import CRUDBase
 
-from app.features.user import User, UserApiOut  # type: ignore[attr-defined]
-from app.features.institution import InstitutionApiOut  # type: ignore[attr-defined]
-from app.features.userinstitutionlink import UserInstitutionLink  # type: ignore[attr-defined]
-from app.features.transactiondeserialiser import TransactionDeserialiserApiOut  # type: ignore[attr-defined]
+from app.features.transaction import TransactionApiOut
+from app.features.transactiondeserialiser import TransactionDeserialiserApiOut
 
 from .models import (
     Account,
@@ -26,12 +24,15 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     out_model = AccountApiOut
 
     @classmethod
-    def read_user(cls, db: Session, id: int) -> UserApiOut:
-        return UserApiOut.from_orm(Account.read(db, id).user)
+    def read_user_id(cls, db: Session, id: int) -> int:
+        return Account.read(db, id).user.id
 
     @classmethod
-    def read_institution(cls, db: Session, id: int) -> InstitutionApiOut:
-        return InstitutionApiOut.from_orm(Account.read(db, id).institution)
+    def read_transactions(
+        cls, db: Session, id: int, *args: Any, **kwargs: Any
+    ) -> Iterable[TransactionApiOut]:
+        for t in Account.read_transactions(db, id, *args, **kwargs):
+            yield TransactionApiOut.from_orm(t)
 
     @classmethod
     def read_transaction_deserialiser(
@@ -41,31 +42,6 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         if not db_deserialiser:
             raise NoResultFound
         return TransactionDeserialiserApiOut.from_orm(db_deserialiser)
-
-    @classmethod
-    def read_many_by_institution_link(
-        cls, db: Session, userinstitutionlink_id: int
-    ) -> Iterable[AccountApiOut]:
-        l = UserInstitutionLink.read(db, userinstitutionlink_id)
-        for ia in l.institutionalaccounts:
-            yield AccountApiOut.from_orm(ia.account)
-
-    @classmethod
-    def read_many_by_institution_link_plaid(
-        cls, db: Session, userinstitutionlink_id: int
-    ) -> Iterable[AccountPlaidOut]:
-        l = UserInstitutionLink.read(db, userinstitutionlink_id)
-        for ia in l.institutionalaccounts:
-            yield AccountPlaidOut.from_orm(ia.account)
-
-    @classmethod
-    def read_many_by_user(cls, db: Session, user_id: int) -> Iterable[AccountApiOut]:
-        db_user = User.read(db, user_id)
-        for l in db_user.institution_links:
-            for ia in l.institutionalaccounts:
-                yield AccountApiOut.from_orm(ia.account)
-        for nia in db_user.noninstitutionalaccounts:
-            yield AccountApiOut.from_orm(nia.account)
 
     @classmethod
     def sync(cls, db: Session, account: AccountPlaidIn) -> AccountPlaidOut:

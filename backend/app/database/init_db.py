@@ -3,19 +3,18 @@ from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
 from app.settings import settings
-from app.features.user.crud import CRUDUser
-from app.features.user.models import UserApiIn
+from app.features.user import CRUDUser, UserApiIn
 
 # 1. Import base model
 from app.common.models import Base
 
 # 2. Import inheritors of the base model
-from app.features.user.models import User
-from app.features.institution.models import Institution
-from app.features.userinstitutionlink.models import UserInstitutionLink
-from app.features.account.models import Account
-from app.features.movement.models import Movement
-from app.features.transaction.models import Transaction
+from app.features.user import User
+from app.features.institution import Institution
+from app.features.userinstitutionlink import UserInstitutionLink
+from app.features.account import Account
+from app.features.movement import Movement
+from app.features.transaction import Transaction
 
 from .deps import engine
 

@@ -14,8 +14,7 @@ from app.utils import (
     verify_password_reset_token,
 )
 from app.database.deps import DBSession
-from app.features.user.crud import CRUDUser
-from app.features.user.models import UserApiIn
+from app.features.user import CRUDUser, UserApiIn
 from app.api import api_router
 
 from .models import Token

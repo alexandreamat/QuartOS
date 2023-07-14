@@ -1,14 +1,10 @@
-from typing import Iterable
-from datetime import date
-from decimal import Decimal
+from typing import Iterable, TYPE_CHECKING, Any
 
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase
-from app.common.models import CurrencyCode
 
-from app.features.user import UserApiOut  # type: ignore [attr-defined]
-from app.features.transaction import (  # type: ignore [attr-defined]
+from app.features.transaction import (
     Transaction,
     TransactionApiIn,
     TransactionApiOut,
@@ -18,7 +14,7 @@ from app.features.transaction import (  # type: ignore [attr-defined]
     CRUDSyncableTransaction,
 )
 
-from .models import Movement, MovementApiIn, MovementApiOut, PLStatement, MovementFields
+from .models import Movement, MovementApiIn, MovementApiOut, PLStatement
 
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
@@ -56,41 +52,9 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return CRUDMovement.read(db, movement.id)
 
     @classmethod
-    def read_users(cls, db: Session, id: int) -> Iterable[UserApiOut]:
+    def read_user_ids(cls, db: Session, id: int) -> Iterable[int]:
         for user in Movement.read(db, id).users:
-            yield UserApiOut.from_orm(user)
-
-    @classmethod
-    def read_many_by_user(
-        cls,
-        db: Session,
-        user_id: int,
-        page: int,
-        per_page: int,
-        start_date: date | None,
-        end_date: date | None,
-        search: str | None,
-        amount_gt: Decimal | None,
-        amount_lt: Decimal | None,
-        account_id: int,
-        is_descending: bool,
-        sort_by: MovementFields,
-    ) -> Iterable[MovementApiOut]:
-        for m in Movement.read_many_by_user(
-            db,
-            user_id,
-            page,
-            per_page,
-            start_date,
-            end_date,
-            search,
-            amount_gt,
-            amount_lt,
-            account_id,
-            is_descending,
-            sort_by,
-        ):
-            yield MovementApiOut.from_orm(m)
+            yield user.id
 
     @classmethod
     def add_transaction(
@@ -138,30 +102,3 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         CRUDTransaction.delete(db, transaction_id)
         if not movement.transactions:
             cls.delete(db, id)
-
-    @classmethod
-    def get_monthly_aggregate(
-        cls,
-        db: Session,
-        user_id: int,
-        start_date: date,
-        end_date: date,
-        currency_code: CurrencyCode,
-    ) -> PLStatement:
-        return Movement.get_monthly_aggregate(
-            db, user_id, start_date, end_date, currency_code
-        )
-
-    @classmethod
-    def get_many_monthly_aggregates(
-        cls,
-        db: Session,
-        user_id: int,
-        currency_code: CurrencyCode,
-        page: int,
-        per_page: int,
-    ) -> Iterable[PLStatement]:
-        for pl in Movement.get_many_monthly_aggregates(
-            db, user_id, currency_code, page, per_page
-        ):
-            yield PLStatement.from_orm(pl)
