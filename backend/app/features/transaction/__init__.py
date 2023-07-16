@@ -8,7 +8,7 @@ from .models import (
 )
 
 from .utils import get_transactions_from_csv
-from .plaid import create_transaction_plaid_in
+from .plaid import create_transaction_plaid_in, reset_transaction_to_metadata
 
 __all__ = [
     "CRUDTransaction",
@@ -20,4 +20,5 @@ __all__ = [
     "TransactionPlaidOut",
     "get_transactions_from_csv",
     "create_transaction_plaid_in",
+    "reset_transaction_to_metadata",
 ]

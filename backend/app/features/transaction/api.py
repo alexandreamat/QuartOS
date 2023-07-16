@@ -7,15 +7,41 @@ from sqlalchemy.exc import NoResultFound
 from app.database.deps import DBSession
 from app.api import api_router
 
-from app.features.user.deps import CurrentUser
+from app.features.user.deps import CurrentUser, CurrentSuperuser
 from app.features.user import CRUDUser
 
-from .crud import CRUDTransaction
-from .models import TransactionApiOut
+from .crud import CRUDTransaction, CRUDSyncableTransaction
+from .models import TransactionApiOut, TransactionPlaidIn, TransactionPlaidOut
+from .plaid import reset_transaction_to_metadata
 
 TRANSACTIONS = "transactions"
 
 router = APIRouter()
+
+
+@router.put("/plaid/{id}/reset")
+def reset_plaid(
+    db: DBSession, current_user: CurrentSuperuser, id: int
+) -> TransactionApiOut:
+    reset_transaction_to_metadata(db, id)
+    return CRUDTransaction.read(db, id)
+
+
+@router.get("/plaid/{id}")
+def read_plaid(
+    db: DBSession, current_user: CurrentSuperuser, id: int
+) -> TransactionPlaidOut:
+    return CRUDSyncableTransaction.read(db, id)
+
+
+@router.put("/plaid/{id}")
+def update_plaid(
+    db: DBSession,
+    current_user: CurrentSuperuser,
+    id: int,
+    transaction_in: TransactionPlaidIn,
+) -> TransactionPlaidOut:
+    return CRUDSyncableTransaction.update(db, id, transaction_in)
 
 
 @router.get("/{id}")

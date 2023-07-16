@@ -21,9 +21,6 @@ class __TransactionBase(SQLModel):
     timestamp: date
     name: str
     currency_code: CurrencyCode
-    account_id: int
-    account_balance: Decimal | None
-    movement_id: int | None
 
 
 class TransactionApiOut(__TransactionBase, Base):
@@ -32,7 +29,7 @@ class TransactionApiOut(__TransactionBase, Base):
 
 
 class TransactionApiIn(__TransactionBase):
-    ...
+    account_balance: Decimal | None
 
 
 class TransactionPlaidIn(TransactionApiIn, SyncedMixin):
@@ -40,7 +37,7 @@ class TransactionPlaidIn(TransactionApiIn, SyncedMixin):
 
 
 class TransactionPlaidOut(TransactionApiOut, SyncedBase):
-    movement_id: int
+    ...
 
 
 class Transaction(__TransactionBase, SyncableBase, table=True):

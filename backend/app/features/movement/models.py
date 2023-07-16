@@ -1,9 +1,9 @@
 from enum import Enum
 from decimal import Decimal
 from datetime import date
-from typing import Iterable, TYPE_CHECKING
+from typing import Iterable, TYPE_CHECKING, Any
 
-from sqlmodel import SQLModel, Relationship, Session, and_, or_, col, func, select
+from sqlmodel import SQLModel, Relationship, Session, and_, col, func, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base, CurrencyCode
@@ -12,7 +12,6 @@ from app.features.transaction import Transaction, TransactionApiOut
 
 if TYPE_CHECKING:
     from app.features.user import User
-    from app.features.userinstitutionlink import UserInstitutionLink
     from app.features.account import Account
 
 
@@ -80,6 +79,21 @@ class Movement(__MovementBase, Base, table=True):
     @classmethod
     def create(cls, db: Session) -> "Movement":  # type: ignore[override]
         return super().create(db, cls())
+
+    @classmethod
+    def select_by_account(
+        cls,
+        statement: SelectOfScalar["Movement"],
+        acount_id: int,
+    ) -> SelectOfScalar["Movement"]:
+        return statement.join(Transaction).join(Account).where(Account.id == acount_id)
+
+    @classmethod
+    def read_many_by_account(
+        cls, db: Session, id: int, *args: Any, **kwargs: Any
+    ) -> Iterable["Movement"]:
+        statement = cls.select_by_account(Movement.select(), id)
+        return Movement.read_from_query(db, statement, *args, **kwargs)
 
     @classmethod
     def read_from_query(

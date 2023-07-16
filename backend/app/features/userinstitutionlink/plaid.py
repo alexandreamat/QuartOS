@@ -34,8 +34,8 @@ if TYPE_CHECKING:
 
 
 class __TransactionsSyncResult(BaseModel):
-    added: list[TransactionPlaidIn]
-    modified: list[TransactionPlaidIn]
+    added: list[tuple[int, TransactionPlaidIn]]
+    modified: list[tuple[int, TransactionPlaidIn]]
     removed: list[str]
     new_cursor: str
     has_more: bool
@@ -73,11 +73,11 @@ def __fetch_transaction_changes(
     accounts = __get_account_ids_map(db, user_institution_link.id)
     return __TransactionsSyncResult(
         added=[
-            create_transaction_plaid_in(transaction, accounts[transaction.account_id])
+            (accounts[transaction.account_id], create_transaction_plaid_in(transaction))
             for transaction in response.added
         ],
         modified=[
-            create_transaction_plaid_in(transaction, accounts[transaction.account_id])
+            (accounts[transaction.account_id], create_transaction_plaid_in(transaction))
             for transaction in response.modified
         ],
         removed=[
@@ -132,9 +132,7 @@ def fetch_transactions(
         transactions: list[Transaction] = response.transactions
         offset += len(transactions)
         for transaction in transactions:
-            yield create_transaction_plaid_in(
-                transaction, accounts[transaction.account_id]
-            )
+            yield create_transaction_plaid_in(transaction)
 
 
 def sync_transactions(
@@ -144,19 +142,23 @@ def sync_transactions(
     has_more = True
     while has_more:
         sync_result = __fetch_transaction_changes(db, user_institution_link)
-        for transaction in sync_result.added:
-            CRUDMovement.create_syncable(db, transaction)
-        for transaction_in in sync_result.modified:
+        for account_id, transaction in sync_result.added:
+            CRUDMovement.create_syncable(db, account_id, transaction)
+        for account_id, transaction_in in sync_result.modified:
             db_transaction = CRUDSyncableTransaction.read_by_plaid_id(
                 db, transaction_in.plaid_id
             )
             CRUDMovement.update_syncable(
-                db, db_transaction.movement_id, db_transaction.id, transaction_in
+                db,
+                db_transaction.movement_id,
+                db_transaction.id,
+                account_id,
+                transaction_in,
             )
         for plaid_id in sync_result.removed:
             db_transaction = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)
             CRUDMovement.delete_transaction(
-                db, db_transaction.movement_id, db_transaction.id
+                db, db_transaction.movement_id, account_id, db_transaction.id
             )
         user_institution_link.cursor = sync_result.new_cursor
         user_institution_link_new = UserInstitutionLinkPlaidIn(
