@@ -13,7 +13,6 @@ from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, Syn
 
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser import TransactionDeserialiser
-from app.features.movement import Movement
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -258,21 +257,6 @@ class Account(_AccountBase, Base, table=True):
     ) -> Iterable[Transaction]:
         statement = cls.select_transactions(Transaction.select(), id)
         return Transaction.read_from_query(db, statement, *args, **kwargs)
-
-    @classmethod
-    def select_movements(
-        cls,
-        statement: SelectOfScalar[Movement],
-        id: int,
-    ) -> SelectOfScalar[Movement]:
-        return statement.join(Transaction).join(Account).filter(Account.id == id)
-
-    @classmethod
-    def read_movements(
-        cls, db: Session, id: int, *args: Any, **kwargs: Any
-    ) -> Iterable[Movement]:
-        statement = cls.select_movements(Movement.select(), id)
-        return Movement.read_from_query(db, statement, *args, **kwargs)
 
     @property
     def user(self) -> "User":

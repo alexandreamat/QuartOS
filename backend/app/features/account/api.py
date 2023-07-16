@@ -16,16 +16,16 @@ from app.features.userinstitutionlink import (
     ForbiddenUserInstitutionLink,
     SyncedEntity,
 )
-from app.features.transaction import get_transactions_from_csv
+from app.features.transaction import (
+    TransactionApiOut,
+    TransactionApiIn,
+    get_transactions_from_csv,
+)
 
 from .crud import CRUDAccount
 from .models import AccountApiOut, AccountApiIn
 from .exceptions import AccountNotFound, ForbiddenAccount
 
-from app.features.transaction import (
-    TransactionApiOut,
-    TransactionApiIn,
-)
 
 ACCOUNTS = "accounts"
 

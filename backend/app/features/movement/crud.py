@@ -1,4 +1,5 @@
-from typing import Iterable, TYPE_CHECKING, Any
+from typing import Iterable
+from decimal import Decimal
 
 from sqlmodel import Session
 
@@ -10,11 +11,10 @@ from app.features.transaction import (
     TransactionApiOut,
     TransactionPlaidIn,
     TransactionPlaidOut,
-    CRUDTransaction,
-    CRUDSyncableTransaction,
 )
 
-from .models import Movement, MovementApiIn, MovementApiOut, PLStatement
+from account import Account
+from .models import Movement, MovementApiIn, MovementApiOut
 
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
@@ -25,18 +25,25 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def create(  # type: ignore [override]
         cls,
         db: Session,
+        account_id: int,
         transaction: TransactionApiIn | int,
     ) -> MovementApiOut:
         new_movement = Movement.create(db)
 
         if isinstance(transaction, TransactionApiIn):
-            transaction.movement_id = new_movement.id
-            CRUDTransaction.create(db, transaction)
-        else:  # int
+            transaction_in = Transaction(
+                account_id=account_id, movement_id=new_movement.id, **transaction.dict()
+            )
+            transaction_in.account_balance = Decimal(0)
+            transaction_out = Transaction.create(db, transaction_in)
+            Account.update_balance(db, account_id, transaction_out.timestamp)
+        else:
             transaction_db = Transaction.read(db, transaction)
             old_movement = Movement.read(db, transaction_db.movement_id)
             transaction_db.movement_id = new_movement.id
-            Transaction.update(db, transaction, transaction_db)
+            transaction_db.account_balance = Decimal(0)
+            transaction_out = Transaction.update(db, transaction, transaction_db)
+            Account.update_balance(db, account_id, transaction_out.timestamp)
             if not old_movement.transactions:
                 Movement.delete(db, old_movement.id)
 
@@ -44,11 +51,15 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
 
     @classmethod
     def create_syncable(
-        cls, db: Session, transaction: TransactionPlaidIn
+        cls, db: Session, account_id: int, transaction: TransactionPlaidIn
     ) -> MovementApiOut:
         movement = Movement.create(db)
-        transaction.movement_id = movement.id
-        CRUDSyncableTransaction.create(db, transaction)
+        transaction_in = Transaction(
+            movement_id=movement.id, account_id=account_id, **transaction.dict()
+        )
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = Transaction.create(db, transaction_in)
+        Account.update_balance(db, account_id, transaction_out.timestamp)
         return CRUDMovement.read(db, movement.id)
 
     @classmethod
@@ -58,11 +69,14 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
 
     @classmethod
     def add_transaction(
-        cls, db: Session, id: int, transaction_in: TransactionApiIn
+        cls, db: Session, id: int, account_id: int, transaction: TransactionApiIn
     ) -> MovementApiOut:
-        movement = Movement.read(db, id)
-        transaction_in.movement_id = movement.id
-        CRUDTransaction.create(db, transaction_in)
+        transaction_in = Transaction(
+            movement_id=id, account_id=account_id, **transaction.dict()
+        )
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = Transaction.create(db, transaction_in)
+        Account.update_balance(db, account_id, transaction_out.timestamp)
         return CRUDMovement.read(db, id)
 
     @classmethod
@@ -78,13 +92,16 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         db: Session,
         id: int,
         transaction_id: int,
-        transaction_in: TransactionApiIn,
+        account_id: int,
+        transaction: TransactionApiIn,
     ) -> TransactionApiOut:
-        movement = Movement.read(db, id)
-        transaction_out = CRUDTransaction.update(db, transaction_id, transaction_in)
-        if not movement.transactions:
-            cls.delete(db, id)
-        return transaction_out
+        transaction_in = Transaction(
+            movement_id=id, account_id=account_id, **transaction.dict()
+        )
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = Transaction.update(db, transaction_id, transaction_in)
+        Account.update_balance(db, account_id, transaction_out.timestamp)
+        return TransactionApiOut.from_orm(transaction_out)
 
     @classmethod
     def update_syncable(
@@ -92,13 +109,23 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         db: Session,
         id: int,
         transaction_id: int,
-        transaction_in: TransactionPlaidIn,
+        account_id: int,
+        transaction: TransactionPlaidIn,
     ) -> TransactionPlaidOut:
-        return CRUDSyncableTransaction.update(db, transaction_id, transaction_in)
+        transaction_in = Transaction(
+            movement_id=id, account_id=account_id, **transaction.dict()
+        )
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = Transaction.update(db, transaction_id, transaction_in)
+        Account.update_balance(db, account_id, transaction_out.timestamp)
+        return TransactionPlaidOut.from_orm(transaction_out)
 
     @classmethod
-    def delete_transaction(cls, db: Session, id: int, transaction_id: int) -> None:
-        movement = Movement.read(db, id)
-        CRUDTransaction.delete(db, transaction_id)
-        if not movement.transactions:
+    def delete_transaction(
+        cls, db: Session, id: int, account_id: int, transaction_id: int
+    ) -> None:
+        transaction = Transaction.read(db, transaction_id)
+        Transaction.delete(db, transaction_id)
+        Account.update_balance(db, account_id, transaction.timestamp)
+        if not Movement.read(db, id).transactions:
             cls.delete(db, id)

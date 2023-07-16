@@ -113,7 +113,7 @@ class User(__UserBase, Base, table=True):
         statement = Movement.select()
         statement = cls.select_movements(statement, id)
         if account_id:
-            statement = Account.select_movements(statement, account_id)
+            statement = Movement.select_by_account(statement, account_id)
         return Movement.read_from_query(db, statement, *args, **kwargs)
 
     @classmethod

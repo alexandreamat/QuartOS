@@ -72,10 +72,14 @@ def get_many_aggregates(
 
 @router.post("/{id}/transactions", tags=[TRANSACTIONS])
 def add_transaction(
-    db: DBSession, current_user: CurrentUser, id: int, transaction: TransactionApiIn
+    db: DBSession,
+    current_user: CurrentUser,
+    id: int,
+    account_id: int,
+    transaction: TransactionApiIn,
 ) -> MovementApiOut:
     try:
-        return CRUDMovement.add_transaction(db, id, transaction)
+        return CRUDMovement.add_transaction(db, id, account_id, transaction)
     except NoResultFound:
         raise MovementNotFound()
 
@@ -86,6 +90,7 @@ def update_transaction(
     current_user: CurrentUser,
     id: int,
     transaction_id: int,
+    account_id: int,
     transaction: TransactionApiIn,
 ) -> TransactionApiOut:
     # Check movement ownership
@@ -96,26 +101,24 @@ def update_transaction(
 
     # Check new account existence and ownership
     try:
-        user_id = CRUDAccount.read_user_id(db, transaction.account_id)
+        user_id = CRUDAccount.read_user_id(db, account_id)
     except NoResultFound:
         raise AccountNotFound()
     if user_id != current_user.id:
         raise ForbiddenAccount()
 
-    # Check new movement existence and ownership
-    if not transaction.movement_id:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Movement ID not specified")
-    try:
-        check_user(db, current_user.id, transaction.movement_id)
-    except NoResultFound:
-        raise MovementNotFound()
-
-    return CRUDMovement.update_transaction(db, id, transaction_id, transaction)
+    return CRUDMovement.update_transaction(
+        db, id, transaction_id, account_id, transaction
+    )
 
 
 @router.delete("/{id}/transactions/{transaction_id}", tags=[TRANSACTIONS])
 def delete_transaction(
-    db: DBSession, current_user: CurrentUser, id: int, transaction_id: int
+    db: DBSession,
+    current_user: CurrentUser,
+    id: int,
+    account_id: int,
+    transaction_id: int,
 ) -> None:
     try:
         check_user(db, current_user.id, id)
@@ -124,7 +127,7 @@ def delete_transaction(
     if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
-    return CRUDMovement.delete_transaction(db, id, transaction_id)
+    return CRUDMovement.delete_transaction(db, id, account_id, transaction_id)
 
 
 @router.get("/{id}")
@@ -150,28 +153,28 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
 def create(
     db: DBSession,
     current_user: CurrentUser,
-    transactions: list[TransactionApiIn],
-    transaction_ids: list[int],
+    transactions: list[tuple[int, TransactionApiIn]],
+    transaction_ids: list[tuple[int, int]],
 ) -> Iterable[MovementApiOut]:
-    for transaction in transactions:
+    for account_id, transaction in transactions:
         try:
-            user_id = CRUDAccount.read_user_id(db, transaction.account_id)
+            user_id = CRUDAccount.read_user_id(db, account_id)
         except NoResultFound:
             raise AccountNotFound()
-        if CRUDAccount.is_synced(db, transaction.account_id):
+        if CRUDAccount.is_synced(db, account_id):
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         if user_id != current_user.id:
             raise ForbiddenAccount()
-        yield CRUDMovement.create(db, transaction)
+        yield CRUDMovement.create(db, account_id, transaction)
 
-    for transaction_id in transaction_ids:
+    for acount_id, transaction_id in transaction_ids:
         try:
             transaction_out = CRUDTransaction.read(db, transaction_id)
         except NoResultFound:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
         if CRUDTransaction.read_user_id(db, transaction_out.id) != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
-        yield CRUDMovement.create(db, transaction_id)
+        yield CRUDMovement.create(db, acount_id, transaction_id)
 
 
 @router.get("/")

@@ -12,14 +12,18 @@ from app.api import api_router
 from app.features.institution import CRUDInstitution
 from app.features.user import CRUDUser, CurrentUser, CurrentSuperuser
 from app.features.account import AccountApiOut
-from app.features.transaction import TransactionPlaidIn
+from app.features.transaction import (
+    TransactionPlaidIn,
+    TransactionPlaidOut,
+    reset_transaction_to_metadata,
+)
 
 from .crud import CRUDUserInstitutionLink, CRUDSyncableUserInstitutionLink
 from .models import (
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
 )
-from .plaid import fetch_transactions
+from .plaid import fetch_transactions, sync_transactions
 
 
 INSTITUTION_LINKS = "institution-links"
@@ -105,10 +109,8 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
     return CRUDUserInstitutionLink.delete(db, id)
 
 
-@router.post("/{id}/sync")
+@router.post("/plaid/{id}/sync")
 def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
-    from app.features.movement.plaid import sync_transactions
-
     try:
         curr_institution_link = CRUDUserInstitutionLink.read(db, id)
     except NoResultFound:
@@ -126,7 +128,7 @@ def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
         raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
 
 
-@router.get("/{id}/plaid-transactions/{start_date}/{end_date}")
+@router.get("/plaid/{id}/transactions/{start_date}/{end_date}")
 def read_many_plaid_transactions(
     db: DBSession,
     current_user: CurrentSuperuser,
@@ -136,6 +138,14 @@ def read_many_plaid_transactions(
 ) -> Iterable[TransactionPlaidIn]:
     user_institution_link = CRUDSyncableUserInstitutionLink.read(db, id)
     return fetch_transactions(db, user_institution_link, start_date, end_date)
+
+
+@router.put("/plaid/{id}/transactions/reset")
+def reset_transactions_plaid(
+    db: DBSession, current_user: CurrentSuperuser, id: int
+) -> Iterable[TransactionPlaidOut]:
+    for t in CRUDSyncableUserInstitutionLink.read_transactions(db, id):
+        yield reset_transaction_to_metadata(db, t.id)
 
 
 api_router.include_router(
