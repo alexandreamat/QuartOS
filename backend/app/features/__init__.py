@@ -8,5 +8,4 @@ from . import (
     account,
     transaction,
     movement,
-    plaid,
 )

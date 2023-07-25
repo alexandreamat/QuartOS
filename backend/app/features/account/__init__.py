@@ -7,7 +7,7 @@ from .models import (
     AccountPlaidOut,
 )
 from .plaid import fetch_accounts
-from .exceptions import AccountNotFound, ForbiddenAccount
+from .exceptions import ForbiddenAccount
 
 __all__ = [
     "CRUDAccount",
@@ -17,6 +17,5 @@ __all__ = [
     "AccountPlaidIn",
     "AccountPlaidOut",
     "fetch_accounts",
-    "AccountNotFound",
     "ForbiddenAccount",
 ]

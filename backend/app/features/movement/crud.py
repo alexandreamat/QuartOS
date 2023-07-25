@@ -12,8 +12,8 @@ from app.features.transaction import (
     TransactionPlaidIn,
     TransactionPlaidOut,
 )
+from app.features.account import Account
 
-from account import Account
 from .models import Movement, MovementApiIn, MovementApiOut
 
 

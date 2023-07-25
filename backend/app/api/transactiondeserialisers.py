@@ -4,12 +4,12 @@ from fastapi import APIRouter
 
 from app.database.deps import DBSession
 from app.features.user import CurrentSuperuser
-from app.api import api_router
+from app.features.transactiondeserialiser import (
+    CRUDTransactionDeserialiser,
+    TransactionDeserialiserApiIn,
+    TransactionDeserialiserApiOut,
+)
 
-from .crud import CRUDTransactionDeserialiser
-from .models import TransactionDeserialiserApiIn, TransactionDeserialiserApiOut
-
-TRANSACTION_DESERIALISERS = "transaction-deserialisers"
 
 router = APIRouter()
 
@@ -61,10 +61,3 @@ def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
     Delete a deserialiser.
     """
     CRUDTransactionDeserialiser.delete(db, id=id)
-
-
-api_router.include_router(
-    router,
-    prefix=f"/{TRANSACTION_DESERIALISERS}",
-    tags=[TRANSACTION_DESERIALISERS],
-)

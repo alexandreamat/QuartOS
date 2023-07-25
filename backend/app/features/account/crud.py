@@ -54,7 +54,9 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         return Account.read(db, id).is_synced
 
     @classmethod
-    def update(cls, db: Session, id: int, new_obj: AccountApiIn) -> AccountApiOut:
+    def update(
+        cls, db: Session, id: int, new_obj: AccountApiIn, **kwargs: Any
+    ) -> AccountApiOut:
         super().update(db, id, new_obj)
         account_out = Account.update_balance(db, id)
         return AccountApiOut.from_orm(account_out)
