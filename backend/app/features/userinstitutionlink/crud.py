@@ -1,10 +1,14 @@
-from typing import Iterable
+from typing import Any, Iterable
 
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.features.account import AccountApiOut, AccountPlaidOut
 from app.features.transaction import TransactionPlaidOut
+from app.features.userinstitutionlink import (
+    UserInstitutionLinkApiIn,
+    UserInstitutionLinkApiOut,
+)
 
 from .models import (
     UserInstitutionLink,

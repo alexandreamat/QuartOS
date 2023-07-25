@@ -4,12 +4,9 @@ from datetime import date
 import urllib3
 from fastapi import APIRouter, HTTPException, status
 
-from sqlalchemy.exc import NoResultFound, IntegrityError
-
 from app.database.deps import DBSession
 from app.api import api_router
 
-from app.features.institution import CRUDInstitution
 from app.features.user import CRUDUser, CurrentUser, CurrentSuperuser
 from app.features.account import AccountApiOut
 from app.features.transaction import (
@@ -24,6 +21,7 @@ from .models import (
     UserInstitutionLinkApiIn,
 )
 from .plaid import fetch_transactions, sync_transactions
+from .exceptions import ForbiddenUserInstitutionLink
 
 
 INSTITUTION_LINKS = "institution-links"
@@ -37,22 +35,16 @@ def create(
     current_user: CurrentUser,
     user_institution_link: UserInstitutionLinkApiIn,
 ) -> UserInstitutionLinkApiOut:
-    try:
-        CRUDInstitution.read(db, user_institution_link.institution_id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
-    user_institution_link.user_id = current_user.id
-    return CRUDUserInstitutionLink.create(db, user_institution_link)
+    CRUDUserInstitutionLink.create(db, user_institution_link)
 
 
 @router.get("/{id}/accounts")
 def read_accounts(
     db: DBSession, current_user: CurrentUser, id: int
 ) -> Iterable[AccountApiOut]:
-    try:
-        institution_link = CRUDUserInstitutionLink.read(db, id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    institution_link = CRUDUserInstitutionLink.read(db, id)
+    if current_user.id != institution_link.user_id:
+        raise ForbiddenUserInstitutionLink
     return CRUDUserInstitutionLink.read_accounts(db, institution_link.id)
 
 
@@ -60,12 +52,9 @@ def read_accounts(
 def read(
     db: DBSession, current_user: CurrentUser, id: int
 ) -> UserInstitutionLinkApiOut:
-    try:
-        institution_link = CRUDUserInstitutionLink.read(db, id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    institution_link = CRUDUserInstitutionLink.read(db, id)
     if institution_link.user_id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+        raise ForbiddenUserInstitutionLink
     return institution_link
 
 
@@ -83,27 +72,17 @@ def update(
     id: int,
     user_institution_link: UserInstitutionLinkApiIn,
 ) -> UserInstitutionLinkApiOut:
-    try:
-        curr_institution_link = CRUDUserInstitutionLink.read(db, id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    curr_institution_link = CRUDUserInstitutionLink.read(db, id)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     if curr_institution_link.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
-    user_institution_link.user_id = current_user.id
-    try:
-        return CRUDUserInstitutionLink.update(db, id, user_institution_link)
-    except IntegrityError:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    return CRUDUserInstitutionLink.update(db, id, user_institution_link)
 
 
 @router.delete("/{id}")
 def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
-    try:
-        curr_institution_link = CRUDUserInstitutionLink.read(db, id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    curr_institution_link = CRUDUserInstitutionLink.read(db, id)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDUserInstitutionLink.delete(db, id)
@@ -111,10 +90,7 @@ def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
 
 @router.post("/plaid/{id}/sync")
 def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
-    try:
-        curr_institution_link = CRUDUserInstitutionLink.read(db, id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    curr_institution_link = CRUDUserInstitutionLink.read(db, id)
     if curr_institution_link.user_id != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     if not curr_institution_link.plaid_id:
@@ -129,7 +105,7 @@ def sync(db: DBSession, current_user: CurrentUser, id: int) -> None:
 
 
 @router.get("/plaid/{id}/transactions/{start_date}/{end_date}")
-def read_many_plaid_transactions(
+def read_transactions_plaid(
     db: DBSession,
     current_user: CurrentSuperuser,
     id: int,

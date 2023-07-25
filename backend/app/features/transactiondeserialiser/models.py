@@ -1,13 +1,10 @@
 from typing import TYPE_CHECKING
 
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, Relationship
 from app.common.models import Base, CodeSnippet
 
 if TYPE_CHECKING:
     from app.features.institution.models import Institution
-
-
-from sqlmodel import Relationship
 
 
 class __TransactionDeserialiserBase(SQLModel):
