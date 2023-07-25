@@ -4,13 +4,18 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from app.database.deps import DBSession
-from app.api import api_router
 
-from .deps import CurrentUser, CurrentSuperuser
-from .crud import CRUDUser
-from .models import UserApiOut, UserApiIn
+from app.features.user import (
+    CurrentUser,
+    CurrentSuperuser,
+    CRUDUser,
+    UserApiOut,
+    UserApiIn,
+)
 
-USERS = "users"
+from . import movements
+from . import transactions
+from . import institutionlinks
 
 router = APIRouter()
 
@@ -41,25 +46,25 @@ def update_me(db: DBSession, current_user: CurrentUser, user: UserApiIn) -> User
     """
     Update own user.
     """
-    return CRUDUser.update(db, id=current_user.id, new_schema_obj=user)
+    return CRUDUser.update(db, id=current_user.id, new_obj=user)
 
 
-@router.get("/{id}")
-def read(id: int, db: DBSession, current_user: CurrentSuperuser) -> UserApiOut:
+@router.get("/{user_id}")
+def read(db: DBSession, user_id: int, current_user: CurrentSuperuser) -> UserApiOut:
     """
     Get a specific user by id.
     """
-    return CRUDUser.read(db, id=id)
+    return CRUDUser.read(db, id=user_id)
 
 
-@router.put("/{id}")
+@router.put("/{user_id}")
 def update(
-    db: DBSession, current_user: CurrentSuperuser, id: int, user: UserApiIn
+    db: DBSession, current_user: CurrentSuperuser, user_id: int, user: UserApiIn
 ) -> UserApiOut:
     """
     Update a user.
     """
-    return CRUDUser.update(db, id=id, new_schema_obj=user)
+    return CRUDUser.update(db, id=user_id, new_obj=user)
 
 
 @router.post("/")
@@ -89,11 +94,21 @@ def read_many(
     return CRUDUser.read_many(db, offset, limit)
 
 
-@router.delete("/{id}")
-def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
-    if current_user.id == id:
+@router.delete("/{user_id}")
+def delete(db: DBSession, current_user: CurrentSuperuser, user_id: int) -> None:
+    if current_user.id == user_id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
-    CRUDUser.delete(db, id)
+    CRUDUser.delete(db, user_id)
 
 
-api_router.include_router(router, prefix=f"/{USERS}", tags=[USERS])
+router.include_router(
+    transactions.router, prefix="/{user_id}/transactions", tags=["transactions"]
+)
+router.include_router(
+    institutionlinks.router,
+    prefix="/{user_id}/institution-links",
+    tags=["institution-links"],
+)
+router.include_router(
+    movements.router, prefix="/{user_id}/movements", tags=["movements"]
+)

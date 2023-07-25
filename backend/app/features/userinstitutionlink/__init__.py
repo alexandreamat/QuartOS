@@ -9,7 +9,6 @@ from .models import (
 from .plaid import fetch_user_institution_link, fetch_transactions, sync_transactions
 from .exceptions import (
     SyncedEntity,
-    UserInstitutionLinkNotFound,
     ForbiddenUserInstitutionLink,
 )
 
@@ -25,6 +24,5 @@ __all__ = [
     "fetch_transactions",
     "sync_transactions",
     "SyncedEntity",
-    "UserInstitutionLinkNotFound",
     "ForbiddenUserInstitutionLink",
 ]

@@ -15,11 +15,7 @@ from app.utils import (
 )
 from app.database.deps import DBSession
 from app.features.user import CRUDUser, UserApiIn
-from app.api import api_router
-
-from .models import Token
-
-AUTH = "auth"
+from app.features.auth import Token
 
 router = APIRouter()
 
@@ -78,6 +74,3 @@ def reset(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     user_in = UserApiIn(**curr_user.dict(), password=new_password)
     CRUDUser.update(db, curr_user.id, user_in)
-
-
-api_router.include_router(router, prefix=f"/{AUTH}", tags=[AUTH])

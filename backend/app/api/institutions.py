@@ -2,15 +2,16 @@ from typing import Iterable
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.features.user.deps import CurrentSuperuser
 from app.database.deps import DBSession
-from app.api import api_router
 
-from app.features.institution import fetch_institution
-
-
-from .crud import CRUDInstitution, CRUDSyncableInstitution
-from .models import InstitutionApiOut, InstitutionApiIn
+from app.features.user.deps import CurrentSuperuser
+from app.features.institution import (
+    CRUDInstitution,
+    CRUDSyncableInstitution,
+    InstitutionApiOut,
+    InstitutionApiIn,
+    fetch_institution,
+)
 
 INSTITUTIONS = "institutions"
 
@@ -27,23 +28,25 @@ def create(
     return CRUDInstitution.create(db, institution)
 
 
-@router.post("/{id}/sync")
-def sync(db: DBSession, current_user: CurrentSuperuser, id: int) -> InstitutionApiOut:
-    institution_db = CRUDInstitution.read(db, id=id)
+@router.post("/{institution_id}/sync")
+def sync(
+    db: DBSession, current_user: CurrentSuperuser, institution_id: int
+) -> InstitutionApiOut:
+    institution_db = CRUDInstitution.read(db, id=institution_id)
     if not institution_db.plaid_id:
         raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED)
     institution_in = fetch_institution(institution_db.plaid_id)
-    CRUDSyncableInstitution.update(db, id, institution_in)
-    institution_out = CRUDInstitution.read(db, id)
+    CRUDSyncableInstitution.update(db, institution_id, institution_in)
+    institution_out = CRUDInstitution.read(db, institution_id)
     return institution_out
 
 
-@router.get("/{id}")
-def read(db: DBSession, id: int) -> InstitutionApiOut:
+@router.get("/{institution_id}")
+def read(db: DBSession, institution_id: int) -> InstitutionApiOut:
     """
     Get institution by ID.
     """
-    return CRUDInstitution.read(db, id=id)
+    return CRUDInstitution.read(db, id=institution_id)
 
 
 @router.get("/")
@@ -54,25 +57,22 @@ def read_many(db: DBSession) -> Iterable[InstitutionApiOut]:
     return CRUDInstitution.read_many(db, 0, 0)
 
 
-@router.put("/{id}")
+@router.put("/{institution_id}")
 def update(
     db: DBSession,
     current_user: CurrentSuperuser,
-    id: int,
+    institution_id: int,
     institution: InstitutionApiIn,
 ) -> InstitutionApiOut:
     """
     Update an institution.
     """
-    return CRUDInstitution.update(db, id, institution)
+    return CRUDInstitution.update(db, institution_id, institution)
 
 
-@router.delete("/{id}")
-def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
+@router.delete("/{institution_id}")
+def delete(db: DBSession, current_user: CurrentSuperuser, institution_id: int) -> None:
     """
     Delete an institution.
     """
-    CRUDInstitution.delete(db, id=id)
-
-
-api_router.include_router(router, prefix=f"/{INSTITUTIONS}", tags=[INSTITUTIONS])
+    CRUDInstitution.delete(db, id=institution_id)

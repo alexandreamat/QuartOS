@@ -32,10 +32,12 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         return UserApiOut.from_orm(User.read_by_email(db, email=email))
 
     @classmethod
-    def update(cls, db: Session, id: int, new_schema_obj: UserApiIn) -> UserApiOut:
-        hashed_password = get_password_hash(new_schema_obj.password)
-        del new_schema_obj.password
-        db_obj_in = User.from_schema(new_schema_obj)
+    def update(
+        cls, db: Session, id: int, new_obj: UserApiIn, **kwargs: Any
+    ) -> UserApiOut:
+        hashed_password = get_password_hash(new_obj.password)
+        del new_obj.password
+        db_obj_in = User.from_schema(new_obj)
         db_obj_in.hashed_password = hashed_password
         db_obj_out = User.update(db, id, db_obj_in)
         return UserApiOut.from_orm(db_obj_out)

@@ -11,8 +11,8 @@ from sqlmodel.sql.expression import SelectOfScalar
 from app.common.models import Base
 from app.utils import verify_password
 
-from app.features.userinstitutionlink.models import UserInstitutionLink
-from app.features.account.models import Account
+from app.features.userinstitutionlink import UserInstitutionLink
+from app.features.account import Account
 from app.features.transaction import Transaction
 from app.features.movement import Movement, PLStatement
 
