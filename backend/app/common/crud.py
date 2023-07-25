@@ -1,4 +1,4 @@
-from typing import Generic, Type, TypeVar, Iterable
+from typing import Generic, Type, TypeVar, Iterable, Any
 
 from sqlmodel import Session, SQLModel
 
@@ -18,8 +18,9 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
         cls,
         db: Session,
         new_schema_obj: ApiInModel,
+        **kwargs: Any,
     ) -> ApiOutModel:
-        db_obj_in = cls.db_model.from_schema(new_schema_obj)
+        db_obj_in = cls.db_model.from_schema(new_schema_obj, **kwargs)
         db_obj_out = cls.db_model.create(db, db_obj_in)
         api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj_out)
         return api_out_obj
@@ -35,8 +36,14 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
             yield cls.out_model.from_orm(s)
 
     @classmethod
-    def update(cls, db: Session, id: int, new_obj: ApiInModel) -> ApiOutModel:
-        db_obj_in = cls.db_model.from_schema(new_obj)
+    def update(
+        cls,
+        db: Session,
+        id: int,
+        new_obj: ApiInModel,
+        **kwargs: Any,
+    ) -> ApiOutModel:
+        db_obj_in = cls.db_model.from_schema(new_obj, **kwargs)
         db_obj_out = cls.db_model.update(db, id, db_obj_in)
         api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj_out)
         return api_out_obj

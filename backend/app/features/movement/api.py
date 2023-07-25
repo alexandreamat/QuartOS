@@ -3,14 +3,13 @@ from datetime import date
 from decimal import Decimal
 
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy.exc import NoResultFound
 
 from app.database.deps import DBSession
 from app.common.models import CurrencyCode
 from app.api import api_router
 
 from app.features.user import CurrentUser, CRUDUser
-from app.features.account import CRUDAccount, AccountNotFound, ForbiddenAccount
+from app.features.account import CRUDAccount, ForbiddenAccount
 from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
@@ -20,7 +19,6 @@ from app.features.transaction import (
 
 from .models import MovementApiOut, PLStatement, MovementField
 from .crud import CRUDMovement
-from .exceptions import MovementNotFound
 
 MOVEMENTS = "movements"
 TRANSACTIONS = api.TRANSACTIONS
@@ -78,10 +76,7 @@ def add_transaction(
     account_id: int,
     transaction: TransactionApiIn,
 ) -> MovementApiOut:
-    try:
-        return CRUDMovement.add_transaction(db, id, account_id, transaction)
-    except NoResultFound:
-        raise MovementNotFound()
+    return CRUDMovement.add_transaction(db, id, account_id, transaction)
 
 
 @router.put("/{id}/transactions/{transaction_id}", tags=[TRANSACTIONS])
@@ -94,16 +89,10 @@ def update_transaction(
     transaction: TransactionApiIn,
 ) -> TransactionApiOut:
     # Check movement ownership
-    try:
-        check_user(db, current_user.id, id)
-    except NoResultFound:
-        raise MovementNotFound()
+    check_user(db, current_user.id, id)
 
     # Check new account existence and ownership
-    try:
-        user_id = CRUDAccount.read_user_id(db, account_id)
-    except NoResultFound:
-        raise AccountNotFound()
+    user_id = CRUDAccount.read_user_id(db, account_id)
     if user_id != current_user.id:
         raise ForbiddenAccount()
 
@@ -120,10 +109,7 @@ def delete_transaction(
     account_id: int,
     transaction_id: int,
 ) -> None:
-    try:
-        check_user(db, current_user.id, id)
-    except NoResultFound:
-        raise MovementNotFound()
+    check_user(db, current_user.id, id)
     if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
@@ -132,20 +118,14 @@ def delete_transaction(
 
 @router.get("/{id}")
 def read(db: DBSession, current_user: CurrentUser, id: int) -> MovementApiOut:
-    try:
-        movement = CRUDMovement.read(db, id)
-    except NoResultFound:
-        raise MovementNotFound()
+    movement = CRUDMovement.read(db, id)
     check_user(db, current_user.id, movement.id)
     return movement
 
 
 @router.delete("/{id}", tags=[TRANSACTIONS])
 def delete(db: DBSession, current_user: CurrentUser, id: int) -> None:
-    try:
-        check_user(db, current_user.id, id)
-    except NoResultFound:
-        raise MovementNotFound()
+    check_user(db, current_user.id, id)
     CRUDMovement.delete(db, id)
 
 
@@ -157,10 +137,7 @@ def create(
     transaction_ids: list[tuple[int, int]],
 ) -> Iterable[MovementApiOut]:
     for account_id, transaction in transactions:
-        try:
-            user_id = CRUDAccount.read_user_id(db, account_id)
-        except NoResultFound:
-            raise AccountNotFound()
+        user_id = CRUDAccount.read_user_id(db, account_id)
         if CRUDAccount.is_synced(db, account_id):
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         if user_id != current_user.id:
@@ -168,10 +145,7 @@ def create(
         yield CRUDMovement.create(db, account_id, transaction)
 
     for acount_id, transaction_id in transaction_ids:
-        try:
-            transaction_out = CRUDTransaction.read(db, transaction_id)
-        except NoResultFound:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Transaction not found")
+        transaction_out = CRUDTransaction.read(db, transaction_id)
         if CRUDTransaction.read_user_id(db, transaction_out.id) != current_user.id:
             raise HTTPException(status.HTTP_403_FORBIDDEN)
         yield CRUDMovement.create(db, acount_id, transaction_id)

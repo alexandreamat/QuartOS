@@ -2,7 +2,6 @@ from datetime import date
 from typing import Iterable
 
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy.exc import NoResultFound
 
 from app.database.deps import DBSession
 from app.api import api_router
@@ -46,10 +45,7 @@ def update_plaid(
 
 @router.get("/{id}")
 def read(db: DBSession, current_user: CurrentUser, id: int) -> TransactionApiOut:
-    try:
-        transaction = CRUDTransaction.read(db, id)
-    except NoResultFound:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    transaction = CRUDTransaction.read(db, id)
     if CRUDTransaction.read_user_id(db, transaction.id) != current_user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return transaction

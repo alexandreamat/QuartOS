@@ -1,7 +1,7 @@
 from typing import Iterable
 
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import IntegrityError
 
 from app.database.deps import DBSession
 from app.api import api_router
@@ -49,10 +49,7 @@ def read(id: int, db: DBSession, current_user: CurrentSuperuser) -> UserApiOut:
     """
     Get a specific user by id.
     """
-    try:
-        return CRUDUser.read(db, id=id)
-    except NoResultFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return CRUDUser.read(db, id=id)
 
 
 @router.put("/{id}")
@@ -62,11 +59,7 @@ def update(
     """
     Update a user.
     """
-    try:
-        user_out = CRUDUser.update(db, id=id, new_schema_obj=user)
-    except NoResultFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    return user_out
+    return CRUDUser.update(db, id=id, new_schema_obj=user)
 
 
 @router.post("/")

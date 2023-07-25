@@ -9,6 +9,7 @@ from app.features.userinstitutionlink import UserInstitutionLinkApiOut
 from app.features.transaction import TransactionApiOut
 from app.features.account import AccountApiOut
 from app.features.movement import MovementApiOut, PLStatement
+from app.features.user import UserApiIn, UserApiOut
 
 from .models import User, UserApiOut, UserApiIn
 
@@ -18,7 +19,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     out_model = UserApiOut
 
     @classmethod
-    def create(cls, db: Session, new_schema_obj: UserApiIn) -> UserApiOut:
+    def create(cls, db: Session, new_schema_obj: UserApiIn, **_: Any) -> UserApiOut:
         hashed_password = get_password_hash(new_schema_obj.password)
         del new_schema_obj.password
         db_obj_in = User.from_schema(new_schema_obj)

@@ -3,7 +3,7 @@ from decimal import Decimal
 from datetime import date
 from typing import Iterable, TYPE_CHECKING, Any
 
-from sqlmodel import SQLModel, Relationship, Session, and_, col, func, select
+from sqlmodel import SQLModel, Relationship, Session, and_, col, func
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base, CurrencyCode

@@ -24,7 +24,7 @@ from app.features.transaction import (
 
 from .crud import CRUDAccount
 from .models import AccountApiOut, AccountApiIn
-from .exceptions import AccountNotFound, ForbiddenAccount
+from .exceptions import ForbiddenAccount
 
 
 ACCOUNTS = "accounts"
@@ -39,12 +39,9 @@ def create(
     account: AccountApiIn,
 ) -> AccountApiOut:
     if institutional_account := account.institutionalaccount:
-        try:
-            user_id = CRUDUserInstitutionLink.read_user_id(
-                db, institutional_account.userinstitutionlink_id
-            )
-        except NoResultFound:
-            raise AccountNotFound()
+        user_id = CRUDUserInstitutionLink.read_user_id(
+            db, institutional_account.userinstitutionlink_id
+        )
         if user_id != current_user.id:
             raise ForbiddenAccount()
         user_institution_link = CRUDUserInstitutionLink.read(
@@ -59,10 +56,7 @@ def create(
 
 @router.get("/{id}")
 def read(db: DBSession, current_user: CurrentUser, id: int) -> AccountApiOut:
-    try:
-        account = CRUDAccount.read(db, id)
-    except NoResultFound:
-        raise AccountNotFound()
+    account = CRUDAccount.read(db, id)
     if CRUDAccount.read_user_id(db, account.id) != current_user.id:
         raise ForbiddenAccount()
     return account
@@ -79,10 +73,7 @@ def read_transactions(
     search: str | None = None,
     is_descending: bool = True,
 ) -> Iterable[TransactionApiOut]:
-    try:
-        account = CRUDAccount.read(db, id)
-    except NoResultFound:
-        raise AccountNotFound()
+    account = CRUDAccount.read(db, id)
     if CRUDAccount.read_user_id(db, account.id) != current_user.id:
         raise ForbiddenAccount()
     return CRUDAccount.read_transactions(
@@ -97,10 +88,7 @@ def upload_transactions_sheet(
     id: int,
     file: Annotated[UploadFile, File(...)],
 ) -> Iterable[TransactionApiIn]:
-    try:
-        user_id = CRUDAccount.read_user_id(db, id)
-    except NoResultFound:
-        raise AccountNotFound()
+    user_id = CRUDAccount.read_user_id(db, id)
     if user_id != current_user.id:
         raise ForbiddenAccount()
     if CRUDAccount.is_synced(db, id):
@@ -125,10 +113,7 @@ def update(
     id: int,
     account: AccountApiIn,
 ) -> AccountApiOut:
-    try:
-        user_id = CRUDAccount.read_user_id(db, id)
-    except NoResultFound:
-        raise AccountNotFound()
+    user_id = CRUDAccount.read_user_id(db, id)
     if user_id != current_user.id:
         raise ForbiddenAccount()
     if CRUDAccount.is_synced(db, id):
@@ -153,10 +138,7 @@ def delete(
     current_user: CurrentUser,
     id: int,
 ) -> None:
-    try:
-        user_id = CRUDAccount.read_user_id(db, id)
-    except NoResultFound:
-        raise AccountNotFound()
+    user_id = CRUDAccount.read_user_id(db, id)
     if user_id != current_user.id:
         raise ForbiddenAccount()
     if CRUDAccount.is_synced(db, id):

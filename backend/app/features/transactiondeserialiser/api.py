@@ -1,7 +1,6 @@
 from typing import Iterable
 
-from fastapi import APIRouter, HTTPException, status
-from sqlalchemy.exc import NoResultFound
+from fastapi import APIRouter
 
 from app.database.deps import DBSession
 from app.features.user import CurrentSuperuser
@@ -32,10 +31,7 @@ def read(db: DBSession, id: int) -> TransactionDeserialiserApiOut:
     """
     Get deserialiser by ID.
     """
-    try:
-        return CRUDTransactionDeserialiser.read(db, id=id)
-    except NoResultFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return CRUDTransactionDeserialiser.read(db, id=id)
 
 
 @router.get("/")
@@ -56,10 +52,7 @@ def update(
     """
     Update a deserialiser.
     """
-    try:
-        return CRUDTransactionDeserialiser.update(db, id, institution)
-    except NoResultFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return CRUDTransactionDeserialiser.update(db, id, institution)
 
 
 @router.delete("/{id}")
@@ -67,10 +60,7 @@ def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
     """
     Delete a deserialiser.
     """
-    try:
-        CRUDTransactionDeserialiser.delete(db, id=id)
-    except NoResultFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    CRUDTransactionDeserialiser.delete(db, id=id)
 
 
 api_router.include_router(
