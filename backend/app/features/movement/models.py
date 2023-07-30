@@ -56,11 +56,11 @@ class Movement(__MovementBase, Base, table=True):
 
     @property
     def earliest_timestamp(self) -> date:
-        return min(t.timestamp for t in self.transactions if t.timestamp)
+        return min(t.timestamp for t in self.transactions)
 
     @property
     def latest_timestamp(self) -> date:
-        return max(t.timestamp for t in self.transactions if t.timestamp)
+        return max(t.timestamp for t in self.transactions)
 
     def amount(self, currency_code: CurrencyCode) -> Decimal:
         return sum(
@@ -75,10 +75,6 @@ class Movement(__MovementBase, Base, table=True):
     @property
     def amounts(self) -> dict[CurrencyCode, Decimal]:
         return {c: self.amount(c) for c in {t.currency_code for t in self.transactions}}
-
-    @classmethod
-    def create(cls, db: Session) -> "Movement":  # type: ignore[override]
-        return super().create(db, cls())
 
     @classmethod
     def select_transactions(
