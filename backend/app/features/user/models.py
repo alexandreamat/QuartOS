@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Relationship, SQLModel, Session, select, update
+from sqlmodel import Relationship, SQLModel, Session, select, or_
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base
@@ -78,13 +78,19 @@ class User(__UserBase, Base, table=True):
         userinstitutionlink_id: int | None,
         account_id: int | None,
     ) -> SelectOfScalar[Account]:
-        statement = UserInstitutionLink.select_accounts(
-            account_id, userinstitutionlink_id
-        )
+        statement = Account.select_accounts(account_id)
 
-        statement = statement.join(cls)
-        if user_id:
-            statement = statement.where(cls.id == user_id)
+        if userinstitutionlink_id:
+            statement = statement.where(
+                UserInstitutionLink.id == userinstitutionlink_id
+            )
+
+        statement = statement.outerjoin(UserInstitutionLink).where(
+            or_(
+                Account.NonInstitutionalAccount.user_id == user_id,
+                UserInstitutionLink.user_id == user_id,
+            )
+        )
 
         return statement
 
@@ -97,14 +103,19 @@ class User(__UserBase, Base, table=True):
         movement_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
-        statement = UserInstitutionLink.select_movements(
-            userinstitutionlink_id, account_id, movement_id, **kwargs
+        statement = Account.select_movements(account_id, movement_id, **kwargs)
+
+        if userinstitutionlink_id:
+            statement = statement.where(
+                UserInstitutionLink.id == userinstitutionlink_id
+            )
+
+        statement = statement.outerjoin(UserInstitutionLink).where(
+            or_(
+                Account.NonInstitutionalAccount.user_id == user_id,
+                UserInstitutionLink.user_id == user_id,
+            )
         )
-
-        statement = statement.join(cls)
-        if user_id:
-            statement = statement.where(cls.id == user_id)
-
         return statement
 
     @classmethod
@@ -117,25 +128,33 @@ class User(__UserBase, Base, table=True):
         transaction_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
-        statement = UserInstitutionLink.select_transactions(
-            userinstitutionlink_id, account_id, movement_id, transaction_id, **kwargs
+        statement = Account.select_transactions(
+            account_id, movement_id, transaction_id, **kwargs
         )
-        statement = statement.join(cls)
-        if user_id:
-            statement = statement.where(cls.id == user_id)
 
+        if userinstitutionlink_id:
+            statement = statement.where(
+                UserInstitutionLink.id == userinstitutionlink_id
+            )
+
+        statement = statement.outerjoin(UserInstitutionLink).where(
+            or_(
+                Account.NonInstitutionalAccount.user_id == user_id,
+                UserInstitutionLink.user_id == user_id,
+            )
+        )
         return statement
 
     @classmethod
     def get_movement_aggregate(
-        cls, db: Session, user_id: int, *args: Any, **kwargs: Any
+        cls, db: Session, user_id: int, **kwargs: Any
     ) -> PLStatement:
         statement = cls.select_movements(user_id, None, None, None)
-        return Movement.get_aggregate(db, statement, *args, **kwargs)
+        return Movement.get_aggregate(db, statement, **kwargs)
 
     @classmethod
     def get_many_movement_aggregates(
-        cls, db: Session, id: int, page: int, per_page: int, *args: Any, **kwargs: Any
+        cls, db: Session, user_id: int, page: int, per_page: int, **kwargs: Any
     ) -> Iterable[PLStatement]:
         today = date.today()
         last_start_date = today.replace(day=1)
@@ -145,9 +164,8 @@ class User(__UserBase, Base, table=True):
             end_date = min(start_date + relativedelta(months=1), today)
             yield cls.get_movement_aggregate(
                 db,
-                id,
-                start_date,
-                end_date,
-                *args,
+                user_id,
+                start_date=start_date,
+                end_date=end_date,
                 **kwargs,
             )

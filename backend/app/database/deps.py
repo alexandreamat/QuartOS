@@ -1,8 +1,8 @@
 from typing import Generator, Annotated
 
-from sqlmodel import create_engine, Session
 from sqlalchemy import event
 from fastapi import Depends
+from sqlmodel import create_engine, Session
 
 from app.settings import settings
 

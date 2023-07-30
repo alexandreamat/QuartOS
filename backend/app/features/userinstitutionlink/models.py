@@ -65,18 +65,6 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
         return statement
 
     @classmethod
-    def select_accounts(
-        cls, account_id: int | None, userinstitutionlink_id: int | None
-    ) -> SelectOfScalar[Account]:
-        statement = Account.select_accounts(account_id)
-
-        statement = statement.join(cls)
-        if userinstitutionlink_id:
-            statement = statement.where(cls.id == userinstitutionlink_id)
-
-        return statement
-
-    @classmethod
     def select_movements(
         cls,
         userinstitutionlink_id: int | None,

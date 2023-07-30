@@ -96,13 +96,13 @@ class Movement(__MovementBase, Base, table=True):
     def select_movements(
         cls,
         movement_id: int | None,
-        page: int,
-        per_page: int,
-        start_date: date | None,
-        end_date: date | None,
-        search: str | None,
-        is_descending: bool,
-        sort_by: MovementField,
+        page: int = 0,
+        per_page: int = 0,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        search: str | None = None,
+        is_descending: bool = True,
+        sort_by: MovementField = MovementField.TIMESTAMP,
     ) -> SelectOfScalar["Movement"]:
         # SELECT
         statement = cls.select()
