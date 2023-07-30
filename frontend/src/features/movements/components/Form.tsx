@@ -22,18 +22,19 @@ export default function Form(props: {
     TransactionApiOut | undefined
   >(undefined);
 
-  const movementQuery = api.endpoints.readApiMovementsIdGet.useQuery(
-    movementId || skipToken
-  );
+  const movementQuery =
+    api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
+      movementId || skipToken
+    );
 
-  const [createMovement, createMovementResult] =
-    api.endpoints.createApiMovementsPost.useMutation();
+  const [createMovements, createMovementsResult] =
+    api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   const [updateTransaction, updateTransactionResult] =
-    api.endpoints.updateTransactionApiMovementsIdTransactionsTransactionIdPut.useMutation();
+    api.endpoints.updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
 
   const [deleteMovement, deleteMovementResult] =
-    api.endpoints.deleteApiMovementsIdDelete.useMutation();
+    api.endpoints.deleteApiUsersMeMovementsMovementIdDelete.useMutation();
 
   useEffect(() => {
     if (props.movementId) setMovementId(props.movementId);
@@ -58,15 +59,15 @@ export default function Form(props: {
 
   async function handleAddTransaction(transaction: TransactionApiOut) {
     if (movementId) {
-      const transactionMovementId = transaction.movement_id;
       try {
         await updateTransaction({
-          id: transactionMovementId,
+          accountId: transaction.account_id,
+          movementId: transaction.movement_id,
           transactionId: transaction.id,
           transactionApiIn: {
             ...transaction,
-            movement_id: movementId,
           },
+          newMovementId: movementId,
         }).unwrap();
       } catch (error) {
         logMutationError(error, updateTransactionResult);
@@ -74,13 +75,16 @@ export default function Form(props: {
       }
     } else {
       try {
-        const [movement] = await createMovement({
-          transactions: [],
-          transaction_ids: [transaction.id],
+        const [movement] = await createMovements({
+          accountId: transaction.account_id,
+          bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+            transactions: [],
+            transaction_ids: [transaction.id],
+          },
         }).unwrap();
         setMovementId(movement.id);
       } catch (error) {
-        logMutationError(error, createMovementResult);
+        logMutationError(error, createMovementsResult);
         return;
       }
     }
@@ -88,12 +92,15 @@ export default function Form(props: {
 
   async function handleRemoveTransaction(transaction: TransactionApiOut) {
     try {
-      await createMovement({
-        transactions: [],
-        transaction_ids: [transaction.id],
+      await createMovements({
+        accountId: transaction.account_id,
+        bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+          transactions: [],
+          transaction_ids: [transaction.id],
+        },
       }).unwrap();
     } catch (error) {
-      logMutationError(error, createMovementResult);
+      logMutationError(error, createMovementsResult);
       return;
     }
   }
@@ -137,7 +144,6 @@ export default function Form(props: {
               open={isTransactionFormOpen}
               onClose={() => setIsTransactionFormOpen(false)}
               movementId={movementId}
-              onAdded={(m) => setMovementId(m.id)}
             />
           )}
         </>
@@ -171,7 +177,7 @@ export default function Form(props: {
                 </Segment.Inline>
               </Segment>
             )}
-            <QueryErrorMessage query={createMovementResult} />
+            <QueryErrorMessage query={createMovementsResult} />
             <QueryErrorMessage query={updateTransactionResult} />
             <QueryErrorMessage query={deleteMovementResult} />
             <FlexColumn.Auto>

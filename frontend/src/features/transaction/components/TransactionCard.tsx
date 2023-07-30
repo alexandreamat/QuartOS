@@ -20,7 +20,10 @@ import MutateActionButton from "components/MutateActionButton";
 export function TransactionCard(
   props:
     | {
-        // from transactions
+        transaction: TransactionApiOut;
+      }
+    | {
+        // from transactions or movement with 1 transaction
         transaction: TransactionApiOut;
         onGoMovement: () => void;
         onOpenEditForm: () => void;
@@ -36,9 +39,12 @@ export function TransactionCard(
     | {
         // from preview
         transaction: TransactionApiIn;
+        accountId: number;
       }
 ) {
-  const accountQueries = useAccountQueries(props.transaction.account_id);
+  const accountQueries = useAccountQueries(
+    "accountId" in props ? props.accountId : props.transaction.account_id
+  );
 
   return (
     <Card fluid color="teal">
@@ -86,7 +92,7 @@ export function TransactionCard(
               <ActionButton
                 tooltip="Edit Movement"
                 icon="arrows alternate horizontal"
-                onClick={props.onGoMovement}
+                onClick={props.onGoMovement!}
               />
             </Grid.Column>
           )}

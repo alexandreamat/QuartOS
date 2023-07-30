@@ -36,7 +36,7 @@ export default function InstitutionForm(props: {
   const [createInstitution, createInstitutionResult] =
     api.endpoints.createApiInstitutionsPost.useMutation();
   const [updateInstitution, updateInstitutionResult] =
-    api.endpoints.updateApiInstitutionsIdPut.useMutation();
+    api.endpoints.updateApiInstitutionsInstitutionIdPut.useMutation();
 
   useEffect(() => {
     if (!props.institution) return;
@@ -63,7 +63,7 @@ export default function InstitutionForm(props: {
     if (props.institution) {
       try {
         await updateInstitution({
-          id: props.institution.id,
+          institutionId: props.institution.id,
           institutionApiIn: institution,
         }).unwrap();
       } catch (error) {

@@ -21,9 +21,9 @@ function InstitutionLinkRow(props: {
   const navigate = useNavigate();
 
   const [syncLink, syncLinkResult] =
-    api.endpoints.syncApiInstitutionLinksIdSyncPost.useMutation();
+    api.endpoints.syncApiUsersMeInstitutionLinksUserinstitutionlinkIdSyncPost.useMutation();
   const [deleteInstitutionLink, deleteInstitutionLinkResult] =
-    api.endpoints.deleteApiInstitutionLinksIdDelete.useMutation();
+    api.endpoints.deleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDelete.useMutation();
 
   const handleDelete = async (institutionLink: UserInstitutionLinkApiOut) => {
     try {
@@ -41,9 +41,10 @@ function InstitutionLinkRow(props: {
       return;
     }
   };
-  const institutionQuery = api.endpoints.readApiInstitutionsIdGet.useQuery(
-    props.institutionLink.institution_id
-  );
+  const institutionQuery =
+    api.endpoints.readApiInstitutionsInstitutionIdGet.useQuery(
+      props.institutionLink.institution_id
+    );
 
   return (
     <Table.Row key={props.institutionLink.id}>
@@ -145,7 +146,7 @@ export default function InstitutionsLinks() {
   >(undefined);
 
   const institutionsLinksQuery =
-    api.endpoints.readManyApiInstitutionLinksGet.useQuery();
+    api.endpoints.readManyApiUsersMeInstitutionLinksGet.useQuery();
 
   const handleOpenCreateForm = () => {
     setSelectedInstitutionLink(undefined);

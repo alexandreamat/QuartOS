@@ -12,7 +12,7 @@ export default function Summary(props: {
   onClickExpenses: () => void;
 }) {
   const aggregateQuery =
-    api.endpoints.getAggregateApiMovementsAggregatesStartDateEndDateGet.useQuery(
+    api.endpoints.getAggregateApiUsersMeMovementsAggregatesStartDateEndDateGet.useQuery(
       {
         startDate: format(props.startDate, "yyyy-MM-dd"),
         endDate: format(props.endDate, "yyyy-MM-dd"),

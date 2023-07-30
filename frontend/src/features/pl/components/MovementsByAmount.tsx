@@ -10,7 +10,7 @@ export function MovementsByAmount(props: {
   endDate: Date;
   showIncome: boolean;
 }) {
-  const movementsQuery = api.endpoints.readManyApiMovementsGet.useQuery({
+  const movementsQuery = api.endpoints.readManyApiUsersMeMovementsGet.useQuery({
     startDate: formatDateParam(props.startDate),
     endDate: formatDateParam(props.endDate),
     isDescending: props.showIncome,

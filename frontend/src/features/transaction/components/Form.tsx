@@ -29,7 +29,7 @@ export default function TransactionForm(props: {
   accountId?: number;
   movementId?: number;
   transaction?: TransactionApiOut;
-  onSubmit: (x: TransactionApiIn) => Promise<void>;
+  onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
   resultQuery: SimpleQuery;
   onDelete?: () => Promise<void>;
   deleteQuery?: SimpleQuery;
@@ -44,13 +44,15 @@ export default function TransactionForm(props: {
     accountId: useFormField(0, "account"),
   };
 
-  const accountQuery = api.endpoints.readApiAccountsIdGet.useQuery(
-    form.accountId.value || skipToken
-  );
+  const accountQuery =
+    api.endpoints.readApiUsersMeAccountsAccountIdGet.useQuery(
+      form.accountId.value || skipToken
+    );
 
-  const movementQuery = api.endpoints.readApiMovementsIdGet.useQuery(
-    props.movementId || skipToken
-  );
+  const movementQuery =
+    api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
+      props.movementId || skipToken
+    );
 
   const disableSynced = isEdit && accountQuery.data?.is_synced;
 
@@ -84,7 +86,7 @@ export default function TransactionForm(props: {
     if (invalidFields.length > 0) return;
     const transactionIn = transactionFormToApiIn(form);
     try {
-      await props.onSubmit(transactionIn);
+      await props.onSubmit(transactionIn, form.accountId.value!);
     } catch (error) {
       return;
     }
@@ -155,20 +157,26 @@ export default function TransactionForm(props: {
   );
 }
 
-function FromCreate(props: {
+function FormCreate(props: {
   accountId?: number;
   open: boolean;
   onClose: () => void;
   onCreated: (x: MovementApiOut) => void;
 }) {
   const [createMovement, createMovementResult] =
-    api.endpoints.createApiMovementsPost.useMutation();
+    api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
 
-  const handleSubmit = async (transaction: TransactionApiIn) => {
+  const handleSubmit = async (
+    transaction: TransactionApiIn,
+    accountId: number
+  ) => {
     try {
       const [movement] = await createMovement({
-        transactions: [transaction],
-        transaction_ids: [],
+        accountId: accountId,
+        bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+          transactions: [transaction],
+          transaction_ids: [],
+        },
       }).unwrap();
       props.onCreated(movement);
     } catch (error) {
@@ -189,25 +197,27 @@ function FromCreate(props: {
   );
 }
 
-function FromAdd(props: {
+function FormAdd(props: {
   accountId?: number;
   open: boolean;
   movementId: number;
   onClose: () => void;
-  onAdded: (x: MovementApiOut) => void;
 }) {
-  const [addTransaction, addTransactionResult] =
-    api.endpoints.addTransactionApiMovementsIdTransactionsPost.useMutation();
+  const [createTransaction, createTransactionResult] =
+    api.endpoints.createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost.useMutation();
 
-  const handleSubmit = async (transaction: TransactionApiIn) => {
+  const handleSubmit = async (
+    transaction: TransactionApiIn,
+    accountId: number
+  ) => {
     try {
-      const movement = await addTransaction({
-        id: props.movementId,
+      await createTransaction({
+        accountId: accountId,
+        movementId: props.movementId,
         transactionApiIn: transaction,
       }).unwrap();
-      props.onAdded(movement);
     } catch (error) {
-      logMutationError(error, addTransactionResult);
+      logMutationError(error, createTransactionResult);
       return;
     }
   };
@@ -220,12 +230,12 @@ function FromAdd(props: {
       accountId={props.accountId}
       movementId={props.movementId}
       onSubmit={handleSubmit}
-      resultQuery={addTransactionResult}
+      resultQuery={createTransactionResult}
     />
   );
 }
 
-function FromEdit(props: {
+function FormEdit(props: {
   transaction: TransactionApiOut;
   accountId?: number;
   relatedTransactions?: TransactionApiOut[];
@@ -235,18 +245,22 @@ function FromEdit(props: {
   movementId: number;
 }) {
   const [updateTransaction, updateTransactionResult] =
-    api.endpoints.updateTransactionApiMovementsIdTransactionsTransactionIdPut.useMutation();
+    api.endpoints.updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
 
   const [deleteTransaction, deleteTransactionResult] =
-    api.endpoints.deleteTransactionApiMovementsIdTransactionsTransactionIdDelete.useMutation();
+    api.endpoints.deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
 
-  const handleSubmit = async (transactionIn: TransactionApiIn) => {
+  const handleSubmit = async (
+    transactionIn: TransactionApiIn,
+    accountId: number
+  ) => {
     try {
-      const movementId = props.transaction.movement_id;
       const transactionOut = await updateTransaction({
-        id: movementId,
+        accountId: accountId,
+        movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
-        transactionApiIn: { ...transactionIn, movement_id: movementId },
+        transactionApiIn: transactionIn,
+        newMovementId: props.transaction.movement_id,
       }).unwrap();
       props.onEdited && props.onEdited(transactionOut);
     } catch (error) {
@@ -258,7 +272,8 @@ function FromEdit(props: {
   async function handleDelete() {
     try {
       await deleteTransaction({
-        id: props.movementId,
+        accountId: props.transaction.account_id,
+        movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
       });
     } catch (error) {
@@ -282,6 +297,6 @@ function FromEdit(props: {
   );
 }
 
-TransactionForm.Create = FromCreate;
-TransactionForm.Add = FromAdd;
-TransactionForm.Edit = FromEdit;
+TransactionForm.Create = FormCreate;
+TransactionForm.Add = FormAdd;
+TransactionForm.Edit = FormEdit;

@@ -106,7 +106,7 @@ export default function Accounts() {
 
   const [isFormOpen, setIsFormOpen] = useState(isFormOpenParam);
 
-  const accountsQuery = api.endpoints.readManyApiAccountsGet.useQuery();
+  const accountsQuery = api.endpoints.readManyApiUsersMeAccountsGet.useQuery();
 
   const handleCreate = () => {
     setSelectedAccount(undefined);

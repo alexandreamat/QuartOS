@@ -4,7 +4,7 @@ import { DropdownItemProps } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
 
 export function useTransactionOptions(search: string) {
-  const query = api.endpoints.readManyApiTransactionsGet.useQuery(
+  const query = api.endpoints.readManyApiUsersMeTransactionsGet.useQuery(
     search.length
       ? {
           page: 1,
@@ -43,15 +43,17 @@ export function useTransactionsQuery(arg: {
   isDescending: boolean;
 }) {
   const transactionsQuery = arg.accountId
-    ? api.endpoints.readTransactionsApiAccountsIdTransactionsGet.useQuery({
-        id: arg.accountId,
-        page: arg.page,
-        perPage: arg.perPage,
-        timestamp: arg.timestamp && arg.timestamp.toISOString(),
-        search: arg.search,
-        isDescending: arg.isDescending,
-      })
-    : api.endpoints.readManyApiTransactionsGet.useQuery({
+    ? api.endpoints.readManyApiUsersMeAccountsAccountIdTransactionsGet.useQuery(
+        {
+          accountId: arg.accountId,
+          page: arg.page,
+          perPage: arg.perPage,
+          timestamp: arg.timestamp && arg.timestamp.toISOString(),
+          search: arg.search,
+          isDescending: arg.isDescending,
+        }
+      )
+    : api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
         page: arg.page,
         perPage: arg.perPage,
         timestamp: arg.timestamp && arg.timestamp.toISOString(),

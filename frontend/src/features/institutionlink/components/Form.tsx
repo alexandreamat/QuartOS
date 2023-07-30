@@ -23,9 +23,9 @@ export default function InstitutionLinkForm(props: {
   const institutionOptions = useInstitutionOptions();
 
   const [createInstitutionLink, createInstitutionLinkResult] =
-    api.endpoints.createApiInstitutionLinksPost.useMutation();
+    api.endpoints.createApiUsersMeInstitutionLinksPost.useMutation();
   const [updateInstitutionLink, updateInstitutionLinkResult] =
-    api.endpoints.updateApiInstitutionLinksIdPut.useMutation();
+    api.endpoints.updateApiUsersMeInstitutionLinksUserinstitutionlinkIdPut.useMutation();
 
   useEffect(() => {
     if (!props.institutionLink) return;
@@ -46,7 +46,7 @@ export default function InstitutionLinkForm(props: {
     if (props.institutionLink) {
       try {
         await updateInstitutionLink({
-          id: props.institutionLink.id,
+          userinstitutionlinkId: props.institutionLink.id,
           userInstitutionLinkApiIn: institutionLink,
         }).unwrap();
       } catch (error) {
@@ -55,7 +55,10 @@ export default function InstitutionLinkForm(props: {
       }
     } else {
       try {
-        await createInstitutionLink(institutionLink).unwrap();
+        await createInstitutionLink({
+          institutionId: institutionId.value!,
+          userInstitutionLinkApiIn: institutionLink,
+        }).unwrap();
       } catch (error) {
         logMutationError(error, createInstitutionLinkResult);
         return;

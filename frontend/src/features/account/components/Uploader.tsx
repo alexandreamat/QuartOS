@@ -1,6 +1,6 @@
 import {
   AccountApiOut,
-  BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost,
+  BodyPreviewApiUsersMeAccountsPreviewPost,
   api,
 } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
@@ -23,7 +23,7 @@ export default function Uploader(props: {
   onClose: () => void;
 }) {
   const [upload, uploadResult] =
-    api.endpoints.uploadTransactionsSheetApiAccountsIdTransactionsSheetPost.useMutation();
+    api.endpoints.previewApiUsersMeAccountsPreviewPost.useMutation();
 
   const handleClose = () => {
     uploadResult.reset();
@@ -48,9 +48,9 @@ export default function Uploader(props: {
     formData.append("file", file);
     try {
       await upload({
-        id: props.account.id,
-        bodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost:
-          formData as unknown as BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost,
+        accountId: props.account.id,
+        bodyPreviewApiUsersMeAccountsPreviewPost:
+          formData as unknown as BodyPreviewApiUsersMeAccountsPreviewPost,
       }).unwrap();
     } catch (error) {
       logMutationError(error, uploadResult);
@@ -59,13 +59,16 @@ export default function Uploader(props: {
   };
 
   const [createMovements, createMovementsResult] =
-    api.endpoints.createApiMovementsPost.useMutation();
+    api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   const handleCreateTransactions = async () => {
     try {
       await createMovements({
-        transactions: uploadResult.data!,
-        transaction_ids: [],
+        accountId: props.account.id,
+        bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+          transactions: uploadResult.data!,
+          transaction_ids: [],
+        },
       }).unwrap();
     } catch (error) {
       logMutationError(error, createMovementsResult);
@@ -115,7 +118,10 @@ export default function Uploader(props: {
             </Segment>
           )}
           {uploadResult.isSuccess && (
-            <TransactionsPreview transactionPages={[uploadResult.data]} />
+            <TransactionsPreview
+              transactionPages={[uploadResult.data]}
+              accountId={props.account.id}
+            />
           )}
           <QueryErrorMessage query={uploadResult} />
           <QueryErrorMessage query={createMovementsResult} />

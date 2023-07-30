@@ -83,7 +83,7 @@ export default function Movements() {
   }
 
   const infiniteQuery = useInfiniteQuery(
-    api.endpoints.readManyApiMovementsGet.useQuery,
+    api.endpoints.readManyApiUsersMeMovementsGet.useQuery,
     {
       search,
       isDescending,

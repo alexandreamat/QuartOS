@@ -5,7 +5,6 @@ export function transactionApiOutToForm(
   transaction: TransactionApiOut,
   form: TransactionApiInForm
 ) {
-  // form.relatedTransactionId.set(transaction.related_transaction_id || 0);
   form.amountStr.set(transaction.amount.toFixed(2));
   form.timestamp.set(
     transaction.timestamp ? new Date(transaction.timestamp) : new Date()
@@ -23,7 +22,5 @@ export function transactionFormToApiIn(
     timestamp: form.timestamp.value!.toISOString(),
     name: form.name.value!,
     currency_code: form.currencyCode.value!,
-    account_id: form.accountId.value!,
-    // related_transaction_id: form.relatedTransactionId.value || undefined,
   };
 }

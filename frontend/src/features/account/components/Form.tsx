@@ -40,7 +40,7 @@ export default function AccountForm(props: {
   const institutionLinkOptions = useInstitutionLinkOptions();
 
   const [deleteAccount, deleteAccountResult] =
-    api.endpoints.deleteApiAccountsIdDelete.useMutation();
+    api.endpoints.deleteApiUsersMeAccountsAccountIdDelete.useMutation();
 
   useEffect(() => {
     institutionLinkId.set(Number(institutionLinkIdParam));
@@ -60,9 +60,9 @@ export default function AccountForm(props: {
   const requiredFields = [name, currencyCode, initialBalanceStr];
 
   const [createAccount, createAccountResult] =
-    api.endpoints.createApiAccountsPost.useMutation();
+    api.endpoints.createApiUsersMeAccountsPost.useMutation();
   const [updateAccount, updateAccountResult] =
-    api.endpoints.updateApiAccountsIdPut.useMutation();
+    api.endpoints.updateApiUsersMeAccountsAccountIdPut.useMutation();
 
   useEffect(() => {
     if (!props.account) return;
@@ -133,7 +133,6 @@ export default function AccountForm(props: {
         ? {
             mask: mask.value!,
             type: institutionalType.value! as InstitutionalAccountType,
-            userinstitutionlink_id: institutionLinkId.value!,
           }
         : undefined,
       noninstitutionalaccount: !isInstitutional.value
@@ -145,8 +144,9 @@ export default function AccountForm(props: {
     if (props.account) {
       try {
         await updateAccount({
-          id: props.account.id,
+          accountId: props.account.id,
           accountApiIn: account,
+          userinstitutionlinkId: institutionLinkId.value!,
         }).unwrap();
       } catch (error) {
         logMutationError(error, updateAccountResult);
@@ -154,7 +154,10 @@ export default function AccountForm(props: {
       }
     } else {
       try {
-        await createAccount(account).unwrap();
+        await createAccount({
+          userinstitutionlinkId: institutionLinkId.value!,
+          accountApiIn: account,
+        }).unwrap();
       } catch (error) {
         logMutationError(error, createAccountResult);
         return;
