@@ -244,11 +244,15 @@ class Account(_AccountBase, Base, table=True):
 
     @classmethod
     def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
+        statement = cls.select()
+
+        # fmt: off
         statement = (
-            cls.select()
-            .outerjoin(Account.NonInstitutionalAccount)
-            .outerjoin(Account.InstitutionalAccount)
-        )
+            statement
+            .outerjoin(cls.NonInstitutionalAccount)
+            .outerjoin(cls.InstitutionalAccount)
+        )  # fmt: on
+
         if account_id:
             statement = statement.where(cls.id == account_id)
         return statement
@@ -261,8 +265,16 @@ class Account(_AccountBase, Base, table=True):
         **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
         statement = Movement.select_movements(movement_id, **kwargs)
-
+        statement = statement.join(Transaction)
         statement = statement.join(cls)
+
+        # fmt: off
+        statement = (
+            statement
+            .outerjoin(cls.NonInstitutionalAccount)
+            .outerjoin(cls.InstitutionalAccount)
+        )  # fmt: on
+
         if account_id:
             statement = statement.where(cls.id == account_id)
 
@@ -277,8 +289,15 @@ class Account(_AccountBase, Base, table=True):
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
         statement = Movement.select_transactions(movement_id, transaction_id, **kwargs)
-
         statement = statement.join(cls)
+
+        # fmt: off
+        statement = (
+            statement
+            .outerjoin(cls.NonInstitutionalAccount)
+            .outerjoin(cls.InstitutionalAccount)
+        )  # fmt: on
+
         if account_id:
             statement = statement.where(cls.id == account_id)
 

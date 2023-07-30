@@ -154,6 +154,7 @@ def sync_transactions(
                 db_transaction.id,
                 account_id,
                 transaction_in,
+                db_transaction.movement_id,
             )
         for plaid_id in sync_result.removed:
             db_transaction = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)

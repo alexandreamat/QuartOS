@@ -29,9 +29,9 @@ def get_aggregate(
     return CRUDUser.get_movement_aggregate(
         db,
         me.id,
-        start_date,
-        end_date,
-        currency_code,
+        start_date=start_date,
+        end_date=end_date,
+        currency_code=currency_code,
     )
 
 
@@ -44,7 +44,7 @@ def get_many_aggregates(
     per_page: int = 12,
 ) -> Iterable[PLStatement]:
     return CRUDUser.get_many_movement_aggregates(
-        db, me.id, page, per_page, currency_code
+        db, me.id, page=page, per_page=per_page, currency_code=currency_code
     )
 
 

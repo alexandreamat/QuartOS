@@ -3,13 +3,15 @@ from decimal import Decimal
 from datetime import date
 
 from sqlmodel import Session
+from sqlalchemy.exc import NoResultFound
 
 from app.utils import get_password_hash
 from app.common.crud import CRUDBase
+from app.common.exceptions import ObjectNotFoundError
 
 from app.features.userinstitutionlink import UserInstitutionLinkApiOut
 from app.features.transaction import TransactionApiOut
-from app.features.account import AccountApiOut
+from app.features.account import AccountApiOut, Account
 from app.features.movement import MovementApiOut, PLStatement, Movement, MovementField
 from app.features.user import UserApiIn, UserApiOut
 
@@ -82,6 +84,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         statement = User.select_transactions(
             user_id, userinstitutionlink_id, account_id, movement_id, None, **kwargs
         )
+
         for t in db.exec(statement).all():
             yield TransactionApiOut.from_orm(t)
 
@@ -110,7 +113,10 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         account_id: int,
     ) -> AccountApiOut:
         statement = User.select_accounts(user_id, userinstitutionlink_id, account_id)
-        account_out = db.exec(statement).one()
+        try:
+            account_out = db.exec(statement).one()
+        except NoResultFound:
+            raise ObjectNotFoundError("account")
         return AccountApiOut.from_orm(account_out)
 
     @classmethod
@@ -122,6 +128,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     ) -> Iterable[AccountApiOut]:
         statement = User.select_accounts(user_id, userinstitutionlink_id, None)
         accounts = db.exec(statement).all()
+
         for a in accounts:
             yield AccountApiOut.from_orm(a)
 
@@ -180,12 +187,12 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
 
     @classmethod
     def get_movement_aggregate(
-        cls, db: Session, user_id: int, *args: Any, **kwargs: Any
+        cls, db: Session, user_id: int, **kwargs: Any
     ) -> PLStatement:
-        return User.get_movement_aggregate(db, user_id, *args, **kwargs)
+        return User.get_movement_aggregate(db, user_id, **kwargs)
 
     @classmethod
     def get_many_movement_aggregates(
-        cls, db: Session, user_id: int, *args: Any, **kwargs: Any
+        cls, db: Session, user_id: int, **kwargs: Any
     ) -> Iterable[PLStatement]:
-        return User.get_many_movement_aggregates(db, user_id, *args, **kwargs)
+        return User.get_many_movement_aggregates(db, user_id, **kwargs)
