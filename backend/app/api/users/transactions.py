@@ -14,7 +14,7 @@ router = APIRouter()
 @router.get("/")
 def read_many(
     db: DBSession,
-    current_user: CurrentUser,
+    me: CurrentUser,
     page: int = 1,
     per_page: int = 0,
     timestamp: date | None = None,
@@ -22,5 +22,14 @@ def read_many(
     is_descending: bool = True,
 ) -> Iterable[TransactionApiOut]:
     return CRUDUser.read_transactions(
-        db, current_user.id, 0, page, per_page, search, timestamp, is_descending
+        db,
+        me.id,
+        None,
+        None,
+        None,
+        page=page,
+        per_page=per_page,
+        search=search,
+        timestamp=timestamp,
+        is_descending=is_descending,
     )

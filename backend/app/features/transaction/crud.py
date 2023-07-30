@@ -1,8 +1,7 @@
-from decimal import Decimal
-
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
+from app.features.transaction.models import TransactionApiIn, TransactionApiOut
 
 from .models import (
     Transaction,
@@ -16,10 +15,6 @@ from .models import (
 class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]):
     db_model = Transaction
     out_model = TransactionApiOut
-
-    @classmethod
-    def read_user_id(cls, db: Session, id: int) -> int:
-        return cls.db_model.read(db, id).user.id
 
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:

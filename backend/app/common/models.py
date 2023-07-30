@@ -1,11 +1,11 @@
 from typing import TypeVar, Type, Any, Generator, Callable
 
 import pycountry
-from sqlmodel import Session, SQLModel, Field, select
+from sqlmodel import Session, SQLModel, Field, select, update, insert, delete
 from sqlmodel.sql.expression import SelectOfScalar
-from sqlalchemy.exc import NoResultFound, IntegrityError
+from sqlalchemy.exc import NoResultFound
 
-from app.common.exceptions import NotFoundError
+from app.common.exceptions import ObjectNotFoundError
 
 BaseType = TypeVar("BaseType", bound="Base")
 SyncableBaseType = TypeVar("SyncableBaseType", bound="SyncableBase")
@@ -14,16 +14,6 @@ SchemaType = TypeVar("SchemaType", bound=SQLModel)
 
 class Base(SQLModel):
     id: int = Field(primary_key=True)
-
-    @classmethod
-    def __add(cls: Type[BaseType], db: Session, obj: BaseType) -> BaseType:
-        db.add(obj)
-        try:
-            db.flush()
-        except IntegrityError as e:
-            raise NotFoundError(e)
-        db.refresh(obj)
-        return obj
 
     @classmethod
     def select(cls: Type[BaseType]) -> SelectOfScalar[BaseType]:
@@ -35,14 +25,14 @@ class Base(SQLModel):
 
     @classmethod
     def create(cls: Type[BaseType], db: Session, obj: BaseType) -> BaseType:
-        return cls.__add(db, obj)
+        statement = insert(cls).values(**obj.dict())
+        result = db.execute(statement.returning(cls.id))
+        return cls.read(db, result.scalar_one())
 
     @classmethod
     def read(cls: Type[BaseType], db: Session, id: int) -> BaseType:
-        obj = db.get(cls, id)
-        if not obj:
-            raise NoResultFound(cls.__tablename__)
-        return obj
+        statement = cls.select().where(cls.id == id)
+        return db.exec(statement).one()
 
     @classmethod
     def read_many(
@@ -59,17 +49,14 @@ class Base(SQLModel):
         return db.exec(statement).all()
 
     @classmethod
-    def update(cls: Type[BaseType], db: Session, id: int, obj_in: BaseType) -> BaseType:
-        db_obj = cls.read(db, id)
-        for key, value in obj_in.dict(exclude={"id"}).items():
-            setattr(db_obj, key, value)
-        return cls.__add(db, db_obj)
+    def update(cls: Type[BaseType], db: Session, id: int, obj: BaseType) -> BaseType:
+        update(cls).where(cls.id == id).values(**obj.dict(exclude={"id"}))
+        return cls.read(db, id)
 
     @classmethod
     def delete(cls: Type[BaseType], db: Session, id: int) -> None:
-        obj = cls.read(db, id)
-        db.delete(obj)
-        db.flush()
+        statement = delete(cls).where(cls.id == id)
+        db.execute(statement)
 
 
 class SyncedMixin(SQLModel):

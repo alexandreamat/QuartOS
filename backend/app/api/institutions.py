@@ -20,18 +20,16 @@ router = APIRouter()
 
 @router.post("/")
 def create(
-    db: DBSession, current_user: CurrentSuperuser, institution: InstitutionApiIn
+    db: DBSession, me: CurrentSuperuser, institution_in: InstitutionApiIn
 ) -> InstitutionApiOut:
     """
     Create new institution.
     """
-    return CRUDInstitution.create(db, institution)
+    return CRUDInstitution.create(db, institution_in)
 
 
 @router.post("/{institution_id}/sync")
-def sync(
-    db: DBSession, current_user: CurrentSuperuser, institution_id: int
-) -> InstitutionApiOut:
+def sync(db: DBSession, me: CurrentSuperuser, institution_id: int) -> InstitutionApiOut:
     institution_db = CRUDInstitution.read(db, id=institution_id)
     if not institution_db.plaid_id:
         raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -60,18 +58,18 @@ def read_many(db: DBSession) -> Iterable[InstitutionApiOut]:
 @router.put("/{institution_id}")
 def update(
     db: DBSession,
-    current_user: CurrentSuperuser,
+    me: CurrentSuperuser,
     institution_id: int,
-    institution: InstitutionApiIn,
+    institution_in: InstitutionApiIn,
 ) -> InstitutionApiOut:
     """
     Update an institution.
     """
-    return CRUDInstitution.update(db, institution_id, institution)
+    return CRUDInstitution.update(db, institution_id, institution_in)
 
 
 @router.delete("/{institution_id}")
-def delete(db: DBSession, current_user: CurrentSuperuser, institution_id: int) -> None:
+def delete(db: DBSession, me: CurrentSuperuser, institution_id: int) -> None:
     """
     Delete an institution.
     """

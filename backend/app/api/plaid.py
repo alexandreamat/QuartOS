@@ -16,14 +16,14 @@ router = APIRouter()
 
 
 @router.get("/link_token")
-def get_link_token(current_user: CurrentUser) -> str:
-    return create_link_token(current_user.id)
+def get_link_token(me: CurrentUser) -> str:
+    return create_link_token(me.id)
 
 
 @router.post("/public_token")
 def set_public_token(
     db: DBSession,
-    current_user: CurrentUser,
+    me: CurrentUser,
     public_token: str,
     institution_plaid_id: str,
 ) -> None:
@@ -39,7 +39,7 @@ def set_public_token(
     # 2. Create user institution link
     access_token = exchange_public_token(public_token)
     user_institution_link_in = fetch_user_institution_link(
-        access_token, current_user, institution_obj
+        access_token, me, institution_obj
     )
     user_institution_link_out = CRUDSyncableUserInstitutionLink.create(
         db, user_institution_link_in

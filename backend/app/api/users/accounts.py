@@ -10,5 +10,5 @@ router = APIRouter()
 
 
 @router.get("/")
-def read_many(db: DBSession, current_user: CurrentUser) -> Iterable[AccountApiOut]:
-    return CRUDUser.read_accounts(db, current_user.id)
+def read_many(db: DBSession, me: CurrentUser) -> Iterable[AccountApiOut]:
+    return CRUDUser.read_accounts(db, me.id, None)

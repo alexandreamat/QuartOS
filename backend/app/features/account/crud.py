@@ -1,14 +1,23 @@
-from typing import Iterable, Any
+from typing import Any
 
 from datetime import date
+from decimal import Decimal
 
 from sqlmodel import Session
-from sqlalchemy.exc import NoResultFound
 
 from app.common.crud import CRUDBase
 
-from app.features.transaction import TransactionApiOut
 from app.features.transactiondeserialiser import TransactionDeserialiserApiOut
+from app.features.movement import (
+    MovementApiOut,
+    CRUDMovement,
+)
+from app.features.transaction import (
+    TransactionApiOut,
+    TransactionApiIn,
+    TransactionPlaidIn,
+    CRUDTransaction,
+)
 
 from .models import (
     Account,
@@ -24,24 +33,11 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     out_model = AccountApiOut
 
     @classmethod
-    def read_user_id(cls, db: Session, id: int) -> int:
-        return Account.read(db, id).user.id
-
-    @classmethod
-    def read_transactions(
-        cls, db: Session, id: int, *args: Any, **kwargs: Any
-    ) -> Iterable[TransactionApiOut]:
-        for t in Account.read_transactions(db, id, *args, **kwargs):
-            yield TransactionApiOut.from_orm(t)
-
-    @classmethod
     def read_transaction_deserialiser(
         cls, db: Session, id: int
     ) -> TransactionDeserialiserApiOut:
-        db_deserialiser = Account.read(db, id).transactiondeserialiser
-        if not db_deserialiser:
-            raise NoResultFound
-        return TransactionDeserialiserApiOut.from_orm(db_deserialiser)
+        deserialiser = Account.read(db, id).transactiondeserialiser
+        return TransactionDeserialiserApiOut.from_orm(deserialiser)
 
     @classmethod
     def sync(cls, db: Session, account: AccountPlaidIn) -> AccountPlaidOut:
@@ -55,15 +51,90 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
     @classmethod
     def update(
-        cls, db: Session, id: int, new_obj: AccountApiIn, **kwargs: Any
+        cls, db: Session, id: int, obj_in: AccountApiIn, **kwargs: Any
     ) -> AccountApiOut:
-        super().update(db, id, new_obj)
-        account_out = Account.update_balance(db, id)
-        return AccountApiOut.from_orm(account_out)
+        super().update(db, id, obj_in, **kwargs)
+        return cls.update_balance(db, id)
 
     @classmethod
     def update_balance(
-        cls, db: Session, id: int, timestamp: date | None = None
+        cls,
+        db: Session,
+        id: int,
+        timestamp: date | None = None,
     ) -> AccountApiOut:
         account_out = Account.update_balance(db, id, timestamp)
         return AccountApiOut.from_orm(account_out)
+
+    @classmethod
+    def create_movement(
+        cls,
+        db: Session,
+        account_id: int,
+        transaction: TransactionApiIn | int,
+    ) -> MovementApiOut:
+        if isinstance(transaction, TransactionApiIn):
+            transaction_in = transaction
+            timestamp = transaction_in.timestamp
+            movement_out = CRUDMovement.create(db, account_id, transaction_in)
+
+        else:
+            transaction_id = transaction
+            transaction_out = CRUDTransaction.read(db, transaction_id)
+            timestamp = transaction_out.timestamp
+            movement_out = CRUDMovement.create(db, account_id, transaction_id)
+
+        CRUDAccount.update_balance(db, account_id, timestamp)
+        return movement_out
+
+    @classmethod
+    def create_movement_plaid(
+        cls,
+        db: Session,
+        account_id: int,
+        transaction: TransactionPlaidIn,
+    ) -> MovementApiOut:
+        transaction_in = transaction
+        timestamp = transaction_in.timestamp
+        movement_out = CRUDMovement.create_plaid(db, account_id, transaction_in)
+        CRUDAccount.update_balance(db, account_id, timestamp)
+        return movement_out
+
+    @classmethod
+    def create_transaction(
+        cls,
+        db: Session,
+        account_id: int,
+        movement_id: int,
+        transaction_in: TransactionApiIn,
+    ) -> TransactionApiOut:
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = CRUDMovement.create_transaction(
+            db, account_id, movement_id, transaction_in
+        )
+        cls.update_balance(db, account_id, transaction_in.timestamp)
+        return transaction_out
+
+    @classmethod
+    def update_transaction(
+        cls,
+        db: Session,
+        account_id: int,
+        movement_id: int,
+        transaction_id: int,
+        transaction_in: TransactionApiIn,
+    ) -> TransactionApiOut:
+        transaction_in.account_balance = Decimal(0)
+        transaction_out = CRUDMovement.update_transaction(
+            db, movement_id, transaction_id, transaction_in
+        )
+        CRUDAccount.update_balance(db, account_id, transaction_in.timestamp)
+        return transaction_out
+
+    @classmethod
+    def delete_transaction(
+        cls, db: Session, movement_id: int, account_id: int, transaction_id: int
+    ) -> None:
+        transaction_out = CRUDTransaction.read(db, transaction_id)
+        CRUDMovement.delete_transaction(db, movement_id, transaction_id)
+        Account.update_balance(db, account_id, transaction_out.timestamp)

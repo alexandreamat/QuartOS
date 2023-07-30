@@ -32,4 +32,4 @@ def init_db(db: Session) -> None:
             full_name=settings.FIRST_SUPERUSER_FULL_NAME,
             is_superuser=True,
         )
-        CRUDUser.create(db, new_schema_obj=user_in)
+        CRUDUser.create(db, obj_in=user_in)

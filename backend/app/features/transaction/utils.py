@@ -1,5 +1,7 @@
 import csv
 import re
+
+# imports for exec
 import decimal
 import datetime
 
@@ -16,22 +18,24 @@ def __sanitise_row(row: list[str]) -> None:
 
 
 def get_transactions_from_csv(
-    deserialiser: TransactionDeserialiserApiOut, file: Iterable[str], account_id: int
+    deserialiser_out: TransactionDeserialiserApiOut,
+    file: Iterable[str],
+    account_id: int,
 ) -> Iterable[TransactionApiIn]:
     deserializers = {}
-    for field, value in vars(deserialiser).items():
+    for field, value in vars(deserialiser_out).items():
         if "_deserialiser" not in field:
             continue
         field_name = field.replace("_deserialiser", "")
         function_name = f"deserialize_{field_name}"
-        snippet = getattr(deserialiser, field)
+        snippet = getattr(deserialiser_out, field)
         exec(f"def {function_name}(row): return {snippet}")
         deserializers[field_name] = locals()[function_name]
     reader = csv.reader(file)
-    for _ in range(deserialiser.skip_rows):
+    for _ in range(deserialiser_out.skip_rows):
         next(reader)
     for row in reader:
-        if len(row) != deserialiser.columns:
+        if len(row) != deserialiser_out.columns:
             break
         __sanitise_row(row)
         deserialized_row = {

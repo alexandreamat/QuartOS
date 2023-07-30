@@ -16,24 +16,20 @@ router = APIRouter()
 
 
 @router.put("/plaid/{id}/reset")
-def reset_plaid(
-    db: DBSession, current_user: CurrentSuperuser, id: int
-) -> TransactionApiOut:
+def reset_plaid(db: DBSession, me: CurrentSuperuser, id: int) -> TransactionApiOut:
     reset_transaction_to_metadata(db, id)
     return CRUDTransaction.read(db, id)
 
 
 @router.get("/plaid/{id}")
-def read_plaid(
-    db: DBSession, current_user: CurrentSuperuser, id: int
-) -> TransactionPlaidOut:
+def read_plaid(db: DBSession, me: CurrentSuperuser, id: int) -> TransactionPlaidOut:
     return CRUDSyncableTransaction.read(db, id)
 
 
 @router.put("/plaid/{id}")
 def update_plaid(
     db: DBSession,
-    current_user: CurrentSuperuser,
+    me: CurrentSuperuser,
     id: int,
     transaction_in: TransactionPlaidIn,
 ) -> TransactionPlaidOut:

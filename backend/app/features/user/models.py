@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 
 
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Relationship, SQLModel, Session, select, or_
+from sqlmodel import Relationship, SQLModel, Session, select, update
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base
@@ -58,70 +58,79 @@ class User(__UserBase, Base, table=True):
         return db_user
 
     @classmethod
-    def select_transactions(
-        cls,
-        statement: SelectOfScalar[Transaction],
-        id: int,
-    ) -> SelectOfScalar[Transaction]:
-        return (
-            statement.join(Account)
-            .outerjoin(Account.InstitutionalAccount)
-            .outerjoin(Account.NonInstitutionalAccount)
-            .outerjoin(UserInstitutionLink)
-            .where(
-                or_(
-                    UserInstitutionLink.user_id == id,
-                    Account.NonInstitutionalAccount.user_id == id,
-                )
-            )
+    def select_user_institution_links(
+        cls, user_id: int | None, userinstitutionlink_id: int | None
+    ) -> SelectOfScalar[UserInstitutionLink]:
+        statement = UserInstitutionLink.select_user_institution_links(
+            userinstitutionlink_id
         )
 
+        statement = statement.join(cls)
+        if user_id:
+            statement = statement.where(cls.id == user_id)
+
+        return statement
+
     @classmethod
-    def read_transactions(
-        cls, db: Session, id: int, account_id: int, *args: Any, **kwargs: Any
-    ) -> Iterable[Transaction]:
-        statement = Transaction.select()
-        statement = cls.select_transactions(statement, id)
-        if account_id:
-            statement = Account.select_transactions(statement, account_id)
-        return Transaction.read_from_query(db, statement, *args, **kwargs)
+    def select_accounts(
+        cls,
+        user_id: int | None,
+        userinstitutionlink_id: int | None,
+        account_id: int | None,
+    ) -> SelectOfScalar[Account]:
+        statement = UserInstitutionLink.select_accounts(
+            account_id, userinstitutionlink_id
+        )
+
+        statement = statement.join(cls)
+        if user_id:
+            statement = statement.where(cls.id == user_id)
+
+        return statement
 
     @classmethod
     def select_movements(
         cls,
-        statement: SelectOfScalar[Movement],
-        id: int,
+        user_id: int | None,
+        userinstitutionlink_id: int | None,
+        account_id: int | None,
+        movement_id: int | None,
+        **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
-        return (
-            statement.join(Transaction)
-            .join(Account)
-            .outerjoin(Account.InstitutionalAccount)
-            .outerjoin(Account.NonInstitutionalAccount)
-            .outerjoin(UserInstitutionLink)
-            .where(
-                or_(
-                    UserInstitutionLink.user_id == id,
-                    Account.NonInstitutionalAccount.user_id == id,
-                )
-            )
+        statement = UserInstitutionLink.select_movements(
+            userinstitutionlink_id, account_id, movement_id, **kwargs
         )
 
+        statement = statement.join(cls)
+        if user_id:
+            statement = statement.where(cls.id == user_id)
+
+        return statement
+
     @classmethod
-    def read_movements(
-        cls, db: Session, id: int, account_id: int, *args: Any, **kwargs: Any
-    ) -> Iterable[Movement]:
-        statement = Movement.select()
-        statement = cls.select_movements(statement, id)
-        if account_id:
-            statement = Movement.select_by_account(statement, account_id)
-        return Movement.read_from_query(db, statement, *args, **kwargs)
+    def select_transactions(
+        cls,
+        user_id: int | None,
+        userinstitutionlink_id: int | None,
+        account_id: int | None,
+        movement_id: int | None,
+        transaction_id: int | None,
+        **kwargs: Any,
+    ) -> SelectOfScalar[Transaction]:
+        statement = UserInstitutionLink.select_transactions(
+            userinstitutionlink_id, account_id, movement_id, transaction_id, **kwargs
+        )
+        statement = statement.join(cls)
+        if user_id:
+            statement = statement.where(cls.id == user_id)
+
+        return statement
 
     @classmethod
     def get_movement_aggregate(
-        cls, db: Session, id: int, *args: Any, **kwargs: Any
+        cls, db: Session, user_id: int, *args: Any, **kwargs: Any
     ) -> PLStatement:
-        statement = Movement.select()
-        statement = cls.select_movements(statement, id)
+        statement = cls.select_movements(user_id, None, None, None)
         return Movement.get_aggregate(db, statement, *args, **kwargs)
 
     @classmethod
