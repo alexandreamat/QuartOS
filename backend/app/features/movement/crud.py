@@ -23,12 +23,12 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def create(  # type: ignore[override]
         cls, db: Session, account_id: int, transaction: TransactionApiIn | int
     ) -> MovementApiOut:
-        movement_out = super().create(db, MovementApiIn())
+        movement = Movement.create(db, Movement())
 
         if isinstance(transaction, TransactionApiIn):
             transaction_in = transaction
             CRUDTransaction.create(
-                db, transaction_in, account_id=account_id, movement_id=movement_out.id
+                db, transaction_in, account_id=account_id, movement_id=movement.id
             )
 
         else:
@@ -40,23 +40,24 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
                 db,
                 transaction_id,
                 transaction_in,
-                movement_id=movement_out.id,
+                movement_id=movement.id,
                 account_id=account_id,
             )
             if not curr_movement_out.transactions:
                 cls.delete(db, curr_movement_out.id)
 
-        return movement_out
+        return CRUDMovement.read(db, movement.id)
 
     @classmethod
     def create_plaid(
         cls, db: Session, account_id: int, transaction_in: TransactionPlaidIn
     ) -> MovementApiOut:
-        movement_out = super().create(db, MovementApiIn())
+        movement = Movement.create(db, Movement())
         CRUDSyncableTransaction.create(
-            db, transaction_in, account_id=account_id, movement_id=movement_out.id
+            db, transaction_in, account_id=account_id, movement_id=movement.id
         )
-        return movement_out
+        CRUDMovement.read(db, movement.id)
+        return CRUDMovement.read(db, movement.id)
 
     @classmethod
     def create_transaction(

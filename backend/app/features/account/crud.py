@@ -76,6 +76,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         if isinstance(transaction, TransactionApiIn):
             transaction_in = transaction
             timestamp = transaction_in.timestamp
+            transaction_in.account_balance = Decimal(0)
             movement_out = CRUDMovement.create(db, account_id, transaction_in)
 
         else:
@@ -92,12 +93,11 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         cls,
         db: Session,
         account_id: int,
-        transaction: TransactionPlaidIn,
+        transaction_in: TransactionPlaidIn,
     ) -> MovementApiOut:
-        transaction_in = transaction
-        timestamp = transaction_in.timestamp
+        transaction_in.account_balance = Decimal(0)
         movement_out = CRUDMovement.create_plaid(db, account_id, transaction_in)
-        CRUDAccount.update_balance(db, account_id, timestamp)
+        CRUDAccount.update_balance(db, account_id, transaction_in.timestamp)
         return movement_out
 
     @classmethod

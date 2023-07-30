@@ -1,7 +1,7 @@
 from typing import TypeVar, Type, Any, Generator, Callable
 
 import pycountry
-from sqlmodel import Session, SQLModel, Field, select, update, insert, delete
+from sqlmodel import Session, SQLModel, Field, select
 from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.exc import NoResultFound
 
@@ -25,14 +25,17 @@ class Base(SQLModel):
 
     @classmethod
     def create(cls: Type[BaseType], db: Session, obj: BaseType) -> BaseType:
-        statement = insert(cls).values(**obj.dict())
-        result = db.execute(statement.returning(cls.id))
-        return cls.read(db, result.scalar_one())
+        db.add(obj)
+        db.flush()
+        return obj
 
     @classmethod
     def read(cls: Type[BaseType], db: Session, id: int) -> BaseType:
         statement = cls.select().where(cls.id == id)
-        return db.exec(statement).one()
+        try:
+            return db.exec(statement).one()
+        except NoResultFound:
+            raise ObjectNotFoundError(str(cls.__tablename__))
 
     @classmethod
     def read_many(
@@ -49,14 +52,18 @@ class Base(SQLModel):
         return db.exec(statement).all()
 
     @classmethod
-    def update(cls: Type[BaseType], db: Session, id: int, obj: BaseType) -> BaseType:
-        update(cls).where(cls.id == id).values(**obj.dict(exclude={"id"}))
-        return cls.read(db, id)
+    def update(
+        cls: Type[BaseType], db: Session, id: int, new_obj: BaseType
+    ) -> BaseType:
+        obj = cls.read(db, id)
+        for key, value in new_obj.dict().items():
+            setattr(obj, key, value)
+        db.flush()
+        return obj
 
     @classmethod
     def delete(cls: Type[BaseType], db: Session, id: int) -> None:
-        statement = delete(cls).where(cls.id == id)
-        db.execute(statement)
+        db.delete(cls.read(db, id))
 
 
 class SyncedMixin(SQLModel):
