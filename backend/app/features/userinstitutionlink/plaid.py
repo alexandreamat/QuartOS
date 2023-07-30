@@ -15,10 +15,10 @@ from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 from plaid.model.transactions_get_response import TransactionsGetResponse
 
-
 from app.common.plaid import client
+
 from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
-from app.features.movement import CRUDMovement
+from app.features.account import CRUDAccount
 from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
@@ -91,7 +91,7 @@ def __fetch_transaction_changes(
 
 def fetch_user_institution_link(
     access_token: str,
-    current_user: "UserApiOut",
+    me: "UserApiOut",
     institution: "InstitutionPlaidOut",
 ) -> UserInstitutionLinkPlaidIn:
     request = ItemGetRequest(access_token=access_token)
@@ -100,7 +100,7 @@ def fetch_user_institution_link(
     user_institution_link_in = UserInstitutionLinkPlaidIn(
         plaid_id=item.item_id,
         institution_id=institution.id,
-        user_id=current_user.id,
+        user_id=me.id,
         access_token=access_token,
         plaid_metadata=item.to_str(),
     )
@@ -143,12 +143,12 @@ def sync_transactions(
     while has_more:
         sync_result = __fetch_transaction_changes(db, user_institution_link)
         for account_id, transaction in sync_result.added:
-            CRUDMovement.create_syncable(db, account_id, transaction)
+            CRUDAccount.create_movement_plaid(db, account_id, transaction)
         for account_id, transaction_in in sync_result.modified:
             db_transaction = CRUDSyncableTransaction.read_by_plaid_id(
                 db, transaction_in.plaid_id
             )
-            CRUDMovement.update_syncable(
+            CRUDAccount.update_transaction(
                 db,
                 db_transaction.movement_id,
                 db_transaction.id,
@@ -157,7 +157,7 @@ def sync_transactions(
             )
         for plaid_id in sync_result.removed:
             db_transaction = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)
-            CRUDMovement.delete_transaction(
+            CRUDAccount.delete_transaction(
                 db, db_transaction.movement_id, account_id, db_transaction.id
             )
         user_institution_link.cursor = sync_result.new_cursor

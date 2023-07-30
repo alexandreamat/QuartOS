@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Iterable, Any
+from typing import TYPE_CHECKING, Any
 from decimal import Decimal
 from enum import Enum
 from datetime import date
@@ -13,6 +13,7 @@ from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, Syn
 
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser import TransactionDeserialiser
+from app.features.movement import Movement
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -30,7 +31,6 @@ class _AccountBase(SQLModel):
             BROKERAGE = "brokerage"
             OTHER = "other"
 
-        userinstitutionlink_id: int
         type: InstitutionalAccountType
         mask: str
 
@@ -41,7 +41,6 @@ class _AccountBase(SQLModel):
             PROPERTY = "property"
 
         type: NonInstitutionalAccountType
-        user_id: int | None
 
     currency_code: CurrencyCode
     initial_balance: Decimal
@@ -78,7 +77,7 @@ class AccountApiIn(_AccountBase):
 
 class AccountApiOut(_AccountBase, Base):
     class InstitutionalAccount(_AccountBase.InstitutionalAccount, Base):
-        ...
+        userinstitutionlink_id: int
 
     class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, Base):
         user_id: int
@@ -244,19 +243,46 @@ class Account(_AccountBase, Base, table=True):
         return cls.read(db, id)
 
     @classmethod
-    def select_transactions(
-        cls,
-        statement: SelectOfScalar[Transaction],
-        id: int,
-    ) -> SelectOfScalar[Transaction]:
-        return statement.join(Account).where(Account.id == id)
+    def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
+        statement = (
+            cls.select()
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(Account.InstitutionalAccount)
+        )
+        if account_id:
+            statement = statement.where(cls.id == account_id)
+        return statement
 
     @classmethod
-    def read_transactions(
-        cls, db: Session, id: int, *args: Any, **kwargs: Any
-    ) -> Iterable[Transaction]:
-        statement = cls.select_transactions(Transaction.select(), id)
-        return Transaction.read_from_query(db, statement, *args, **kwargs)
+    def select_movements(
+        cls,
+        account_id: int | None,
+        movement_id: int | None,
+        **kwargs: Any,
+    ) -> SelectOfScalar[Movement]:
+        statement = Movement.select_movements(movement_id, **kwargs)
+
+        statement = statement.join(cls)
+        if account_id:
+            statement = statement.where(cls.id == account_id)
+
+        return statement
+
+    @classmethod
+    def select_transactions(
+        cls,
+        account_id: int | None,
+        movement_id: int | None,
+        transaction_id: int | None,
+        **kwargs: Any,
+    ) -> SelectOfScalar[Transaction]:
+        statement = Movement.select_transactions(movement_id, transaction_id, **kwargs)
+
+        statement = statement.join(cls)
+        if account_id:
+            statement = statement.where(cls.id == account_id)
+
+        return statement
 
     @property
     def user(self) -> "User":

@@ -8,6 +8,6 @@ router = APIRouter()
 
 
 @router.post("/update-balances")
-def update_balances(db: DBSession, current_user: CurrentSuperuser) -> None:
+def update_balances(db: DBSession, me: CurrentSuperuser) -> None:
     for account in CRUDAccount.read_many(db, 0, 0):
         CRUDAccount.update_balance(db, account.id)

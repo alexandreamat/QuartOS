@@ -37,10 +37,10 @@ def get_current_user(
 CurrentUser = Annotated[UserApiOut, Depends(get_current_user)]
 
 
-def get_current_superuser(current_user: CurrentUser) -> UserApiOut:
-    if not current_user.is_superuser:
+def get_current_superuser(me: CurrentUser) -> UserApiOut:
+    if not me.is_superuser:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-    return current_user
+    return me
 
 
 CurrentSuperuser = Annotated[UserApiOut, Depends(get_current_superuser)]

@@ -13,7 +13,6 @@ from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
     sync_transactions,
-    ForbiddenUserInstitutionLink,
 )
 
 from . import accounts
@@ -25,21 +24,24 @@ router = APIRouter()
 @router.post("/")
 def create(
     db: DBSession,
-    current_user: CurrentUser,
-    user_institution_link: UserInstitutionLinkApiIn,
+    me: CurrentUser,
+    user_institution_link_in: UserInstitutionLinkApiIn,
+    institution_id: int,
 ) -> UserInstitutionLinkApiOut:
-    return CRUDUserInstitutionLink.create(db, user_institution_link)
+    return CRUDUserInstitutionLink.create(
+        db, user_institution_link_in, user_id=me.id, institution_id=institution_id
+    )
 
 
-@router.post("/{institution_link_id}/sync")
-def sync(db: DBSession, current_user: CurrentUser, institution_link_id: int) -> None:
-    curr_institution_link = CRUDUserInstitutionLink.read(db, institution_link_id)
-    if curr_institution_link.user_id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-    if not curr_institution_link.plaid_id:
+@router.post("/{userinstitutionlink_id}/sync")
+def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
+    curr_institution_link_out = CRUDUser.read_user_institution_link(
+        db, me.id, userinstitutionlink_id
+    )
+    if not curr_institution_link_out.plaid_id:
         raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED)
     syncable_institution_link = CRUDSyncableUserInstitutionLink.read_by_plaid_id(
-        db, curr_institution_link.plaid_id
+        db, curr_institution_link_out.plaid_id
     )
     try:
         sync_transactions(db, syncable_institution_link)
@@ -47,55 +49,48 @@ def sync(db: DBSession, current_user: CurrentUser, institution_link_id: int) -> 
         raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
 
 
-@router.get("/{institution_link_id}")
+@router.get("/{userinstitutionlink_id}")
 def read(
-    db: DBSession, current_user: CurrentUser, institution_link_id: int
+    db: DBSession, me: CurrentUser, userinstitutionlink_id: int
 ) -> UserInstitutionLinkApiOut:
-    institution_link = CRUDUserInstitutionLink.read(db, institution_link_id)
-    if institution_link.user_id != current_user.id:
-        raise ForbiddenUserInstitutionLink
-    return institution_link
+    return CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
 
 
 @router.get("/")
-def read_many(
-    db: DBSession, current_user: CurrentUser
-) -> Iterable[UserInstitutionLinkApiOut]:
-    return CRUDUser.read_user_institution_links(db, current_user.id)
+def read_many(db: DBSession, me: CurrentUser) -> Iterable[UserInstitutionLinkApiOut]:
+    return CRUDUser.read_user_institution_links(db, me.id)
 
 
-@router.put("/{institution_link_id}")
+@router.put("/{userinstitutionlink_id}")
 def update(
     db: DBSession,
-    current_user: CurrentUser,
-    institution_link_id: int,
-    user_institution_link: UserInstitutionLinkApiIn,
+    me: CurrentUser,
+    userinstitutionlink_id: int,
+    user_institution_link_in: UserInstitutionLinkApiIn,
 ) -> UserInstitutionLinkApiOut:
-    curr_institution_link = CRUDUserInstitutionLink.read(db, institution_link_id)
-    if curr_institution_link.user_id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
+    curr_institution_link = CRUDUser.read_user_institution_link(
+        db, me.id, userinstitutionlink_id
+    )
     if curr_institution_link.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDUserInstitutionLink.update(
-        db, institution_link_id, user_institution_link
+        db, userinstitutionlink_id, user_institution_link_in
     )
 
 
-@router.delete("/{institution_link_id}")
-def delete(db: DBSession, current_user: CurrentUser, institution_link_id: int) -> None:
-    curr_institution_link = CRUDUserInstitutionLink.read(db, institution_link_id)
-    if curr_institution_link.user_id != current_user.id:
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-    return CRUDUserInstitutionLink.delete(db, institution_link_id)
+@router.delete("/{userinstitutionlink_id}")
+def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
+    CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
+    return CRUDUserInstitutionLink.delete(db, userinstitutionlink_id)
 
 
 router.include_router(
     accounts.router,
-    prefix="/{institution_link_id}/accounts",
+    prefix="/{userinstitutionlink_id}/accounts",
     tags=["accounts"],
 )
 router.include_router(
     transactions.router,
-    prefix="/{institution_link_id}/transactions",
+    prefix="/{userinstitutionlink_id}/transactions",
     tags=["transactions"],
 )

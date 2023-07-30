@@ -1,36 +1,33 @@
 from datetime import date
 from typing import Annotated, Iterable
 
-
 from fastapi import APIRouter, UploadFile, File
 
 from app.database.deps import DBSession
 from app.common.exceptions import UnknownError
 
-from app.features.user import CurrentUser
+from app.features.user import CurrentUser, CRUDUser
 from app.features.userinstitutionlink import SyncedEntity
+from app.features.account import CRUDAccount
 from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
     get_transactions_from_csv,
 )
 
-from app.features.account import CRUDAccount, ForbiddenAccount
-
 router = APIRouter()
 
 
-@router.post("/upload-sheet")
-def create(
+@router.get("/preview")
+def preview(
     db: DBSession,
-    current_user: CurrentUser,
+    me: CurrentUser,
+    userinstitutionlink_id: int,
     account_id: int,
     file: Annotated[UploadFile, File(...)],
 ) -> Iterable[TransactionApiIn]:
-    user_id = CRUDAccount.read_user_id(db, account_id)
-    if user_id != current_user.id:
-        raise ForbiddenAccount()
-    if CRUDAccount.is_synced(db, account_id):
+    account_out = CRUDUser.read_account(db, me.id, userinstitutionlink_id, account_id)
+    if account_out.is_synced:
         raise SyncedEntity()
     deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
     try:
@@ -43,7 +40,8 @@ def create(
 @router.get("/")
 def read_many(
     db: DBSession,
-    current_user: CurrentUser,
+    me: CurrentUser,
+    userinstitutionlink_id: int,
     account_id: int,
     page: int = 1,
     per_page: int = 0,
@@ -51,9 +49,15 @@ def read_many(
     search: str | None = None,
     is_descending: bool = True,
 ) -> Iterable[TransactionApiOut]:
-    account = CRUDAccount.read(db, account_id)
-    if CRUDAccount.read_user_id(db, account.id) != current_user.id:
-        raise ForbiddenAccount()
-    return CRUDAccount.read_transactions(
-        db, account.id, page, per_page, search, timestamp, is_descending
+    return CRUDUser.read_transactions(
+        db,
+        me.id,
+        userinstitutionlink_id,
+        account_id,
+        None,
+        page=page,
+        per_page=per_page,
+        search=search,
+        timestamp=timestamp,
+        is_descending=is_descending,
     )

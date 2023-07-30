@@ -17,17 +17,18 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
     def create(
         cls,
         db: Session,
-        new_schema_obj: ApiInModel,
-        **kwargs: Any,
+        obj_in: ApiInModel,
+        **kwargs: int,
     ) -> ApiOutModel:
-        db_obj_in = cls.db_model.from_schema(new_schema_obj, **kwargs)
+        db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
         db_obj_out = cls.db_model.create(db, db_obj_in)
         api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj_out)
         return api_out_obj
 
     @classmethod
     def read(cls, db: Session, id: int) -> ApiOutModel:
-        api_out_obj: ApiOutModel = cls.out_model.from_orm(cls.db_model.read(db, id))
+        db_obj = cls.db_model.read(db, id)
+        api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj)
         return api_out_obj
 
     @classmethod
@@ -37,13 +38,9 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
 
     @classmethod
     def update(
-        cls,
-        db: Session,
-        id: int,
-        new_obj: ApiInModel,
-        **kwargs: Any,
+        cls, db: Session, id: int, obj_in: ApiInModel, **kwargs: int
     ) -> ApiOutModel:
-        db_obj_in = cls.db_model.from_schema(new_obj, **kwargs)
+        db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
         db_obj_out = cls.db_model.update(db, id, db_obj_in)
         api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj_out)
         return api_out_obj

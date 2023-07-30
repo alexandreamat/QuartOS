@@ -17,13 +17,13 @@ router = APIRouter()
 @router.post("/")
 def create(
     db: DBSession,
-    current_user: CurrentSuperuser,
-    institution: TransactionDeserialiserApiIn,
+    me: CurrentSuperuser,
+    transaction_deserialiser_in: TransactionDeserialiserApiIn,
 ) -> TransactionDeserialiserApiOut:
     """
     Create new deserialiser.
     """
-    return CRUDTransactionDeserialiser.create(db, institution)
+    return CRUDTransactionDeserialiser.create(db, transaction_deserialiser_in)
 
 
 @router.get("/{id}")
@@ -45,18 +45,18 @@ def read_many(db: DBSession) -> Iterable[TransactionDeserialiserApiOut]:
 @router.put("/{id}")
 def update(
     db: DBSession,
-    current_user: CurrentSuperuser,
+    me: CurrentSuperuser,
     id: int,
-    institution: TransactionDeserialiserApiIn,
+    institution_in: TransactionDeserialiserApiIn,
 ) -> TransactionDeserialiserApiOut:
     """
     Update a deserialiser.
     """
-    return CRUDTransactionDeserialiser.update(db, id, institution)
+    return CRUDTransactionDeserialiser.update(db, id, institution_in)
 
 
 @router.delete("/{id}")
-def delete(db: DBSession, current_user: CurrentSuperuser, id: int) -> None:
+def delete(db: DBSession, me: CurrentSuperuser, id: int) -> None:
     """
     Delete a deserialiser.
     """

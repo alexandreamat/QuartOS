@@ -1,8 +1,12 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel.sql.expression import SelectOfScalar
+
 from app.common.models import SyncedMixin, SyncableBase, SyncedBase
 from app.features.account import Account
+from app.features.transaction import Transaction
+from app.features.movement import Movement
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -10,14 +14,12 @@ if TYPE_CHECKING:
 
 
 class __UserInstitutionLinkBase(SQLModel):
-    institution_id: int
-    user_id: int | None
+    ...
 
 
 class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
     access_token: str
     cursor: str | None
-    user_id: int
 
 
 class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
@@ -25,6 +27,7 @@ class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
 
 
 class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableBase):
+    institution_id: int
     user_id: int
     is_synced: bool
 
@@ -34,7 +37,8 @@ class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, SyncedMixin):
 
 
 class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, SyncedBase):
-    ...
+    institution_id: int
+    user_id: int
 
 
 class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
@@ -49,6 +53,63 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
         back_populates="userinstitutionlink",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
+
+    @classmethod
+    def select_user_institution_links(
+        cls, userinstitutionlink_id: int | None
+    ) -> SelectOfScalar["UserInstitutionLink"]:
+        statement = cls.select()
+        if userinstitutionlink_id:
+            statement = statement.where(cls.id == userinstitutionlink_id)
+
+        return statement
+
+    @classmethod
+    def select_accounts(
+        cls, account_id: int | None, userinstitutionlink_id: int | None
+    ) -> SelectOfScalar[Account]:
+        statement = Account.select_accounts(account_id)
+
+        statement = statement.join(cls)
+        if userinstitutionlink_id:
+            statement = statement.where(cls.id == userinstitutionlink_id)
+
+        return statement
+
+    @classmethod
+    def select_movements(
+        cls,
+        userinstitutionlink_id: int | None,
+        account_id: int | None,
+        movement_id: int | None,
+        **kwargs: Any,
+    ) -> SelectOfScalar[Movement]:
+        statement = Account.select_movements(account_id, movement_id, **kwargs)
+
+        statement = statement.join(cls)
+        if userinstitutionlink_id:
+            statement = statement.where(cls.id == userinstitutionlink_id)
+
+        return statement
+
+    @classmethod
+    def select_transactions(
+        cls,
+        userinstitutionlink_id: int | None,
+        account_id: int | None,
+        movement_id: int | None,
+        transaction_id: int | None,
+        **kwargs: Any,
+    ) -> SelectOfScalar[Transaction]:
+        statement = Account.select_transactions(
+            account_id, movement_id, transaction_id, **kwargs
+        )
+
+        statement = statement.join(cls)
+        if userinstitutionlink_id:
+            statement = statement.where(cls.id == userinstitutionlink_id)
+
+        return statement
 
     @property
     def is_synced(self) -> bool:

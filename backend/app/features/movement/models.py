@@ -81,36 +81,35 @@ class Movement(__MovementBase, Base, table=True):
         return super().create(db, cls())
 
     @classmethod
-    def select_by_account(
-        cls,
-        statement: SelectOfScalar["Movement"],
-        acount_id: int,
-    ) -> SelectOfScalar["Movement"]:
-        return statement.join(Transaction).join(Account).where(Account.id == acount_id)
+    def select_transactions(
+        cls, movement_id: int | None, transaction_id: int | None, **kwargs: Any
+    ) -> SelectOfScalar[Transaction]:
+        statement = Transaction.select_transactions(transaction_id, **kwargs)
+
+        statement = statement.join(cls)
+        if movement_id:
+            statement = statement.where(cls.id == movement_id)
+
+        return statement
 
     @classmethod
-    def read_many_by_account(
-        cls, db: Session, id: int, *args: Any, **kwargs: Any
-    ) -> Iterable["Movement"]:
-        statement = cls.select_by_account(Movement.select(), id)
-        return Movement.read_from_query(db, statement, *args, **kwargs)
-
-    @classmethod
-    def read_from_query(
+    def select_movements(
         cls,
-        db: Session,
-        statement: SelectOfScalar["Movement"],
+        movement_id: int | None,
         page: int,
         per_page: int,
         start_date: date | None,
         end_date: date | None,
         search: str | None,
-        amount_gt: Decimal | None,
-        amount_lt: Decimal | None,
         is_descending: bool,
         sort_by: MovementField,
-    ) -> Iterable["Movement"]:
+    ) -> SelectOfScalar["Movement"]:
+        # SELECT
+        statement = cls.select()
+
         # WHERE
+        if movement_id:
+            statement = statement.where(cls.id == movement_id)
         if start_date:
             statement = statement.where(Transaction.timestamp >= start_date)
         if end_date:
@@ -135,9 +134,17 @@ class Movement(__MovementBase, Base, table=True):
             offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
 
-        movements = db.exec(statement).all()
+        return statement
 
-        # Filter by amount is done on the queried objects
+    @classmethod
+    def filter_movements(
+        cls,
+        movements: Iterable["Movement"],
+        amount_gt: Decimal | None,
+        amount_lt: Decimal | None,
+        is_descending: bool,
+        sort_by: MovementField,
+    ) -> Iterable["Movement"]:
         if amount_gt is not None:
             movements = [
                 m for m in movements if m.amount(CurrencyCode("USD")) > amount_gt

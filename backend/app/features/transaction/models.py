@@ -25,6 +25,7 @@ class __TransactionBase(SQLModel):
 
 class TransactionApiOut(__TransactionBase, Base):
     account_balance: Decimal
+    account_id: int
     movement_id: int
 
 
@@ -73,16 +74,19 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         return asc(cls.timestamp), asc(cls.id)
 
     @classmethod
-    def read_from_query(
+    def select_transactions(
         cls,
-        db: Session,
-        statement: SelectOfScalar["Transaction"],
+        transaction_id: int | None,
         page: int,
         per_page: int,
         search: str | None,
         timestamp: date | None,
         is_descending: bool,
-    ) -> list["Transaction"]:
+    ) -> SelectOfScalar["Transaction"]:
+        statement = Transaction.select()
+        if transaction_id:
+            statement = statement.where(Transaction.id == transaction_id)
+
         statement = statement.order_by(
             *(
                 cls.get_timestamp_desc_clauses()
@@ -103,5 +107,5 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         if per_page:
             offset = (page - 1) * per_page
             statement = statement.offset(offset).limit(per_page)
-        transactions: list["Transaction"] = db.exec(statement).all()
-        return transactions
+
+        return statement
