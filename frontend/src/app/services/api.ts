@@ -1,15 +1,15 @@
 import { emptySplitApi as api } from "./emptyApi";
 export const addTagTypes = [
-  "exchangerate",
-  "users",
   "auth",
-  "transaction-deserialisers",
-  "institutions",
-  "transactions",
-  "accounts",
-  "institution-links",
-  "movements",
+  "exchangerate",
   "plaid",
+  "institution-links",
+  "institutions",
+  "accounts",
+  "transactions",
+  "transaction-deserialisers",
+  "users",
+  "movements",
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -17,98 +17,6 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
-      readExchangeRateApiExchangerateGet: build.query<
-        ReadExchangeRateApiExchangerateGetApiResponse,
-        ReadExchangeRateApiExchangerateGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/exchangerate/`,
-          params: {
-            from_currency: queryArg.fromCurrency,
-            to_currency: queryArg.toCurrency,
-            date: queryArg.date,
-          },
-        }),
-        providesTags: ["exchangerate"],
-      }),
-      signupApiUsersSignupPost: build.mutation<
-        SignupApiUsersSignupPostApiResponse,
-        SignupApiUsersSignupPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/users/signup`,
-          method: "POST",
-          body: queryArg,
-        }),
-        invalidatesTags: ["users"],
-      }),
-      readMeApiUsersMeGet: build.query<
-        ReadMeApiUsersMeGetApiResponse,
-        ReadMeApiUsersMeGetApiArg
-      >({
-        query: () => ({ url: `/api/users/me` }),
-        providesTags: ["users"],
-      }),
-      updateMeApiUsersMePut: build.mutation<
-        UpdateMeApiUsersMePutApiResponse,
-        UpdateMeApiUsersMePutApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/users/me`,
-          method: "PUT",
-          body: queryArg,
-        }),
-        invalidatesTags: ["users"],
-      }),
-      readApiUsersIdGet: build.query<
-        ReadApiUsersIdGetApiResponse,
-        ReadApiUsersIdGetApiArg
-      >({
-        query: (queryArg) => ({ url: `/api/users/${queryArg}` }),
-        providesTags: ["users"],
-      }),
-      updateApiUsersIdPut: build.mutation<
-        UpdateApiUsersIdPutApiResponse,
-        UpdateApiUsersIdPutApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/users/${queryArg.id}`,
-          method: "PUT",
-          body: queryArg.userApiIn,
-        }),
-        invalidatesTags: ["users"],
-      }),
-      deleteApiUsersIdDelete: build.mutation<
-        DeleteApiUsersIdDeleteApiResponse,
-        DeleteApiUsersIdDeleteApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/users/${queryArg}`,
-          method: "DELETE",
-        }),
-        invalidatesTags: ["users"],
-      }),
-      readManyApiUsersGet: build.query<
-        ReadManyApiUsersGetApiResponse,
-        ReadManyApiUsersGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/users/`,
-          params: { skip: queryArg.skip, limit: queryArg.limit },
-        }),
-        providesTags: ["users"],
-      }),
-      createApiUsersPost: build.mutation<
-        CreateApiUsersPostApiResponse,
-        CreateApiUsersPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/users/`,
-          method: "POST",
-          body: queryArg,
-        }),
-        invalidatesTags: ["users"],
-      }),
       loginApiAuthLoginPost: build.mutation<
         LoginApiAuthLoginPostApiResponse,
         LoginApiAuthLoginPostApiArg
@@ -140,6 +48,53 @@ const injectedRtkApi = api
           body: queryArg,
         }),
         invalidatesTags: ["auth"],
+      }),
+      readExchangeRateApiExchangerateGet: build.query<
+        ReadExchangeRateApiExchangerateGetApiResponse,
+        ReadExchangeRateApiExchangerateGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/exchangerate/`,
+          params: {
+            from_currency: queryArg.fromCurrency,
+            to_currency: queryArg.toCurrency,
+            date: queryArg.date,
+          },
+        }),
+        providesTags: ["exchangerate"],
+      }),
+      getLinkTokenApiPlaidLinkTokenGet: build.query<
+        GetLinkTokenApiPlaidLinkTokenGetApiResponse,
+        GetLinkTokenApiPlaidLinkTokenGetApiArg
+      >({
+        query: () => ({ url: `/api/plaid/link_token` }),
+        providesTags: [
+          "plaid",
+          "institution-links",
+          "institutions",
+          "accounts",
+          "transactions",
+        ],
+      }),
+      setPublicTokenApiPlaidPublicTokenPost: build.mutation<
+        SetPublicTokenApiPlaidPublicTokenPostApiResponse,
+        SetPublicTokenApiPlaidPublicTokenPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/plaid/public_token`,
+          method: "POST",
+          params: {
+            public_token: queryArg.publicToken,
+            institution_plaid_id: queryArg.institutionPlaidId,
+          },
+        }),
+        invalidatesTags: [
+          "plaid",
+          "institution-links",
+          "institutions",
+          "accounts",
+          "transactions",
+        ],
       }),
       readManyApiTransactionDeserialisersGet: build.query<
         ReadManyApiTransactionDeserialisersGetApiResponse,
@@ -207,9 +162,9 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["institutions"],
       }),
-      syncApiInstitutionsIdSyncPost: build.mutation<
-        SyncApiInstitutionsIdSyncPostApiResponse,
-        SyncApiInstitutionsIdSyncPostApiArg
+      syncApiInstitutionsInstitutionIdSyncPost: build.mutation<
+        SyncApiInstitutionsInstitutionIdSyncPostApiResponse,
+        SyncApiInstitutionsInstitutionIdSyncPostApiArg
       >({
         query: (queryArg) => ({
           url: `/api/institutions/${queryArg}/sync`,
@@ -217,27 +172,27 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["institutions"],
       }),
-      readApiInstitutionsIdGet: build.query<
-        ReadApiInstitutionsIdGetApiResponse,
-        ReadApiInstitutionsIdGetApiArg
+      readApiInstitutionsInstitutionIdGet: build.query<
+        ReadApiInstitutionsInstitutionIdGetApiResponse,
+        ReadApiInstitutionsInstitutionIdGetApiArg
       >({
         query: (queryArg) => ({ url: `/api/institutions/${queryArg}` }),
         providesTags: ["institutions"],
       }),
-      updateApiInstitutionsIdPut: build.mutation<
-        UpdateApiInstitutionsIdPutApiResponse,
-        UpdateApiInstitutionsIdPutApiArg
+      updateApiInstitutionsInstitutionIdPut: build.mutation<
+        UpdateApiInstitutionsInstitutionIdPutApiResponse,
+        UpdateApiInstitutionsInstitutionIdPutApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/institutions/${queryArg.id}`,
+          url: `/api/institutions/${queryArg.institutionId}`,
           method: "PUT",
           body: queryArg.institutionApiIn,
         }),
         invalidatesTags: ["institutions"],
       }),
-      deleteApiInstitutionsIdDelete: build.mutation<
-        DeleteApiInstitutionsIdDeleteApiResponse,
-        DeleteApiInstitutionsIdDeleteApiArg
+      deleteApiInstitutionsInstitutionIdDelete: build.mutation<
+        DeleteApiInstitutionsInstitutionIdDeleteApiResponse,
+        DeleteApiInstitutionsInstitutionIdDeleteApiArg
       >({
         query: (queryArg) => ({
           url: `/api/institutions/${queryArg}`,
@@ -245,256 +200,199 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["institutions"],
       }),
-      readApiTransactionsIdGet: build.query<
-        ReadApiTransactionsIdGetApiResponse,
-        ReadApiTransactionsIdGetApiArg
-      >({
-        query: (queryArg) => ({ url: `/api/transactions/${queryArg}` }),
-        providesTags: ["transactions"],
-      }),
-      readManyApiTransactionsGet: build.query<
-        ReadManyApiTransactionsGetApiResponse,
-        ReadManyApiTransactionsGetApiArg
+      signupApiUsersSignupPost: build.mutation<
+        SignupApiUsersSignupPostApiResponse,
+        SignupApiUsersSignupPostApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/transactions/`,
-          params: {
-            page: queryArg.page,
-            per_page: queryArg.perPage,
-            timestamp: queryArg.timestamp,
-            search: queryArg.search,
-            is_descending: queryArg.isDescending,
-          },
-        }),
-        providesTags: ["transactions"],
-      }),
-      readManyApiAccountsGet: build.query<
-        ReadManyApiAccountsGetApiResponse,
-        ReadManyApiAccountsGetApiArg
-      >({
-        query: () => ({ url: `/api/accounts/` }),
-        providesTags: ["accounts"],
-      }),
-      createApiAccountsPost: build.mutation<
-        CreateApiAccountsPostApiResponse,
-        CreateApiAccountsPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/accounts/`,
+          url: `/api/users/signup`,
           method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ["accounts"],
+        invalidatesTags: ["users"],
       }),
-      readApiAccountsIdGet: build.query<
-        ReadApiAccountsIdGetApiResponse,
-        ReadApiAccountsIdGetApiArg
+      readMeApiUsersMeGet: build.query<
+        ReadMeApiUsersMeGetApiResponse,
+        ReadMeApiUsersMeGetApiArg
       >({
-        query: (queryArg) => ({ url: `/api/accounts/${queryArg}` }),
-        providesTags: ["accounts"],
+        query: () => ({ url: `/api/users/me` }),
+        providesTags: ["users"],
       }),
-      updateApiAccountsIdPut: build.mutation<
-        UpdateApiAccountsIdPutApiResponse,
-        UpdateApiAccountsIdPutApiArg
+      updateMeApiUsersMePut: build.mutation<
+        UpdateMeApiUsersMePutApiResponse,
+        UpdateMeApiUsersMePutApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/accounts/${queryArg.id}`,
+          url: `/api/users/me`,
           method: "PUT",
-          body: queryArg.accountApiIn,
+          body: queryArg,
         }),
-        invalidatesTags: ["accounts"],
+        invalidatesTags: ["users"],
       }),
-      deleteApiAccountsIdDelete: build.mutation<
-        DeleteApiAccountsIdDeleteApiResponse,
-        DeleteApiAccountsIdDeleteApiArg
+      readApiUsersUserIdGet: build.query<
+        ReadApiUsersUserIdGetApiResponse,
+        ReadApiUsersUserIdGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/api/users/${queryArg}` }),
+        providesTags: ["users"],
+      }),
+      updateApiUsersUserIdPut: build.mutation<
+        UpdateApiUsersUserIdPutApiResponse,
+        UpdateApiUsersUserIdPutApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/accounts/${queryArg}`,
+          url: `/api/users/${queryArg.userId}`,
+          method: "PUT",
+          body: queryArg.userApiIn,
+        }),
+        invalidatesTags: ["users"],
+      }),
+      deleteApiUsersUserIdDelete: build.mutation<
+        DeleteApiUsersUserIdDeleteApiResponse,
+        DeleteApiUsersUserIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/${queryArg}`,
           method: "DELETE",
         }),
-        invalidatesTags: ["accounts"],
+        invalidatesTags: ["users"],
       }),
-      readTransactionsApiAccountsIdTransactionsGet: build.query<
-        ReadTransactionsApiAccountsIdTransactionsGetApiResponse,
-        ReadTransactionsApiAccountsIdTransactionsGetApiArg
+      readManyApiUsersGet: build.query<
+        ReadManyApiUsersGetApiResponse,
+        ReadManyApiUsersGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/accounts/${queryArg.id}/transactions`,
-          params: {
-            page: queryArg.page,
-            per_page: queryArg.perPage,
-            timestamp: queryArg.timestamp,
-            search: queryArg.search,
-            is_descending: queryArg.isDescending,
-          },
+          url: `/api/users/`,
+          params: { offset: queryArg.offset, limit: queryArg.limit },
         }),
-        providesTags: ["accounts"],
+        providesTags: ["users"],
       }),
-      uploadTransactionsSheetApiAccountsIdTransactionsSheetPost: build.mutation<
-        UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiResponse,
-        UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiArg
+      createApiUsersPost: build.mutation<
+        CreateApiUsersPostApiResponse,
+        CreateApiUsersPostApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/accounts/${queryArg.id}/transactions-sheet`,
-          method: "POST",
-          body: queryArg.bodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost,
-        }),
-        invalidatesTags: ["accounts"],
-      }),
-      updateBalancesApiAccountsUpdateBalancesPost: build.mutation<
-        UpdateBalancesApiAccountsUpdateBalancesPostApiResponse,
-        UpdateBalancesApiAccountsUpdateBalancesPostApiArg
-      >({
-        query: () => ({ url: `/api/accounts/update-balances`, method: "POST" }),
-        invalidatesTags: ["accounts"],
-      }),
-      readManyApiInstitutionLinksGet: build.query<
-        ReadManyApiInstitutionLinksGetApiResponse,
-        ReadManyApiInstitutionLinksGetApiArg
-      >({
-        query: () => ({ url: `/api/institution-links/` }),
-        providesTags: ["institution-links"],
-      }),
-      createApiInstitutionLinksPost: build.mutation<
-        CreateApiInstitutionLinksPostApiResponse,
-        CreateApiInstitutionLinksPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/institution-links/`,
+          url: `/api/users/`,
           method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ["institution-links"],
+        invalidatesTags: ["users"],
       }),
-      readAccountsApiInstitutionLinksIdAccountsGet: build.query<
-        ReadAccountsApiInstitutionLinksIdAccountsGetApiResponse,
-        ReadAccountsApiInstitutionLinksIdAccountsGetApiArg
+      readManyApiUsersMeInstitutionLinksGet: build.query<
+        ReadManyApiUsersMeInstitutionLinksGetApiResponse,
+        ReadManyApiUsersMeInstitutionLinksGetApiArg
+      >({
+        query: () => ({ url: `/api/users/me/institution-links/` }),
+        providesTags: ["users", "institution-links"],
+      }),
+      createApiUsersMeInstitutionLinksPost: build.mutation<
+        CreateApiUsersMeInstitutionLinksPostApiResponse,
+        CreateApiUsersMeInstitutionLinksPostApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/institution-links/${queryArg}/accounts`,
+          url: `/api/users/me/institution-links/`,
+          method: "POST",
+          body: queryArg.userInstitutionLinkApiIn,
+          params: { institution_id: queryArg.institutionId },
         }),
-        providesTags: ["institution-links"],
+        invalidatesTags: ["users", "institution-links"],
       }),
-      readApiInstitutionLinksIdGet: build.query<
-        ReadApiInstitutionLinksIdGetApiResponse,
-        ReadApiInstitutionLinksIdGetApiArg
-      >({
-        query: (queryArg) => ({ url: `/api/institution-links/${queryArg}` }),
-        providesTags: ["institution-links"],
-      }),
-      updateApiInstitutionLinksIdPut: build.mutation<
-        UpdateApiInstitutionLinksIdPutApiResponse,
-        UpdateApiInstitutionLinksIdPutApiArg
+      syncApiUsersMeInstitutionLinksUserinstitutionlinkIdSyncPost:
+        build.mutation<
+          SyncApiUsersMeInstitutionLinksUserinstitutionlinkIdSyncPostApiResponse,
+          SyncApiUsersMeInstitutionLinksUserinstitutionlinkIdSyncPostApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/institution-links/${queryArg}/sync`,
+            method: "POST",
+          }),
+          invalidatesTags: ["users", "institution-links"],
+        }),
+      readApiUsersMeInstitutionLinksUserinstitutionlinkIdGet: build.query<
+        ReadApiUsersMeInstitutionLinksUserinstitutionlinkIdGetApiResponse,
+        ReadApiUsersMeInstitutionLinksUserinstitutionlinkIdGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/institution-links/${queryArg.id}`,
+          url: `/api/users/me/institution-links/${queryArg}`,
+        }),
+        providesTags: ["users", "institution-links"],
+      }),
+      updateApiUsersMeInstitutionLinksUserinstitutionlinkIdPut: build.mutation<
+        UpdateApiUsersMeInstitutionLinksUserinstitutionlinkIdPutApiResponse,
+        UpdateApiUsersMeInstitutionLinksUserinstitutionlinkIdPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/institution-links/${queryArg.userinstitutionlinkId}`,
           method: "PUT",
           body: queryArg.userInstitutionLinkApiIn,
         }),
-        invalidatesTags: ["institution-links"],
+        invalidatesTags: ["users", "institution-links"],
       }),
-      deleteApiInstitutionLinksIdDelete: build.mutation<
-        DeleteApiInstitutionLinksIdDeleteApiResponse,
-        DeleteApiInstitutionLinksIdDeleteApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/institution-links/${queryArg}`,
-          method: "DELETE",
+      deleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDelete:
+        build.mutation<
+          DeleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDeleteApiResponse,
+          DeleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDeleteApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/institution-links/${queryArg}`,
+            method: "DELETE",
+          }),
+          invalidatesTags: ["users", "institution-links"],
         }),
-        invalidatesTags: ["institution-links"],
-      }),
-      syncApiInstitutionLinksIdSyncPost: build.mutation<
-        SyncApiInstitutionLinksIdSyncPostApiResponse,
-        SyncApiInstitutionLinksIdSyncPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/institution-links/${queryArg}/sync`,
-          method: "POST",
+      readTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidStartDateEndDateGet:
+        build.query<
+          ReadTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidStartDateEndDateGetApiResponse,
+          ReadTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidStartDateEndDateGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/institution-links/${queryArg.userinstitutionlinkId}/transactions/plaid/${queryArg.startDate}/${queryArg.endDate}`,
+          }),
+          providesTags: ["users", "institution-links", "transactions"],
         }),
-        invalidatesTags: ["institution-links"],
-      }),
-      getAggregateApiMovementsAggregatesStartDateEndDateGet: build.query<
-        GetAggregateApiMovementsAggregatesStartDateEndDateGetApiResponse,
-        GetAggregateApiMovementsAggregatesStartDateEndDateGetApiArg
+      resetTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidResetPut:
+        build.mutation<
+          ResetTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidResetPutApiResponse,
+          ResetTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidResetPutApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/institution-links/${queryArg}/transactions/plaid/reset`,
+            method: "PUT",
+          }),
+          invalidatesTags: ["users", "institution-links", "transactions"],
+        }),
+      getAggregateApiUsersMeMovementsAggregatesStartDateEndDateGet: build.query<
+        GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiResponse,
+        GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}`,
+          url: `/api/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}`,
           params: { currency_code: queryArg.currencyCode },
         }),
-        providesTags: ["movements"],
+        providesTags: ["users", "movements"],
       }),
-      getManyAggregatesApiMovementsAggregatesGet: build.query<
-        GetManyAggregatesApiMovementsAggregatesGetApiResponse,
-        GetManyAggregatesApiMovementsAggregatesGetApiArg
+      getManyAggregatesApiUsersMeMovementsAggregatesGet: build.query<
+        GetManyAggregatesApiUsersMeMovementsAggregatesGetApiResponse,
+        GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/movements/aggregates`,
+          url: `/api/users/me/movements/aggregates`,
           params: {
             currency_code: queryArg.currencyCode,
             page: queryArg.page,
             per_page: queryArg.perPage,
           },
         }),
-        providesTags: ["movements"],
+        providesTags: ["users", "movements"],
       }),
-      addTransactionApiMovementsIdTransactionsPost: build.mutation<
-        AddTransactionApiMovementsIdTransactionsPostApiResponse,
-        AddTransactionApiMovementsIdTransactionsPostApiArg
+      readManyApiUsersMeMovementsGet: build.query<
+        ReadManyApiUsersMeMovementsGetApiResponse,
+        ReadManyApiUsersMeMovementsGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/movements/${queryArg.id}/transactions`,
-          method: "POST",
-          body: queryArg.transactionApiIn,
-        }),
-        invalidatesTags: ["movements", "transactions"],
-      }),
-      updateTransactionApiMovementsIdTransactionsTransactionIdPut:
-        build.mutation<
-          UpdateTransactionApiMovementsIdTransactionsTransactionIdPutApiResponse,
-          UpdateTransactionApiMovementsIdTransactionsTransactionIdPutApiArg
-        >({
-          query: (queryArg) => ({
-            url: `/api/movements/${queryArg.id}/transactions/${queryArg.transactionId}`,
-            method: "PUT",
-            body: queryArg.transactionApiIn,
-          }),
-          invalidatesTags: ["movements", "transactions"],
-        }),
-      deleteTransactionApiMovementsIdTransactionsTransactionIdDelete:
-        build.mutation<
-          DeleteTransactionApiMovementsIdTransactionsTransactionIdDeleteApiResponse,
-          DeleteTransactionApiMovementsIdTransactionsTransactionIdDeleteApiArg
-        >({
-          query: (queryArg) => ({
-            url: `/api/movements/${queryArg.id}/transactions/${queryArg.transactionId}`,
-            method: "DELETE",
-          }),
-          invalidatesTags: ["movements", "transactions"],
-        }),
-      readApiMovementsIdGet: build.query<
-        ReadApiMovementsIdGetApiResponse,
-        ReadApiMovementsIdGetApiArg
-      >({
-        query: (queryArg) => ({ url: `/api/movements/${queryArg}` }),
-        providesTags: ["movements"],
-      }),
-      deleteApiMovementsIdDelete: build.mutation<
-        DeleteApiMovementsIdDeleteApiResponse,
-        DeleteApiMovementsIdDeleteApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/movements/${queryArg}`,
-          method: "DELETE",
-        }),
-        invalidatesTags: ["movements", "transactions"],
-      }),
-      readManyApiMovementsGet: build.query<
-        ReadManyApiMovementsGetApiResponse,
-        ReadManyApiMovementsGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/movements/`,
+          url: `/api/users/me/movements/`,
           params: {
+            userinstitutionlink_id: queryArg.userinstitutionlinkId,
+            account_id: queryArg.accountId,
             page: queryArg.page,
             per_page: queryArg.perPage,
             start_date: queryArg.startDate,
@@ -502,98 +400,223 @@ const injectedRtkApi = api
             search: queryArg.search,
             amount_gt: queryArg.amountGt,
             amount_lt: queryArg.amountLt,
-            account_id: queryArg.accountId,
             is_descending: queryArg.isDescending,
             sort_by: queryArg.sortBy,
           },
         }),
-        providesTags: ["movements"],
+        providesTags: ["users", "movements"],
       }),
-      createApiMovementsPost: build.mutation<
-        CreateApiMovementsPostApiResponse,
-        CreateApiMovementsPostApiArg
+      readApiUsersMeMovementsMovementIdGet: build.query<
+        ReadApiUsersMeMovementsMovementIdGetApiResponse,
+        ReadApiUsersMeMovementsMovementIdGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/api/users/me/movements/${queryArg}` }),
+        providesTags: ["users", "movements"],
+      }),
+      deleteApiUsersMeMovementsMovementIdDelete: build.mutation<
+        DeleteApiUsersMeMovementsMovementIdDeleteApiResponse,
+        DeleteApiUsersMeMovementsMovementIdDeleteApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/movements/`,
-          method: "POST",
-          body: queryArg,
+          url: `/api/users/me/movements/${queryArg}`,
+          method: "DELETE",
         }),
-        invalidatesTags: ["movements", "transactions"],
+        invalidatesTags: ["users", "movements"],
       }),
-      getLinkTokenApiPlaidLinkTokenGet: build.query<
-        GetLinkTokenApiPlaidLinkTokenGetApiResponse,
-        GetLinkTokenApiPlaidLinkTokenGetApiArg
-      >({
-        query: () => ({ url: `/api/plaid/link_token` }),
-        providesTags: [
-          "plaid",
-          "institution-links",
-          "institutions",
-          "accounts",
-          "transactions",
-        ],
-      }),
-      setPublicTokenApiPlaidPublicTokenPost: build.mutation<
-        SetPublicTokenApiPlaidPublicTokenPostApiResponse,
-        SetPublicTokenApiPlaidPublicTokenPostApiArg
+      readManyApiUsersMeTransactionsGet: build.query<
+        ReadManyApiUsersMeTransactionsGetApiResponse,
+        ReadManyApiUsersMeTransactionsGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/api/plaid/public_token`,
-          method: "POST",
+          url: `/api/users/me/transactions/`,
           params: {
-            public_token: queryArg.publicToken,
-            institution_plaid_id: queryArg.institutionPlaidId,
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+            timestamp: queryArg.timestamp,
+            search: queryArg.search,
+            is_descending: queryArg.isDescending,
           },
         }),
-        invalidatesTags: [
-          "plaid",
-          "institution-links",
-          "institutions",
-          "accounts",
-          "transactions",
-        ],
+        providesTags: ["users", "transactions"],
+      }),
+      readManyApiUsersMeAccountsGet: build.query<
+        ReadManyApiUsersMeAccountsGetApiResponse,
+        ReadManyApiUsersMeAccountsGetApiArg
+      >({
+        query: () => ({ url: `/api/users/me/accounts/` }),
+        providesTags: ["users", "accounts"],
+      }),
+      createApiUsersMeAccountsPost: build.mutation<
+        CreateApiUsersMeAccountsPostApiResponse,
+        CreateApiUsersMeAccountsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/accounts/`,
+          method: "POST",
+          body: queryArg.accountApiIn,
+          params: { userinstitutionlink_id: queryArg.userinstitutionlinkId },
+        }),
+        invalidatesTags: ["users", "accounts"],
+      }),
+      previewApiUsersMeAccountsPreviewPost: build.mutation<
+        PreviewApiUsersMeAccountsPreviewPostApiResponse,
+        PreviewApiUsersMeAccountsPreviewPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/accounts/preview`,
+          method: "POST",
+          body: queryArg.bodyPreviewApiUsersMeAccountsPreviewPost,
+          params: { account_id: queryArg.accountId },
+        }),
+        invalidatesTags: ["users", "accounts"],
+      }),
+      readApiUsersMeAccountsAccountIdGet: build.query<
+        ReadApiUsersMeAccountsAccountIdGetApiResponse,
+        ReadApiUsersMeAccountsAccountIdGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/api/users/me/accounts/${queryArg}` }),
+        providesTags: ["users", "accounts"],
+      }),
+      updateApiUsersMeAccountsAccountIdPut: build.mutation<
+        UpdateApiUsersMeAccountsAccountIdPutApiResponse,
+        UpdateApiUsersMeAccountsAccountIdPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/accounts/${queryArg.accountId}`,
+          method: "PUT",
+          body: queryArg.accountApiIn,
+          params: { userinstitutionlink_id: queryArg.userinstitutionlinkId },
+        }),
+        invalidatesTags: ["users", "accounts"],
+      }),
+      deleteApiUsersMeAccountsAccountIdDelete: build.mutation<
+        DeleteApiUsersMeAccountsAccountIdDeleteApiResponse,
+        DeleteApiUsersMeAccountsAccountIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/accounts/${queryArg}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["users", "accounts"],
+      }),
+      readManyApiUsersMeAccountsAccountIdTransactionsGet: build.query<
+        ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiResponse,
+        ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/accounts/${queryArg.accountId}/transactions/`,
+          params: {
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+            timestamp: queryArg.timestamp,
+            search: queryArg.search,
+            is_descending: queryArg.isDescending,
+          },
+        }),
+        providesTags: ["users", "accounts", "transactions"],
+      }),
+      createManyApiUsersMeAccountsAccountIdMovementsPost: build.mutation<
+        CreateManyApiUsersMeAccountsAccountIdMovementsPostApiResponse,
+        CreateManyApiUsersMeAccountsAccountIdMovementsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/accounts/${queryArg.accountId}/movements/`,
+          method: "POST",
+          body: queryArg.bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost,
+        }),
+        invalidatesTags: ["users", "accounts", "movements"],
+      }),
+      createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost:
+        build.mutation<
+          CreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPostApiResponse,
+          CreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPostApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/`,
+            method: "POST",
+            body: queryArg.transactionApiIn,
+          }),
+          invalidatesTags: [
+            "users",
+            "accounts",
+            "movements",
+            "transactions",
+            "transactions",
+          ],
+        }),
+      readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGet:
+        build.query<
+          ReadApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGetApiResponse,
+          ReadApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}`,
+          }),
+          providesTags: ["users", "accounts", "movements", "transactions"],
+        }),
+      updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut:
+        build.mutation<
+          UpdateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPutApiResponse,
+          UpdateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPutApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}`,
+            method: "PUT",
+            body: queryArg.transactionApiIn,
+            params: { new_movement_id: queryArg.newMovementId },
+          }),
+          invalidatesTags: ["users", "accounts", "movements", "transactions"],
+        }),
+      deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete:
+        build.mutation<
+          DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDeleteApiResponse,
+          DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDeleteApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}`,
+            method: "DELETE",
+          }),
+          invalidatesTags: ["users", "accounts", "movements", "transactions"],
+        }),
+      updateBalancesApiAccountsUpdateBalancesPost: build.mutation<
+        UpdateBalancesApiAccountsUpdateBalancesPostApiResponse,
+        UpdateBalancesApiAccountsUpdateBalancesPostApiArg
+      >({
+        query: () => ({ url: `/api/accounts/update-balances`, method: "POST" }),
+        invalidatesTags: ["accounts"],
+      }),
+      resetPlaidApiTransactionsPlaidIdResetPut: build.mutation<
+        ResetPlaidApiTransactionsPlaidIdResetPutApiResponse,
+        ResetPlaidApiTransactionsPlaidIdResetPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/transactions/plaid/${queryArg}/reset`,
+          method: "PUT",
+        }),
+        invalidatesTags: ["transactions"],
+      }),
+      readPlaidApiTransactionsPlaidIdGet: build.query<
+        ReadPlaidApiTransactionsPlaidIdGetApiResponse,
+        ReadPlaidApiTransactionsPlaidIdGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/api/transactions/plaid/${queryArg}` }),
+        providesTags: ["transactions"],
+      }),
+      updatePlaidApiTransactionsPlaidIdPut: build.mutation<
+        UpdatePlaidApiTransactionsPlaidIdPutApiResponse,
+        UpdatePlaidApiTransactionsPlaidIdPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/transactions/plaid/${queryArg.id}`,
+          method: "PUT",
+          body: queryArg.transactionPlaidIn,
+        }),
+        invalidatesTags: ["transactions"],
       }),
     }),
     overrideExisting: false,
   });
 export { injectedRtkApi as api };
-export type ReadExchangeRateApiExchangerateGetApiResponse =
-  /** status 200 Successful Response */ number;
-export type ReadExchangeRateApiExchangerateGetApiArg = {
-  fromCurrency: string;
-  toCurrency: string;
-  date: string;
-};
-export type SignupApiUsersSignupPostApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type SignupApiUsersSignupPostApiArg = UserApiIn;
-export type ReadMeApiUsersMeGetApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type ReadMeApiUsersMeGetApiArg = void;
-export type UpdateMeApiUsersMePutApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type UpdateMeApiUsersMePutApiArg = UserApiIn;
-export type ReadApiUsersIdGetApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type ReadApiUsersIdGetApiArg = number;
-export type UpdateApiUsersIdPutApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type UpdateApiUsersIdPutApiArg = {
-  id: number;
-  userApiIn: UserApiIn;
-};
-export type DeleteApiUsersIdDeleteApiResponse =
-  /** status 200 Successful Response */ any;
-export type DeleteApiUsersIdDeleteApiArg = number;
-export type ReadManyApiUsersGetApiResponse =
-  /** status 200 Successful Response */ UserApiOut[];
-export type ReadManyApiUsersGetApiArg = {
-  skip?: number;
-  limit?: number;
-};
-export type CreateApiUsersPostApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type CreateApiUsersPostApiArg = UserApiIn;
 export type LoginApiAuthLoginPostApiResponse =
   /** status 200 Successful Response */ Token;
 export type LoginApiAuthLoginPostApiArg = BodyLoginApiAuthLoginPost;
@@ -604,6 +627,22 @@ export type ResetApiAuthResetPasswordPostApiResponse =
   /** status 200 Successful Response */ any;
 export type ResetApiAuthResetPasswordPostApiArg =
   BodyResetApiAuthResetPasswordPost;
+export type ReadExchangeRateApiExchangerateGetApiResponse =
+  /** status 200 Successful Response */ number;
+export type ReadExchangeRateApiExchangerateGetApiArg = {
+  fromCurrency: string;
+  toCurrency: string;
+  date: string;
+};
+export type GetLinkTokenApiPlaidLinkTokenGetApiResponse =
+  /** status 200 Successful Response */ string;
+export type GetLinkTokenApiPlaidLinkTokenGetApiArg = void;
+export type SetPublicTokenApiPlaidPublicTokenPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type SetPublicTokenApiPlaidPublicTokenPostApiArg = {
+  publicToken: string;
+  institutionPlaidId: string;
+};
 export type ReadManyApiTransactionDeserialisersGetApiResponse =
   /** status 200 Successful Response */ TransactionDeserialiserApiOut[];
 export type ReadManyApiTransactionDeserialisersGetApiArg = void;
@@ -629,138 +668,110 @@ export type ReadManyApiInstitutionsGetApiArg = void;
 export type CreateApiInstitutionsPostApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
 export type CreateApiInstitutionsPostApiArg = InstitutionApiIn;
-export type SyncApiInstitutionsIdSyncPostApiResponse =
+export type SyncApiInstitutionsInstitutionIdSyncPostApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
-export type SyncApiInstitutionsIdSyncPostApiArg = number;
-export type ReadApiInstitutionsIdGetApiResponse =
+export type SyncApiInstitutionsInstitutionIdSyncPostApiArg = number;
+export type ReadApiInstitutionsInstitutionIdGetApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
-export type ReadApiInstitutionsIdGetApiArg = number;
-export type UpdateApiInstitutionsIdPutApiResponse =
+export type ReadApiInstitutionsInstitutionIdGetApiArg = number;
+export type UpdateApiInstitutionsInstitutionIdPutApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
-export type UpdateApiInstitutionsIdPutApiArg = {
-  id: number;
+export type UpdateApiInstitutionsInstitutionIdPutApiArg = {
+  institutionId: number;
   institutionApiIn: InstitutionApiIn;
 };
-export type DeleteApiInstitutionsIdDeleteApiResponse =
+export type DeleteApiInstitutionsInstitutionIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
-export type DeleteApiInstitutionsIdDeleteApiArg = number;
-export type ReadApiTransactionsIdGetApiResponse =
-  /** status 200 Successful Response */ TransactionApiOut;
-export type ReadApiTransactionsIdGetApiArg = number;
-export type ReadManyApiTransactionsGetApiResponse =
-  /** status 200 Successful Response */ TransactionApiOut[];
-export type ReadManyApiTransactionsGetApiArg = {
-  page?: number;
-  perPage?: number;
-  timestamp?: string;
-  search?: string;
-  isDescending?: boolean;
+export type DeleteApiInstitutionsInstitutionIdDeleteApiArg = number;
+export type SignupApiUsersSignupPostApiResponse =
+  /** status 200 Successful Response */ UserApiOut;
+export type SignupApiUsersSignupPostApiArg = UserApiIn;
+export type ReadMeApiUsersMeGetApiResponse =
+  /** status 200 Successful Response */ UserApiOut;
+export type ReadMeApiUsersMeGetApiArg = void;
+export type UpdateMeApiUsersMePutApiResponse =
+  /** status 200 Successful Response */ UserApiOut;
+export type UpdateMeApiUsersMePutApiArg = UserApiIn;
+export type ReadApiUsersUserIdGetApiResponse =
+  /** status 200 Successful Response */ UserApiOut;
+export type ReadApiUsersUserIdGetApiArg = number;
+export type UpdateApiUsersUserIdPutApiResponse =
+  /** status 200 Successful Response */ UserApiOut;
+export type UpdateApiUsersUserIdPutApiArg = {
+  userId: number;
+  userApiIn: UserApiIn;
 };
-export type ReadManyApiAccountsGetApiResponse =
-  /** status 200 Successful Response */ AccountApiOut[];
-export type ReadManyApiAccountsGetApiArg = void;
-export type CreateApiAccountsPostApiResponse =
-  /** status 200 Successful Response */ AccountApiOut;
-export type CreateApiAccountsPostApiArg = AccountApiIn;
-export type ReadApiAccountsIdGetApiResponse =
-  /** status 200 Successful Response */ AccountApiOut;
-export type ReadApiAccountsIdGetApiArg = number;
-export type UpdateApiAccountsIdPutApiResponse =
-  /** status 200 Successful Response */ AccountApiOut;
-export type UpdateApiAccountsIdPutApiArg = {
-  id: number;
-  accountApiIn: AccountApiIn;
+export type DeleteApiUsersUserIdDeleteApiResponse =
+  /** status 200 Successful Response */ any;
+export type DeleteApiUsersUserIdDeleteApiArg = number;
+export type ReadManyApiUsersGetApiResponse =
+  /** status 200 Successful Response */ UserApiOut[];
+export type ReadManyApiUsersGetApiArg = {
+  offset?: number;
+  limit?: number;
 };
-export type DeleteApiAccountsIdDeleteApiResponse =
-  /** status 200 Successful Response */ null;
-export type DeleteApiAccountsIdDeleteApiArg = number;
-export type ReadTransactionsApiAccountsIdTransactionsGetApiResponse =
-  /** status 200 Successful Response */ TransactionApiOut[];
-export type ReadTransactionsApiAccountsIdTransactionsGetApiArg = {
-  id: number;
-  page?: number;
-  perPage?: number;
-  timestamp?: string;
-  search?: string;
-  isDescending?: boolean;
-};
-export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiResponse =
-  /** status 200 Successful Response */ TransactionApiIn[];
-export type UploadTransactionsSheetApiAccountsIdTransactionsSheetPostApiArg = {
-  id: number;
-  bodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost: BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost;
-};
-export type UpdateBalancesApiAccountsUpdateBalancesPostApiResponse =
-  /** status 200 Successful Response */ null;
-export type UpdateBalancesApiAccountsUpdateBalancesPostApiArg = void;
-export type ReadManyApiInstitutionLinksGetApiResponse =
+export type CreateApiUsersPostApiResponse =
+  /** status 200 Successful Response */ UserApiOut;
+export type CreateApiUsersPostApiArg = UserApiIn;
+export type ReadManyApiUsersMeInstitutionLinksGetApiResponse =
   /** status 200 Successful Response */ UserInstitutionLinkApiOut[];
-export type ReadManyApiInstitutionLinksGetApiArg = void;
-export type CreateApiInstitutionLinksPostApiResponse =
+export type ReadManyApiUsersMeInstitutionLinksGetApiArg = void;
+export type CreateApiUsersMeInstitutionLinksPostApiResponse =
   /** status 200 Successful Response */ UserInstitutionLinkApiOut;
-export type CreateApiInstitutionLinksPostApiArg = UserInstitutionLinkApiIn;
-export type ReadAccountsApiInstitutionLinksIdAccountsGetApiResponse =
-  /** status 200 Successful Response */ AccountApiOut[];
-export type ReadAccountsApiInstitutionLinksIdAccountsGetApiArg = number;
-export type ReadApiInstitutionLinksIdGetApiResponse =
-  /** status 200 Successful Response */ UserInstitutionLinkApiOut;
-export type ReadApiInstitutionLinksIdGetApiArg = number;
-export type UpdateApiInstitutionLinksIdPutApiResponse =
-  /** status 200 Successful Response */ UserInstitutionLinkApiOut;
-export type UpdateApiInstitutionLinksIdPutApiArg = {
-  id: number;
+export type CreateApiUsersMeInstitutionLinksPostApiArg = {
+  institutionId: number;
   userInstitutionLinkApiIn: UserInstitutionLinkApiIn;
 };
-export type DeleteApiInstitutionLinksIdDeleteApiResponse =
-  /** status 200 Successful Response */ null;
-export type DeleteApiInstitutionLinksIdDeleteApiArg = number;
-export type SyncApiInstitutionLinksIdSyncPostApiResponse =
-  /** status 200 Successful Response */ null;
-export type SyncApiInstitutionLinksIdSyncPostApiArg = number;
-export type GetAggregateApiMovementsAggregatesStartDateEndDateGetApiResponse =
-  /** status 200 Successful Response */ PlStatement;
-export type GetAggregateApiMovementsAggregatesStartDateEndDateGetApiArg = {
-  startDate: string;
-  endDate: string;
-  currencyCode: string;
+export type SyncApiUsersMeInstitutionLinksUserinstitutionlinkIdSyncPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type SyncApiUsersMeInstitutionLinksUserinstitutionlinkIdSyncPostApiArg =
+  number;
+export type ReadApiUsersMeInstitutionLinksUserinstitutionlinkIdGetApiResponse =
+  /** status 200 Successful Response */ UserInstitutionLinkApiOut;
+export type ReadApiUsersMeInstitutionLinksUserinstitutionlinkIdGetApiArg =
+  number;
+export type UpdateApiUsersMeInstitutionLinksUserinstitutionlinkIdPutApiResponse =
+  /** status 200 Successful Response */ UserInstitutionLinkApiOut;
+export type UpdateApiUsersMeInstitutionLinksUserinstitutionlinkIdPutApiArg = {
+  userinstitutionlinkId: number;
+  userInstitutionLinkApiIn: UserInstitutionLinkApiIn;
 };
-export type GetManyAggregatesApiMovementsAggregatesGetApiResponse =
+export type DeleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDeleteApiResponse =
+  /** status 200 Successful Response */ any;
+export type DeleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDeleteApiArg =
+  number;
+export type ReadTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidStartDateEndDateGetApiResponse =
+  /** status 200 Successful Response */ TransactionPlaidIn[];
+export type ReadTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidStartDateEndDateGetApiArg =
+  {
+    userinstitutionlinkId: number;
+    startDate: string;
+    endDate: string;
+  };
+export type ResetTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidResetPutApiResponse =
+  /** status 200 Successful Response */ TransactionPlaidOut[];
+export type ResetTransactionsPlaidApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidResetPutApiArg =
+  number;
+export type GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiResponse =
+  /** status 200 Successful Response */ PlStatement;
+export type GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiArg =
+  {
+    startDate: string;
+    endDate: string;
+    currencyCode: string;
+  };
+export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiResponse =
   /** status 200 Successful Response */ PlStatement[];
-export type GetManyAggregatesApiMovementsAggregatesGetApiArg = {
+export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg = {
   currencyCode: string;
   page?: number;
   perPage?: number;
 };
-export type AddTransactionApiMovementsIdTransactionsPostApiResponse =
-  /** status 200 Successful Response */ MovementApiOut;
-export type AddTransactionApiMovementsIdTransactionsPostApiArg = {
-  id: number;
-  transactionApiIn: TransactionApiIn;
-};
-export type UpdateTransactionApiMovementsIdTransactionsTransactionIdPutApiResponse =
-  /** status 200 Successful Response */ TransactionApiOut;
-export type UpdateTransactionApiMovementsIdTransactionsTransactionIdPutApiArg =
-  {
-    id: number;
-    transactionId: number;
-    transactionApiIn: TransactionApiIn;
-  };
-export type DeleteTransactionApiMovementsIdTransactionsTransactionIdDeleteApiResponse =
-  /** status 200 Successful Response */ any;
-export type DeleteTransactionApiMovementsIdTransactionsTransactionIdDeleteApiArg =
-  {
-    id: number;
-    transactionId: number;
-  };
-export type ReadApiMovementsIdGetApiResponse =
-  /** status 200 Successful Response */ MovementApiOut;
-export type ReadApiMovementsIdGetApiArg = number;
-export type DeleteApiMovementsIdDeleteApiResponse =
-  /** status 200 Successful Response */ any;
-export type DeleteApiMovementsIdDeleteApiArg = number;
-export type ReadManyApiMovementsGetApiResponse =
+export type ReadManyApiUsersMeMovementsGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
-export type ReadManyApiMovementsGetApiArg = {
+export type ReadManyApiUsersMeMovementsGetApiArg = {
+  userinstitutionlinkId?: number;
+  accountId?: number;
   page?: number;
   perPage?: number;
   startDate?: string;
@@ -768,21 +779,120 @@ export type ReadManyApiMovementsGetApiArg = {
   search?: string;
   amountGt?: number;
   amountLt?: number;
-  accountId?: number;
   isDescending?: boolean;
-  sortBy?: MovementFields;
+  sortBy?: MovementField;
 };
-export type CreateApiMovementsPostApiResponse =
-  /** status 200 Successful Response */ MovementApiOut[];
-export type CreateApiMovementsPostApiArg = BodyCreateApiMovementsPost;
-export type GetLinkTokenApiPlaidLinkTokenGetApiResponse =
-  /** status 200 Successful Response */ string;
-export type GetLinkTokenApiPlaidLinkTokenGetApiArg = void;
-export type SetPublicTokenApiPlaidPublicTokenPostApiResponse =
+export type ReadApiUsersMeMovementsMovementIdGetApiResponse =
+  /** status 200 Successful Response */ MovementApiOut;
+export type ReadApiUsersMeMovementsMovementIdGetApiArg = number;
+export type DeleteApiUsersMeMovementsMovementIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
-export type SetPublicTokenApiPlaidPublicTokenPostApiArg = {
-  publicToken: string;
-  institutionPlaidId: string;
+export type DeleteApiUsersMeMovementsMovementIdDeleteApiArg = number;
+export type ReadManyApiUsersMeTransactionsGetApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut[];
+export type ReadManyApiUsersMeTransactionsGetApiArg = {
+  page?: number;
+  perPage?: number;
+  timestamp?: string;
+  search?: string;
+  isDescending?: boolean;
+};
+export type ReadManyApiUsersMeAccountsGetApiResponse =
+  /** status 200 Successful Response */ AccountApiOut[];
+export type ReadManyApiUsersMeAccountsGetApiArg = void;
+export type CreateApiUsersMeAccountsPostApiResponse =
+  /** status 200 Successful Response */ AccountApiOut;
+export type CreateApiUsersMeAccountsPostApiArg = {
+  userinstitutionlinkId?: number;
+  accountApiIn: AccountApiIn;
+};
+export type PreviewApiUsersMeAccountsPreviewPostApiResponse =
+  /** status 200 Successful Response */ TransactionApiIn[];
+export type PreviewApiUsersMeAccountsPreviewPostApiArg = {
+  accountId: number;
+  bodyPreviewApiUsersMeAccountsPreviewPost: BodyPreviewApiUsersMeAccountsPreviewPost;
+};
+export type ReadApiUsersMeAccountsAccountIdGetApiResponse =
+  /** status 200 Successful Response */ AccountApiOut;
+export type ReadApiUsersMeAccountsAccountIdGetApiArg = number;
+export type UpdateApiUsersMeAccountsAccountIdPutApiResponse =
+  /** status 200 Successful Response */ AccountApiOut;
+export type UpdateApiUsersMeAccountsAccountIdPutApiArg = {
+  accountId: number;
+  userinstitutionlinkId: number;
+  accountApiIn: AccountApiIn;
+};
+export type DeleteApiUsersMeAccountsAccountIdDeleteApiResponse =
+  /** status 200 Successful Response */ any;
+export type DeleteApiUsersMeAccountsAccountIdDeleteApiArg = number;
+export type ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut[];
+export type ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg = {
+  accountId: number;
+  page?: number;
+  perPage?: number;
+  timestamp?: string;
+  search?: string;
+  isDescending?: boolean;
+};
+export type CreateManyApiUsersMeAccountsAccountIdMovementsPostApiResponse =
+  /** status 200 Successful Response */ MovementApiOut[];
+export type CreateManyApiUsersMeAccountsAccountIdMovementsPostApiArg = {
+  accountId: number;
+  bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: BodyCreateManyApiUsersMeAccountsAccountIdMovementsPost;
+};
+export type CreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPostApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut;
+export type CreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPostApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionApiIn: TransactionApiIn;
+  };
+export type ReadApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGetApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut;
+export type ReadApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGetApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionId: number;
+  };
+export type UpdateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPutApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut;
+export type UpdateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPutApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionId: number;
+    newMovementId: number;
+    transactionApiIn: TransactionApiIn;
+  };
+export type DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDeleteApiResponse =
+  /** status 200 Successful Response */ any;
+export type DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDeleteApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionId: number;
+  };
+export type UpdateBalancesApiAccountsUpdateBalancesPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateBalancesApiAccountsUpdateBalancesPostApiArg = void;
+export type ResetPlaidApiTransactionsPlaidIdResetPutApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut;
+export type ResetPlaidApiTransactionsPlaidIdResetPutApiArg = number;
+export type ReadPlaidApiTransactionsPlaidIdGetApiResponse =
+  /** status 200 Successful Response */ TransactionPlaidOut;
+export type ReadPlaidApiTransactionsPlaidIdGetApiArg = number;
+export type UpdatePlaidApiTransactionsPlaidIdPutApiResponse =
+  /** status 200 Successful Response */ TransactionPlaidOut;
+export type UpdatePlaidApiTransactionsPlaidIdPutApiArg = {
+  id: number;
+  transactionPlaidIn: TransactionPlaidIn;
+};
+export type Token = {
+  access_token: string;
+  token_type: string;
 };
 export type ValidationError = {
   loc: (string | number)[];
@@ -791,22 +901,6 @@ export type ValidationError = {
 };
 export type HttpValidationError = {
   detail?: ValidationError[];
-};
-export type UserApiOut = {
-  id: number;
-  email: string;
-  full_name: string;
-  is_superuser: boolean;
-};
-export type UserApiIn = {
-  email: string;
-  full_name: string;
-  is_superuser: boolean;
-  password: string;
-};
-export type Token = {
-  access_token: string;
-  token_type: string;
 };
 export type BodyLoginApiAuthLoginPost = {
   grant_type?: string;
@@ -858,16 +952,75 @@ export type InstitutionApiIn = {
   transactiondeserialiser_id?: number;
   colour?: string;
 };
+export type UserApiOut = {
+  id: number;
+  email: string;
+  full_name: string;
+  is_superuser: boolean;
+};
+export type UserApiIn = {
+  email: string;
+  full_name: string;
+  is_superuser: boolean;
+  password: string;
+};
+export type UserInstitutionLinkApiOut = {
+  id: number;
+  plaid_id?: string;
+  plaid_metadata?: string;
+  institution_id: number;
+  user_id: number;
+  is_synced: boolean;
+};
+export type UserInstitutionLinkApiIn = {};
+export type TransactionPlaidIn = {
+  plaid_id: string;
+  plaid_metadata: string;
+  amount: number;
+  timestamp: string;
+  name: string;
+  currency_code: string;
+  account_balance?: number;
+};
+export type TransactionPlaidOut = {
+  id: number;
+  plaid_id: string;
+  plaid_metadata: string;
+  amount: number;
+  timestamp: string;
+  name: string;
+  currency_code: string;
+  account_balance: number;
+  account_id: number;
+  movement_id: number;
+};
+export type PlStatement = {
+  start_date: string;
+  end_date: string;
+  income: number;
+  expenses: number;
+  currency_code: string;
+};
 export type TransactionApiOut = {
   id: number;
   amount: number;
   timestamp: string;
   name: string;
   currency_code: string;
-  account_id: number;
   account_balance: number;
+  account_id: number;
   movement_id: number;
 };
+export type MovementApiOut = {
+  id: number;
+  earliest_timestamp?: string;
+  latest_timestamp?: string;
+  transactions: TransactionApiOut[];
+  amounts: {
+    [key: string]: number;
+  };
+};
+export type MovementField = "timestamp" | "amount";
 export type InstitutionalAccountType =
   | "investment"
   | "credit"
@@ -877,9 +1030,9 @@ export type InstitutionalAccountType =
   | "other";
 export type InstitutionalAccount = {
   id: number;
-  userinstitutionlink_id: number;
   type: InstitutionalAccountType;
   mask: string;
+  userinstitutionlink_id: number;
 };
 export type NonInstitutionalAccountType =
   | "personal ledger"
@@ -901,13 +1054,11 @@ export type AccountApiOut = {
   balance: number;
 };
 export type InstitutionalAccount2 = {
-  userinstitutionlink_id: number;
   type: InstitutionalAccountType;
   mask: string;
 };
 export type NonInstitutionalAccount2 = {
   type: NonInstitutionalAccountType;
-  user_id?: number;
 };
 export type AccountApiIn = {
   currency_code: string;
@@ -921,43 +1072,12 @@ export type TransactionApiIn = {
   timestamp: string;
   name: string;
   currency_code: string;
-  account_id: number;
   account_balance?: number;
-  movement_id?: number;
 };
-export type BodyUploadTransactionsSheetApiAccountsIdTransactionsSheetPost = {
+export type BodyPreviewApiUsersMeAccountsPreviewPost = {
   file: Blob;
 };
-export type UserInstitutionLinkApiOut = {
-  id: number;
-  plaid_id?: string;
-  plaid_metadata?: string;
-  institution_id: number;
-  user_id: number;
-  is_synced: boolean;
-};
-export type UserInstitutionLinkApiIn = {
-  institution_id: number;
-  user_id?: number;
-};
-export type PlStatement = {
-  start_date: string;
-  end_date: string;
-  income: number;
-  expenses: number;
-  currency_code: string;
-};
-export type MovementApiOut = {
-  id: number;
-  earliest_timestamp?: string;
-  latest_timestamp?: string;
-  transactions: TransactionApiOut[];
-  amounts: {
-    [key: string]: number;
-  };
-};
-export type MovementFields = "timestamp" | "amount";
-export type BodyCreateApiMovementsPost = {
+export type BodyCreateManyApiUsersMeAccountsAccountIdMovementsPost = {
   transactions: TransactionApiIn[];
   transaction_ids: number[];
 };

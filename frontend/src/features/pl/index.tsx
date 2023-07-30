@@ -55,7 +55,7 @@ function Row(props: { plStatement: PlStatement }) {
 
 export default function IncomeStatement() {
   const aggregatesQuery =
-    api.endpoints.getManyAggregatesApiMovementsAggregatesGet.useQuery({
+    api.endpoints.getManyAggregatesApiUsersMeMovementsAggregatesGet.useQuery({
       currencyCode: "EUR",
     });
 

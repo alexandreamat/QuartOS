@@ -16,7 +16,7 @@ export default function Users() {
 
   const usersQuery = api.endpoints.readManyApiUsersGet.useQuery({});
   const [deleteUser, deleteUserResult] =
-    api.endpoints.deleteApiUsersIdDelete.useMutation();
+    api.endpoints.deleteApiUsersUserIdDelete.useMutation();
 
   const handleCreate = () => {
     setSelectedUser(undefined);
