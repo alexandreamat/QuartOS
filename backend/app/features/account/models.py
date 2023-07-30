@@ -9,7 +9,14 @@ from sqlmodel.sql.expression import SelectOfScalar
 from pydantic import root_validator, validator
 import pycountry
 
-from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
+from app.common.models import (
+    Base,
+    CurrencyCode,
+    SyncedMixin,
+    SyncableBase,
+    SyncedBase,
+    BaseType,
+)
 
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser import TransactionDeserialiser
@@ -243,16 +250,31 @@ class Account(_AccountBase, Base, table=True):
         return cls.read(db, id)
 
     @classmethod
-    def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
-        statement = cls.select()
-
+    def join_subclasses(
+        cls, statement: SelectOfScalar[BaseType]
+    ) -> SelectOfScalar[BaseType]:
         # fmt: off
-        statement = (
+        return ( 
             statement
             .outerjoin(cls.NonInstitutionalAccount)
             .outerjoin(cls.InstitutionalAccount)
-        )  # fmt: on
+        )
+        # fmt: on
 
+    @classmethod
+    def select_children(
+        cls, account_id: int | None, statement: SelectOfScalar[BaseType]
+    ) -> SelectOfScalar[BaseType]:
+        statement = statement.join(cls)
+        statement = cls.join_subclasses(statement)
+        if account_id:
+            statement = statement.where(cls.id == account_id)
+        return statement
+
+    @classmethod
+    def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
+        statement = cls.select()
+        statement = cls.join_subclasses(statement)
         if account_id:
             statement = statement.where(cls.id == account_id)
         return statement
@@ -266,18 +288,7 @@ class Account(_AccountBase, Base, table=True):
     ) -> SelectOfScalar[Movement]:
         statement = Movement.select_movements(movement_id, **kwargs)
         statement = statement.join(Transaction)
-        statement = statement.join(cls)
-
-        # fmt: off
-        statement = (
-            statement
-            .outerjoin(cls.NonInstitutionalAccount)
-            .outerjoin(cls.InstitutionalAccount)
-        )  # fmt: on
-
-        if account_id:
-            statement = statement.where(cls.id == account_id)
-
+        statement = cls.select_children(account_id, statement)
         return statement
 
     @classmethod
@@ -289,18 +300,7 @@ class Account(_AccountBase, Base, table=True):
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
         statement = Movement.select_transactions(movement_id, transaction_id, **kwargs)
-        statement = statement.join(cls)
-
-        # fmt: off
-        statement = (
-            statement
-            .outerjoin(cls.NonInstitutionalAccount)
-            .outerjoin(cls.InstitutionalAccount)
-        )  # fmt: on
-
-        if account_id:
-            statement = statement.where(cls.id == account_id)
-
+        statement = cls.select_children(account_id, statement)
         return statement
 
     @property
