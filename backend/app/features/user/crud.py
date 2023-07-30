@@ -35,7 +35,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
 
     @classmethod
     def update(
-        cls, db: Session, id: int, obj_in: UserApiIn, **kwargs: int
+        cls, db: Session, id: int, obj_in: UserApiIn, **kwargs: Any
     ) -> UserApiOut:
         db_obj_in = User(
             **obj_in.dict(exclude={"password"}),
