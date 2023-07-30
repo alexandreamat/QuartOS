@@ -14,6 +14,7 @@ from app.features.user import (
 )
 
 from . import institutionlinks
+from . import accounts
 from . import movements
 from . import transactions
 
@@ -108,3 +109,4 @@ router.include_router(movements.router, prefix="/me/movements", tags=["movements
 router.include_router(
     transactions.router, prefix="/me/transactions", tags=["transactions"]
 )
+router.include_router(accounts.router, prefix="/me/accounts", tags=["accounts"])

@@ -6,7 +6,6 @@ from fastapi import APIRouter, HTTPException, status
 from app.database.deps import DBSession
 
 from app.features.user import CRUDUser, CurrentUser
-
 from app.features.userinstitutionlink import (
     CRUDUserInstitutionLink,
     CRUDSyncableUserInstitutionLink,
@@ -15,7 +14,6 @@ from app.features.userinstitutionlink import (
     sync_transactions,
 )
 
-from . import accounts
 from . import transactions
 
 router = APIRouter()
@@ -84,11 +82,6 @@ def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
     return CRUDUserInstitutionLink.delete(db, userinstitutionlink_id)
 
 
-router.include_router(
-    accounts.router,
-    prefix="/{userinstitutionlink_id}/accounts",
-    tags=["accounts"],
-)
 router.include_router(
     transactions.router,
     prefix="/{userinstitutionlink_id}/transactions",

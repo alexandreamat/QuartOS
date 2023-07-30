@@ -17,13 +17,12 @@ router = APIRouter()
 def create(
     db: DBSession,
     me: CurrentUser,
-    userinstitutionlink_id: int,
     account_id: int,
     movement_id: int,
     transaction_in: TransactionApiIn,
 ) -> TransactionApiOut:
     # Check permissions on link, account, and movement
-    CRUDUser.read_movement(db, me.id, userinstitutionlink_id, account_id, movement_id)
+    CRUDUser.read_movement(db, me.id, None, account_id, movement_id)
     # Proceed with creation
     return CRUDAccount.create_transaction(db, account_id, movement_id, transaction_in)
 
@@ -32,13 +31,12 @@ def create(
 def read(
     db: DBSession,
     me: CurrentUser,
-    userinstitutionlink_id: int,
     account_id: int,
     movement_id: int,
     transaction_id: int,
 ) -> TransactionApiOut:
     transaction = CRUDUser.read_transaction(
-        db, me.id, userinstitutionlink_id, account_id, movement_id, transaction_id
+        db, me.id, None, account_id, movement_id, transaction_id
     )
     return transaction
 
@@ -47,17 +45,15 @@ def read(
 def update(
     db: DBSession,
     me: CurrentUser,
-    userinstitutionlink_id: int,
     account_id: int,
     movement_id: int,
     transaction_id: int,
     transaction_in: TransactionApiIn,
+    new_movement_id: int,
 ) -> TransactionApiOut:
-    CRUDUser.read_transaction(
-        db, me.id, userinstitutionlink_id, account_id, movement_id, transaction_id
-    )
+    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
     return CRUDAccount.update_transaction(
-        db, account_id, movement_id, transaction_id, transaction_in
+        db, account_id, movement_id, transaction_id, transaction_in, new_movement_id
     )
 
 
@@ -65,14 +61,11 @@ def update(
 def delete(
     db: DBSession,
     me: CurrentUser,
-    userinstitutionlink_id: int,
     account_id: int,
     movement_id: int,
     transaction_id: int,
 ) -> None:
-    CRUDUser.read_transaction(
-        db, me.id, userinstitutionlink_id, account_id, movement_id, transaction_id
-    )
+    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
     if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 

@@ -18,7 +18,7 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
         cls,
         db: Session,
         obj_in: ApiInModel,
-        **kwargs: int,
+        **kwargs: Any,
     ) -> ApiOutModel:
         db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
         db_obj_out = cls.db_model.create(db, db_obj_in)
@@ -38,7 +38,7 @@ class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
 
     @classmethod
     def update(
-        cls, db: Session, id: int, obj_in: ApiInModel, **kwargs: int
+        cls, db: Session, id: int, obj_in: ApiInModel, **kwargs: Any
     ) -> ApiOutModel:
         db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
         db_obj_out = cls.db_model.update(db, id, db_obj_in)

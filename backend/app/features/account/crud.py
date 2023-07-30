@@ -123,10 +123,11 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         movement_id: int,
         transaction_id: int,
         transaction_in: TransactionApiIn,
+        new_movement_id: int,
     ) -> TransactionApiOut:
         transaction_in.account_balance = Decimal(0)
         transaction_out = CRUDMovement.update_transaction(
-            db, movement_id, transaction_id, transaction_in
+            db, movement_id, transaction_id, transaction_in, new_movement_id
         )
         CRUDAccount.update_balance(db, account_id, transaction_in.timestamp)
         return transaction_out

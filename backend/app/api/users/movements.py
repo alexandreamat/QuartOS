@@ -12,6 +12,7 @@ from app.features.movement import (
     MovementApiOut,
     PLStatement,
     MovementField,
+    CRUDMovement,
 )
 
 router = APIRouter()
@@ -78,3 +79,22 @@ def read_many(
         amount_gt=amount_gt,
         amount_lt=amount_lt,
     )
+
+
+@router.get("/{movement_id}")
+def read(
+    db: DBSession,
+    me: CurrentUser,
+    movement_id: int,
+) -> MovementApiOut:
+    return CRUDUser.read_movement(db, me.id, None, None, movement_id)
+
+
+@router.delete("/{movement_id}")
+def delete(
+    db: DBSession,
+    me: CurrentUser,
+    movement_id: int,
+) -> None:
+    CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    CRUDMovement.delete(db, movement_id)
