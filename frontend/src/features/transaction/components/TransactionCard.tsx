@@ -14,7 +14,7 @@ import FormattedTimestamp from "components/FormattedTimestamp";
 import ActionButton from "components/ActionButton";
 import AccountIcon from "features/account/components/Icon";
 import { FormattedCurrency } from "components/FormattedCurrency";
-import { limitString } from "utils/string";
+import LimitedText from "components/LimitedString";
 import MutateActionButton from "components/MutateActionButton";
 
 export function TransactionCard(
@@ -65,7 +65,9 @@ export function TransactionCard(
             </LoadableQuery>
           </Grid.Column>
           <Grid.Column>
-            <Header as="h5">{limitString(props.transaction.name, 50)}</Header>
+            <Header as="h5">
+              <LimitedText str={props.transaction.name} maxLength={50} />
+            </Header>
           </Grid.Column>
           {"onCheckboxChange" in props && (
             <Grid.Column width={1} textAlign="center" verticalAlign="middle">
