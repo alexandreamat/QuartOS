@@ -5,6 +5,7 @@ import { Flows } from "./Flows";
 import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import MutateActionButton from "components/MutateActionButton";
+import LimitedText from "components/LimitedString";
 
 export function MovementCard(props: {
   movement: MovementApiOut;
@@ -27,7 +28,9 @@ export function MovementCard(props: {
             </Card.Meta>
           </Grid.Column>
           <Grid.Column>
-            <Header as="h4">{firstTransaction.name}</Header>
+            <Header as="h5">
+              <LimitedText str={firstTransaction.name} maxLength={50} />
+            </Header>
           </Grid.Column>
           {props.onOpenEditForm && (
             <Grid.Column width={1} textAlign="center">
