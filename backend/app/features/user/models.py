@@ -161,7 +161,11 @@ class User(__UserBase, Base, table=True):
         offset = per_page * page
         for i in range(offset, offset + per_page):
             start_date = last_start_date - relativedelta(months=i)
-            end_date = min(start_date + relativedelta(months=1), today)
+            end_date = min(
+                start_date + relativedelta(months=1),
+                today + relativedelta(days=1),
+            )
+
             yield cls.get_movement_aggregate(
                 db,
                 user_id,
