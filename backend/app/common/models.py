@@ -1,4 +1,5 @@
 from typing import TypeVar, Type, Any, Generator, Callable
+import re
 
 import pycountry
 from sqlmodel import Session, SQLModel, Field, select
@@ -116,4 +117,15 @@ class CodeSnippet(str):
     @classmethod
     def validate(cls, v: str) -> str:
         exec(f"def deserialize_field(row): return {v}")
+        return v
+
+
+class RegexPattern(str):
+    @classmethod
+    def __get_validators__(cls) -> Generator[Callable[[Any], str], None, None]:
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v: str) -> str:
+        re.compile(v)
         return v

@@ -7,6 +7,7 @@ import pycountry
 
 from app.common.models import SyncedMixin, SyncableBase, SyncedBase
 from app.features.transactiondeserialiser import TransactionDeserialiser
+from app.features.replacementpattern import ReplacementPattern
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLink
@@ -16,7 +17,6 @@ class __InstitutionBase(SQLModel):
     name: str
     country_code: str
     url: HttpUrl | None
-    transactiondeserialiser_id: int | None
     colour: Annotated[str, constr(regex=r"^#[0-9a-fA-F]{6}$")] | None
 
     @validator("country_code")
@@ -29,6 +29,8 @@ class __InstitutionBase(SQLModel):
 class InstitutionApiOut(__InstitutionBase, SyncableBase):
     logo_base64: str | None
     is_synced: bool
+    transactiondeserialiser_id: int | None
+    replacementpattern_id: int | None
 
     @classmethod
     def from_orm(
@@ -57,6 +59,8 @@ class Institution(__InstitutionBase, SyncableBase, table=True):
     transactiondeserialiser_id: int | None = Field(
         foreign_key="transactiondeserialiser.id"
     )
+    replacementpattern_id: int | None = Field(foreign_key="replacementpattern.id")
+
     user_links: list["UserInstitutionLink"] = Relationship(
         back_populates="institution",
         sa_relationship_kwargs={"cascade": "all, delete"},
@@ -64,6 +68,7 @@ class Institution(__InstitutionBase, SyncableBase, table=True):
     transactiondeserialiser: TransactionDeserialiser | None = Relationship(
         back_populates="institutions"
     )
+    replacementpattern: ReplacementPattern | None = Relationship()
 
     @property
     def is_synced(self) -> bool:

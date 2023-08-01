@@ -41,8 +41,11 @@ def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
     syncable_institution_link = CRUDSyncableUserInstitutionLink.read_by_plaid_id(
         db, curr_institution_link_out.plaid_id
     )
+    replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
+        db, syncable_institution_link.id
+    )
     try:
-        sync_transactions(db, syncable_institution_link)
+        sync_transactions(db, syncable_institution_link, replacement_pattern)
     except urllib3.exceptions.ReadTimeoutError:
         raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
 

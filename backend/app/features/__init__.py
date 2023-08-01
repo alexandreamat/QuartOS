@@ -8,4 +8,5 @@ from . import (
     account,
     transaction,
     movement,
+    replacementpattern,
 )

@@ -8,6 +8,7 @@ from . import transactiondeserialisers
 from . import users
 from . import accounts
 from . import transactions
+from . import replacementpatterns
 
 router = APIRouter()
 
@@ -30,6 +31,11 @@ router.include_router(
     transactiondeserialisers.router,
     prefix="/transaction-deserialisers",
     tags=["transaction-deserialisers"],
+)
+router.include_router(
+    replacementpatterns.router,
+    prefix="/replacement-patterns",
+    tags=["replacement-patterns"],
 )
 router.include_router(
     institutions.router, prefix="/institutions", tags=["institutions"]
