@@ -20,12 +20,18 @@ router = APIRouter()
 
 @router.post("/")
 def create(
-    db: DBSession, me: CurrentSuperuser, institution_in: InstitutionApiIn
+    db: DBSession,
+    me: CurrentSuperuser,
+    institution_in: InstitutionApiIn,
+    transactiondeserialiser_id: int | None = None,
+    replacementpattern_id: int | None = None,
 ) -> InstitutionApiOut:
-    """
-    Create new institution.
-    """
-    return CRUDInstitution.create(db, institution_in)
+    return CRUDInstitution.create(
+        db,
+        institution_in,
+        transactiondeserialiser_id=transactiondeserialiser_id,
+        replacementpattern_id=replacementpattern_id,
+    )
 
 
 @router.post("/{institution_id}/sync")
@@ -41,17 +47,11 @@ def sync(db: DBSession, me: CurrentSuperuser, institution_id: int) -> Institutio
 
 @router.get("/{institution_id}")
 def read(db: DBSession, institution_id: int) -> InstitutionApiOut:
-    """
-    Get institution by ID.
-    """
     return CRUDInstitution.read(db, id=institution_id)
 
 
 @router.get("/")
 def read_many(db: DBSession) -> Iterable[InstitutionApiOut]:
-    """
-    Retrieve institutions.
-    """
     return CRUDInstitution.read_many(db, 0, 0)
 
 
@@ -61,16 +61,18 @@ def update(
     me: CurrentSuperuser,
     institution_id: int,
     institution_in: InstitutionApiIn,
+    transactiondeserialiser_id: int | None = None,
+    replacementpattern_id: int | None = None,
 ) -> InstitutionApiOut:
-    """
-    Update an institution.
-    """
-    return CRUDInstitution.update(db, institution_id, institution_in)
+    return CRUDInstitution.update(
+        db,
+        institution_id,
+        institution_in,
+        transactiondeserialiser_id=transactiondeserialiser_id,
+        replacementpattern_id=replacementpattern_id,
+    )
 
 
 @router.delete("/{institution_id}")
 def delete(db: DBSession, me: CurrentSuperuser, institution_id: int) -> None:
-    """
-    Delete an institution.
-    """
     CRUDInstitution.delete(db, id=institution_id)

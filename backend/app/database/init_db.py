@@ -9,6 +9,8 @@ from app.features.user import CRUDUser, UserApiIn
 from app.common.models import Base
 
 # 2. Import inheritors of the base model
+from app.features.replacementpattern import ReplacementPattern
+from app.features.transactiondeserialiser import TransactionDeserialiser
 from app.features.user import User
 from app.features.institution import Institution
 from app.features.userinstitutionlink import UserInstitutionLink

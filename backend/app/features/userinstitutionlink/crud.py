@@ -3,7 +3,8 @@ from typing import Any, Iterable
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
-from app.features.account import AccountApiOut, AccountPlaidOut
+from app.features.replacementpattern import ReplacementPatternApiOut
+from app.features.account import AccountPlaidOut
 from app.features.transaction import TransactionPlaidOut
 
 from .models import (
@@ -20,6 +21,13 @@ class CRUDUserInstitutionLink(
 ):
     db_model = UserInstitutionLink
     out_model = UserInstitutionLinkApiOut
+
+    @classmethod
+    def read_replacement_pattern(
+        cls, db: Session, id: int
+    ) -> ReplacementPatternApiOut | None:
+        rp = UserInstitutionLink.read(db, id).institution.replacementpattern
+        return ReplacementPatternApiOut.from_orm(rp) if rp else None
 
 
 class CRUDSyncableUserInstitutionLink(

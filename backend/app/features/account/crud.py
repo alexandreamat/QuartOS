@@ -76,14 +76,18 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         if isinstance(transaction, TransactionApiIn):
             transaction_in = transaction
             timestamp = transaction_in.timestamp
-            transaction_in.account_balance = Decimal(0)
-            movement_out = CRUDMovement.create(db, account_id, transaction_in)
+            movement_out = CRUDMovement.create(
+                db, transaction_in, account_id=account_id, account_balance=Decimal(0)
+            )
 
         else:
             transaction_id = transaction
-            transaction_out = CRUDTransaction.read(db, transaction_id)
+            transaction_out = cls.read_transaction(db, account_id, None, transaction_id)
             timestamp = transaction_out.timestamp
-            movement_out = CRUDMovement.create(db, account_id, transaction_id)
+            movement_out = CRUDMovement.create(
+                db,
+                transaction_id,
+            )
 
         CRUDAccount.update_balance(db, account_id, timestamp)
         return movement_out
@@ -95,8 +99,9 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         account_id: int,
         transaction_in: TransactionPlaidIn,
     ) -> MovementApiOut:
-        transaction_in.account_balance = Decimal(0)
-        movement_out = CRUDMovement.create_plaid(db, account_id, transaction_in)
+        movement_out = CRUDMovement.create_plaid(
+            db, transaction_in, account_id=account_id, account_balance=Decimal(0)
+        )
         CRUDAccount.update_balance(db, account_id, transaction_in.timestamp)
         return movement_out
 
@@ -108,9 +113,12 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         movement_id: int,
         transaction_in: TransactionApiIn,
     ) -> TransactionApiOut:
-        transaction_in.account_balance = Decimal(0)
         transaction_out = CRUDMovement.create_transaction(
-            db, account_id, movement_id, transaction_in
+            db,
+            movement_id,
+            transaction_in,
+            account_id=account_id,
+            account_balance=Decimal(0),
         )
         cls.update_balance(db, account_id, transaction_in.timestamp)
         return transaction_out
@@ -125,9 +133,15 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         transaction_in: TransactionApiIn,
         new_movement_id: int,
     ) -> TransactionApiOut:
-        transaction_in.account_balance = Decimal(0)
+        cls.read_transaction(db, account_id, movement_id, transaction_id)
         transaction_out = CRUDMovement.update_transaction(
-            db, movement_id, transaction_id, transaction_in, new_movement_id
+            db,
+            movement_id,
+            transaction_id,
+            transaction_in,
+            new_movement_id,
+            account_id=account_id,
+            account_balance=Decimal(0),
         )
         CRUDAccount.update_balance(db, account_id, transaction_in.timestamp)
         return transaction_out
@@ -136,6 +150,20 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     def delete_transaction(
         cls, db: Session, movement_id: int, account_id: int, transaction_id: int
     ) -> None:
-        transaction_out = CRUDTransaction.read(db, transaction_id)
+        transaction_out = cls.read_transaction(
+            db, account_id, movement_id, transaction_id
+        )
         CRUDMovement.delete_transaction(db, movement_id, transaction_id)
         Account.update_balance(db, account_id, transaction_out.timestamp)
+
+    @classmethod
+    def read_transaction(
+        cls,
+        db: Session,
+        account_id: int | None,
+        movement_id: int | None,
+        transaction_id: int,
+    ) -> TransactionApiOut:
+        statement = Account.select_transactions(account_id, movement_id, transaction_id)
+        transaction = db.exec(statement).one()
+        return TransactionApiOut.from_orm(transaction)

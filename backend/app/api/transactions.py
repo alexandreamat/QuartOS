@@ -4,21 +4,12 @@ from app.database.deps import DBSession
 
 from app.features.user import CurrentSuperuser
 from app.features.transaction import (
-    CRUDTransaction,
     CRUDSyncableTransaction,
-    TransactionApiOut,
     TransactionPlaidIn,
     TransactionPlaidOut,
-    reset_transaction_to_metadata,
 )
 
 router = APIRouter()
-
-
-@router.put("/plaid/{id}/reset")
-def reset_plaid(db: DBSession, me: CurrentSuperuser, id: int) -> TransactionApiOut:
-    reset_transaction_to_metadata(db, id)
-    return CRUDTransaction.read(db, id)
 
 
 @router.get("/plaid/{id}")

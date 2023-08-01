@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from decimal import Decimal
 from datetime import date
 
-from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, Session
+from sqlmodel import Field, Relationship, SQLModel, asc, desc, col
 from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
 
@@ -30,7 +30,7 @@ class TransactionApiOut(__TransactionBase, Base):
 
 
 class TransactionApiIn(__TransactionBase):
-    account_balance: Decimal | None
+    ...
 
 
 class TransactionPlaidIn(TransactionApiIn, SyncedMixin):

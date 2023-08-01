@@ -4,46 +4,48 @@ from sqlmodel import Session, SQLModel
 
 from .models import Base, SyncableBase, SyncedBase, SyncedMixin
 
-DBModelType = TypeVar("DBModelType", bound=Base)
-ApiInModel = TypeVar("ApiInModel", bound=SQLModel)
-ApiOutModel = TypeVar("ApiOutModel", bound=Base)
+ModelType = TypeVar("ModelType", bound=Base)
+InModelType = TypeVar("InModelType", bound=SQLModel)
+OutModelType = TypeVar("OutModelType", bound=Base)
 
 
-class CRUDBase(Generic[DBModelType, ApiOutModel, ApiInModel]):
-    db_model: Type[DBModelType]
-    out_model: Type[ApiOutModel]
+class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
+    db_model: Type[ModelType]
+    out_model: Type[OutModelType]
 
     @classmethod
     def create(
         cls,
         db: Session,
-        obj_in: ApiInModel,
+        obj_in: InModelType,
         **kwargs: Any,
-    ) -> ApiOutModel:
+    ) -> OutModelType:
         db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
         db_obj_out = cls.db_model.create(db, db_obj_in)
-        api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj_out)
+        api_out_obj: OutModelType = cls.out_model.from_orm(db_obj_out)
         return api_out_obj
 
     @classmethod
-    def read(cls, db: Session, id: int) -> ApiOutModel:
+    def read(cls, db: Session, id: int) -> OutModelType:
         db_obj = cls.db_model.read(db, id)
-        api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj)
+        api_out_obj: OutModelType = cls.out_model.from_orm(db_obj)
         return api_out_obj
 
     @classmethod
-    def read_many(cls, db: Session, offset: int, limit: int) -> Iterable[ApiOutModel]:
+    def read_many(cls, db: Session, offset: int, limit: int) -> Iterable[OutModelType]:
         for s in cls.db_model.read_many(db, offset, limit):
             yield cls.out_model.from_orm(s)
 
     @classmethod
     def update(
-        cls, db: Session, id: int, obj_in: ApiInModel, **kwargs: Any
-    ) -> ApiOutModel:
-        db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
-        db_obj_out = cls.db_model.update(db, id, db_obj_in)
-        api_out_obj: ApiOutModel = cls.out_model.from_orm(db_obj_out)
-        return api_out_obj
+        cls, db: Session, id: int, obj_in: InModelType, **kwargs: Any
+    ) -> OutModelType:
+        obj = cls.db_model.read(db, id)
+        for name, value in {**obj_in.dict(), **kwargs}.items():
+            setattr(obj, name, value)
+        obj = cls.db_model.update(db, id, obj)
+        out_obj: OutModelType = cls.out_model.from_orm(obj)
+        return out_obj
 
     @classmethod
     def delete(cls, db: Session, id: int) -> None:

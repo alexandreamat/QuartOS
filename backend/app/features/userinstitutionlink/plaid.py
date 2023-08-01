@@ -17,6 +17,7 @@ from plaid.model.transactions_get_response import TransactionsGetResponse
 
 from app.common.plaid import client
 
+from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
 from app.features.account import CRUDAccount
 from app.features.transaction import (
@@ -53,6 +54,7 @@ def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str,
 def __fetch_transaction_changes(
     db: Session,
     user_institution_link: "UserInstitutionLinkPlaidOut",
+    replacement_pattern: ReplacementPatternApiOut | None,
 ) -> __TransactionsSyncResult:
     options = TransactionsSyncRequestOptions(
         include_personal_finance_category=True,
@@ -73,11 +75,17 @@ def __fetch_transaction_changes(
     accounts = __get_account_ids_map(db, user_institution_link.id)
     return __TransactionsSyncResult(
         added=[
-            (accounts[transaction.account_id], create_transaction_plaid_in(transaction))
+            (
+                accounts[transaction.account_id],
+                create_transaction_plaid_in(transaction, replacement_pattern),
+            )
             for transaction in response.added
         ],
         modified=[
-            (accounts[transaction.account_id], create_transaction_plaid_in(transaction))
+            (
+                accounts[transaction.account_id],
+                create_transaction_plaid_in(transaction, replacement_pattern),
+            )
             for transaction in response.modified
         ],
         removed=[
@@ -112,8 +120,8 @@ def fetch_transactions(
     user_institution_link: UserInstitutionLinkPlaidOut,
     start_date: date,
     end_date: date,
+    replacement_pattern: ReplacementPatternApiOut | None,
 ) -> Iterable[TransactionPlaidIn]:
-    accounts = __get_account_ids_map(db, user_institution_link.id)
     offset = 0
     total_transactions = 1
     while offset < total_transactions:
@@ -132,16 +140,19 @@ def fetch_transactions(
         transactions: list[Transaction] = response.transactions
         offset += len(transactions)
         for transaction in transactions:
-            yield create_transaction_plaid_in(transaction)
+            yield create_transaction_plaid_in(transaction, replacement_pattern)
 
 
 def sync_transactions(
     db: Session,
     user_institution_link: UserInstitutionLinkPlaidOut,
+    replacement_pattern: ReplacementPatternApiOut | None,
 ) -> None:
     has_more = True
     while has_more:
-        sync_result = __fetch_transaction_changes(db, user_institution_link)
+        sync_result = __fetch_transaction_changes(
+            db, user_institution_link, replacement_pattern
+        )
         for account_id, transaction in sync_result.added:
             CRUDAccount.create_movement_plaid(db, account_id, transaction)
         for account_id, transaction_in in sync_result.modified:

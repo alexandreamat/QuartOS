@@ -58,11 +58,11 @@ export default function InstitutionForm(props: {
       name: name.value!,
       country_code: countryCode.value!,
       url: url.value!,
-      transactiondeserialiser_id: transactionDeserialiserId.value!,
     };
     if (props.institution) {
       try {
         await updateInstitution({
+          transactiondeserialiserId: transactionDeserialiserId.value!,
           institutionId: props.institution.id,
           institutionApiIn: institution,
         }).unwrap();
@@ -72,7 +72,10 @@ export default function InstitutionForm(props: {
       }
     } else {
       try {
-        await createInstitution(institution).unwrap();
+        await createInstitution({
+          transactiondeserialiserId:transactionDeserialiserId.value!,
+          institutionApiIn: institution
+      }).unwrap();
       } catch (error) {
         logMutationError(error, createInstitutionResult);
         return;
