@@ -27,6 +27,7 @@ export function TransactionCard(
         transaction: TransactionApiOut;
         onGoMovement: () => void;
         onOpenEditForm: () => void;
+        explanationRate?: number;
       }
     | {
         // from movement form
@@ -66,10 +67,7 @@ export function TransactionCard(
           </Grid.Column>
           <Grid.Column>
             <Header as="h5">
-              <LimitedText
-                str={props.transaction.name}
-                maxLength={50}
-              />
+              <LimitedText str={props.transaction.name} maxLength={50} />
             </Header>
           </Grid.Column>
           {"onCheckboxChange" in props && (
@@ -109,38 +107,43 @@ export function TransactionCard(
         </Grid>
       </Card.Content>
       <Card.Content extra>
-        <Header as="h5" floated="right">
-        {"account_balance" in props.transaction ? (
-          <Popup
-            position="left center"
-            content={
-              <p>
-                Account balance:
-                <FormattedCurrency
-                  amount={props.transaction.account_balance || 0}
-                  currencyCode={props.transaction.currency_code}
-                />
-              </p>
-            }
-            trigger={
-              <div>
-                Total:
-                <CurrencyLabel
-                  amount={props.transaction.amount}
-                  currencyCode={props.transaction.currency_code}
-                />
-              </div>
-            }
-          />
-        ) : (
-          <div>
-            Total:
-            <CurrencyLabel
-              amount={props.transaction.amount}
-              currencyCode={props.transaction.currency_code}
-            />
-          </div>
+        {"explanationRate" in props && (
+          <Header sub floated="left">
+            {props.explanationRate?.toFixed(0)}%
+          </Header>
         )}
+        <Header as="h5" floated="right">
+          {"account_balance" in props.transaction ? (
+            <Popup
+              position="left center"
+              content={
+                <p>
+                  Account balance:
+                  <FormattedCurrency
+                    amount={props.transaction.account_balance || 0}
+                    currencyCode={props.transaction.currency_code}
+                  />
+                </p>
+              }
+              trigger={
+                <div>
+                  Total:
+                  <CurrencyLabel
+                    amount={props.transaction.amount}
+                    currencyCode={props.transaction.currency_code}
+                  />
+                </div>
+              }
+            />
+          ) : (
+            <div>
+              Total:
+              <CurrencyLabel
+                amount={props.transaction.amount}
+                currencyCode={props.transaction.currency_code}
+              />
+            </div>
+          )}
         </Header>
       </Card.Content>
     </Card>

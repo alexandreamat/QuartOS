@@ -1,7 +1,7 @@
 from enum import Enum
 from decimal import Decimal
 from datetime import date
-from typing import Iterable, TYPE_CHECKING, Any
+from typing import Iterable, Any
 
 from sqlmodel import SQLModel, Relationship, Session, and_, col, func
 from sqlmodel.sql.expression import SelectOfScalar
@@ -9,10 +9,6 @@ from sqlmodel.sql.expression import SelectOfScalar
 from app.common.models import Base, CurrencyCode
 from app.features.exchangerate.client import get_exchange_rate
 from app.features.transaction import Transaction, TransactionApiOut
-
-if TYPE_CHECKING:
-    from app.features.user import User
-    from app.features.account import Account
 
 
 class PLStatement(SQLModel):
@@ -37,6 +33,8 @@ class MovementApiOut(__MovementBase, Base):
     latest_timestamp: date | None
     transactions: list[TransactionApiOut]
     amounts: dict[CurrencyCode, Decimal]
+    amount_default_currency: Decimal
+    name: str
 
 
 class MovementApiIn(__MovementBase):
@@ -50,9 +48,8 @@ class Movement(__MovementBase, Base, table=True):
     )
 
     @property
-    def users(self) -> Iterable["User"]:
-        for transaction in self.transactions:
-            yield transaction.user
+    def name(self) -> str:
+        return self.transactions[0].name
 
     @property
     def earliest_timestamp(self) -> date:
@@ -75,6 +72,10 @@ class Movement(__MovementBase, Base, table=True):
     @property
     def amounts(self) -> dict[CurrencyCode, Decimal]:
         return {c: self.amount(c) for c in {t.currency_code for t in self.transactions}}
+
+    @property
+    def amount_default_currency(self) -> Decimal:
+        return self.amount(CurrencyCode("USD"))
 
     @classmethod
     def select_transactions(

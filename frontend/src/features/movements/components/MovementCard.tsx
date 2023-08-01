@@ -13,9 +13,8 @@ export function MovementCard(props: {
   onOpenCreateTransactionForm?: () => void;
   onOpenEditTransactionForm?: (x: TransactionApiOut) => void;
   onRemoveTransaction?: (x: TransactionApiOut) => void;
+  explanationRate?: number;
 }) {
-  const firstTransaction = props.movement.transactions[0];
-
   return (
     <Card fluid color="teal">
       <Card.Content>
@@ -29,7 +28,7 @@ export function MovementCard(props: {
           </Grid.Column>
           <Grid.Column>
             <Header as="h5">
-              <LimitedText str={firstTransaction.name} maxLength={50} />
+              <LimitedText str={props.movement.name} maxLength={50} />
             </Header>
           </Grid.Column>
           {props.onOpenEditForm && (
