@@ -107,9 +107,9 @@ export function TransactionCard(
         </Grid>
       </Card.Content>
       <Card.Content extra>
-        {"explanationRate" in props && (
+        {"explanationRate" in props && props.explanationRate && (
           <Header sub floated="left">
-            {props.explanationRate?.toFixed(0)}%
+            {props.explanationRate.toFixed(0)}%
           </Header>
         )}
         <Header as="h5" floated="right">

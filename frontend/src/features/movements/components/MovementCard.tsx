@@ -52,6 +52,11 @@ export function MovementCard(props: {
             content="Add Transaction"
           />
         )}
+        {"explanationRate" in props && props.explanationRate && (
+          <Header sub floated="left">
+            {props.explanationRate.toFixed(0)}%
+          </Header>
+        )}
         <Header as="h5" floated="right">
           Total:
           {Object.entries(props.movement.amounts).map(
