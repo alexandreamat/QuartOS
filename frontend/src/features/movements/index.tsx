@@ -2,14 +2,13 @@ import { MovementApiOut, api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { Bar } from "./components/Bar";
-import { MovementCard } from "./components/MovementCard";
 import Form from "./components/Form";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
-import { TransactionCard } from "features/transaction/components/TransactionCard";
 import { formatDateParam } from "utils/time";
 import { Card } from "semantic-ui-react";
+import MovementUnifiedCard from "./components/MovementUnifiedCard";
 
 export default function Movements() {
   const location = useLocation();
@@ -92,7 +91,7 @@ export default function Movements() {
       accountId,
     },
     10,
-    () => {}
+    () => { }
   );
 
   return (
@@ -120,18 +119,11 @@ export default function Movements() {
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
           {Object.values(infiniteQuery.pages).map((movements) =>
             movements.map((movement) =>
-              movement.transactions.length === 1 ? (
-                <TransactionCard
-                  transaction={movement.transactions[0]}
-                  onOpenEditForm={() => handleOpenEditForm(movement)}
-                />
-              ) : (
-                <MovementCard
-                  key={movement.id}
-                  movement={movement}
-                  onOpenEditForm={() => handleOpenEditForm(movement)}
-                />
-              )
+              <MovementUnifiedCard
+                key={movement.id}
+                movement={movement}
+                onOpenEditForm={() => handleOpenEditForm(movement)}
+              />
             )
           )}
         </Card.Group>

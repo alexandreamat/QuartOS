@@ -1,7 +1,6 @@
-import { api } from "app/services/api";
+import { MovementApiOut, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { MovementCard } from "features/movements/components/MovementCard";
-import { TransactionCard } from "features/transaction/components/TransactionCard";
+import MovementUnifiedCard from "features/movements/components/MovementUnifiedCard";
 import { Card, Loader } from "semantic-ui-react";
 import { formatDateParam } from "utils/time";
 
@@ -9,6 +8,7 @@ export function MovementsByAmount(props: {
   startDate: Date;
   endDate: Date;
   showIncome: boolean;
+  onOpenEditForm: (x: MovementApiOut) => void;
 }) {
   const movementsQuery = api.endpoints.readManyApiUsersMeMovementsGet.useQuery({
     startDate: formatDateParam(props.startDate),
@@ -25,15 +25,26 @@ export function MovementsByAmount(props: {
 
   const movements = movementsQuery.data;
 
+  const totalAmount = movements.reduce(
+    (c, m, i) => c + m.amount_default_currency,
+    0
+  );
+  let cumulativeAmount = 0;
+
   return (
     <Card.Group>
-      {movements.map((movement) =>
-        movement.transactions.length === 1 ? (
-          <TransactionCard transaction={movement.transactions[0]} />
-        ) : (
-          <MovementCard key={movement.id} movement={movement} />
-        )
-      )}
+      {movements.map((movement) => {
+        cumulativeAmount += movement.amount_default_currency;
+        const explanationRate = (cumulativeAmount / totalAmount) * 100;
+        return (
+          <MovementUnifiedCard
+            key={movement.id}
+            movement={movement}
+            onOpenEditForm={() => props.onOpenEditForm(movement)}
+            explanationRate={explanationRate}
+          />
+        );
+      })}
     </Card.Group>
   );
 }

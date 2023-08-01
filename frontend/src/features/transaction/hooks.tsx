@@ -2,6 +2,7 @@ import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { api } from "app/services/api";
 import { DropdownItemProps } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
+import { formatDateParam } from "utils/time";
 
 export function useTransactionOptions(search: string) {
   const query = api.endpoints.readManyApiUsersMeTransactionsGet.useQuery(
@@ -48,7 +49,7 @@ export function useTransactionsQuery(arg: {
           accountId: arg.accountId,
           page: arg.page,
           perPage: arg.perPage,
-          timestamp: arg.timestamp && arg.timestamp.toISOString(),
+          timestamp: arg.timestamp && formatDateParam(arg.timestamp),
           search: arg.search,
           isDescending: arg.isDescending,
         }
@@ -56,7 +57,7 @@ export function useTransactionsQuery(arg: {
     : api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
         page: arg.page,
         perPage: arg.perPage,
-        timestamp: arg.timestamp && arg.timestamp.toISOString(),
+        timestamp: arg.timestamp && formatDateParam(arg.timestamp),
         search: arg.search,
         isDescending: arg.isDescending,
       });

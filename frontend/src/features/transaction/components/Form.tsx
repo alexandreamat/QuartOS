@@ -62,22 +62,23 @@ export default function TransactionForm(props: {
     if (props.transaction !== undefined) return;
     if (!movementQuery.isSuccess) return;
     const movement = movementQuery.data;
-    const timestamp = movement.latest_timestamp;
+    const timestamp = movement.earliest_timestamp;
     form.timestamp.set(timestamp ? new Date(timestamp) : new Date());
-  }, [movementQuery.isSuccess, movementQuery.data]);
+    form.name.set(movement.name);
+  }, [movementQuery.isSuccess, movementQuery.data, props.open]);
 
   useEffect(() => {
     accountQuery.isSuccess &&
       form.currencyCode.set(accountQuery.data.currency_code);
-  }, [accountQuery.isSuccess, accountQuery.data]);
+  }, [accountQuery.isSuccess, accountQuery.data, props.open]);
 
   useEffect(() => {
     props.transaction && transactionApiOutToForm(props.transaction, form);
-  }, [props.transaction]);
+  }, [props.transaction, props.open]);
 
   useEffect(() => {
     props.accountId && form.accountId.set(props.accountId);
-  }, [props.accountId]);
+  }, [props.accountId, props.open]);
 
   const handleSubmit = async () => {
     const invalidFields = Object.values(form).filter(
@@ -181,7 +182,7 @@ function FormCreate(props: {
       props.onCreated(movement);
     } catch (error) {
       logMutationError(error, createMovementResult);
-      return;
+      throw error;
     }
   };
 
@@ -218,7 +219,7 @@ function FormAdd(props: {
       }).unwrap();
     } catch (error) {
       logMutationError(error, createTransactionResult);
-      return;
+      throw error;
     }
   };
 

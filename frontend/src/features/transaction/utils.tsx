@@ -1,5 +1,6 @@
 import { TransactionApiIn, TransactionApiOut } from "app/services/api";
 import { TransactionApiInForm } from "./types";
+import { formatDateParam } from "utils/time";
 
 export function transactionApiOutToForm(
   transaction: TransactionApiOut,
@@ -19,7 +20,7 @@ export function transactionFormToApiIn(
 ): TransactionApiIn {
   return {
     amount: Number(form.amountStr.value!),
-    timestamp: form.timestamp.value!.toISOString(),
+    timestamp: formatDateParam(form.timestamp.value!),
     name: form.name.value!,
     currency_code: form.currencyCode.value!,
   };

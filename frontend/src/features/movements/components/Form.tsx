@@ -57,6 +57,19 @@ export default function Form(props: {
     setIsTransactionFormOpen(true);
   }
 
+  function handleCloseCreateTransactionForm() {
+    setIsTransactionFormOpen(false);
+  }
+
+  function handleCloseAddTransactionForm() {
+    setIsTransactionFormOpen(false);
+  }
+
+  function handleCloseEditTransactionForm() {
+    setSelectedTransaction(undefined)
+    setIsTransactionFormOpen(false)
+  }
+
   async function handleAddTransaction(transaction: TransactionApiOut) {
     if (movementId) {
       try {
@@ -135,14 +148,14 @@ export default function Form(props: {
           {selectedTransaction ? (
             <TransactionForm.Edit
               movementId={movementId}
-              onClose={() => setIsTransactionFormOpen(false)}
-              open={isTransactionFormOpen}
               transaction={selectedTransaction}
+              open={isTransactionFormOpen}
+              onClose={handleCloseEditTransactionForm}
             />
           ) : (
             <TransactionForm.Add
               open={isTransactionFormOpen}
-              onClose={() => setIsTransactionFormOpen(false)}
+              onClose={handleCloseAddTransactionForm}
               movementId={movementId}
             />
           )}
@@ -150,8 +163,8 @@ export default function Form(props: {
       ) : (
         <TransactionForm.Create
           open={isTransactionFormOpen}
-          onClose={() => setIsTransactionFormOpen(false)}
-          onCreated={(m) => {}}
+          onClose={handleCloseCreateTransactionForm}
+          onCreated={(m) => { }}
         />
       )}
       <Modal.Header>Create a Movement</Modal.Header>

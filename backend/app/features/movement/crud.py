@@ -101,10 +101,10 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         new_movement_id: int,
         **kwargs: Any,
     ) -> TransactionApiOut:
+        movement_out = cls.read(db, movement_id)
         transaction_out = CRUDTransaction.update(
             db, transaction_id, transaction_in, movement_id=new_movement_id, **kwargs
         )
-        movement_out = cls.read(db, movement_id)
         if not movement_out.transactions:
             cls.delete(db, movement_out.id)
         return TransactionApiOut.from_orm(transaction_out)

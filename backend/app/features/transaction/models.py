@@ -77,11 +77,11 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
     def select_transactions(
         cls,
         transaction_id: int | None,
-        page: int,
-        per_page: int,
-        search: str | None,
-        timestamp: date | None,
-        is_descending: bool,
+        page: int = 0,
+        per_page: int = 0,
+        search: str | None = None,
+        timestamp: date | None = None,
+        is_descending: bool = True,
     ) -> SelectOfScalar["Transaction"]:
         statement = Transaction.select()
         if transaction_id:
