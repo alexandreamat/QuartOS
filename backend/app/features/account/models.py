@@ -137,7 +137,7 @@ class Account(_AccountBase, Base, table=True):
 
         @property
         def is_synced(self) -> bool:
-            return self.userinstitutionlink.is_synced
+            return True if self.plaid_id else False
 
     class NonInstitutionalAccount(
         _AccountBase.NonInstitutionalAccount, Base, table=True

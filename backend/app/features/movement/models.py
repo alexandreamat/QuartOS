@@ -1,3 +1,4 @@
+import requests
 from enum import Enum
 from decimal import Decimal
 from datetime import date
@@ -59,22 +60,29 @@ class Movement(__MovementBase, Base, table=True):
     def latest_timestamp(self) -> date:
         return max(t.timestamp for t in self.transactions)
 
-    def amount(self, currency_code: CurrencyCode) -> Decimal:
-        return sum(
-            [
-                t.amount
-                * get_exchange_rate(t.currency_code, currency_code, t.timestamp)
-                for t in self.transactions
-            ],
-            Decimal(0),
-        )
+    def amount(self, currency_code: CurrencyCode) -> Decimal | None:
+        try:
+            return sum(
+                [
+                    t.amount
+                    * get_exchange_rate(t.currency_code, currency_code, t.timestamp)
+                    for t in self.transactions
+                ],
+                Decimal(0),
+            )
+        except requests.exceptions.ConnectionError:
+            return None
 
     @property
-    def amounts(self) -> dict[CurrencyCode, Decimal]:
-        return {c: self.amount(c) for c in {t.currency_code for t in self.transactions}}
+    def currencies(self) -> set[CurrencyCode]:
+        return {t.currency_code for t in self.transactions}
 
     @property
-    def amount_default_currency(self) -> Decimal:
+    def amounts(self) -> dict[CurrencyCode, Decimal | None]:
+        return {c: self.amount(c) for c in self.currencies}
+
+    @property
+    def amount_default_currency(self) -> Decimal | None:
         return self.amount(CurrencyCode("USD"))
 
     @classmethod
