@@ -54,11 +54,7 @@ def create(
     userinstitutionlink_id: int | None = None,
 ) -> AccountApiOut:
     if account_in.institutionalaccount and userinstitutionlink_id:
-        user_institution_link = CRUDUser.read_user_institution_link(
-            db, me.id, userinstitutionlink_id
-        )
-        if user_institution_link.plaid_id:
-            raise SyncedEntity()
+        CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
     return CRUDAccount.create(
         db, account_in, userinstitutionlink_id=userinstitutionlink_id, user_id=me.id
     )
