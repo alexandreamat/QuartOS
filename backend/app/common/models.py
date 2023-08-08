@@ -53,11 +53,9 @@ class Base(SQLModel):
         return db.exec(statement).all()
 
     @classmethod
-    def update(
-        cls: Type[BaseType], db: Session, id: int, new_obj: BaseType
-    ) -> BaseType:
+    def update(cls: Type[BaseType], db: Session, id: int, **kwargs: Any) -> BaseType:
         obj = cls.read(db, id)
-        for key, value in new_obj.dict().items():
+        for key, value in kwargs.items():
             setattr(obj, key, value)
         db.flush()
         return obj

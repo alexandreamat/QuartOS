@@ -39,12 +39,13 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     def update(
         cls, db: Session, id: int, obj_in: UserApiIn, **kwargs: Any
     ) -> UserApiOut:
-        db_obj_in = User(
+        db_obj_out = User.update(
+            db,
+            id,
             **obj_in.dict(exclude={"password"}),
             **kwargs,
             hashed_password=get_password_hash(obj_in.password),
         )
-        db_obj_out = User.update(db, id, db_obj_in)
         return UserApiOut.from_orm(db_obj_out)
 
     @classmethod

@@ -40,10 +40,7 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
     def update(
         cls, db: Session, id: int, obj_in: InModelType, **kwargs: Any
     ) -> OutModelType:
-        obj = cls.db_model.read(db, id)
-        for name, value in {**obj_in.dict(), **kwargs}.items():
-            setattr(obj, name, value)
-        obj = cls.db_model.update(db, id, obj)
+        obj = cls.db_model.update(db, id, **obj_in.dict(), **kwargs)
         out_obj: OutModelType = cls.out_model.from_orm(obj)
         return out_obj
 

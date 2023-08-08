@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from sqlmodel import Session
 
-from app.common.crud import CRUDBase
+from app.common.crud import CRUDBase, CRUDSyncedBase
 
 from app.features.transactiondeserialiser import TransactionDeserialiserApiOut
 from app.features.movement import (
@@ -16,7 +16,6 @@ from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
     TransactionPlaidIn,
-    CRUDTransaction,
 )
 
 from .models import (
@@ -26,6 +25,39 @@ from .models import (
     AccountPlaidIn,
     AccountPlaidOut,
 )
+
+
+class CRUDInstitutionalAccount(
+    CRUDBase[
+        Account.InstitutionalAccount,
+        AccountApiOut.InstitutionalAccount,
+        AccountApiIn.InstitutionalAccount,
+    ]
+):
+    db_model = Account.InstitutionalAccount
+    out_model = AccountApiOut.InstitutionalAccount
+
+
+class CRUDSyncableInstitutionalAccount(
+    CRUDSyncedBase[
+        Account.InstitutionalAccount,
+        AccountPlaidOut.InstitutionalAccount,
+        AccountPlaidIn.InstitutionalAccount,
+    ]
+):
+    db_model = Account.InstitutionalAccount
+    out_model = AccountPlaidOut.InstitutionalAccount
+
+
+class CRUDNonInstitutionalAccount(
+    CRUDBase[
+        Account.NonInstitutionalAccount,
+        AccountApiOut.NonInstitutionalAccount,
+        AccountApiIn.NonInstitutionalAccount,
+    ]
+):
+    db_model = Account.NonInstitutionalAccount
+    out_model = AccountApiOut.NonInstitutionalAccount
 
 
 class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
@@ -51,10 +83,69 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
     @classmethod
     def update(
-        cls, db: Session, id: int, obj_in: AccountApiIn, **kwargs: Any
+        cls,
+        db: Session,
+        id: int,
+        account_in: AccountApiIn,
+        userinstitutionlink_id: int | None = None,
+        user_id: int | None = None,
     ) -> AccountApiOut:
-        super().update(db, id, obj_in, **kwargs)
-        return cls.update_balance(db, id)
+        account_out = Account.read(db, id)
+        if account_in.institutionalaccount and userinstitutionlink_id:
+            if account_out.institutionalaccount and account_out.institutionalaccount_id:
+                CRUDInstitutionalAccount.update(
+                    db,
+                    account_out.institutionalaccount_id,
+                    account_in.institutionalaccount,
+                    userinstitutionlink_id=userinstitutionlink_id,
+                )
+            elif (
+                account_out.noninstitutionalaccount
+                and account_out.noninstitutionalaccount_id
+            ):
+                CRUDNonInstitutionalAccount.delete(
+                    db, account_out.noninstitutionalaccount_id
+                )
+                CRUDInstitutionalAccount.create(
+                    db,
+                    account_in.institutionalaccount,
+                    userinstitutionlink_id=userinstitutionlink_id,
+                )
+            else:
+                raise ValueError
+        elif account_in.noninstitutionalaccount and user_id:
+            if (
+                account_out.noninstitutionalaccount
+                and account_out.noninstitutionalaccount_id
+            ):
+                CRUDNonInstitutionalAccount.update(
+                    db,
+                    account_out.noninstitutionalaccount_id,
+                    account_in.noninstitutionalaccount,
+                    user_id=user_id,
+                )
+            elif (
+                account_out.institutionalaccount and account_out.institutionalaccount_id
+            ):
+                CRUDInstitutionalAccount.delete(
+                    db,
+                    account_out.institutionalaccount_id,
+                )
+                CRUDNonInstitutionalAccount.create(
+                    db,
+                    account_in.noninstitutionalaccount,
+                    user_id=user_id,
+                )
+            else:
+                raise ValueError
+        else:
+            raise ValueError
+        dict_in = account_in.dict(
+            exclude={"institutionalaccount", "noninstitutionalaccount"}
+        )
+        a = Account.update(db, id, **dict_in)
+        cls.update_balance(db, id)
+        return AccountApiOut.from_orm(a)
 
     @classmethod
     def update_balance(
