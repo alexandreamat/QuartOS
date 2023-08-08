@@ -66,8 +66,8 @@ export default function Form(props: {
   }
 
   function handleCloseEditTransactionForm() {
-    setSelectedTransaction(undefined)
-    setIsTransactionFormOpen(false)
+    setSelectedTransaction(undefined);
+    setIsTransactionFormOpen(false);
   }
 
   async function handleAddTransaction(transaction: TransactionApiOut) {
@@ -164,7 +164,7 @@ export default function Form(props: {
         <TransactionForm.Create
           open={isTransactionFormOpen}
           onClose={handleCloseCreateTransactionForm}
-          onCreated={(m) => { }}
+          onCreated={(m) => setMovementId(m.id)}
         />
       )}
       <Modal.Header>Create a Movement</Modal.Header>

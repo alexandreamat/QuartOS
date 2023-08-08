@@ -1132,7 +1132,7 @@ export type MovementApiOut = {
   amounts: {
     [key: string]: number;
   };
-  amount_default_currency: number;
+  amount_default_currency?: number;
   name: string;
 };
 export type MovementField = "timestamp" | "amount";
