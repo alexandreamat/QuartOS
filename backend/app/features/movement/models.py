@@ -33,8 +33,8 @@ class MovementApiOut(__MovementBase, Base):
     earliest_timestamp: date | None
     latest_timestamp: date | None
     transactions: list[TransactionApiOut]
-    amounts: dict[CurrencyCode, Decimal]
-    amount_default_currency: Decimal
+    amounts: dict[CurrencyCode, Decimal | None]
+    amount_default_currency: Decimal | None
     name: str
 
 
@@ -102,7 +102,7 @@ class Movement(__MovementBase, Base, table=True):
         cls,
         movement_id: int | None,
         page: int = 0,
-        per_page: int = 0,
+        per_page: int | None = None,
         start_date: date | None = None,
         end_date: date | None = None,
         search: str | None = None,

@@ -140,7 +140,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         userinstitutionlink_id: int | None,
         account_id: int | None,
         page: int,
-        per_page: int,
+        per_page: int | None,
         start_date: date | None,
         end_date: date | None,
         search: str | None,

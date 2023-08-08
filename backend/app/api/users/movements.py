@@ -52,10 +52,10 @@ def get_many_aggregates(
 def read_many(
     db: DBSession,
     me: CurrentUser,
-    userinstitutionlink_id: int = 0,
-    account_id: int = 0,
+    userinstitutionlink_id: int | None = None,
+    account_id: int | None = None,
     page: int = 0,
-    per_page: int = 0,
+    per_page: int = 20,
     start_date: date | None = None,
     end_date: date | None = None,
     search: str | None = None,
