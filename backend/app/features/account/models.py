@@ -4,7 +4,6 @@ from enum import Enum
 from datetime import date
 
 from sqlmodel import Field, Relationship, SQLModel, Session
-from sqlmodel import asc
 from sqlmodel.sql.expression import SelectOfScalar
 from pydantic import root_validator, validator
 import pycountry
@@ -172,7 +171,12 @@ class Account(_AccountBase, Base, table=True):
     )
 
     @classmethod
-    def from_schema(cls, obj_in: AccountApiIn) -> "Account":  # type: ignore[override]
+    def from_schema(  # type: ignore[override]
+        cls,
+        obj_in: AccountApiIn,
+        user_id: int | None = None,
+        userinstitutionlink_id: int | None = None,
+    ) -> "Account":
         obj_in_dict = obj_in.dict(
             exclude={"institutionalaccount", "noninstitutionalaccount"}
         )
@@ -180,38 +184,18 @@ class Account(_AccountBase, Base, table=True):
             return Account(
                 **obj_in_dict,
                 institutionalaccount=Account.InstitutionalAccount(
-                    **obj_in.institutionalaccount.dict()
+                    userinstitutionlink_id=userinstitutionlink_id,
+                    **obj_in.institutionalaccount.dict(),
                 ),
             )
         if obj_in.noninstitutionalaccount:
             return Account(
                 **obj_in_dict,
                 noninstitutionalaccount=Account.NonInstitutionalAccount(
-                    **obj_in.noninstitutionalaccount.dict()
+                    user_id=user_id,
+                    **obj_in.noninstitutionalaccount.dict(),
                 ),
             )
-        raise ValueError
-
-    @classmethod
-    def update(cls, db: Session, id: int, obj_in: "Account") -> "Account":
-        obj = cls.read(db, id)
-        obj_in_dict = obj_in.dict(
-            exclude={"institutionalaccount", "noninstitutionalaccount"}
-        )
-        for key, value in obj_in_dict.items():
-            setattr(obj, key, value)
-        if obj.institutionalaccount_id and obj_in.institutionalaccount:
-            obj.institutionalaccount = Account.InstitutionalAccount.update(
-                db, obj.institutionalaccount_id, obj_in.institutionalaccount
-            )
-            return obj
-
-        if obj.noninstitutionalaccount_id and obj_in.noninstitutionalaccount:
-            obj.noninstitutionalaccount = Account.NonInstitutionalAccount.update(
-                db, obj.noninstitutionalaccount_id, obj_in.noninstitutionalaccount
-            )
-            return obj
-
         raise ValueError
 
     @classmethod
@@ -238,13 +222,13 @@ class Account(_AccountBase, Base, table=True):
             prev_balance = account.initial_balance
 
         transactions_query = transactions_query.order_by(
-            asc(Transaction.timestamp)
+            *Transaction.get_timestamp_asc_clauses()
         ).yield_per(100)
 
         for result in transactions_query:
             transaction: Transaction = result
-            transaction.account_balance = prev_balance + transaction.amount
-            Transaction.update(db, transaction.id, transaction)
+            account_balance = prev_balance + transaction.amount
+            Transaction.update(db, transaction.id, account_balance=account_balance)
             prev_balance = transaction.account_balance
 
         return cls.read(db, id)
