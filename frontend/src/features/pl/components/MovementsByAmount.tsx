@@ -26,7 +26,7 @@ export function MovementsByAmount(props: {
   const movements = movementsQuery.data;
 
   const totalAmount = movements.reduce(
-    (c, m, i) => c + m.amount_default_currency,
+    (c, m, i) => c + (m.amount_default_currency || NaN),
     0
   );
   let cumulativeAmount = 0;
@@ -34,7 +34,7 @@ export function MovementsByAmount(props: {
   return (
     <Card.Group>
       {movements.map((movement) => {
-        cumulativeAmount += movement.amount_default_currency;
+        cumulativeAmount += movement.amount_default_currency || NaN;
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         return (
           <MovementUnifiedCard

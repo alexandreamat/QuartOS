@@ -84,14 +84,14 @@ export default function Movements() {
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeMovementsGet.useQuery,
     {
-      search,
+      search: search.length ? search : undefined,
       isDescending,
       startDate: startDate && formatDateParam(startDate),
       endDate: endDate && formatDateParam(endDate),
-      accountId,
+      accountId: accountId ? accountId : undefined,
     },
     10,
-    () => { }
+    () => {}
   );
 
   return (
@@ -118,13 +118,13 @@ export default function Movements() {
         <Card.Group>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
           {Object.values(infiniteQuery.pages).map((movements) =>
-            movements.map((movement) =>
+            movements.map((movement) => (
               <MovementUnifiedCard
                 key={movement.id}
                 movement={movement}
                 onOpenEditForm={() => handleOpenEditForm(movement)}
               />
-            )
+            ))
           )}
         </Card.Group>
       </FlexColumn.Auto>
