@@ -115,7 +115,7 @@ export default function TransactionCards(props: {
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-        <Card.Group>
+        <Card.Group style={{ margin: 0 }}>
           {Object.values(infiniteQuery.pages).map((transactionPage, i) =>
             transactionPage.map((t, j) => {
               if (props.onFlowCheckboxChange) {
