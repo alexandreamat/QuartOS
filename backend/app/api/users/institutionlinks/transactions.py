@@ -55,7 +55,9 @@ def reset_transactions(
         db, userinstitutionlink_id
     ):
         yield reset_transaction_to_metadata(db, t.id, replacement_pattern)
-    for a in CRUDSyncableUserInstitutionLink.read_accounts(db, userinstitutionlink_id):
+    for a in CRUDSyncableUserInstitutionLink.read_syncable_accounts(
+        db, userinstitutionlink_id
+    ):
         CRUDAccount.update_balance(db, a.id)
 
 
