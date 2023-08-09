@@ -115,7 +115,7 @@ export default function Movements() {
         onToggleIsDescending={handleToggleIsDescending}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
-        <Card.Group>
+        <Card.Group style={{ margin: 0 }}>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
           {Object.values(infiniteQuery.pages).map((movements) =>
             movements.map((movement) => (

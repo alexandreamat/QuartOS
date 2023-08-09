@@ -32,7 +32,7 @@ export function MovementsByAmount(props: {
   let cumulativeAmount = 0;
 
   return (
-    <Card.Group>
+    <Card.Group style={{ margin: 0 }}>
       {movements.map((movement) => {
         cumulativeAmount += movement.amount_default_currency || NaN;
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
