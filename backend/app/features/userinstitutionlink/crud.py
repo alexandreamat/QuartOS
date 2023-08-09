@@ -39,9 +39,11 @@ class CRUDSyncableUserInstitutionLink(
     out_model = UserInstitutionLinkPlaidOut
 
     @classmethod
-    def read_accounts(cls, db: Session, id: int) -> Iterable[AccountPlaidOut]:
+    def read_syncable_accounts(cls, db: Session, id: int) -> Iterable[AccountPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
         for ia in uil.institutionalaccounts:
+            if not ia.plaid_id:
+                continue
             yield AccountPlaidOut.from_orm(ia.account)
 
     @classmethod
