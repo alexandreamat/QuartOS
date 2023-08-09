@@ -33,8 +33,8 @@ class MovementApiOut(__MovementBase, Base):
     earliest_timestamp: date | None
     latest_timestamp: date | None
     transactions: list[TransactionApiOut]
-    amounts: dict[CurrencyCode, Decimal | None]
-    amount_default_currency: Decimal | None
+    amounts: dict[CurrencyCode, Decimal]
+    amount_default_currency: Decimal
     name: str
 
 
@@ -60,7 +60,7 @@ class Movement(__MovementBase, Base, table=True):
     def latest_timestamp(self) -> date:
         return max(t.timestamp for t in self.transactions)
 
-    def amount(self, currency_code: CurrencyCode) -> Decimal | None:
+    def amount(self, currency_code: CurrencyCode) -> Decimal:
         try:
             return sum(
                 [
@@ -71,18 +71,18 @@ class Movement(__MovementBase, Base, table=True):
                 Decimal(0),
             )
         except requests.exceptions.ConnectionError:
-            return None
+            return Decimal("NaN")
 
     @property
     def currencies(self) -> set[CurrencyCode]:
         return {t.currency_code for t in self.transactions}
 
     @property
-    def amounts(self) -> dict[CurrencyCode, Decimal | None]:
+    def amounts(self) -> dict[CurrencyCode, Decimal]:
         return {c: self.amount(c) for c in self.currencies}
 
     @property
-    def amount_default_currency(self) -> Decimal | None:
+    def amount_default_currency(self) -> Decimal:
         return self.amount(CurrencyCode("USD"))
 
     @classmethod

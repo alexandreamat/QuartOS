@@ -45,7 +45,7 @@ class __TransactionsSyncResult(BaseModel):
 def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str, int]:
     return {
         account.institutionalaccount.plaid_id: account.id
-        for account in CRUDSyncableUserInstitutionLink.read_accounts(
+        for account in CRUDSyncableUserInstitutionLink.read_syncable_accounts(
             db, userinstitutionlink_id
         )
     }
