@@ -9,11 +9,9 @@ import { Header, Loader, Table } from "semantic-ui-react";
 function Row(props: { plStatement: PlStatement }) {
   const navigate = useNavigate();
 
-  const start_date = new Date(props.plStatement.start_date);
-
   function handleGoToDetail() {
     navigate(
-      `/pl-statements/${start_date.getFullYear()}/${start_date.getMonth()}`
+      `/pl-statements/${props.plStatement.start_date}/${props.plStatement.end_date}`
     );
   }
 
@@ -68,15 +66,17 @@ export default function IncomeStatement() {
     return (
       <Table>
         <Table.Header>
-          <Table.HeaderCell>Month</Table.HeaderCell>
-          <Table.HeaderCell>Income</Table.HeaderCell>
-          <Table.HeaderCell>Expenses</Table.HeaderCell>
-          <Table.HeaderCell>Net income</Table.HeaderCell>
-          <Table.HeaderCell>Actions</Table.HeaderCell>
+          <Table.Row>
+            <Table.HeaderCell>Month</Table.HeaderCell>
+            <Table.HeaderCell>Income</Table.HeaderCell>
+            <Table.HeaderCell>Expenses</Table.HeaderCell>
+            <Table.HeaderCell>Net income</Table.HeaderCell>
+            <Table.HeaderCell>Actions</Table.HeaderCell>
+          </Table.Row>
         </Table.Header>
         <Table.Body>
           {aggregatesQuery.data.map((aggregate) => (
-            <Row plStatement={aggregate} />
+            <Row key={aggregate.start_date} plStatement={aggregate} />
           ))}
         </Table.Body>
       </Table>
