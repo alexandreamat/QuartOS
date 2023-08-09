@@ -67,7 +67,7 @@ export default [
     requires_superuser: false,
     routes: [
       {
-        path: "/:year/:month",
+        path: "/:startDate/:endDate",
         label: "P&L Statement Detail",
         icon: "file alternate",
         component: plDetail,

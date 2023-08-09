@@ -2,7 +2,7 @@ import { api } from "app/services/api";
 import CurrencyLabel from "components/CurrencyLabel";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { addDays, format } from "date-fns";
-import { Card, Loader, Step } from "semantic-ui-react";
+import { Card, Label, Loader, Step } from "semantic-ui-react";
 
 export default function Summary(props: {
   startDate: Date;
@@ -11,6 +11,9 @@ export default function Summary(props: {
   onClickIncome: () => void;
   onClickExpenses: () => void;
 }) {
+  const today = new Date();
+  const isOngoing = props.startDate <= today && today <= props.endDate;
+
   const aggregateQuery =
     api.endpoints.getAggregateApiUsersMeMovementsAggregatesStartDateEndDateGet.useQuery(
       {
@@ -35,8 +38,18 @@ export default function Summary(props: {
           {format(new Date(props.startDate), "MMMM yyyy")}
         </Card.Header>
         <Card.Meta>
-          {`From ${props.startDate.toLocaleDateString()}
-      to ${addDays(props.endDate, -1).toLocaleDateString()}`}
+          {`From ${props.startDate.toLocaleDateString()} to ${addDays(
+            props.endDate,
+            -1
+          ).toLocaleDateString()}`}
+          {isOngoing && (
+            <Label
+              color="teal"
+              style={{ marginLeft: "0.5rem", verticalAlign: "middle" }}
+            >
+              Ongoing
+            </Label>
+          )}
         </Card.Meta>
       </Card.Content>
       <Card.Content extra>
