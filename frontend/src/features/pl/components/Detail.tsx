@@ -3,16 +3,15 @@ import { Button, Icon } from "semantic-ui-react";
 import Summary from "./Summary";
 import FlexColumn from "components/FlexColumn";
 import { MovementsByAmount } from "./MovementsByAmount";
-import { addMonths } from "date-fns";
 import { useState } from "react";
 import Form from "features/movements/components/Form";
 import { MovementApiOut } from "app/services/api";
 
 export default function Detail(props: {}) {
   const navigate = useNavigate();
-  const { year, month } = useParams();
-  const startDate = new Date(Number(year), Number(month), 1);
-  const endDate = addMonths(startDate, 1);
+  const { startDate: startDateStr, endDate: endDateStr } = useParams();
+  const startDate = startDateStr ? new Date(startDateStr) : new Date();
+  const endDate = endDateStr ? new Date(endDateStr) : new Date();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [showIncome, setShowIncome] = useState(true);
@@ -27,13 +26,13 @@ export default function Detail(props: {}) {
   }
 
   function handleOpenEditForm(movement: MovementApiOut) {
-    setMovementId(movement.id)
-    setIsFormOpen(true)
+    setMovementId(movement.id);
+    setIsFormOpen(true);
   }
 
   function handleCloseEditForm() {
-    setIsFormOpen(false)
-    setMovementId(0)
+    setIsFormOpen(false);
+    setMovementId(0);
   }
 
   return (
