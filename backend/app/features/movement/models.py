@@ -34,7 +34,7 @@ class MovementApiOut(__MovementBase, Base):
     latest_timestamp: date | None
     transactions: list[TransactionApiOut]
     amounts: dict[CurrencyCode, Decimal]
-    amount_default_currency: Decimal
+    amount: Decimal | None
     name: str
 
 
@@ -60,7 +60,7 @@ class Movement(__MovementBase, Base, table=True):
     def latest_timestamp(self) -> date:
         return max(t.timestamp for t in self.transactions)
 
-    def amount(self, currency_code: CurrencyCode) -> Decimal:
+    def get_amount(self, currency_code: CurrencyCode) -> Decimal:
         try:
             return sum(
                 [
@@ -79,11 +79,7 @@ class Movement(__MovementBase, Base, table=True):
 
     @property
     def amounts(self) -> dict[CurrencyCode, Decimal]:
-        return {c: self.amount(c) for c in self.currencies}
-
-    @property
-    def amount_default_currency(self) -> Decimal:
-        return self.amount(CurrencyCode("USD"))
+        return {c: self.get_amount(c) for c in self.currencies}
 
     @classmethod
     def select_transactions(
@@ -116,9 +112,9 @@ class Movement(__MovementBase, Base, table=True):
         if movement_id:
             statement = statement.where(cls.id == movement_id)
         if start_date:
-            statement = statement.where(Transaction.timestamp >= start_date)
+            statement = statement.having(func.min(Transaction.timestamp) >= start_date)
         if end_date:
-            statement = statement.where(Transaction.timestamp < end_date)
+            statement = statement.having(func.min(Transaction.timestamp) < end_date)
         if search:
             search = f"%{search}%"
             statement = statement.where(col(Transaction.name).like(search))
@@ -152,18 +148,18 @@ class Movement(__MovementBase, Base, table=True):
     ) -> Iterable["Movement"]:
         if amount_gt is not None:
             movements = [
-                m for m in movements if m.amount(CurrencyCode("USD")) > amount_gt
+                m for m in movements if m.get_amount(CurrencyCode("USD")) > amount_gt
             ]
 
         if amount_lt is not None:
             movements = [
-                m for m in movements if m.amount(CurrencyCode("USD")) < amount_lt
+                m for m in movements if m.get_amount(CurrencyCode("USD")) < amount_lt
             ]
 
         if sort_by is MovementField.AMOUNT:
             movements = sorted(
                 movements,
-                key=lambda m: m.amount(CurrencyCode("USD")),
+                key=lambda m: m.get_amount(CurrencyCode("USD")),
                 reverse=is_descending,
             )
 
@@ -172,26 +168,16 @@ class Movement(__MovementBase, Base, table=True):
     @classmethod
     def get_aggregate(
         cls,
-        db: Session,
-        statement: SelectOfScalar["Movement"],
+        movements: Iterable["Movement"],
         start_date: date,
         end_date: date,
         currency_code: CurrencyCode,
     ) -> PLStatement:
-        statement = statement.group_by(cls.id).having(
-            and_(
-                func.min(Transaction.timestamp) >= start_date,
-                func.min(Transaction.timestamp) < end_date,
-            )
-        )
-
-        movements = db.exec(statement).all()
-
         income_total = Decimal(0)
         expense_total = Decimal(0)
 
         for movement in movements:
-            amount = movement.amount(currency_code)
+            amount = movement.get_amount(currency_code)
             if amount >= Decimal(0):
                 income_total += amount
             else:

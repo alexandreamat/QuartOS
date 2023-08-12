@@ -1,40 +1,43 @@
-import { MovementApiOut, api } from "app/services/api";
+import { MovementApiOut, PlStatement, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import MovementUnifiedCard from "features/movements/components/MovementUnifiedCard";
 import { Card, Loader } from "semantic-ui-react";
-import { formatDateParam } from "utils/time";
 
 export function MovementsByAmount(props: {
-  startDate: Date;
-  endDate: Date;
+  aggregate: PlStatement;
   showIncome: boolean;
   onOpenEditForm: (x: MovementApiOut) => void;
 }) {
-  const movementsQuery = api.endpoints.readManyApiUsersMeMovementsGet.useQuery({
-    startDate: formatDateParam(props.startDate),
-    endDate: formatDateParam(props.endDate),
-    isDescending: props.showIncome,
-    sortBy: "amount",
-    ...(props.showIncome ? { amountGt: 0 } : { amountLt: 0 }),
+  const movementsEndpoint = props.showIncome
+    ? api.endpoints
+        .readIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGet
+    : api.endpoints
+        .readExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGet;
+
+  const movementsQuery = movementsEndpoint.useQuery({
+    startDate: props.aggregate.start_date,
+    endDate: props.aggregate.end_date,
+    currencyCode: "EUR",
   });
 
   if (movementsQuery.isLoading || movementsQuery.isUninitialized)
     return <Loader active size="huge" />;
+
   if (movementsQuery.isError)
     return <QueryErrorMessage query={movementsQuery} />;
 
   const movements = movementsQuery.data;
 
-  const totalAmount = movements.reduce(
-    (c, m, i) => c + (m.amount_default_currency || NaN),
-    0
-  );
+  const totalAmount = props.showIncome
+    ? props.aggregate.income
+    : props.aggregate.expenses;
+
   let cumulativeAmount = 0;
 
   return (
     <Card.Group style={{ margin: 0 }}>
       {movements.map((movement) => {
-        cumulativeAmount += movement.amount_default_currency || NaN;
+        cumulativeAmount += movement.amount || NaN;
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         return (
           <MovementUnifiedCard

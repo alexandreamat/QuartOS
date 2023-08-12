@@ -1,7 +1,5 @@
-from typing import Iterable, Any
+from typing import Any
 from pydantic import EmailStr
-from datetime import date
-from dateutil.relativedelta import relativedelta
 
 
 from sqlalchemy.exc import NoResultFound
@@ -14,7 +12,7 @@ from app.utils import verify_password
 from app.features.userinstitutionlink import UserInstitutionLink
 from app.features.account import Account
 from app.features.transaction import Transaction
-from app.features.movement import Movement, PLStatement
+from app.features.movement import Movement
 
 
 class __UserBase(SQLModel):
@@ -97,10 +95,10 @@ class User(__UserBase, Base, table=True):
     @classmethod
     def select_movements(
         cls,
-        user_id: int | None,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        movement_id: int | None,
+        user_id: int | None = None,
+        userinstitutionlink_id: int | None = None,
+        account_id: int | None = None,
+        movement_id: int | None = None,
         **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
         statement = Account.select_movements(account_id, movement_id, **kwargs)
@@ -144,32 +142,3 @@ class User(__UserBase, Base, table=True):
             )
         )
         return statement
-
-    @classmethod
-    def get_movement_aggregate(
-        cls, db: Session, user_id: int, **kwargs: Any
-    ) -> PLStatement:
-        statement = cls.select_movements(user_id, None, None, None)
-        return Movement.get_aggregate(db, statement, **kwargs)
-
-    @classmethod
-    def get_many_movement_aggregates(
-        cls, db: Session, user_id: int, page: int, per_page: int, **kwargs: Any
-    ) -> Iterable[PLStatement]:
-        today = date.today()
-        last_start_date = today.replace(day=1)
-        offset = per_page * page
-        for i in range(offset, offset + per_page):
-            start_date = last_start_date - relativedelta(months=i)
-            end_date = min(
-                start_date + relativedelta(months=1),
-                today + relativedelta(days=1),
-            )
-
-            yield cls.get_movement_aggregate(
-                db,
-                user_id,
-                start_date=start_date,
-                end_date=end_date,
-                **kwargs,
-            )

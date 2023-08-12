@@ -1,45 +1,28 @@
-import { api } from "app/services/api";
+import { PlStatement } from "app/services/api";
 import CurrencyLabel from "components/CurrencyLabel";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { addDays, format } from "date-fns";
-import { Card, Label, Loader, Step } from "semantic-ui-react";
+import { Card, Label, Step } from "semantic-ui-react";
 
 export default function Summary(props: {
-  startDate: Date;
-  endDate: Date;
+  aggregate: PlStatement;
   showIncome: boolean;
   onClickIncome: () => void;
   onClickExpenses: () => void;
 }) {
+  const startDate = new Date(props.aggregate.start_date);
+  const endDate = new Date(props.aggregate.end_date);
   const today = new Date();
-  const isOngoing = props.startDate <= today && today <= props.endDate;
-
-  const aggregateQuery =
-    api.endpoints.getAggregateApiUsersMeMovementsAggregatesStartDateEndDateGet.useQuery(
-      {
-        startDate: format(props.startDate, "yyyy-MM-dd"),
-        endDate: format(props.endDate, "yyyy-MM-dd"),
-        currencyCode: "EUR",
-      }
-    );
-
-  if (aggregateQuery.isLoading || aggregateQuery.isUninitialized)
-    return <Loader active size="huge" />;
-
-  if (aggregateQuery.isError)
-    return <QueryErrorMessage query={aggregateQuery} />;
-
-  const aggregate = aggregateQuery.data;
+  const isOngoing = startDate <= today && today <= endDate;
 
   return (
     <Card fluid color="teal">
       <Card.Content>
         <Card.Header>
-          {format(new Date(props.startDate), "MMMM yyyy")}
+          {format(new Date(props.aggregate.start_date), "MMMM yyyy")}
         </Card.Header>
         <Card.Meta>
-          {`From ${props.startDate.toLocaleDateString()} to ${addDays(
-            props.endDate,
+          {`From ${startDate.toLocaleDateString()} to ${addDays(
+            endDate,
             -1
           ).toLocaleDateString()}`}
           {isOngoing && (
@@ -58,8 +41,8 @@ export default function Summary(props: {
             <Step.Title>Income</Step.Title>
             <Step.Content>
               <CurrencyLabel
-                amount={aggregate.income}
-                currencyCode={aggregate.currency_code}
+                amount={props.aggregate.income}
+                currencyCode={props.aggregate.currency_code}
               />
             </Step.Content>
           </Step>
@@ -67,8 +50,8 @@ export default function Summary(props: {
             <Step.Title>Expenses</Step.Title>
             <Step.Content>
               <CurrencyLabel
-                amount={aggregate.expenses}
-                currencyCode={aggregate.currency_code}
+                amount={props.aggregate.expenses}
+                currencyCode={props.aggregate.currency_code}
               />
             </Step.Content>
           </Step>
@@ -76,8 +59,8 @@ export default function Summary(props: {
             <Step.Title>Net Income</Step.Title>
             <Step.Content>
               <CurrencyLabel
-                amount={aggregate.expenses + aggregate.income}
-                currencyCode={aggregate.currency_code}
+                amount={props.aggregate.expenses + props.aggregate.income}
+                currencyCode={props.aggregate.currency_code}
               />
             </Step.Content>
           </Step>
