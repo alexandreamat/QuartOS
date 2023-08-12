@@ -1,21 +1,32 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Icon } from "semantic-ui-react";
+import { Button, Icon, Loader } from "semantic-ui-react";
 import Summary from "./Summary";
 import FlexColumn from "components/FlexColumn";
 import { MovementsByAmount } from "./MovementsByAmount";
 import { useState } from "react";
 import Form from "features/movements/components/Form";
-import { MovementApiOut } from "app/services/api";
+import { MovementApiOut, api } from "app/services/api";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export default function Detail(props: {}) {
   const navigate = useNavigate();
-  const { startDate: startDateStr, endDate: endDateStr } = useParams();
-  const startDate = startDateStr ? new Date(startDateStr) : new Date();
-  const endDate = endDateStr ? new Date(endDateStr) : new Date();
+  const { startDate, endDate } = useParams();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [showIncome, setShowIncome] = useState(true);
   const [movementId, setMovementId] = useState(0);
+
+  const aggregateQuery =
+    api.endpoints.getAggregateApiUsersMeMovementsAggregatesStartDateEndDateGet.useQuery(
+      startDate && endDate
+        ? {
+            startDate: startDate,
+            endDate: endDate,
+            currencyCode: "EUR",
+          }
+        : skipToken
+    );
 
   function handleClickIncome() {
     setShowIncome(true);
@@ -34,6 +45,12 @@ export default function Detail(props: {}) {
     setIsFormOpen(false);
     setMovementId(0);
   }
+
+  if (aggregateQuery.isLoading || aggregateQuery.isUninitialized)
+    return <Loader active size="huge" />;
+
+  if (aggregateQuery.isError)
+    return <QueryErrorMessage query={aggregateQuery} />;
 
   return (
     <FlexColumn>
@@ -54,16 +71,14 @@ export default function Detail(props: {}) {
         </Button>
       </div>
       <Summary
-        startDate={startDate}
-        endDate={endDate}
+        aggregate={aggregateQuery.data}
         showIncome={showIncome}
         onClickIncome={handleClickIncome}
         onClickExpenses={handleClickExpenses}
       />
       <FlexColumn.Auto>
         <MovementsByAmount
-          startDate={startDate}
-          endDate={endDate}
+          aggregate={aggregateQuery.data}
           showIncome={showIncome}
           onOpenEditForm={handleOpenEditForm}
         />

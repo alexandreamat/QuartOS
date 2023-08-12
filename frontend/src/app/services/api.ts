@@ -438,30 +438,6 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["users", "institution-links", "transactions"],
         }),
-      getAggregateApiUsersMeMovementsAggregatesStartDateEndDateGet: build.query<
-        GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiResponse,
-        GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}`,
-          params: { currency_code: queryArg.currencyCode },
-        }),
-        providesTags: ["users", "movements"],
-      }),
-      getManyAggregatesApiUsersMeMovementsAggregatesGet: build.query<
-        GetManyAggregatesApiUsersMeMovementsAggregatesGetApiResponse,
-        GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/api/users/me/movements/aggregates`,
-          params: {
-            currency_code: queryArg.currencyCode,
-            page: queryArg.page,
-            per_page: queryArg.perPage,
-          },
-        }),
-        providesTags: ["users", "movements"],
-      }),
       readManyApiUsersMeMovementsGet: build.query<
         ReadManyApiUsersMeMovementsGetApiResponse,
         ReadManyApiUsersMeMovementsGetApiArg
@@ -500,6 +476,52 @@ const injectedRtkApi = api
           method: "DELETE",
         }),
         invalidatesTags: ["users", "movements"],
+      }),
+      readExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGet:
+        build.query<
+          ReadExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiResponse,
+          ReadExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}/expenses`,
+            params: { currency_code: queryArg.currencyCode },
+          }),
+          providesTags: ["users", "movements"],
+        }),
+      readIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGet:
+        build.query<
+          ReadIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiResponse,
+          ReadIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}/income`,
+            params: { currency_code: queryArg.currencyCode },
+          }),
+          providesTags: ["users", "movements"],
+        }),
+      getAggregateApiUsersMeMovementsAggregatesStartDateEndDateGet: build.query<
+        GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiResponse,
+        GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}`,
+          params: { currency_code: queryArg.currencyCode },
+        }),
+        providesTags: ["users", "movements"],
+      }),
+      getManyAggregatesApiUsersMeMovementsAggregatesGet: build.query<
+        GetManyAggregatesApiUsersMeMovementsAggregatesGetApiResponse,
+        GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/movements/aggregates/`,
+          params: {
+            currency_code: queryArg.currencyCode,
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+          },
+        }),
+        providesTags: ["users", "movements"],
       }),
       readManyApiUsersMeTransactionsGet: build.query<
         ReadManyApiUsersMeTransactionsGetApiResponse,
@@ -860,21 +882,6 @@ export type ResyncTransactionsApiUsersMeInstitutionLinksUserinstitutionlinkIdTra
     endDate: string;
     dryRun?: boolean;
   };
-export type GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiResponse =
-  /** status 200 Successful Response */ PlStatement;
-export type GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiArg =
-  {
-    startDate: string;
-    endDate: string;
-    currencyCode: string;
-  };
-export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiResponse =
-  /** status 200 Successful Response */ PlStatement[];
-export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg = {
-  currencyCode: string;
-  page?: number;
-  perPage?: number;
-};
 export type ReadManyApiUsersMeMovementsGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
 export type ReadManyApiUsersMeMovementsGetApiArg = {
@@ -896,6 +903,37 @@ export type ReadApiUsersMeMovementsMovementIdGetApiArg = number;
 export type DeleteApiUsersMeMovementsMovementIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
 export type DeleteApiUsersMeMovementsMovementIdDeleteApiArg = number;
+export type ReadExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiResponse =
+  /** status 200 Successful Response */ MovementApiOut[];
+export type ReadExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiArg =
+  {
+    startDate: string;
+    endDate: string;
+    currencyCode: string;
+  };
+export type ReadIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiResponse =
+  /** status 200 Successful Response */ MovementApiOut[];
+export type ReadIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiArg =
+  {
+    startDate: string;
+    endDate: string;
+    currencyCode: string;
+  };
+export type GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiResponse =
+  /** status 200 Successful Response */ PlStatement;
+export type GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiArg =
+  {
+    startDate: string;
+    endDate: string;
+    currencyCode: string;
+  };
+export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiResponse =
+  /** status 200 Successful Response */ PlStatement[];
+export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg = {
+  currencyCode: string;
+  page?: number;
+  perPage?: number;
+};
 export type ReadManyApiUsersMeTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyApiUsersMeTransactionsGetApiArg = {
@@ -1107,13 +1145,6 @@ export type TransactionPlaidOut = {
   account_id: number;
   movement_id: number;
 };
-export type PlStatement = {
-  start_date: string;
-  end_date: string;
-  income: number;
-  expenses: number;
-  currency_code: string;
-};
 export type TransactionApiOut = {
   id: number;
   amount: number;
@@ -1132,10 +1163,17 @@ export type MovementApiOut = {
   amounts: {
     [key: string]: number;
   };
-  amount_default_currency?: number;
+  amount?: number;
   name: string;
 };
 export type MovementField = "timestamp" | "amount";
+export type PlStatement = {
+  start_date: string;
+  end_date: string;
+  income: number;
+  expenses: number;
+  currency_code: string;
+};
 export type InstitutionalAccountType =
   | "investment"
   | "credit"

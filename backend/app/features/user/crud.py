@@ -1,17 +1,19 @@
 from typing import Iterable, Any
 from decimal import Decimal
 from datetime import date
+from dateutil.relativedelta import relativedelta
 
 from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 
 from app.utils import get_password_hash
 from app.common.crud import CRUDBase
+from app.common.models import CurrencyCode
 from app.common.exceptions import ObjectNotFoundError
 
 from app.features.userinstitutionlink import UserInstitutionLinkApiOut
 from app.features.transaction import TransactionApiOut
-from app.features.account import AccountApiOut, Account
+from app.features.account import AccountApiOut
 from app.features.movement import MovementApiOut, PLStatement, Movement, MovementField
 from app.features.user import UserApiIn, UserApiOut
 
@@ -137,24 +139,24 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     def read_movements(
         cls,
         db: Session,
-        user_id: int | None,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        page: int,
-        per_page: int | None,
-        start_date: date | None,
-        end_date: date | None,
-        search: str | None,
-        is_descending: bool,
-        sort_by: MovementField,
-        amount_gt: Decimal | None,
-        amount_lt: Decimal | None,
+        user_id: int | None = None,
+        userinstitutionlink_id: int | None = None,
+        account_id: int | None = None,
+        page: int = 0,
+        per_page: int | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        search: str | None = None,
+        is_descending: bool = True,
+        sort_by: MovementField = MovementField.TIMESTAMP,
+        amount_gt: Decimal | None = None,
+        amount_lt: Decimal | None = None,
+        currency_code: CurrencyCode = CurrencyCode("USD"),
     ) -> Iterable[MovementApiOut]:
         statement = User.select_movements(
-            user_id,
-            userinstitutionlink_id,
-            account_id,
-            None,
+            user_id=user_id,
+            userinstitutionlink_id=userinstitutionlink_id,
+            account_id=account_id,
             page=page,
             per_page=per_page,
             start_date=start_date,
@@ -168,7 +170,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             movements, amount_gt, amount_lt, is_descending, sort_by
         )
         for m in movements:
-            yield MovementApiOut.from_orm(m)
+            yield MovementApiOut.from_orm(m, {"amount": m.get_amount(currency_code)})
 
     @classmethod
     def read_movement(
@@ -188,12 +190,48 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
 
     @classmethod
     def get_movement_aggregate(
-        cls, db: Session, user_id: int, **kwargs: Any
+        cls,
+        db: Session,
+        user_id: int,
+        start_date: date,
+        end_date: date,
+        currency_code: CurrencyCode,
     ) -> PLStatement:
-        return User.get_movement_aggregate(db, user_id, **kwargs)
+        statement = User.select_movements(
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        movements = db.exec(statement).all()
+        return Movement.get_aggregate(
+            movements,
+            start_date=start_date,
+            end_date=end_date,
+            currency_code=currency_code,
+        )
 
     @classmethod
     def get_many_movement_aggregates(
-        cls, db: Session, user_id: int, **kwargs: Any
+        cls,
+        db: Session,
+        user_id: int,
+        page: int,
+        per_page: int,
+        currency_code: CurrencyCode,
     ) -> Iterable[PLStatement]:
-        return User.get_many_movement_aggregates(db, user_id, **kwargs)
+        today = date.today()
+        last_start_date = today.replace(day=1)
+        offset = per_page * page
+        for i in range(offset, offset + per_page):
+            start_date = last_start_date - relativedelta(months=i)
+            end_date = min(
+                start_date + relativedelta(months=1),
+                today + relativedelta(days=1),
+            )
+            yield cls.get_movement_aggregate(
+                db,
+                user_id,
+                start_date=start_date,
+                end_date=end_date,
+                currency_code=currency_code,
+            )
