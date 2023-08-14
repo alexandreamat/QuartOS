@@ -15,6 +15,7 @@ export default function Form(props: {
   open: boolean;
   onClose: () => void;
   movementId?: number;
+  onMutate?: () => void;
 }) {
   const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
   const [movementId, setMovementId] = useState(props.movementId || 0);
@@ -151,12 +152,14 @@ export default function Form(props: {
               transaction={selectedTransaction}
               open={isTransactionFormOpen}
               onClose={handleCloseEditTransactionForm}
+              onEdited={props.onMutate && ((t) => props.onMutate!())}
             />
           ) : (
             <TransactionForm.Add
               open={isTransactionFormOpen}
               onClose={handleCloseAddTransactionForm}
               movementId={movementId}
+              onAdded={props.onMutate && ((t) => props.onMutate!())}
             />
           )}
         </>
@@ -164,31 +167,50 @@ export default function Form(props: {
         <TransactionForm.Create
           open={isTransactionFormOpen}
           onClose={handleCloseCreateTransactionForm}
-          onCreated={(m) => setMovementId(m.id)}
+          onCreated={(m) => {
+            setMovementId(m.id);
+            props.onMutate && props.onMutate();
+          }}
         />
       )}
       <Modal.Header>Create a Movement</Modal.Header>
       <Modal.Content>
         <div style={{ height: "70vh" }}>
           <FlexColumn>
-            {movementQuery.isSuccess ? (
-              <MovementCard
-                movement={movementQuery.data}
-                onOpenCreateTransactionForm={handleOpenCreateTransactionForm}
-                onOpenEditTransactionForm={handleOpenEditTransactionForm}
-                onRemoveTransaction={
-                  movementQuery.data.transactions.length > 1
-                    ? handleRemoveTransaction
-                    : undefined
-                }
-              />
-            ) : (
+            {movementQuery.isUninitialized && (
               <Segment placeholder>
                 <Header icon>Add transactions here</Header>
                 <Segment.Inline>
                   <CreateNewButton onCreate={handleOpenCreateTransactionForm} />
                 </Segment.Inline>
               </Segment>
+            )}
+            {movementQuery.isFetching ? (
+              <MovementCard.Placeholder
+                onOpenCreateTransactionForm
+                onOpenEditTransactionForm
+                onRemoveTransaction
+              />
+            ) : (
+              <>
+                {movementQuery.isSuccess && (
+                  <MovementCard
+                    movement={movementQuery.data}
+                    onOpenCreateTransactionForm={
+                      handleOpenCreateTransactionForm
+                    }
+                    onOpenEditTransactionForm={handleOpenEditTransactionForm}
+                    onRemoveTransaction={
+                      movementQuery.data.transactions.length > 1
+                        ? handleRemoveTransaction
+                        : undefined
+                    }
+                  />
+                )}
+                {movementQuery.isError && (
+                  <QueryErrorMessage query={movementQuery} />
+                )}
+              </>
             )}
             <QueryErrorMessage query={createMovementsResult} />
             <QueryErrorMessage query={updateTransactionResult} />
