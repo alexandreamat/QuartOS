@@ -203,20 +203,22 @@ function FormAdd(props: {
   open: boolean;
   movementId: number;
   onClose: () => void;
+  onAdded?: (x: TransactionApiOut) => void;
 }) {
   const [createTransaction, createTransactionResult] =
     api.endpoints.createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost.useMutation();
 
   const handleSubmit = async (
-    transaction: TransactionApiIn,
+    transactionIn: TransactionApiIn,
     accountId: number
   ) => {
     try {
-      await createTransaction({
+      const transactionOut = await createTransaction({
         accountId: accountId,
         movementId: props.movementId,
-        transactionApiIn: transaction,
+        transactionApiIn: transactionIn,
       }).unwrap();
+      props.onAdded && props.onAdded(transactionOut);
     } catch (error) {
       logMutationError(error, createTransactionResult);
       throw error;
