@@ -7,3 +7,9 @@ export function RemoveCircle(props: { onClick: () => void }) {
     </div>
   );
 }
+
+function RemoveCirclePlaceholder() {
+  return <Icon name="remove circle" disabled loading color="grey" />;
+}
+
+RemoveCircle.Placeholder = RemoveCirclePlaceholder;

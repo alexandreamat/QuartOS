@@ -1,10 +1,12 @@
 import { TransactionApiIn, TransactionApiOut } from "app/services/api";
 import {
+  Button,
   Card,
   Checkbox,
   CheckboxProps,
   Grid,
   Header,
+  Placeholder,
   Popup,
 } from "semantic-ui-react";
 import LoadableQuery from "components/LoadableCell";
@@ -149,3 +151,61 @@ export function TransactionCard(
     </Card>
   );
 }
+
+function CardPlaceholder(props: {
+  onGoMovement?: boolean;
+  explanationRate?: boolean;
+  onOpenEditForm?: boolean;
+  onCheckboxChange?: boolean;
+  checkBoxDisabled?: boolean;
+  checked?: boolean;
+}) {
+  return (
+    <Card fluid color="teal">
+      <Card.Content>
+        <Grid columns="equal" verticalAlign="middle">
+          <Grid.Column width={2}>
+            <Placeholder fluid>
+              <Placeholder.Header>
+                <Placeholder.Line />
+              </Placeholder.Header>
+            </Placeholder>
+          </Grid.Column>
+          <Grid.Column width={3}>
+            <Placeholder fluid>
+              <Placeholder.Header image>
+                <Placeholder.Line />
+              </Placeholder.Header>
+            </Placeholder>
+          </Grid.Column>
+          <Grid.Column>
+            <Placeholder fluid>
+              <Placeholder.Header>
+                <Placeholder.Line />
+              </Placeholder.Header>
+            </Placeholder>
+          </Grid.Column>
+          <Grid.Column width={1} textAlign="center">
+            <Button
+              circular
+              basic
+              icon="ellipsis horizontal"
+              size="tiny"
+              loading
+            />
+          </Grid.Column>
+        </Grid>
+      </Card.Content>
+      <Card.Content extra>
+        <Header as="h5" floated="right">
+          <div>
+            Total:
+            <CurrencyLabel.Placeholder />
+          </div>
+        </Header>
+      </Card.Content>
+    </Card>
+  );
+}
+
+TransactionCard.Placeholder = CardPlaceholder;

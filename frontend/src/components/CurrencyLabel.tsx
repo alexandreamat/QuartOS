@@ -1,4 +1,4 @@
-import { Label } from "semantic-ui-react";
+import { Label, Loader } from "semantic-ui-react";
 import { FormattedCurrency } from "./FormattedCurrency";
 
 export default function CurrencyLabel(props: {
@@ -15,3 +15,13 @@ export default function CurrencyLabel(props: {
     </Label>
   );
 }
+
+function CurrencyLabelPlaceholder() {
+  return (
+    <Label circular style={{ width: 100, textAlign: "center" }} basic>
+      <Loader active inline size="mini" />
+    </Label>
+  );
+}
+
+CurrencyLabel.Placeholder = CurrencyLabelPlaceholder;

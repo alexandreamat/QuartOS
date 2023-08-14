@@ -8,7 +8,7 @@ import FormattedTimestamp from "components/FormattedTimestamp";
 import LoadableQuery from "components/LoadableCell";
 import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
-import { Grid, Popup, Step } from "semantic-ui-react";
+import { Grid, Placeholder, Popup, Step } from "semantic-ui-react";
 import { RemoveCircle } from "./RemoveCircle";
 import { SimpleQuery } from "interfaces";
 import { EllipsisCircle } from "../../../components/EllipsisCircle";
@@ -190,3 +190,108 @@ export function Flows(props: {
     </Step.Group>
   );
 }
+
+const RemoveFlowPlaceholder = () => (
+  <Grid.Column width={1} verticalAlign="middle">
+    <RemoveCircle.Placeholder />
+  </Grid.Column>
+);
+
+const EditFlowPlaceholder = () => (
+  <Grid.Column width={2} textAlign="center" verticalAlign="middle">
+    <EllipsisCircle.Placeholder />
+  </Grid.Column>
+);
+
+const AccountLogoPlaceholder = () => (
+  <Grid.Column width={2} textAlign="center" verticalAlign="middle">
+    <Placeholder>
+      <Placeholder.Header image />
+    </Placeholder>
+  </Grid.Column>
+);
+
+const AmountPlaceholder = () => (
+  <Grid.Column width={5} textAlign="center" verticalAlign="middle">
+    <CurrencyLabel.Placeholder />
+  </Grid.Column>
+);
+
+const AccountNamePlaceholder = () => (
+  <Grid.Column textAlign="center" verticalAlign="middle">
+    <Placeholder>
+      <Placeholder.Header>
+        <Placeholder.Line />
+      </Placeholder.Header>
+    </Placeholder>
+  </Grid.Column>
+);
+
+function OutflowPlaceholder(props: {
+  onRemove?: boolean;
+  onOpenEditForm?: boolean;
+}) {
+  return (
+    <Grid.Row columns="equal" style={{ padding: flowPadding }}>
+      {props.onRemove && <RemoveFlow.Placeholder />}
+      {props.onOpenEditForm && <EditFlow.Placeholder />}
+      <AccountLogo.Placeholder />
+      <AccountName.Placeholder />
+      <Amount.Placeholder />
+    </Grid.Row>
+  );
+}
+
+function InflowPlaceholder(props: {
+  onRemove?: boolean;
+  onOpenEditForm?: boolean;
+}) {
+  return (
+    <Grid.Row columns="equal" style={{ padding: flowPadding }}>
+      <Amount.Placeholder />
+      <AccountName.Placeholder />
+      <AccountLogo.Placeholder />
+      {props.onOpenEditForm && <EditFlow.Placeholder />}
+      {props.onRemove && <RemoveFlow.Placeholder />}
+    </Grid.Row>
+  );
+}
+
+function FlowsPlaceholder(props: {
+  onRemove?: boolean;
+  onOpenEditForm?: boolean;
+}) {
+  return (
+    <Step.Group fluid widths={2}>
+      <Step style={{ padding: stepPadding }}>
+        <Step.Content style={{ width: "100%" }}>
+          <Grid>
+            <Outflow.Placeholder
+              onRemove={props.onRemove}
+              onOpenEditForm={props.onOpenEditForm}
+            />
+          </Grid>
+        </Step.Content>
+      </Step>
+      <Step style={{ padding: stepPadding }}>
+        <Step.Content style={{ width: "100%" }}>
+          <Grid>
+            <Inflow.Placeholder
+              onRemove={props.onRemove}
+              onOpenEditForm={props.onOpenEditForm}
+            />
+          </Grid>
+        </Step.Content>
+      </Step>
+    </Step.Group>
+  );
+}
+
+RemoveFlow.Placeholder = RemoveFlowPlaceholder;
+EditFlow.Placeholder = EditFlowPlaceholder;
+AccountLogo.Placeholder = AccountLogoPlaceholder;
+Amount.Placeholder = AmountPlaceholder;
+AccountName.Placeholder = AccountNamePlaceholder;
+Outflow.Placeholder = OutflowPlaceholder;
+Inflow.Placeholder = InflowPlaceholder;
+Flows.Placeholder = FlowsPlaceholder;

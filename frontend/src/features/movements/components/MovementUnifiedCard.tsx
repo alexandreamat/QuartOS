@@ -21,10 +21,32 @@ export default function MovementUnifiedCard(props: {
 
   return (
     <MovementCard
-      key={props.movement.id}
       movement={props.movement}
       onOpenEditForm={props.onOpenEditForm}
       explanationRate={props.explanationRate}
     />
   );
 }
+
+function MovementUnifiedCardPlaceholder(props: {
+  onOpenEditForm?: boolean;
+  onOpenCreateTransactionForm?: boolean;
+  onOpenEditTransactionForm?: boolean;
+  onRemoveTransaction?: boolean;
+  explanationRate?: boolean;
+}) {
+  return (
+    <>
+      <TransactionCard.Placeholder
+        onOpenEditForm={props.onOpenEditForm}
+        explanationRate={props.explanationRate}
+      />
+      <MovementCard.Placeholder
+        onOpenEditForm={props.onOpenEditForm}
+        explanationRate={props.explanationRate}
+      />
+    </>
+  );
+}
+
+MovementUnifiedCard.Placeholder = MovementUnifiedCardPlaceholder;
