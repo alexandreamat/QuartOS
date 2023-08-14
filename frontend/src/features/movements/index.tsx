@@ -90,8 +90,7 @@ export default function Movements() {
       endDate: endDate && formatDateParam(endDate),
       accountId: accountId ? accountId : undefined,
     },
-    10,
-    () => {}
+    10
   );
 
   return (
@@ -100,6 +99,7 @@ export default function Movements() {
         open={isFormOpen}
         onClose={handleCloseForm}
         movementId={movementId}
+        onMutate={infiniteQuery.reset}
       />
       <Bar
         onOpenCreateForm={handleOpenCreateForm}
@@ -125,6 +125,9 @@ export default function Movements() {
                 onOpenEditForm={() => handleOpenEditForm(movement)}
               />
             ))
+          )}
+          {infiniteQuery.isFetching && (
+            <MovementUnifiedCard.Placeholder onOpenEditForm />
           )}
         </Card.Group>
       </FlexColumn.Auto>

@@ -1,5 +1,5 @@
 import { MovementApiOut, TransactionApiOut } from "app/services/api";
-import { Card, Grid, Header } from "semantic-ui-react";
+import { Button, Card, Grid, Header, Placeholder } from "semantic-ui-react";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import { Flows } from "./Flows";
 import CreateNewButton from "components/CreateNewButton";
@@ -73,3 +73,73 @@ export function MovementCard(props: {
     </Card>
   );
 }
+
+function MovementCardPlaceholder(props: {
+  onOpenEditForm?: boolean;
+  onOpenCreateTransactionForm?: boolean;
+  onOpenEditTransactionForm?: boolean;
+  onRemoveTransaction?: boolean;
+  explanationRate?: boolean;
+}) {
+  return (
+    <Card fluid color="teal">
+      <Card.Content>
+        <Grid columns="equal">
+          <Grid.Column width={3}>
+            <Placeholder fluid>
+              <Placeholder.Header>
+                <Placeholder.Line />
+              </Placeholder.Header>
+            </Placeholder>
+          </Grid.Column>
+          <Grid.Column>
+            <Placeholder fluid>
+              <Placeholder.Header>
+                <Placeholder.Line />
+              </Placeholder.Header>
+            </Placeholder>
+          </Grid.Column>
+          {props.onOpenEditForm && (
+            <Grid.Column width={1} textAlign="center">
+              <Button
+                circular
+                basic
+                icon="ellipsis horizontal"
+                size="tiny"
+                loading
+              />
+            </Grid.Column>
+          )}
+        </Grid>
+        <Flows.Placeholder
+          onRemove={props.onRemoveTransaction}
+          onOpenEditForm={props.onOpenEditTransactionForm}
+        />
+      </Card.Content>
+      <Card.Content extra>
+        {props.onOpenCreateTransactionForm && (
+          <CreateNewButton.Placeholder
+            floated="left"
+            compact
+            content="Add Transaction"
+          />
+        )}
+        {props.explanationRate && (
+          <Placeholder>
+            <Placeholder.Header>
+              <Placeholder.Line />
+            </Placeholder.Header>
+          </Placeholder>
+        )}
+        <Header as="h5" floated="right">
+          <div>
+            Total:
+            <CurrencyLabel.Placeholder />
+          </div>
+        </Header>
+      </Card.Content>
+    </Card>
+  );
+}
+
+MovementCard.Placeholder = MovementCardPlaceholder;
