@@ -9,7 +9,7 @@ export function EllipsisCircle(props: { onClick: () => void }) {
 }
 
 function EllipsisCirclePlaceholder() {
-  return <Icon name="ellipsis horizontal" disabled loading color="grey" />;
+  return <Icon name="ellipsis horizontal" disabled color="grey" />;
 }
 
 EllipsisCircle.Placeholder = EllipsisCirclePlaceholder;

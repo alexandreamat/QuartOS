@@ -33,7 +33,6 @@ function CreateNewButtonPlaceholder(props: {
       compact={props.compact}
       labelPosition="left"
       disabled
-      loading
     >
       <Icon name="plus" /> Create New
     </Button>
