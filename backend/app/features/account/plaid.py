@@ -29,7 +29,7 @@ def fetch_accounts(
             ),
             name=account.name,
             currency_code=account.balances.iso_currency_code,
-            initial_balance=account.balances.current,
+            initial_balance=0,
         )
         for account in accounts
     ]

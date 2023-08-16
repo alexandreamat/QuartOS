@@ -65,6 +65,12 @@ def read(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
     return CRUDUser.read_account(db, me.id, None, account_id=account_id)
 
 
+@router.put("/{account_id}/update-balance")
+def update_balances(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
+    CRUDUser.read_account(db, me.id, None, account_id)
+    return CRUDAccount.update_balance(db, account_id)
+
+
 @router.put("/{account_id}")
 def update(
     db: DBSession,
