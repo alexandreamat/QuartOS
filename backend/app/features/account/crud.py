@@ -72,8 +72,16 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         return TransactionDeserialiserApiOut.from_orm(deserialiser)
 
     @classmethod
-    def sync(cls, db: Session, account: AccountPlaidIn) -> AccountPlaidOut:
-        db_account_in = Account(**account.dict())
+    def sync(
+        cls, db: Session, account_in: AccountPlaidIn, **kwargs: Any
+    ) -> AccountPlaidOut:
+        institutionalaccount_out = CRUDSyncableInstitutionalAccount.create(
+            db, account_in.institutionalaccount, **kwargs
+        )
+        db_account_in = Account(
+            **account_in.dict(exclude={"institutionalaccount"}),
+            institutionalaccount_id=institutionalaccount_out.id
+        )
         db_account_out = Account.create(db, db_account_in)
         return AccountPlaidOut.from_orm(db_account_out)
 

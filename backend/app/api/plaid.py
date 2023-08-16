@@ -29,22 +29,24 @@ def set_public_token(
 ) -> None:
     # 1. Get or create institution
     try:
-        institution_obj = CRUDSyncableInstitution.read_by_plaid_id(
+        institution_out = CRUDSyncableInstitution.read_by_plaid_id(
             db, institution_plaid_id
         )
     except NoResultFound:
-        institution_obj = CRUDSyncableInstitution.create(
+        institution_out = CRUDSyncableInstitution.create(
             db, fetch_institution(institution_plaid_id)
         )
     # 2. Create user institution link
     access_token = exchange_public_token(public_token)
     user_institution_link_in = fetch_user_institution_link(
-        access_token, me, institution_obj
+        access_token, me, institution_out
     )
     user_institution_link_out = CRUDSyncableUserInstitutionLink.create(
-        db, user_institution_link_in
+        db, user_institution_link_in, institution_id=institution_out.id, user_id=me.id
     )
     # 3. Create accounts
     accounts_in = fetch_accounts(user_institution_link_out)
     for account_in in accounts_in:
-        CRUDAccount.sync(db, account_in)
+        CRUDAccount.sync(
+            db, account_in, userinstitutionlink_id=user_institution_link_out.id
+        )
