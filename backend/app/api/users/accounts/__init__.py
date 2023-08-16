@@ -41,7 +41,7 @@ def preview(
     deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
     try:
         text_file = file.file.read().decode().splitlines()
-        return get_transactions_from_csv(deserialiser, text_file, account_id)
+        yield from get_transactions_from_csv(deserialiser, text_file, account_id)
     except Exception as e:
         raise UnknownError(e)
 
