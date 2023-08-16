@@ -71,7 +71,7 @@ export function useAccountOptions() {
       key: account.id,
       value: account.id,
       content: option,
-      text: option,
+      text: account.name,
     };
   });
   return {
