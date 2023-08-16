@@ -14,6 +14,7 @@ export function useInfiniteQuery<T, U>(
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState<Record<number, T[]>>({});
   const [resetKey, setResetKey] = useState(0);
+  const [isExhausted, setIsExhausted] = useState(false);
   const isLocked = useRef(false);
 
   const query = useQuery({ ...params, page, perPage });
@@ -25,6 +26,7 @@ export function useInfiniteQuery<T, U>(
 
   const handleReset = () => {
     setPages({});
+    setIsExhausted(false);
     isLocked.current = true;
     setPage(0);
   };
@@ -34,6 +36,7 @@ export function useInfiniteQuery<T, U>(
   useEffect(() => {
     const handleScroll = (event: Event) => {
       if (isLocked.current) return;
+      if (isExhausted) return;
       const target = event.target as HTMLDivElement;
       if (target.scrollHeight - target.scrollTop < 1.5 * target.clientHeight) {
         isLocked.current = true;
@@ -49,14 +52,18 @@ export function useInfiniteQuery<T, U>(
       if (scrollContainer)
         scrollContainer.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [isExhausted]);
 
   useEffect(() => {
-    if (!query.data) return;
-    setPages((prevTransactions) => ({
-      ...prevTransactions,
-      [page]: query.data!,
-    }));
+    if (!query.isSuccess) return;
+    if (query.data!.length === 0) {
+      setIsExhausted(true);
+    } else {
+      setPages((prevTransactions) => ({
+        ...prevTransactions,
+        [page]: query.data!,
+      }));
+    }
     isLocked.current = false;
   }, [query.data]);
 
@@ -72,6 +79,7 @@ export function useInfiniteQuery<T, U>(
     isLoading: query.isLoading,
     isSuccess: query.isSuccess,
     isFetching: query.isFetching,
+    isExhausted,
     originalArgs: query.originalArgs,
     error: query.error,
   };
