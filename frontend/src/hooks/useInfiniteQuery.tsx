@@ -25,6 +25,7 @@ export function useInfiniteQuery<T, U>(
 
   const handleReset = () => {
     setPages({});
+    isLocked.current = true;
     setPage(0);
   };
 

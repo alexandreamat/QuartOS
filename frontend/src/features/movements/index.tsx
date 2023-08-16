@@ -117,15 +117,16 @@ export default function Movements() {
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         <Card.Group style={{ margin: 0 }}>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-          {Object.values(infiniteQuery.pages).map((movements) =>
-            movements.map((movement) => (
-              <MovementUnifiedCard
-                key={movement.id}
-                movement={movement}
-                onOpenEditForm={() => handleOpenEditForm(movement)}
-              />
-            ))
-          )}
+          {infiniteQuery.isSuccess &&
+            Object.values(infiniteQuery.pages).map((movements) =>
+              movements.map((movement) => (
+                <MovementUnifiedCard
+                  key={movement.id}
+                  movement={movement}
+                  onOpenEditForm={() => handleOpenEditForm(movement)}
+                />
+              ))
+            )}
           {infiniteQuery.isFetching && (
             <MovementUnifiedCard.Placeholder onOpenEditForm />
           )}
