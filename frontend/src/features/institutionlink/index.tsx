@@ -47,7 +47,7 @@ function InstitutionLinkRow(props: {
     );
 
   return (
-    <Table.Row key={props.institutionLink.id}>
+    <Table.Row>
       <Table.Cell collapsing>
         <LoadableLine isLoading={institutionQuery.isLoading}>
           {institutionQuery.data && (
@@ -129,6 +129,7 @@ const InstitutionLinksTable = (props: {
       <Table.Body>
         {props.institutionLinks.map((institutionLink) => (
           <InstitutionLinkRow
+            key={institutionLink.id}
             institutionLink={institutionLink}
             onOpenEditForm={props.onOpenEditForm}
           />

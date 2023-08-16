@@ -40,7 +40,7 @@ export default function CurrencyExchangeTips(props: {
   currencyCode: string;
 }) {
   return (
-    <p style={{ lineHeight: 2 }}>
+    <div style={{ lineHeight: 2 }}>
       Related amounts were{" "}
       {props.relatedTransactions.map((transaction, i) => (
         <CurrencyExchangeTip
@@ -49,6 +49,6 @@ export default function CurrencyExchangeTips(props: {
           currencyCode={props.currencyCode}
         />
       ))}
-    </p>
+    </div>
   );
 }
