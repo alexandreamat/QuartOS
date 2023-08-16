@@ -162,7 +162,7 @@ export default function Accounts() {
                 {capitaliseFirstLetter(type)}
               </Header>
             </Divider>
-            <Card.Group centered>
+            <Card.Group key={type}>
               {groupedAccounts[
                 type as InstitutionalAccountType | NonInstitutionalAccountType
               ].map((account) => (
