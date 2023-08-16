@@ -1,4 +1,5 @@
 import requests
+import re
 from enum import Enum
 from decimal import Decimal
 from datetime import date
@@ -116,8 +117,17 @@ class Movement(__MovementBase, Base, table=True):
         if end_date:
             statement = statement.having(func.min(Transaction.timestamp) < end_date)
         if search:
-            search = f"%{search}%"
-            statement = statement.where(col(Transaction.name).like(search))
+            tokens = re.findall(r"-?\"[^\"]+\"|-?'[^']+'|\S+", search)
+            for token in tokens:
+                negative = token.startswith("-")
+                token_unquoted = token.strip("-'\"")
+                if not token_unquoted:
+                    continue
+                clause = f"%{token_unquoted}%"
+                if negative:
+                    statement = statement.where(~col(Transaction.name).like(clause))
+                else:
+                    statement = statement.where(col(Transaction.name).like(clause))
 
         # GROUP BY
         statement = statement.group_by(Movement.id)

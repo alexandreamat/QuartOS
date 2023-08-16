@@ -6,8 +6,12 @@ from decimal import Decimal
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
+from app.common.exceptions import ObjectNotFoundError
 
-from app.features.transactiondeserialiser import TransactionDeserialiserApiOut
+from app.features.transactiondeserialiser import (
+    TransactionDeserialiserApiOut,
+    TransactionDeserialiser,
+)
 from app.features.movement import (
     MovementApiOut,
     CRUDMovement,
@@ -69,6 +73,8 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         cls, db: Session, id: int
     ) -> TransactionDeserialiserApiOut:
         deserialiser = Account.read(db, id).transactiondeserialiser
+        if not deserialiser:
+            raise ObjectNotFoundError(str(TransactionDeserialiser.__tablename__))
         return TransactionDeserialiserApiOut.from_orm(deserialiser)
 
     @classmethod
