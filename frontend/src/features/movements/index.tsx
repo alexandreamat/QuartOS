@@ -7,8 +7,9 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { formatDateParam } from "utils/time";
-import { Card } from "semantic-ui-react";
+import { Card, Message } from "semantic-ui-react";
 import MovementUnifiedCard from "./components/MovementUnifiedCard";
+import { TransactionCard } from "features/transaction/components/TransactionCard";
 
 export default function Movements() {
   const location = useLocation();
@@ -117,20 +118,25 @@ export default function Movements() {
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         <Card.Group style={{ margin: 0 }}>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-          {infiniteQuery.isSuccess &&
-            Object.values(infiniteQuery.pages).map((movements) =>
-              movements.map((movement) => (
-                <MovementUnifiedCard
-                  key={movement.id}
-                  movement={movement}
-                  onOpenEditForm={() => handleOpenEditForm(movement)}
-                />
-              ))
-            )}
+          {Object.values(infiniteQuery.pages).map((movements) =>
+            movements.map((movement) => (
+              <MovementUnifiedCard
+                key={movement.id}
+                movement={movement}
+                onOpenEditForm={() => handleOpenEditForm(movement)}
+              />
+            ))
+          )}
           {infiniteQuery.isFetching && (
-            <MovementUnifiedCard.Placeholder onOpenEditForm />
+            <TransactionCard.Placeholder key="placeholder" onOpenEditForm />
           )}
         </Card.Group>
+        {infiniteQuery.isExhausted && (
+          <Message
+            content="There is no more data available."
+            style={{ textAlign: "center" }}
+          />
+        )}
       </FlexColumn.Auto>
     </FlexColumn>
   );
