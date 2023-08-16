@@ -83,6 +83,7 @@ export default function Form(props: {
           },
           newMovementId: movementId,
         }).unwrap();
+        props.onMutate && props.onMutate();
       } catch (error) {
         logMutationError(error, updateTransactionResult);
         return;
@@ -97,6 +98,7 @@ export default function Form(props: {
           },
         }).unwrap();
         setMovementId(movement.id);
+        props.onMutate && props.onMutate();
       } catch (error) {
         logMutationError(error, createMovementsResult);
         return;
@@ -113,6 +115,7 @@ export default function Form(props: {
           transaction_ids: [transaction.id],
         },
       }).unwrap();
+      props.onMutate && props.onMutate();
     } catch (error) {
       logMutationError(error, createMovementsResult);
       return;
@@ -124,6 +127,7 @@ export default function Form(props: {
 
     try {
       await deleteMovement(movementId).unwrap();
+      props.onMutate && props.onMutate();
     } catch (error) {
       logMutationError(error, deleteMovementResult);
       return;
