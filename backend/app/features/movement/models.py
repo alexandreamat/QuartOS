@@ -117,17 +117,16 @@ class Movement(__MovementBase, Base, table=True):
         if end_date:
             statement = statement.having(func.min(Transaction.timestamp) < end_date)
         if search:
-            tokens = re.findall(r"-?\"[^\"]+\"|-?'[^']+'|\S+", search)
+            tokens: list[str] = re.findall(r"-?\"[^\"]+\"|-?'[^']+'|\S+", search)
             for token in tokens:
                 negative = token.startswith("-")
                 token_unquoted = token.strip("-'\"")
                 if not token_unquoted:
                     continue
-                clause = f"%{token_unquoted}%"
+                clause = col(Transaction.name).like(f"%{token_unquoted}%")
                 if negative:
-                    statement = statement.where(~col(Transaction.name).like(clause))
-                else:
-                    statement = statement.where(col(Transaction.name).like(clause))
+                    clause = ~clause
+                statement = statement.where(clause)
 
         # GROUP BY
         statement = statement.group_by(Movement.id)
