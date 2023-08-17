@@ -23,13 +23,11 @@ def create_many(
     transaction_ids: list[int],
 ) -> Iterable[MovementApiOut]:
     CRUDUser.read_account(db, me.id, None, account_id)
-    if CRUDAccount.is_synced(db, account_id):
-        raise HTTPException(status.HTTP_403_FORBIDDEN)
-    for transaction in transactions:
-        yield CRUDAccount.create_movement(db, account_id, transaction)
     for transaction_id in transaction_ids:
         CRUDUser.read_transaction(db, me.id, None, account_id, None, transaction_id)
-        yield CRUDAccount.create_movement(db, account_id, transaction_id)
+    yield from CRUDAccount.create_many_movements(
+        db, account_id, transactions, transaction_ids
+    )
 
 
 router.include_router(
