@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Iterable
 
 from datetime import date
 from decimal import Decimal
@@ -170,6 +170,34 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     ) -> AccountApiOut:
         account_out = Account.update_balance(db, id, timestamp)
         return AccountApiOut.from_orm(account_out)
+
+    @classmethod
+    def create_many_movements(
+        cls,
+        db: Session,
+        account_id: int,
+        transactions: list[TransactionApiIn],
+        transaction_ids: list[int],
+    ) -> Iterable[MovementApiOut]:
+        min_timestamp = None
+        for transaction_in in transactions:
+            min_timestamp = (
+                min(transaction_in.timestamp, min_timestamp)
+                if min_timestamp
+                else transaction_in.timestamp
+            )
+            yield CRUDMovement.create(
+                db, transaction_in, account_id=account_id, account_balance=Decimal(0)
+            )
+        for transaction_id in transaction_ids:
+            transaction_out = cls.read_transaction(db, account_id, None, transaction_id)
+            min_timestamp = (
+                min(transaction_out.timestamp, min_timestamp)
+                if min_timestamp
+                else transaction_out.timestamp
+            )
+            yield CRUDMovement.create(db, transaction_id)
+        CRUDAccount.update_balance(db, account_id, min_timestamp)
 
     @classmethod
     def create_movement(
