@@ -5,7 +5,7 @@ import re
 import decimal
 import datetime
 
-from typing import Iterable
+from typing import Iterable, BinaryIO
 
 from .models import TransactionApiIn
 
@@ -19,7 +19,7 @@ def __sanitise_row(row: list[str]) -> None:
 
 def get_transactions_from_csv(
     deserialiser_out: TransactionDeserialiserApiOut,
-    file: Iterable[str],
+    file: BinaryIO,
     account_id: int,
 ) -> Iterable[TransactionApiIn]:
     deserializers = {}
@@ -31,7 +31,8 @@ def get_transactions_from_csv(
         snippet = getattr(deserialiser_out, field)
         exec(f"def {function_name}(row): return {snippet}")
         deserializers[field_name] = locals()[function_name]
-    reader = csv.reader(file)
+    text_file = file.read().decode(encoding=deserialiser_out.encoding).splitlines()
+    reader = csv.reader(text_file, delimiter=deserialiser_out.delimiter)
     for _ in range(deserialiser_out.skip_rows):
         next(reader)
     for row in reader:

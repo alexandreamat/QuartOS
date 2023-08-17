@@ -1,4 +1,4 @@
-import { Button, Form, Message, Modal } from "semantic-ui-react";
+import { Button, Form, Modal } from "semantic-ui-react";
 import { useEffect } from "react";
 import {
   TransactionDeserialiserApiIn,
@@ -19,6 +19,8 @@ export default function TransactionDeserialiserForm(props: {
 }) {
   const skipRowsStr = useFormField("0");
   const columnsStr = useFormField("0");
+  const delimiter = useFormField(",");
+  const encoding = useFormField("utf-8");
   const moduleName = useFormField("");
   const name = useFormField("");
   const amount = useFormField("");
@@ -29,6 +31,8 @@ export default function TransactionDeserialiserForm(props: {
     moduleName,
     skipRowsStr,
     columnsStr,
+    delimiter,
+    encoding,
     name,
     amount,
     timestamp,
@@ -49,6 +53,8 @@ export default function TransactionDeserialiserForm(props: {
     amount.set(props.transactionDeserialiser.amount_deserialiser);
     timestamp.set(props.transactionDeserialiser.timestamp_deserialiser);
     currencyCode.set(props.transactionDeserialiser.currency_code_deserialiser);
+    delimiter.set(props.transactionDeserialiser.delimiter);
+    encoding.set(props.transactionDeserialiser.encoding);
   }, [props.transactionDeserialiser]);
 
   const handleClose = () => {
@@ -67,6 +73,8 @@ export default function TransactionDeserialiserForm(props: {
       amount_deserialiser: amount.value!,
       timestamp_deserialiser: timestamp.value!,
       currency_code_deserialiser: currencyCode.value!,
+      delimiter: delimiter.value!,
+      encoding: encoding.value!,
     };
     if (props.transactionDeserialiser) {
       try {
@@ -97,6 +105,8 @@ export default function TransactionDeserialiserForm(props: {
           <FormTextInput label="Module Name" field={moduleName} />
           <FormTextInput type="number" label="Skip Rows" field={skipRowsStr} />
           <FormTextInput type="number" label="Columns" field={columnsStr} />
+          <FormTextInput label="Delimiter" field={delimiter} />
+          <FormTextInput label="Encoding" field={encoding} />
           <FormTextArea label="deserialise_name = lambda row:" field={name} />
           <FormTextArea
             label="deserialise_amount = lambda row:"

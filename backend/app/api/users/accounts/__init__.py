@@ -35,13 +35,10 @@ def preview(
     account_id: int,
     file: Annotated[UploadFile, File(...)],
 ) -> Iterable[TransactionApiIn]:
-    account_out = CRUDUser.read_account(db, me.id, None, account_id)
-    if account_out.is_synced:
-        raise SyncedEntity()
+    CRUDUser.read_account(db, me.id, None, account_id)
     deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
     try:
-        text_file = file.file.read().decode().splitlines()
-        yield from get_transactions_from_csv(deserialiser, text_file, account_id)
+        yield from get_transactions_from_csv(deserialiser, file.file, account_id)
     except Exception as e:
         raise UnknownError(e)
 
