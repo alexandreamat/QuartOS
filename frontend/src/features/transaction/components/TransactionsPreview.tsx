@@ -7,7 +7,7 @@ export default function TransactionsPreview(props: {
   transactionPages: TransactionApiIn[][];
 }) {
   return (
-    <Card.Group>
+    <Card.Group style={{ margin: 0 }}>
       {props.transactionPages.map((transactionPage, i) =>
         transactionPage.map((transaction, j) => (
           <TransactionCard
