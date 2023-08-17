@@ -15,6 +15,8 @@ class __TransactionDeserialiserBase(SQLModel):
     currency_code_deserialiser: CodeSnippet
     skip_rows: int
     columns: int
+    delimiter: str
+    encoding: str
 
 
 class TransactionDeserialiserApiIn(__TransactionDeserialiserBase):
