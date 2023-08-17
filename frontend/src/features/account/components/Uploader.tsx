@@ -3,15 +3,16 @@ import {
   BodyPreviewApiUsersMeAccountsPreviewPost,
   api,
 } from "app/services/api";
+import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import TransactionsPreview from "features/transaction/components/TransactionsPreview";
 import {
   Button,
   Dimmer,
-  Form,
   Header,
   Icon,
   Loader,
+  Message,
   Modal,
   Segment,
 } from "semantic-ui-react";
@@ -80,15 +81,27 @@ export default function Uploader(props: {
   return (
     <Modal open={props.open} onClose={props.onClose}>
       <Modal.Header>Upload Transactions File</Modal.Header>
-      <Modal.Content scrolling>
-        <Form>
-          {(uploadResult.isUninitialized || uploadResult.isLoading) && (
-            <Segment
-              placeholder
-              onDrop={handleFileDrop}
-              onDragOver={(event: any) => event.preventDefault()}
-            >
-              <>
+      <Modal.Content>
+        <div style={{ height: "70vh" }}>
+          <FlexColumn>
+            {props.account.is_synced && (
+              <Message warning icon>
+                <Icon name="exclamation triangle" />
+                <Message.Content>
+                  <Message.Header>Synced Account</Message.Header>
+                  You are about to upload transactions for an account that is
+                  synced with your institution. This is only advised to upload
+                  transactions that cannot be synced automatically.
+                </Message.Content>
+              </Message>
+            )}
+            {uploadResult.isUninitialized && (
+              <Segment
+                placeholder
+                onDrop={handleFileDrop}
+                onDragOver={(event: any) => event.preventDefault()}
+                style={{ height: "100%" }}
+              >
                 <Header icon>
                   <Icon name="file excel outline" />
                   Upload your Transactions Sheet File
@@ -109,23 +122,30 @@ export default function Uploader(props: {
                   style={{ display: "none" }}
                   onChange={handleFileChange}
                 />
-                {uploadResult.isLoading && (
-                  <Dimmer active>
-                    <Loader active />
-                  </Dimmer>
-                )}
-              </>
-            </Segment>
-          )}
-          {uploadResult.isSuccess && (
-            <TransactionsPreview
-              transactionPages={[uploadResult.data]}
-              accountId={props.account.id}
-            />
-          )}
-          <QueryErrorMessage query={uploadResult} />
-          <QueryErrorMessage query={createMovementsResult} />
-        </Form>
+              </Segment>
+            )}
+            {uploadResult.isLoading && (
+              <Dimmer active>
+                <Loader active />
+              </Dimmer>
+            )}
+            {createMovementsResult.isLoading && (
+              <Dimmer active>
+                <Loader active />
+              </Dimmer>
+            )}
+            <QueryErrorMessage query={uploadResult} />
+            <QueryErrorMessage query={createMovementsResult} />
+            <FlexColumn.Auto>
+              {uploadResult.isSuccess && (
+                <TransactionsPreview
+                  transactionPages={[uploadResult.data]}
+                  accountId={props.account.id}
+                />
+              )}
+            </FlexColumn.Auto>
+          </FlexColumn>
+        </div>
       </Modal.Content>
       <Modal.Actions>
         <Button onClick={handleClose}>Cancel</Button>
