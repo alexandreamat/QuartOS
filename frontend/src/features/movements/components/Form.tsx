@@ -179,25 +179,31 @@ export default function Form(props: {
       )}
       <Modal.Header>Create a Movement</Modal.Header>
       <Modal.Content>
-        <div style={{ height: "70vh" }}>
-          <FlexColumn>
-            {movementQuery.isUninitialized && (
-              <Segment placeholder>
-                <Header icon>Add transactions here</Header>
-                <Segment.Inline>
-                  <CreateNewButton onCreate={handleOpenCreateTransactionForm} />
-                </Segment.Inline>
-              </Segment>
-            )}
-            {movementQuery.isFetching ? (
-              <MovementCard.Placeholder
-                onOpenCreateTransactionForm
-                onOpenEditTransactionForm
-                onRemoveTransaction
-              />
-            ) : (
-              <>
-                {movementQuery.isSuccess && (
+        <FlexColumn style={{ height: "70vh" }}>
+          {movementQuery.isUninitialized && (
+            <Segment placeholder>
+              <Header icon>Add transactions here</Header>
+              <Segment.Inline>
+                <CreateNewButton onCreate={handleOpenCreateTransactionForm} />
+              </Segment.Inline>
+            </Segment>
+          )}
+          {movementQuery.isFetching ? (
+            <MovementCard.Placeholder
+              onOpenCreateTransactionForm
+              onOpenEditTransactionForm
+              onRemoveTransaction
+            />
+          ) : (
+            <>
+              {movementQuery.isSuccess && (
+                <div
+                  style={{
+                    maxHeight: "35vh",
+                    overflow: "auto",
+                    padding: 2,
+                  }}
+                >
                   <MovementCard
                     movement={movementQuery.data}
                     onOpenCreateTransactionForm={
@@ -210,25 +216,25 @@ export default function Form(props: {
                         : undefined
                     }
                   />
-                )}
-                {movementQuery.isError && (
-                  <QueryErrorMessage query={movementQuery} />
-                )}
-              </>
-            )}
-            <QueryErrorMessage query={createMovementsResult} />
-            <QueryErrorMessage query={updateTransactionResult} />
-            <QueryErrorMessage query={deleteMovementResult} />
-            <FlexColumn.Auto>
-              <Divider horizontal>or pick existing ones</Divider>
-              <TransactionCards
-                onMutation={handleOpenCreateTransactionForm}
-                onFlowCheckboxChange={handleFlowCheckboxChange}
-                checked={movementQuery.data?.transactions.map((t) => t.id)}
-              />
-            </FlexColumn.Auto>
-          </FlexColumn>
-        </div>
+                </div>
+              )}
+              {movementQuery.isError && (
+                <QueryErrorMessage query={movementQuery} />
+              )}
+            </>
+          )}
+          <QueryErrorMessage query={createMovementsResult} />
+          <QueryErrorMessage query={updateTransactionResult} />
+          <QueryErrorMessage query={deleteMovementResult} />
+          <FlexColumn.Auto>
+            <Divider horizontal>or pick existing ones</Divider>
+            <TransactionCards
+              onMutation={handleOpenCreateTransactionForm}
+              onFlowCheckboxChange={handleFlowCheckboxChange}
+              checked={movementQuery.data?.transactions.map((t) => t.id)}
+            />
+          </FlexColumn.Auto>
+        </FlexColumn>
       </Modal.Content>
       <Modal.Actions>
         {movementId !== 0 && (
