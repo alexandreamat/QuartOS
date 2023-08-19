@@ -40,6 +40,13 @@ export default function Movements() {
       params.delete("movementId");
       navigate({ ...location, search: params.toString() }, { replace: true });
     }
+
+    const accountIdParam = Number(params.get("accountId"));
+    if (accountIdParam) {
+      setAccountId(Number(accountIdParam));
+      params.delete("accountId");
+      navigate({ ...location, search: params.toString() }, { replace: true });
+    }
   }, [location, navigate]);
 
   const handleOpenCreateForm = () => {
