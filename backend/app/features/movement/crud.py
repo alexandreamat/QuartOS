@@ -41,7 +41,12 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             transaction_id = transaction
             transaction_out = CRUDTransaction.read(db, transaction_id)
             curr_movement_out = cls.read(db, transaction_out.movement_id)
-            transaction_in = TransactionApiIn.from_orm(**transaction_out.dict())
+            transaction_in = TransactionApiIn(
+                amount=transaction_out.amount,
+                timestamp=transaction_out.timestamp,
+                name=transaction_out.name,
+                currency_code=transaction_out.currency_code,
+            )
             transaction_out = CRUDTransaction.update(
                 db,
                 transaction_id,
