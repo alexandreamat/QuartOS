@@ -80,7 +80,11 @@ def update(
         raise SyncedEntity()
     CRUDUser.read_account(db, me.id, None, account_id)
     return CRUDAccount.update(
-        db, account_id, account_in, userinstitutionlink_id=userinstitutionlink_id
+        db,
+        account_id,
+        account_in,
+        userinstitutionlink_id=userinstitutionlink_id,
+        user_id=me.id,
     )
 
 

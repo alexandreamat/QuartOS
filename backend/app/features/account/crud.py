@@ -107,7 +107,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         account_out = Account.read(db, id)
         if account_in.institutionalaccount and userinstitutionlink_id:
             if account_out.institutionalaccount and account_out.institutionalaccount_id:
-                CRUDInstitutionalAccount.update(
+                institutionalaccount_out = CRUDInstitutionalAccount.update(
                     db,
                     account_out.institutionalaccount_id,
                     account_in.institutionalaccount,
@@ -120,19 +120,21 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
                 CRUDNonInstitutionalAccount.delete(
                     db, account_out.noninstitutionalaccount_id
                 )
-                CRUDInstitutionalAccount.create(
+                institutionalaccount_out = CRUDInstitutionalAccount.create(
                     db,
                     account_in.institutionalaccount,
                     userinstitutionlink_id=userinstitutionlink_id,
                 )
             else:
                 raise ValueError
+            institutionalaccount_id = institutionalaccount_out.id
+            noninstitutionalaccount_id = None
         elif account_in.noninstitutionalaccount and user_id:
             if (
                 account_out.noninstitutionalaccount
                 and account_out.noninstitutionalaccount_id
             ):
-                CRUDNonInstitutionalAccount.update(
+                noninstitutionalaccount_out = CRUDNonInstitutionalAccount.update(
                     db,
                     account_out.noninstitutionalaccount_id,
                     account_in.noninstitutionalaccount,
@@ -145,21 +147,29 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
                     db,
                     account_out.institutionalaccount_id,
                 )
-                CRUDNonInstitutionalAccount.create(
+                noninstitutionalaccount_out = CRUDNonInstitutionalAccount.create(
                     db,
                     account_in.noninstitutionalaccount,
                     user_id=user_id,
                 )
             else:
                 raise ValueError
+            institutionalaccount_id = None
+            noninstitutionalaccount_id = noninstitutionalaccount_out.id
         else:
             raise ValueError
         dict_in = account_in.dict(
             exclude={"institutionalaccount", "noninstitutionalaccount"}
         )
-        a = Account.update(db, id, **dict_in)
+        account = Account.update(
+            db,
+            id,
+            **dict_in,
+            institutionalaccount_id=institutionalaccount_id,
+            noninstitutionalaccount_id=noninstitutionalaccount_id
+        )
         cls.update_balance(db, id)
-        return AccountApiOut.from_orm(a)
+        return AccountApiOut.from_orm(account)
 
     @classmethod
     def update_balance(
