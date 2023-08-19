@@ -46,9 +46,9 @@ const Amount = (props: { amount: number; currencyCode: string }) => (
   </Grid.Column>
 );
 
-const AccountName = (props: { query: SimpleQuery; name: string }) => (
+const TransactionName = (props: { name: string }) => (
   <Grid.Column textAlign="center" verticalAlign="middle">
-    <LoadableQuery query={props.query}>{props.name}</LoadableQuery>
+    {props.name}
   </Grid.Column>
 );
 
@@ -79,10 +79,7 @@ function Outflow(props: {
             account={accountQueries.account!}
             institution={accountQueries.institution!}
           />
-          <AccountName
-            query={accountQueries}
-            name={accountQueries.account?.name || ""}
-          />
+          <TransactionName name={props.flow.name} />
           <Amount
             amount={props.flow.amount}
             currencyCode={props.flow.currency_code}
@@ -115,10 +112,7 @@ function Inflow(props: {
             amount={props.flow.amount}
             currencyCode={props.flow.currency_code}
           />
-          <AccountName
-            query={accountQueries}
-            name={accountQueries.account?.name || ""}
-          />
+          <TransactionName name={props.flow.name} />
           <AccountLogo
             query={accountQueries}
             account={accountQueries.account!}
@@ -217,7 +211,7 @@ const AmountPlaceholder = () => (
   </Grid.Column>
 );
 
-const AccountNamePlaceholder = () => (
+const TransactionNamePlaceholder = () => (
   <Grid.Column textAlign="center" verticalAlign="middle">
     <Placeholder>
       <Placeholder.Header>
@@ -236,7 +230,7 @@ function OutflowPlaceholder(props: {
       {props.onRemove && <RemoveFlow.Placeholder />}
       {props.onOpenEditForm && <EditFlow.Placeholder />}
       <AccountLogo.Placeholder />
-      <AccountName.Placeholder />
+      <TransactionName.Placeholder />
       <Amount.Placeholder />
     </Grid.Row>
   );
@@ -249,7 +243,7 @@ function InflowPlaceholder(props: {
   return (
     <Grid.Row columns="equal" style={{ padding: flowPadding }}>
       <Amount.Placeholder />
-      <AccountName.Placeholder />
+      <TransactionName.Placeholder />
       <AccountLogo.Placeholder />
       {props.onOpenEditForm && <EditFlow.Placeholder />}
       {props.onRemove && <RemoveFlow.Placeholder />}
@@ -291,7 +285,7 @@ RemoveFlow.Placeholder = RemoveFlowPlaceholder;
 EditFlow.Placeholder = EditFlowPlaceholder;
 AccountLogo.Placeholder = AccountLogoPlaceholder;
 Amount.Placeholder = AmountPlaceholder;
-AccountName.Placeholder = AccountNamePlaceholder;
+TransactionName.Placeholder = TransactionNamePlaceholder;
 Outflow.Placeholder = OutflowPlaceholder;
 Inflow.Placeholder = InflowPlaceholder;
 Flows.Placeholder = FlowsPlaceholder;
