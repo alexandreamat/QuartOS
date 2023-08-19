@@ -8,8 +8,8 @@ import {
   InputOnChangeData,
   Menu,
 } from "semantic-ui-react";
-import { dateToString, stringToDate } from "utils/time";
 import { RemoveCircle } from "features/movements/components/RemoveCircle";
+import MenuDateInput from "components/MenuDateInput";
 
 export default function Bar(props: {
   accountId: number;
@@ -59,14 +59,10 @@ export default function Bar(props: {
         )}
       </Menu.Item>
       <Menu.Item>
-        <Input
-          type="date"
-          icon="calendar"
-          value={props.timestamp ? dateToString(props.timestamp) : ""}
-          iconPosition="left"
-          onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) =>
-            props.onTimestampChange(stringToDate(data.value))
-          }
+        <MenuDateInput
+          label="from"
+          date={props.timestamp}
+          onDateChange={props.onTimestampChange}
         />
         <Menu.Item fitted>
           <Button icon onClick={props.onToggleIsDescending}>
@@ -75,11 +71,6 @@ export default function Bar(props: {
             />
           </Button>
         </Menu.Item>
-        {props.timestamp && (
-          <Menu.Item fitted>
-            <RemoveCircle onClick={() => props.onTimestampChange(undefined)} />
-          </Menu.Item>
-        )}
       </Menu.Item>
     </Menu>
   );

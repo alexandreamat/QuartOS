@@ -7,9 +7,9 @@ export function dateToString(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-export function stringToDate(dateStr: string, date?: Date) {
+export function stringToDate(dateStr: string) {
   const [year, month, day] = dateStr.split("-");
-  const updatedDatetime = date ? new Date(date) : new Date();
+  const updatedDatetime = new Date(0);
   updatedDatetime.setFullYear(Number(year));
   updatedDatetime.setMonth(Number(month) - 1);
   updatedDatetime.setDate(Number(day));
