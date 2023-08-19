@@ -94,6 +94,16 @@ export default function TransactionForm(props: {
     handleClose();
   };
 
+  async function handleDelete() {
+    if (!props.onDelete) return;
+    try {
+      await props.onDelete();
+    } catch (error) {
+      return;
+    }
+    handleClose();
+  }
+
   const handleClose = () => {
     Object.values(form).forEach((field) => field.reset());
     props.onClose();
@@ -140,7 +150,7 @@ export default function TransactionForm(props: {
       <Modal.Actions>
         {props.onDelete && props.deleteQuery && (
           <ConfirmDeleteButtonModal
-            onDelete={props.onDelete}
+            onDelete={handleDelete}
             query={props.deleteQuery}
           />
         )}
@@ -281,6 +291,7 @@ function FormEdit(props: {
       });
     } catch (error) {
       logMutationError(error, deleteTransactionResult);
+      throw error;
     }
   }
 
