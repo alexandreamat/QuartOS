@@ -34,6 +34,10 @@ export default function AccountCard(props: {
     navigate(`/transactions/?accountId=${props.account.id}`);
   }
 
+  function handleGoToMovements() {
+    navigate(`/movements/?accountId=${props.account.id}`);
+  }
+
   return (
     <Card color="teal">
       <Uploader
@@ -68,6 +72,12 @@ export default function AccountCard(props: {
           tooltip="See transactions"
           floated="left"
           onClick={handleGoToTransactions}
+        />
+        <ActionButton
+          icon="arrows alternate horizontal"
+          tooltip="See movements"
+          floated="left"
+          onClick={handleGoToMovements}
         />
 
         {props.account.institutionalaccount && (
