@@ -69,7 +69,7 @@ export default function Accounts() {
       </Menu>
       <FlexColumn.Auto>
         {Object.keys(groupedAccounts).map((type) => (
-          <>
+          <div key={type}>
             <Divider horizontal section>
               <Header as="h4">
                 <Icon
@@ -82,7 +82,7 @@ export default function Accounts() {
                 {capitaliseFirstLetter(type)}
               </Header>
             </Divider>
-            <Card.Group key={type} style={{ margin: 0 }}>
+            <Card.Group style={{ margin: 0 }}>
               {groupedAccounts[
                 type as InstitutionalAccountType | NonInstitutionalAccountType
               ].map((account) => (
@@ -93,7 +93,7 @@ export default function Accounts() {
                 />
               ))}
             </Card.Group>
-          </>
+          </div>
         ))}
       </FlexColumn.Auto>
     </FlexColumn>
