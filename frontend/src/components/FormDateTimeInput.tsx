@@ -1,6 +1,8 @@
+import { format } from "date-fns";
 import useFormField from "hooks/useFormField";
+import { useState } from "react";
 import { Form } from "semantic-ui-react";
-import { dateToString, stringToDate } from "utils/time";
+import { formatDateParam, stringToDate } from "utils/time";
 
 export default function FormDateTimeInput(props: {
   label?: string;
@@ -8,16 +10,17 @@ export default function FormDateTimeInput(props: {
   disabled?: boolean;
   readOnly?: boolean;
 }) {
-  const label = props.label || props.field.label;
-
   if (props.readOnly) {
     return (
       <Form.Field>
         <label>Date</label>
-        {dateToString(props.field.value!)}
+        {props.field.value && props.field.value.toLocaleDateString()}
       </Form.Field>
     );
   }
+
+  const label = props.label || props.field.label;
+  const dateStr = props.field.value ? formatDateParam(props.field.value) : "";
 
   return (
     <Form.Input
@@ -28,11 +31,12 @@ export default function FormDateTimeInput(props: {
       icon="calendar"
       required
       placeholder={label && "Enter " + label}
-      value={dateToString(props.field.value!)}
+      value={dateStr}
       iconPosition="left"
       onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) => {
-        const updatedDatetime = stringToDate(data.value, props.field.value);
-        props.field.set(updatedDatetime);
+        const newDate = stringToDate(data.value);
+        if (isNaN(newDate.getTime())) return;
+        props.field.set(newDate);
       }}
     />
   );

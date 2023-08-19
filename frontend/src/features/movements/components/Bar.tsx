@@ -7,9 +7,9 @@ import {
   InputOnChangeData,
   Menu,
 } from "semantic-ui-react";
-import { dateToString, stringToDate } from "utils/time";
 import { RemoveCircle } from "./RemoveCircle";
 import { useAccountOptions } from "features/account/hooks";
+import MenuDateInput from "components/MenuDateInput";
 
 export function Bar(props: {
   onOpenCreateForm: () => void;
@@ -64,37 +64,16 @@ export function Bar(props: {
           </Menu.Item>
         )}
       </Menu.Item>
-
-      <Menu.Item fitted>
-        <Input
-          label="from"
-          type="date"
-          value={props.startDate ? dateToString(props.startDate) : ""}
-          onChange={(_: unknown, data: InputOnChangeData) =>
-            props.onStartDateChange(stringToDate(data.value))
-          }
-        />
-        {props.startDate && (
-          <Menu.Item fitted>
-            <RemoveCircle onClick={() => props.onStartDateChange(undefined)} />
-          </Menu.Item>
-        )}
-      </Menu.Item>
-      <Menu.Item fitted>
-        <Input
-          label="to"
-          type="date"
-          value={props.endDate ? dateToString(props.endDate) : ""}
-          onChange={(_: unknown, data: InputOnChangeData) =>
-            props.onEndDateChange(stringToDate(data.value))
-          }
-        />
-        {props.endDate && (
-          <Menu.Item fitted>
-            <RemoveCircle onClick={() => props.onEndDateChange(undefined)} />
-          </Menu.Item>
-        )}
-      </Menu.Item>
+      <MenuDateInput
+        label="from"
+        date={props.startDate}
+        onDateChange={props.onStartDateChange}
+      />
+      <MenuDateInput
+        label="to"
+        date={props.endDate}
+        onDateChange={props.onEndDateChange}
+      />
       <Menu.Item fitted>
         <Button icon onClick={props.onToggleIsDescending}>
           <Icon
