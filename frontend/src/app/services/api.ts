@@ -599,6 +599,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "accounts"],
       }),
+      updateBalancesApiUsersMeAccountsAccountIdUpdateBalancePut: build.mutation<
+        UpdateBalancesApiUsersMeAccountsAccountIdUpdateBalancePutApiResponse,
+        UpdateBalancesApiUsersMeAccountsAccountIdUpdateBalancePutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/accounts/${queryArg}/update-balance`,
+          method: "PUT",
+        }),
+        invalidatesTags: ["users", "accounts"],
+      }),
       readManyApiUsersMeAccountsAccountIdTransactionsGet: build.query<
         ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiResponse,
         ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg
@@ -971,6 +981,10 @@ export type UpdateApiUsersMeAccountsAccountIdPutApiArg = {
 export type DeleteApiUsersMeAccountsAccountIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
 export type DeleteApiUsersMeAccountsAccountIdDeleteApiArg = number;
+export type UpdateBalancesApiUsersMeAccountsAccountIdUpdateBalancePutApiResponse =
+  /** status 200 Successful Response */ AccountApiOut;
+export type UpdateBalancesApiUsersMeAccountsAccountIdUpdateBalancePutApiArg =
+  number;
 export type ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg = {
@@ -1066,6 +1080,8 @@ export type TransactionDeserialiserApiOut = {
   currency_code_deserialiser: string;
   skip_rows: number;
   columns: number;
+  delimiter: string;
+  encoding: string;
 };
 export type TransactionDeserialiserApiIn = {
   module_name: string;
@@ -1075,6 +1091,8 @@ export type TransactionDeserialiserApiIn = {
   currency_code_deserialiser: string;
   skip_rows: number;
   columns: number;
+  delimiter: string;
+  encoding: string;
 };
 export type ReplacementPatternApiOut = {
   id: number;
