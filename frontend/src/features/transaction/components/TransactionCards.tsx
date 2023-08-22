@@ -1,6 +1,5 @@
-import { TransactionApiOut } from "app/services/api";
+import { TransactionApiOut, api } from "app/services/api";
 import { useEffect, useState } from "react";
-import { useTransactionsQuery } from "../hooks";
 import Bar from "./Bar";
 import FlexColumn from "components/FlexColumn";
 import Form from "./Form";
@@ -9,6 +8,8 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useNavigate } from "react-router-dom";
 import { TransactionCard } from "./TransactionCard";
 import { Card } from "semantic-ui-react";
+import { formatDateParam } from "utils/time";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export default function TransactionCards(props: {
   onMutation?: (x: TransactionApiOut) => void;
@@ -76,20 +77,35 @@ export default function TransactionCards(props: {
     setIsDescending((prev) => !prev);
   }
 
-  const infiniteQuery = useInfiniteQuery<
-    TransactionApiOut,
-    Parameters<typeof useTransactionsQuery>[0]
-  >(
-    useTransactionsQuery,
+  const transactionsQuery = useInfiniteQuery(
+    api.endpoints.readManyApiUsersMeTransactionsGet.useLazyQuery,
     {
-      timestamp,
-      accountId: accountId,
+      timestamp: timestamp && formatDateParam(timestamp),
       search,
       isDescending,
     },
     20,
     props.onMutation
   );
+
+  const accountTransactionsQuery = useInfiniteQuery(
+    api.endpoints.readManyApiUsersMeAccountsAccountIdTransactionsGet
+      .useLazyQuery,
+    accountId
+      ? {
+          timestamp: timestamp && formatDateParam(timestamp),
+          accountId: accountId,
+          search,
+          isDescending,
+        }
+      : skipToken,
+    20,
+    props.onMutation
+  );
+
+  const infiniteQuery = accountId
+    ? accountTransactionsQuery
+    : transactionsQuery;
 
   return (
     <FlexColumn>

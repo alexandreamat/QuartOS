@@ -1,25 +1,44 @@
+import { SkipToken, skipToken } from "@reduxjs/toolkit/dist/query";
 import { SimpleDataQuery } from "interfaces";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-type UseQuery<T, U> = (x: U) => SimpleDataQuery<T>;
+type UseLazyQueryTrigger<Arg, Ret> = (
+  arg: Arg,
+  preferCacheValue: boolean
+) => {
+  unwrap: () => Promise<Ret[]>;
+};
 
-export function useInfiniteQuery<T, U>(
-  useQuery: UseQuery<T, U>,
-  params: U,
+type UseLazyQueryLastPromiseInfo<Arg> = {
+  lastArg: Arg;
+};
+
+type UseLazyQuery<Arg, Ret> = () => [
+  UseLazyQueryTrigger<Arg, Ret>,
+  SimpleDataQuery<Ret>,
+  UseLazyQueryLastPromiseInfo<Arg>
+];
+
+export function useInfiniteQuery<Arg, Ret>(
+  useLazyQuery: UseLazyQuery<Arg, Ret>,
+  params: Arg | SkipToken,
   perPage: number,
-  onMutation?: (x: T) => void
+  onMutation?: (x: Ret) => void
 ) {
+  const jsonParams = JSON.stringify(params);
+  const memoizedParams = useMemo(() => params, [jsonParams]);
+
   const reference = useRef<HTMLDivElement | null>(null);
 
   const [page, setPage] = useState(0);
-  const [pages, setPages] = useState<Record<number, T[]>>({});
+  const [pages, setPages] = useState<Record<number, Ret[]>>({});
   const [resetKey, setResetKey] = useState(0);
   const [isExhausted, setIsExhausted] = useState(false);
   const isLocked = useRef(false);
 
-  const query = useQuery({ ...params, page, perPage });
+  const [trigger, result] = useLazyQuery();
 
-  const handleMutation = (item: T) => {
+  const handleMutation = (item: Ret) => {
     if (onMutation) onMutation(item);
     setResetKey((x) => x + 1);
   };
@@ -55,19 +74,34 @@ export function useInfiniteQuery<T, U>(
   }, [isExhausted]);
 
   useEffect(() => {
-    if (!query.isSuccess) return;
-    if (query.data!.length === 0) {
-      setIsExhausted(true);
-    } else {
-      setPages((prevTransactions) => ({
-        ...prevTransactions,
-        [page]: query.data!,
-      }));
+    async function cb() {
+      if (memoizedParams === skipToken) return;
+      try {
+        const data = await trigger(
+          {
+            ...memoizedParams,
+            page,
+            perPage,
+          },
+          true
+        ).unwrap();
+        if (data!.length === 0) {
+          setIsExhausted(true);
+        } else {
+          setPages((prevTransactions) => ({
+            ...prevTransactions,
+            [page]: data!,
+          }));
+        }
+        isLocked.current = false;
+      } catch (error) {
+        return;
+      }
     }
-    isLocked.current = false;
-  }, [query.data]);
+    cb();
+  }, [page, perPage, memoizedParams, trigger]);
 
-  if (query.isError) console.error(query.originalArgs);
+  if (result.isError) console.error(result.originalArgs);
 
   return {
     reference,
@@ -75,12 +109,12 @@ export function useInfiniteQuery<T, U>(
     pages,
     reset: handleReset,
     mutate: handleMutation,
-    isError: query.isError,
-    isLoading: query.isLoading,
-    isSuccess: query.isSuccess,
-    isFetching: query.isFetching,
+    isError: result.isError,
+    isLoading: result.isLoading,
+    isSuccess: result.isSuccess,
+    isFetching: result.isFetching,
     isExhausted,
-    originalArgs: query.originalArgs,
-    error: query.error,
+    originalArgs: result.originalArgs,
+    error: result.error,
   };
 }

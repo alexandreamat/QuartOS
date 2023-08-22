@@ -1,5 +1,9 @@
 import { skipToken } from "@reduxjs/toolkit/dist/query";
-import { api } from "app/services/api";
+import {
+  ReadManyApiUsersMeTransactionsGetApiArg,
+  ReadManyApiUsersMeTransactionsGetApiResponse,
+  api,
+} from "app/services/api";
 import { DropdownItemProps } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
 import { formatDateParam } from "utils/time";
@@ -33,33 +37,4 @@ export function useTransactionOptions(search: string) {
     isSuccess: query.isSuccess,
     error: query.isError ? renderErrorMessage(query.error) : undefined,
   };
-}
-
-export function useTransactionsQuery(arg: {
-  accountId: number;
-  search: string;
-  perPage?: number;
-  page?: number;
-  timestamp?: Date;
-  isDescending: boolean;
-}) {
-  const transactionsQuery = arg.accountId
-    ? api.endpoints.readManyApiUsersMeAccountsAccountIdTransactionsGet.useQuery(
-        {
-          accountId: arg.accountId,
-          page: arg.page,
-          perPage: arg.perPage,
-          timestamp: arg.timestamp && formatDateParam(arg.timestamp),
-          search: arg.search,
-          isDescending: arg.isDescending,
-        }
-      )
-    : api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
-        page: arg.page,
-        perPage: arg.perPage,
-        timestamp: arg.timestamp && formatDateParam(arg.timestamp),
-        search: arg.search,
-        isDescending: arg.isDescending,
-      });
-  return transactionsQuery;
 }
