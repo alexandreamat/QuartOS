@@ -9,6 +9,7 @@ export default function MovementUnifiedCard(props: {
   onOpenEditTransactionForm?: (x: TransactionApiOut) => void;
   onRemoveTransaction?: (x: TransactionApiOut) => void;
   explanationRate?: number;
+  selectedAccountId?: number;
 }) {
   if (props.movement.transactions.length === 1)
     return (
@@ -24,6 +25,7 @@ export default function MovementUnifiedCard(props: {
       movement={props.movement}
       onOpenEditForm={props.onOpenEditForm}
       explanationRate={props.explanationRate}
+      selectedAccountId={props.selectedAccountId}
     />
   );
 }
