@@ -131,6 +131,7 @@ export default function Movements() {
                 key={movement.id}
                 movement={movement}
                 onOpenEditForm={() => handleOpenEditForm(movement)}
+                selectedAccountId={accountId}
               />
             ))
           )}

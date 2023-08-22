@@ -14,6 +14,7 @@ export function MovementCard(props: {
   onOpenEditTransactionForm?: (x: TransactionApiOut) => void;
   onRemoveTransaction?: (x: TransactionApiOut) => void;
   explanationRate?: number;
+  selectedAccountId?: number;
 }) {
   return (
     <Card fluid color="teal">
@@ -41,6 +42,7 @@ export function MovementCard(props: {
           transactions={props.movement.transactions}
           onRemove={props.onRemoveTransaction}
           onOpenEditForm={props.onOpenEditTransactionForm}
+          selectedAccountId={props.selectedAccountId}
         />
       </Card.Content>
       <Card.Content extra>

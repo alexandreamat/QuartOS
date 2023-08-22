@@ -12,6 +12,7 @@ import { Grid, Placeholder, Popup, Step } from "semantic-ui-react";
 import { RemoveCircle } from "./RemoveCircle";
 import { SimpleQuery } from "interfaces";
 import { EllipsisCircle } from "../../../components/EllipsisCircle";
+import { CSSProperties } from "react";
 
 const flowPadding = 5;
 const stepPadding = 18;
@@ -56,6 +57,7 @@ function Outflow(props: {
   flow: TransactionApiOut;
   onRemove?: () => void;
   onOpenEditForm?: () => void;
+  style?: CSSProperties;
 }) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
@@ -69,7 +71,10 @@ function Outflow(props: {
         </>
       }
       trigger={
-        <Grid.Row columns="equal" style={{ padding: flowPadding }}>
+        <Grid.Row
+          columns="equal"
+          style={{ padding: flowPadding, ...props.style }}
+        >
           {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
           {props.onOpenEditForm && (
             <EditFlow onOpenEditForm={props.onOpenEditForm} />
@@ -94,6 +99,7 @@ function Inflow(props: {
   flow: TransactionApiOut;
   onRemove?: () => void;
   onOpenEditForm?: () => void;
+  style?: CSSProperties;
 }) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
@@ -107,7 +113,10 @@ function Inflow(props: {
         </>
       }
       trigger={
-        <Grid.Row columns="equal" style={{ padding: flowPadding }}>
+        <Grid.Row
+          columns="equal"
+          style={{ padding: flowPadding, ...props.style }}
+        >
           <Amount
             amount={props.flow.amount}
             currencyCode={props.flow.currency_code}
@@ -132,6 +141,7 @@ export function Flows(props: {
   transactions: TransactionApiOut[];
   onRemove?: (x: TransactionApiOut) => void;
   onOpenEditForm?: (x: TransactionApiOut) => void;
+  selectedAccountId?: number;
 }) {
   const outflows = props.transactions.filter((t) => t.amount < 0) || [];
   const inflows = props.transactions.filter((t) => t.amount >= 0) || [];
@@ -152,6 +162,12 @@ export function Flows(props: {
                     props.onOpenEditForm &&
                     (() => props.onOpenEditForm!(transaction))
                   }
+                  style={{
+                    fontWeight:
+                      transaction.account_id === props.selectedAccountId
+                        ? "bold"
+                        : "normal",
+                  }}
                 />
               ))}
             </Grid>
@@ -175,6 +191,12 @@ export function Flows(props: {
                     props.onOpenEditForm &&
                     (() => props.onOpenEditForm!(transaction))
                   }
+                  style={{
+                    fontWeight:
+                      transaction.account_id === props.selectedAccountId
+                        ? "bold"
+                        : "normal",
+                  }}
                 />
               ))}
             </Grid>
