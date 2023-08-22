@@ -11,6 +11,8 @@ import { Card, Message } from "semantic-ui-react";
 import MovementUnifiedCard from "./components/MovementUnifiedCard";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
 
+const perPage = 10;
+
 export default function Movements() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -90,7 +92,7 @@ export default function Movements() {
   }
 
   const infiniteQuery = useInfiniteQuery(
-    api.endpoints.readManyApiUsersMeMovementsGet.useQuery,
+    api.endpoints.readManyApiUsersMeMovementsGet.useLazyQuery,
     {
       search: search.length ? search : undefined,
       isDescending,
@@ -98,7 +100,7 @@ export default function Movements() {
       endDate: endDate && formatDateParam(endDate),
       accountId: accountId ? accountId : undefined,
     },
-    10
+    perPage
   );
 
   return (
