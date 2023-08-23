@@ -19,6 +19,8 @@ type UseLazyQuery<Arg, Ret> = () => [
   UseLazyQueryLastPromiseInfo<Arg>
 ];
 
+const RATE = 1;
+
 export function useInfiniteQuery<Arg, Ret>(
   useLazyQuery: UseLazyQuery<Arg, Ret>,
   params: Arg | SkipToken,
@@ -54,19 +56,20 @@ export function useInfiniteQuery<Arg, Ret>(
 
   useEffect(() => {
     const handleScroll = (event: Event) => {
-      if (isLocked.current) return;
-      if (isExhausted) return;
       const target = event.target as HTMLDivElement;
-      if (target.scrollHeight - target.scrollTop < 1.5 * target.clientHeight) {
+      const clientHeight = target.clientHeight;
+      const scrollTop = target.scrollTop;
+      const scrollBottom = target.scrollHeight - clientHeight - scrollTop;
+      if (isLocked.current || isExhausted) return;
+      if (scrollBottom <= RATE * clientHeight) {
         isLocked.current = true;
         setPage((prevPage) => prevPage + 1);
       }
     };
     const scrollContainer = reference.current;
-
-    if (scrollContainer)
+    if (scrollContainer) {
       scrollContainer.addEventListener("scroll", handleScroll);
-
+    }
     return () => {
       if (scrollContainer)
         scrollContainer.removeEventListener("scroll", handleScroll);
@@ -93,7 +96,7 @@ export function useInfiniteQuery<Arg, Ret>(
             [page]: data!,
           }));
         }
-        isLocked.current = false;
+        setTimeout(() => (isLocked.current = false), 300);
       } catch (error) {
         return;
       }
