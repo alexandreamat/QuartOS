@@ -21,7 +21,6 @@ export function useInfiniteQuery<
   const memoizedParams = useMemo(() => params, [JSON.stringify(params)]);
 
   const reference = useRef<HTMLDivElement | null>(null);
-  const page = useRef(0);
 
   const [data, setData] = useState<Record<number, R>>({});
   const [isUninitialized, setIsUninitialized] = useState(true);
@@ -38,47 +37,53 @@ export function useInfiniteQuery<
     //
   }, []);
 
-  const appendPage = useCallback(async () => {
-    if (memoizedParams === skipToken) {
-      setData({});
-      setIsUninitialized(true);
-      setIsLoading(false);
-      setIsFetching(false);
-      setIsExhausted(false);
-      return;
-    }
+  const appendPage = useCallback(
+    async (page: number) => {
+      if (memoizedParams === skipToken) {
+        setData({});
+        setIsUninitialized(true);
+        setIsLoading(false);
+        setIsFetching(false);
+        setIsExhausted(false);
+        return false;
+      }
 
-    setIsFetching(true);
-    setIsUninitialized(false);
-    try {
-      const data = await fetchData(
-        {
-          page: page.current,
-          perPage,
-          ...memoizedParams,
-        } as any,
-        true
-      ).unwrap();
-      if (data.length === 0) {
-        setIsExhausted(true);
-      } else {
-        setData((prevData) => ({
-          ...prevData,
-          [page.current++]: data,
-        }));
+      setIsFetching(true);
+      setIsUninitialized(false);
+      let cont = false;
+      try {
+        const data = await fetchData(
+          {
+            page,
+            perPage,
+            ...memoizedParams,
+          } as any,
+          true
+        ).unwrap();
+        if (data.length === 0) {
+          setIsExhausted(true);
+        } else {
+          setData((prevData) => ({
+            ...prevData,
+            [page]: data,
+          }));
+          cont = true;
+        }
         setIsSuccess(true);
         setIsError(false);
         setError(undefined);
+      } catch (error) {
+        setIsSuccess(false);
+        setIsError(true);
+        setError(error);
+      } finally {
+        setIsLoading(false);
+        setIsFetching(false);
       }
-    } catch (error) {
-      setIsSuccess(false);
-      setIsError(true);
-      setError(error);
-    } finally {
-      setIsLoading(false);
-      setIsFetching(false);
-    }
-  }, [fetchData, memoizedParams, perPage]);
+      return cont;
+    },
+    [fetchData, memoizedParams, perPage]
+  );
 
   useEffect(
     () => setIsLoading(isFetching && isUninitialized),
@@ -97,31 +102,42 @@ export function useInfiniteQuery<
     setIsExhausted(false);
     setError(undefined);
 
-    const handleScroll = (event: Event) => {
+    let page = 0;
+    let isExhausted = false;
+
+    async function appendNextPage() {
+      if (isExhausted) return;
+
+      appendPage(page).then((cont) => {
+        if (cont) page++;
+        else isExhausted = true;
+      });
+    }
+
+    let isScrollLocked = false;
+
+    function handleScroll(event: Event) {
+      if (isScrollLocked) return;
+
       const target = event.target as HTMLDivElement;
       const clientHeight = target.clientHeight;
       const scrollTop = target.scrollTop;
       const scrollBottom = target.scrollHeight - clientHeight - scrollTop;
-      if (isExhausted) return;
       if (scrollBottom <= RATE * clientHeight) {
-        ref?.removeEventListener("scroll", handleScroll);
-        appendPage().finally(() =>
-          ref?.addEventListener("scroll", handleScroll)
-        );
+        isScrollLocked = true;
+        appendNextPage().then(() => (isScrollLocked = false));
       }
-    };
+    }
 
-    appendPage().finally(() => ref?.addEventListener("scroll", handleScroll));
+    appendNextPage().then(() => ref?.addEventListener("scroll", handleScroll));
 
-    return () => {
-      ref?.removeEventListener("scroll", handleScroll);
-    };
-  }, [isExhausted, appendPage]);
+    return () => ref?.removeEventListener("scroll", handleScroll);
+  }, [appendPage]);
 
   return {
     reference,
     data,
-    mutate: handleMutation,
+    onMutation: handleMutation,
     isUninitialized,
     isLoading,
     isFetching,
