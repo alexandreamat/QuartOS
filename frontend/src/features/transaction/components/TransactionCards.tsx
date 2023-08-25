@@ -57,35 +57,16 @@ export default function TransactionCards(props: {
     setIsFormOpen(false);
   };
 
-  const handleAccountIdChange = (value: number) => {
-    infiniteQuery.reset();
-    setAccountId(value);
-  };
-
-  const handleSearchChange = (value: string) => {
-    infiniteQuery.reset();
-    setSearch(value);
-  };
-
-  function handleTimestampChange(value: Date | undefined) {
-    infiniteQuery.reset();
-    setTimestamp(value);
-  }
-
-  function handleToggleIsDescending() {
-    infiniteQuery.reset();
-    setIsDescending((prev) => !prev);
-  }
-
   const transactionsQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeTransactionsGet.useLazyQuery,
-    {
-      timestamp: timestamp && formatDateParam(timestamp),
-      search,
-      isDescending,
-    },
-    20,
-    props.onMutation
+    accountId
+      ? skipToken
+      : {
+          timestamp: timestamp && formatDateParam(timestamp),
+          search,
+          isDescending,
+        },
+    20
   );
 
   const accountTransactionsQuery = useInfiniteQuery(
@@ -99,8 +80,7 @@ export default function TransactionCards(props: {
           isDescending,
         }
       : skipToken,
-    20,
-    props.onMutation
+    20
   );
 
   const infiniteQuery = accountId
@@ -116,23 +96,23 @@ export default function TransactionCards(props: {
           accountId={selectedAccountId}
           movementId={selectedTransaction.movement_id}
           transaction={selectedTransaction}
-          onEdited={infiniteQuery.mutate}
+          onEdited={(t) => infiniteQuery.mutate(t.id)}
         />
       )}
       <Bar
         accountId={accountId}
-        onAccountIdChange={handleAccountIdChange}
+        onAccountIdChange={setAccountId}
         search={search}
-        onSearchChange={handleSearchChange}
+        onSearchChange={setSearch}
         timestamp={timestamp}
-        onTimestampChange={handleTimestampChange}
+        onTimestampChange={setTimestamp}
         isDescending={isDescending}
-        onToggleIsDescending={handleToggleIsDescending}
+        onToggleIsDescending={() => setIsDescending((x) => !x)}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
         <Card.Group style={{ margin: 0 }}>
-          {Object.values(infiniteQuery.pages).map((transactionPage, i) =>
+          {Object.values(infiniteQuery.data).map((transactionPage, i) =>
             transactionPage.map((t, j) => {
               if (props.onFlowCheckboxChange) {
                 const checked = props.checked?.includes(t.id);

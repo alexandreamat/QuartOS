@@ -1,4 +1,4 @@
-import { MovementApiOut, api } from "app/services/api";
+import { api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { Bar } from "./components/Bar";
@@ -11,7 +11,7 @@ import { Card, Message } from "semantic-ui-react";
 import MovementUnifiedCard from "./components/MovementUnifiedCard";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
 
-const perPage = 10;
+const PER_PAGE = 10;
 
 export default function Movements() {
   const location = useLocation();
@@ -66,31 +66,6 @@ export default function Movements() {
     setMovementId(0);
   };
 
-  const handleSearchChange = (value: string) => {
-    infiniteQuery.reset();
-    setSearch(value);
-  };
-
-  function handleStartDateChange(value: Date | undefined) {
-    infiniteQuery.reset();
-    setStartDate(value);
-  }
-
-  function handleEndDateChange(value: Date | undefined) {
-    infiniteQuery.reset();
-    setEndDate(value);
-  }
-
-  function handleAccountIdChange(value: number) {
-    infiniteQuery.reset();
-    setAccountId(value);
-  }
-
-  function handleToggleIsDescending() {
-    infiniteQuery.reset();
-    setIsDescending((prev) => !prev);
-  }
-
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeMovementsGet.useLazyQuery,
     {
@@ -100,7 +75,7 @@ export default function Movements() {
       endDate: endDate && formatDateParam(endDate),
       accountId: accountId ? accountId : undefined,
     },
-    perPage
+    PER_PAGE
   );
 
   return (
@@ -109,20 +84,20 @@ export default function Movements() {
         open={isFormOpen}
         onClose={handleCloseForm}
         movementId={movementId}
-        onMutate={infiniteQuery.reset}
+        onMutate={infiniteQuery.mutate}
       />
       <Bar
         onOpenCreateForm={handleOpenCreateForm}
         search={search}
-        onSearchChange={handleSearchChange}
+        onSearchChange={setSearch}
         startDate={startDate}
-        onStartDateChange={handleStartDateChange}
+        onStartDateChange={setStartDate}
         endDate={endDate}
-        onEndDateChange={handleEndDateChange}
+        onEndDateChange={setEndDate}
         accountId={accountId}
-        onAccountIdChange={handleAccountIdChange}
+        onAccountIdChange={setAccountId}
         isDescending={isDescending}
-        onToggleIsDescending={handleToggleIsDescending}
+        onToggleIsDescending={() => setIsDescending((x) => !x)}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         <Card.Group style={{ margin: 0 }}>
