@@ -1,123 +1,133 @@
-import { SkipToken, skipToken } from "@reduxjs/toolkit/dist/query";
-import { SimpleDataQuery } from "interfaces";
-import { useEffect, useMemo, useRef, useState } from "react";
-
-type UseLazyQueryTrigger<Arg, Ret> = (
-  arg: Arg,
-  preferCacheValue: boolean
-) => {
-  unwrap: () => Promise<Ret[]>;
-};
-
-type UseLazyQueryLastPromiseInfo<Arg> = {
-  lastArg: Arg;
-};
-
-type UseLazyQuery<Arg, Ret> = () => [
-  UseLazyQueryTrigger<Arg, Ret>,
-  SimpleDataQuery<Ret>,
-  UseLazyQueryLastPromiseInfo<Arg>
-];
+import { BaseQueryFn, SkipToken, skipToken } from "@reduxjs/toolkit/dist/query";
+import { UseLazyQuery } from "@reduxjs/toolkit/dist/query/react/buildHooks";
+import { QueryDefinition } from "@reduxjs/toolkit/dist/query/endpointDefinitions";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const RATE = 1;
 
-export function useInfiniteQuery<Arg, Ret>(
-  useLazyQuery: UseLazyQuery<Arg, Ret>,
-  params: Arg | SkipToken,
-  perPage: number,
-  onMutation?: (x: Ret) => void
+export function useInfiniteQuery<
+  Q extends { page?: number; perPage?: number },
+  B extends BaseQueryFn,
+  T extends string,
+  I,
+  R extends Array<I>,
+  P
+>(
+  useLazyQuery: UseLazyQuery<QueryDefinition<Q, B, T, R>>,
+  params: P | SkipToken,
+  perPage: number
 ) {
-  const jsonParams = JSON.stringify(params);
-  const memoizedParams = useMemo(() => params, [jsonParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoizedParams = useMemo(() => params, [JSON.stringify(params)]);
 
   const reference = useRef<HTMLDivElement | null>(null);
+  const page = useRef(0);
 
-  const [page, setPage] = useState(0);
-  const [pages, setPages] = useState<Record<number, Ret[]>>({});
-  const [resetKey, setResetKey] = useState(0);
+  const [data, setData] = useState<Record<number, R>>({});
+  const [isUninitialized, setIsUninitialized] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [isExhausted, setIsExhausted] = useState(false);
-  const isLocked = useRef(false);
+  const [error, setError] = useState<any>(undefined);
 
-  const [trigger, result] = useLazyQuery();
+  const [fetchData] = useLazyQuery();
 
-  const handleMutation = (item: Ret) => {
-    if (onMutation) onMutation(item);
-    setResetKey((x) => x + 1);
-  };
+  const handleMutation = useCallback((itemId: number) => {
+    //
+  }, []);
 
-  const handleReset = () => {
-    setPages({});
-    setIsExhausted(false);
-    isLocked.current = true;
-    setPage(0);
-  };
+  const appendPage = useCallback(async () => {
+    if (memoizedParams === skipToken) {
+      setData({});
+      setIsUninitialized(true);
+      setIsLoading(false);
+      setIsFetching(false);
+      setIsExhausted(false);
+      return;
+    }
 
-  useEffect(() => handleReset(), [resetKey]);
+    setIsFetching(true);
+    setIsUninitialized(false);
+    try {
+      const data = await fetchData(
+        {
+          page: page.current,
+          perPage,
+          ...memoizedParams,
+        } as any,
+        true
+      ).unwrap();
+      if (data.length === 0) {
+        setIsExhausted(true);
+      } else {
+        setData((prevData) => ({
+          ...prevData,
+          [page.current++]: data,
+        }));
+        setIsSuccess(true);
+        setIsError(false);
+        setError(undefined);
+      }
+    } catch (error) {
+      setIsSuccess(false);
+      setIsError(true);
+      setError(error);
+    } finally {
+      setIsLoading(false);
+      setIsFetching(false);
+    }
+  }, [fetchData, memoizedParams, perPage]);
+
+  useEffect(
+    () => setIsLoading(isFetching && isUninitialized),
+    [isUninitialized, isFetching]
+  );
 
   useEffect(() => {
+    const ref = reference.current;
+
+    setData({});
+    setIsUninitialized(true);
+    setIsLoading(false);
+    setIsFetching(false);
+    setIsSuccess(false);
+    setIsError(false);
+    setIsExhausted(false);
+    setError(undefined);
+
     const handleScroll = (event: Event) => {
       const target = event.target as HTMLDivElement;
       const clientHeight = target.clientHeight;
       const scrollTop = target.scrollTop;
       const scrollBottom = target.scrollHeight - clientHeight - scrollTop;
-      if (isLocked.current || isExhausted) return;
+      if (isExhausted) return;
       if (scrollBottom <= RATE * clientHeight) {
-        isLocked.current = true;
-        setPage((prevPage) => prevPage + 1);
+        ref?.removeEventListener("scroll", handleScroll);
+        appendPage().finally(() =>
+          ref?.addEventListener("scroll", handleScroll)
+        );
       }
     };
-    const scrollContainer = reference.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener("scroll", handleScroll);
-    }
+
+    appendPage().finally(() => ref?.addEventListener("scroll", handleScroll));
+
     return () => {
-      if (scrollContainer)
-        scrollContainer.removeEventListener("scroll", handleScroll);
+      ref?.removeEventListener("scroll", handleScroll);
     };
-  }, [isExhausted]);
-
-  useEffect(() => {
-    async function cb() {
-      if (memoizedParams === skipToken) return;
-      try {
-        const data = await trigger(
-          {
-            ...memoizedParams,
-            page,
-            perPage,
-          },
-          true
-        ).unwrap();
-        if (data!.length === 0) {
-          setIsExhausted(true);
-        } else {
-          setPages((prevTransactions) => ({
-            ...prevTransactions,
-            [page]: data!,
-          }));
-        }
-        setTimeout(() => (isLocked.current = false), 300);
-      } catch (error) {
-        return;
-      }
-    }
-    cb();
-  }, [page, perPage, memoizedParams, trigger]);
-
-  if (result.isError) console.error(result.originalArgs);
+  }, [isExhausted, appendPage]);
 
   return {
     reference,
-    page,
-    pages,
-    reset: handleReset,
+    data,
     mutate: handleMutation,
-    isError: result.isError,
-    isLoading: result.isLoading,
-    isSuccess: result.isSuccess,
-    isFetching: result.isFetching,
+    isUninitialized,
+    isLoading,
+    isFetching,
+    isError,
+    isSuccess,
     isExhausted,
-    originalArgs: result.originalArgs,
-    error: result.error,
+    error,
   };
 }
