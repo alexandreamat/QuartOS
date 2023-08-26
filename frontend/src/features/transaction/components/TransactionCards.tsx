@@ -1,4 +1,9 @@
-import { TransactionApiOut, api } from "app/services/api";
+import {
+  ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg,
+  ReadManyApiUsersMeTransactionsGetApiArg,
+  TransactionApiOut,
+  api,
+} from "app/services/api";
 import { useEffect, useState } from "react";
 import Bar from "./Bar";
 import FlexColumn from "components/FlexColumn";
@@ -58,27 +63,26 @@ export default function TransactionCards(props: {
   };
 
   const transactionsQuery = useInfiniteQuery(
-    api.endpoints.readManyApiUsersMeTransactionsGet.useLazyQuery,
+    api.endpoints.readManyApiUsersMeTransactionsGet,
     accountId
       ? skipToken
-      : {
+      : ({
           timestamp: timestamp && formatDateParam(timestamp),
           search,
           isDescending,
-        },
+        } as ReadManyApiUsersMeTransactionsGetApiArg),
     20
   );
 
   const accountTransactionsQuery = useInfiniteQuery(
-    api.endpoints.readManyApiUsersMeAccountsAccountIdTransactionsGet
-      .useLazyQuery,
+    api.endpoints.readManyApiUsersMeAccountsAccountIdTransactionsGet,
     accountId
-      ? {
+      ? ({
           timestamp: timestamp && formatDateParam(timestamp),
           accountId: accountId,
           search,
           isDescending,
-        }
+        } as ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg)
       : skipToken,
     20
   );
@@ -96,7 +100,7 @@ export default function TransactionCards(props: {
           accountId={selectedAccountId}
           movementId={selectedTransaction.movement_id}
           transaction={selectedTransaction}
-          onEdited={(t) => infiniteQuery.mutate(t.id)}
+          onEdited={infiniteQuery.onMutation}
         />
       )}
       <Bar
@@ -112,35 +116,33 @@ export default function TransactionCards(props: {
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
         <Card.Group style={{ margin: 0 }}>
-          {Object.values(infiniteQuery.data).map((transactionPage, i) =>
-            transactionPage.map((t, j) => {
-              if (props.onFlowCheckboxChange) {
-                const checked = props.checked?.includes(t.id);
-                return (
-                  <TransactionCard
-                    key={i * 20 + j}
-                    transaction={t}
-                    onOpenEditForm={() => handleOpenEditForm(t)}
-                    onCheckboxChange={
-                      props.onFlowCheckboxChange &&
-                      (async (c) => await props.onFlowCheckboxChange!(t, c))
-                    }
-                    checkBoxDisabled={checked && props.checked?.length === 1}
-                    checked={checked}
-                  />
-                );
-              } else {
-                return (
-                  <TransactionCard
-                    key={i * 20 + j}
-                    transaction={t}
-                    onGoMovement={() => handleGoToMovement(t)}
-                    onOpenEditForm={() => handleOpenEditForm(t)}
-                  />
-                );
-              }
-            })
-          )}
+          {infiniteQuery.data.map((t, i) => {
+            if (props.onFlowCheckboxChange) {
+              const checked = props.checked?.includes(t.id);
+              return (
+                <TransactionCard
+                  key={i}
+                  transaction={t}
+                  onOpenEditForm={() => handleOpenEditForm(t)}
+                  onCheckboxChange={
+                    props.onFlowCheckboxChange &&
+                    (async (c) => await props.onFlowCheckboxChange!(t, c))
+                  }
+                  checkBoxDisabled={checked && props.checked?.length === 1}
+                  checked={checked}
+                />
+              );
+            } else {
+              return (
+                <TransactionCard
+                  key={i}
+                  transaction={t}
+                  onGoMovement={() => handleGoToMovement(t)}
+                  onOpenEditForm={() => handleOpenEditForm(t)}
+                />
+              );
+            }
+          })}
         </Card.Group>
       </FlexColumn.Auto>
     </FlexColumn>

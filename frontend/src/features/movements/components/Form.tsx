@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import TransactionCards from "features/transaction/components/TransactionCards";
 import { Button, Divider, Header, Modal, Segment } from "semantic-ui-react";
 import FlexColumn from "components/FlexColumn";
@@ -10,12 +10,16 @@ import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import CreateNewButton from "components/CreateNewButton";
 import TransactionForm from "features/transaction/components/Form";
 import { MovementCard } from "./MovementCard";
+import ActionButton from "components/ActionButton";
+import Inline from "components/Inline";
 
 export default function Form(props: {
   open: boolean;
   onClose: () => void;
   movementId?: number;
-  onMutate?: () => void;
+  onMutate?: (x: number) => void;
+  onGoToPrev?: () => void;
+  onGoToNext?: () => void;
 }) {
   const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
   const [movementId, setMovementId] = useState(props.movementId || 0);
@@ -83,7 +87,7 @@ export default function Form(props: {
           },
           newMovementId: movementId,
         }).unwrap();
-        props.onMutate && props.onMutate();
+        props.onMutate && props.onMutate!(movementId);
       } catch (error) {
         logMutationError(error, updateTransactionResult);
         return;
@@ -98,7 +102,7 @@ export default function Form(props: {
           },
         }).unwrap();
         setMovementId(movement.id);
-        props.onMutate && props.onMutate();
+        props.onMutate && props.onMutate!(movement.id);
       } catch (error) {
         logMutationError(error, createMovementsResult);
         return;
@@ -115,7 +119,7 @@ export default function Form(props: {
           transaction_ids: [transaction.id],
         },
       }).unwrap();
-      props.onMutate && props.onMutate();
+      props.onMutate && props.onMutate!(transaction.movement_id);
     } catch (error) {
       logMutationError(error, createMovementsResult);
       return;
@@ -127,7 +131,7 @@ export default function Form(props: {
 
     try {
       await deleteMovement(movementId).unwrap();
-      props.onMutate && props.onMutate();
+      props.onMutate && props.onMutate!(movementId);
     } catch (error) {
       logMutationError(error, deleteMovementResult);
       return;
@@ -156,14 +160,18 @@ export default function Form(props: {
               transaction={selectedTransaction}
               open={isTransactionFormOpen}
               onClose={handleCloseEditTransactionForm}
-              onEdited={props.onMutate && ((t) => props.onMutate!())}
+              onEdited={
+                props.onMutate && ((t) => props.onMutate!(t.movement_id))
+              }
             />
           ) : (
             <TransactionForm.Add
               open={isTransactionFormOpen}
               onClose={handleCloseAddTransactionForm}
               movementId={movementId}
-              onAdded={props.onMutate && ((t) => props.onMutate!())}
+              onAdded={
+                props.onMutate && ((t) => props.onMutate!(t.movement_id))
+              }
             />
           )}
         </>
@@ -173,11 +181,14 @@ export default function Form(props: {
           onClose={handleCloseCreateTransactionForm}
           onCreated={(m) => {
             setMovementId(m.id);
-            props.onMutate && props.onMutate();
+            props.onMutate && props.onMutate!(m.id);
           }}
         />
       )}
-      <Modal.Header>Create a Movement</Modal.Header>
+
+      <Modal.Header>
+        {movementId ? "Edit movement" : "Create a movement"}
+      </Modal.Header>
       <Modal.Content>
         <FlexColumn style={{ height: "70vh" }}>
           {movementQuery.isUninitialized && (
@@ -189,33 +200,59 @@ export default function Form(props: {
             </Segment>
           )}
           {movementQuery.isFetching ? (
-            <MovementCard.Placeholder
-              onOpenCreateTransactionForm
-              onOpenEditTransactionForm
-              onRemoveTransaction
-            />
+            <Inline>
+              <ActionButton.Placeholder
+                icon="arrow left"
+                style={{ marginRight: "10px" }}
+              />
+              <MovementCard.Placeholder
+                onOpenCreateTransactionForm
+                onOpenEditTransactionForm
+                onRemoveTransaction
+              />
+              <ActionButton.Placeholder
+                icon="arrow right"
+                style={{ marginLeft: "10px" }}
+              />
+            </Inline>
           ) : (
             <>
               {movementQuery.isSuccess && (
                 <div
                   style={{
                     maxHeight: "35vh",
-                    overflow: "auto",
+                    overflow: "hidden",
                     padding: 2,
                   }}
                 >
-                  <MovementCard
-                    movement={movementQuery.data}
-                    onOpenCreateTransactionForm={
-                      handleOpenCreateTransactionForm
-                    }
-                    onOpenEditTransactionForm={handleOpenEditTransactionForm}
-                    onRemoveTransaction={
-                      movementQuery.data.transactions.length > 1
-                        ? handleRemoveTransaction
-                        : undefined
-                    }
-                  />
+                  <Inline>
+                    <ActionButton
+                      disabled={!props.onGoToPrev}
+                      icon="arrow left"
+                      onClick={props.onGoToPrev}
+                      tooltip="Previous movement"
+                      style={{ marginRight: "10px" }}
+                    />
+                    <MovementCard
+                      movement={movementQuery.data}
+                      onOpenCreateTransactionForm={
+                        handleOpenCreateTransactionForm
+                      }
+                      onOpenEditTransactionForm={handleOpenEditTransactionForm}
+                      onRemoveTransaction={
+                        movementQuery.data.transactions.length > 1
+                          ? handleRemoveTransaction
+                          : undefined
+                      }
+                    />
+                    <ActionButton
+                      disabled={!props.onGoToNext}
+                      icon="arrow right"
+                      onClick={props.onGoToNext}
+                      tooltip="Next movement"
+                      style={{ marginLeft: "10px" }}
+                    />
+                  </Inline>
                 </div>
               )}
               {movementQuery.isError && (

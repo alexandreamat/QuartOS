@@ -1,4 +1,5 @@
 import { SimpleQuery } from "interfaces";
+import { CSSProperties } from "react";
 import {
   Button,
   Popup,
@@ -9,7 +10,7 @@ import {
 import { renderErrorMessage } from "utils/error";
 
 const ActionButton = (props: {
-  onClick: () => void;
+  onClick?: () => void;
   tooltip: string;
   icon: SemanticICONS;
   disabled?: boolean;
@@ -17,6 +18,7 @@ const ActionButton = (props: {
   query?: SimpleQuery;
   color?: SemanticCOLORS;
   floated?: SemanticFLOATS;
+  style?: CSSProperties;
 }) => (
   <Popup
     content={
@@ -26,6 +28,7 @@ const ActionButton = (props: {
     }
     trigger={
       <Button
+        disabled={props.disabled}
         floated={props.floated}
         color={props.color}
         loading={props.query?.isLoading}
@@ -36,9 +39,35 @@ const ActionButton = (props: {
         icon={props.icon}
         onClick={props.onClick}
         content={props.content}
+        style={{ ...props.style }}
       />
     }
   />
 );
+
+const ActionButtonPlaceholder = (props: {
+  icon: SemanticICONS;
+  disabled?: boolean;
+  content?: string;
+  query?: SimpleQuery;
+  color?: SemanticCOLORS;
+  floated?: SemanticFLOATS;
+  style?: CSSProperties;
+}) => (
+  <Button
+    disabled
+    icon={props.icon}
+    style={props.style}
+    floated={props.floated}
+    loading
+    circular
+    basic
+    size="tiny"
+    color={props.color}
+    content={props.content}
+  />
+);
+
+ActionButton.Placeholder = ActionButtonPlaceholder;
 
 export default ActionButton;

@@ -11,6 +11,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    "noErrorTruncation": true,
     "noEmit": true,
     "jsx": "preserve",
     "lib": [

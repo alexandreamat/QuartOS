@@ -1,19 +1,22 @@
 import { BaseQueryFn, SkipToken, skipToken } from "@reduxjs/toolkit/dist/query";
-import { UseLazyQuery } from "@reduxjs/toolkit/dist/query/react/buildHooks";
-import { QueryDefinition } from "@reduxjs/toolkit/dist/query/endpointDefinitions";
+import { QueryHooks } from "@reduxjs/toolkit/dist/query/react/buildHooks";
+import {
+  QueryDefinition,
+  UpdateDefinitions,
+} from "@reduxjs/toolkit/dist/query/endpointDefinitions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ApiEndpointQuery } from "@reduxjs/toolkit/dist/query/core/module";
 
 const RATE = 1;
 
-export function useInfiniteQuery<
-  Q extends { page?: number; perPage?: number },
-  B extends BaseQueryFn,
-  T extends string,
-  I,
-  R extends Array<I>,
-  P
->(
-  useLazyQuery: UseLazyQuery<QueryDefinition<Q, B, T, R>>,
+export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
+  endpoint: ApiEndpointQuery<
+    QueryDefinition<P & { page?: number; perPage?: number }, B, T, R[]>,
+    UpdateDefinitions<never, T, never>
+  > &
+    QueryHooks<
+      QueryDefinition<P & { page?: number; perPage?: number }, B, T, R[]>
+    >,
   params: P | SkipToken,
   perPage: number
 ) {
@@ -21,8 +24,9 @@ export function useInfiniteQuery<
   const memoizedParams = useMemo(() => params, [JSON.stringify(params)]);
 
   const reference = useRef<HTMLDivElement | null>(null);
+  const page = useRef(0);
 
-  const [data, setData] = useState<Record<number, R>>({});
+  const [data, setData] = useState<R[]>([]);
   const [isUninitialized, setIsUninitialized] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -31,16 +35,12 @@ export function useInfiniteQuery<
   const [isExhausted, setIsExhausted] = useState(false);
   const [error, setError] = useState<any>(undefined);
 
-  const [fetchData] = useLazyQuery();
-
-  const handleMutation = useCallback((itemId: number) => {
-    //
-  }, []);
+  const [fetchData] = endpoint.useLazyQuery();
 
   const appendPage = useCallback(
     async (page: number) => {
       if (memoizedParams === skipToken) {
-        setData({});
+        setData([]);
         setIsUninitialized(true);
         setIsLoading(false);
         setIsFetching(false);
@@ -63,10 +63,7 @@ export function useInfiniteQuery<
         if (data.length === 0) {
           setIsExhausted(true);
         } else {
-          setData((prevData) => ({
-            ...prevData,
-            [page]: data,
-          }));
+          setData((prevData) => [...(page ? prevData : []), ...data]);
           cont = true;
         }
         setIsSuccess(true);
@@ -85,6 +82,11 @@ export function useInfiniteQuery<
     [fetchData, memoizedParams, perPage]
   );
 
+  const handleMutation = useCallback(async () => {
+    setData([]);
+    for (let i = 0; i < page.current; i++) await appendPage(i);
+  }, [appendPage]);
+
   useEffect(
     () => setIsLoading(isFetching && isUninitialized),
     [isUninitialized, isFetching]
@@ -93,25 +95,16 @@ export function useInfiniteQuery<
   useEffect(() => {
     const ref = reference.current;
 
-    setData({});
-    setIsUninitialized(true);
-    setIsLoading(false);
-    setIsFetching(false);
-    setIsSuccess(false);
-    setIsError(false);
-    setIsExhausted(false);
-    setError(undefined);
-
-    let page = 0;
     let isExhausted = false;
+    let cancelled = false;
 
     async function appendNextPage() {
-      if (isExhausted) return;
+      if (isExhausted || cancelled) return;
 
-      appendPage(page).then((cont) => {
-        if (cont) page++;
-        else isExhausted = true;
-      });
+      const cont = await appendPage(page.current);
+      if (cancelled) return;
+      if (cont) page.current++;
+      else isExhausted = true;
     }
 
     let isScrollLocked = false;
@@ -129,9 +122,24 @@ export function useInfiniteQuery<
       }
     }
 
-    appendNextPage().then(() => ref?.addEventListener("scroll", handleScroll));
+    appendNextPage().then(() => {
+      if (!cancelled) ref?.addEventListener("scroll", handleScroll);
+    });
 
-    return () => ref?.removeEventListener("scroll", handleScroll);
+    return () => {
+      cancelled = true;
+      if (ref) ref.scrollTop = 0;
+      page.current = 0;
+      setData([]);
+      setIsUninitialized(true);
+      setIsLoading(false);
+      setIsFetching(false);
+      setIsSuccess(false);
+      setIsError(false);
+      setIsExhausted(false);
+      setError(undefined);
+      ref?.removeEventListener("scroll", handleScroll);
+    };
   }, [appendPage]);
 
   return {
