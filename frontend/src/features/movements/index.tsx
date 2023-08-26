@@ -115,13 +115,14 @@ export default function Movements() {
           {infiniteQuery.isFetching && (
             <TransactionCard.Placeholder key="placeholder" onOpenEditForm />
           )}
+          {infiniteQuery.isExhausted && (
+            <Card fluid>
+              <Card.Content textAlign="center">
+                <Card.Meta>There is no more data available.</Card.Meta>
+              </Card.Content>
+            </Card>
+          )}
         </Card.Group>
-        {infiniteQuery.isExhausted && (
-          <Message
-            content="There is no more data available."
-            style={{ textAlign: "center" }}
-          />
-        )}
       </FlexColumn.Auto>
     </FlexColumn>
   );
