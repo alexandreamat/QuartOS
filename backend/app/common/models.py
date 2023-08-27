@@ -36,7 +36,7 @@ class Base(SQLModel):
         try:
             return db.exec(statement).one()
         except NoResultFound:
-            raise ObjectNotFoundError(str(cls.__tablename__))
+            raise ObjectNotFoundError(str(cls.__tablename__), id)
 
     @classmethod
     def read_many(
