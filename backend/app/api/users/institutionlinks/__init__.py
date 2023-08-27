@@ -1,22 +1,95 @@
 from typing import Iterable
 
-import urllib3
+from sqlalchemy.exc import NoResultFound
 from fastapi import APIRouter, HTTPException, status
 
 from app.database.deps import DBSession
+from app.common.plaid import create_link_token, exchange_public_token
 
+from app.features.institution import CRUDSyncableInstitution, fetch_institution
 from app.features.user import CRUDUser, CurrentUser
 from app.features.userinstitutionlink import (
     CRUDUserInstitutionLink,
-    CRUDSyncableUserInstitutionLink,
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
-    sync_transactions,
+    UserInstitutionLinkPlaidOut,
+    CRUDSyncableUserInstitutionLink,
+    fetch_user_institution_link,
 )
+from app.features.account import CRUDSyncableAccount, fetch_accounts
 
-from . import transactions
+from . import plaidtransactions
 
 router = APIRouter()
+
+
+@router.get("/link_token")
+def get_link_token(me: CurrentUser) -> str:
+    return create_link_token(me.id)
+
+
+@router.post("/public_token")
+def set_public_token(
+    db: DBSession,
+    me: CurrentUser,
+    public_token: str,
+    institution_plaid_id: str,
+) -> None:
+    # 1. Get or create institution
+    try:
+        institution_out = CRUDSyncableInstitution.read_by_plaid_id(
+            db, institution_plaid_id
+        )
+    except NoResultFound:
+        institution_out = CRUDSyncableInstitution.create(
+            db, fetch_institution(institution_plaid_id)
+        )
+
+    # 2. Create user institution link
+    access_token = exchange_public_token(public_token)
+    userinstitutionlink_in = fetch_user_institution_link(
+        access_token, me, institution_out
+    )
+    userinstitutionlink_out = CRUDSyncableUserInstitutionLink.create(
+        db, userinstitutionlink_in, institution_id=institution_out.id, user_id=me.id
+    )
+
+    # 3. Create accounts
+    accounts_in = fetch_accounts(userinstitutionlink_out)
+    for account_in in accounts_in:
+        CRUDSyncableAccount.create(
+            db, account_in, userinstitutionlink_id=userinstitutionlink_out.id
+        )
+
+
+@router.post("/resync")
+def resync(
+    db: DBSession, me: CurrentUser, userinstitutionlink_id: int
+) -> UserInstitutionLinkPlaidOut:
+    userinstitutionlink_out = CRUDSyncableUserInstitutionLink.read(
+        db, userinstitutionlink_id
+    )
+    institution_out = CRUDSyncableInstitution.read(
+        db, userinstitutionlink_out.institution_id
+    )
+    userinstitutionlink_in = fetch_user_institution_link(
+        userinstitutionlink_out.access_token, me, institution_out
+    )
+    userinstitutionlink_in.cursor = userinstitutionlink_out.cursor
+    userinstitutionlink_out = CRUDSyncableUserInstitutionLink.update(
+        db,
+        userinstitutionlink_out.id,
+        userinstitutionlink_in,
+        user_id=me.id,
+        institution_id=institution_out.id,
+    )
+    for account_in in fetch_accounts(userinstitutionlink_out):
+        account_out = CRUDSyncableAccount.read_by_plaid_id(
+            db, account_in.institutionalaccount.plaid_id
+        )
+        print(account_out)
+        account_out = CRUDSyncableAccount.update(db, account_out.id, account_in)
+    return userinstitutionlink_out
 
 
 @router.post("/")
@@ -29,25 +102,6 @@ def create(
     return CRUDUserInstitutionLink.create(
         db, user_institution_link_in, user_id=me.id, institution_id=institution_id
     )
-
-
-@router.post("/{userinstitutionlink_id}/sync")
-def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
-    curr_institution_link_out = CRUDUser.read_user_institution_link(
-        db, me.id, userinstitutionlink_id
-    )
-    if not curr_institution_link_out.plaid_id:
-        raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED)
-    syncable_institution_link = CRUDSyncableUserInstitutionLink.read_by_plaid_id(
-        db, curr_institution_link_out.plaid_id
-    )
-    replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, syncable_institution_link.id
-    )
-    try:
-        sync_transactions(db, syncable_institution_link, replacement_pattern)
-    except urllib3.exceptions.ReadTimeoutError:
-        raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
 
 
 @router.get("/{userinstitutionlink_id}")
@@ -86,7 +140,7 @@ def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
 
 
 router.include_router(
-    transactions.router,
-    prefix="/{userinstitutionlink_id}/transactions",
+    plaidtransactions.router,
+    prefix="/{userinstitutionlink_id}/transactions/plaid",
     tags=["transactions"],
 )

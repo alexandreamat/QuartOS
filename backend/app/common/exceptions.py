@@ -10,5 +10,5 @@ class UnknownError(HTTPException):
 
 
 class ObjectNotFoundError(HTTPException):
-    def __init__(self, name: str) -> None:
-        super().__init__(status.HTTP_404_NOT_FOUND, f"{name.capitalize()} not found")
+    def __init__(self, name: str, id: int) -> None:
+        super().__init__(status.HTTP_404_NOT_FOUND, f"{name} {id} not found")

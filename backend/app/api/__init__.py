@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from . import plaid
+
 from . import auth
 from . import exchangerate
 from . import institutions
@@ -16,17 +16,7 @@ router.include_router(auth.router, prefix="/auth", tags=["auth"])
 router.include_router(
     exchangerate.router, prefix="/exchangerate", tags=["exchangerate"]
 )
-router.include_router(
-    plaid.router,
-    prefix="/plaid",
-    tags=[
-        "plaid",
-        "institution-links",
-        "institutions",
-        "accounts",
-        "transactions",
-    ],
-)
+
 router.include_router(
     transactiondeserialisers.router,
     prefix="/transaction-deserialisers",

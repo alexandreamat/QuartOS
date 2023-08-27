@@ -31,42 +31,29 @@ from .models import (
 )
 
 
-class CRUDInstitutionalAccount(
-    CRUDBase[
-        Account.InstitutionalAccount,
-        AccountApiOut.InstitutionalAccount,
-        AccountApiIn.InstitutionalAccount,
-    ]
-):
-    db_model = Account.InstitutionalAccount
-    out_model = AccountApiOut.InstitutionalAccount
-
-
-class CRUDSyncableInstitutionalAccount(
-    CRUDSyncedBase[
-        Account.InstitutionalAccount,
-        AccountPlaidOut.InstitutionalAccount,
-        AccountPlaidIn.InstitutionalAccount,
-    ]
-):
-    db_model = Account.InstitutionalAccount
-    out_model = AccountPlaidOut.InstitutionalAccount
-
-
-class CRUDNonInstitutionalAccount(
-    CRUDBase[
-        Account.NonInstitutionalAccount,
-        AccountApiOut.NonInstitutionalAccount,
-        AccountApiIn.NonInstitutionalAccount,
-    ]
-):
-    db_model = Account.NonInstitutionalAccount
-    out_model = AccountApiOut.NonInstitutionalAccount
-
-
 class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     db_model = Account
     out_model = AccountApiOut
+
+    class CRUDInstitutionalAccount(
+        CRUDBase[
+            Account.InstitutionalAccount,
+            AccountApiOut.InstitutionalAccount,
+            AccountApiIn.InstitutionalAccount,
+        ]
+    ):
+        db_model = Account.InstitutionalAccount
+        out_model = AccountApiOut.InstitutionalAccount
+
+    class CRUDNonInstitutionalAccount(
+        CRUDBase[
+            Account.NonInstitutionalAccount,
+            AccountApiOut.NonInstitutionalAccount,
+            AccountApiIn.NonInstitutionalAccount,
+        ]
+    ):
+        db_model = Account.NonInstitutionalAccount
+        out_model = AccountApiOut.NonInstitutionalAccount
 
     @classmethod
     def read_transaction_deserialiser(
@@ -76,20 +63,6 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         if not deserialiser:
             raise ObjectNotFoundError(str(TransactionDeserialiser.__tablename__))
         return TransactionDeserialiserApiOut.from_orm(deserialiser)
-
-    @classmethod
-    def sync(
-        cls, db: Session, account_in: AccountPlaidIn, **kwargs: Any
-    ) -> AccountPlaidOut:
-        institutionalaccount_out = CRUDSyncableInstitutionalAccount.create(
-            db, account_in.institutionalaccount, **kwargs
-        )
-        db_account_in = Account(
-            **account_in.dict(exclude={"institutionalaccount"}),
-            institutionalaccount_id=institutionalaccount_out.id
-        )
-        db_account_out = Account.create(db, db_account_in)
-        return AccountPlaidOut.from_orm(db_account_out)
 
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
@@ -107,7 +80,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         account_out = Account.read(db, id)
         if account_in.institutionalaccount and userinstitutionlink_id:
             if account_out.institutionalaccount and account_out.institutionalaccount_id:
-                institutionalaccount_out = CRUDInstitutionalAccount.update(
+                institutionalaccount_out = cls.CRUDInstitutionalAccount.update(
                     db,
                     account_out.institutionalaccount_id,
                     account_in.institutionalaccount,
@@ -117,10 +90,10 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
                 account_out.noninstitutionalaccount
                 and account_out.noninstitutionalaccount_id
             ):
-                CRUDNonInstitutionalAccount.delete(
+                cls.CRUDNonInstitutionalAccount.delete(
                     db, account_out.noninstitutionalaccount_id
                 )
-                institutionalaccount_out = CRUDInstitutionalAccount.create(
+                institutionalaccount_out = cls.CRUDInstitutionalAccount.create(
                     db,
                     account_in.institutionalaccount,
                     userinstitutionlink_id=userinstitutionlink_id,
@@ -134,7 +107,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
                 account_out.noninstitutionalaccount
                 and account_out.noninstitutionalaccount_id
             ):
-                noninstitutionalaccount_out = CRUDNonInstitutionalAccount.update(
+                noninstitutionalaccount_out = cls.CRUDNonInstitutionalAccount.update(
                     db,
                     account_out.noninstitutionalaccount_id,
                     account_in.noninstitutionalaccount,
@@ -143,11 +116,11 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
             elif (
                 account_out.institutionalaccount and account_out.institutionalaccount_id
             ):
-                CRUDInstitutionalAccount.delete(
+                cls.CRUDInstitutionalAccount.delete(
                     db,
                     account_out.institutionalaccount_id,
                 )
-                noninstitutionalaccount_out = CRUDNonInstitutionalAccount.create(
+                noninstitutionalaccount_out = cls.CRUDNonInstitutionalAccount.create(
                     db,
                     account_in.noninstitutionalaccount,
                     user_id=user_id,
@@ -310,3 +283,56 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         statement = Account.select_transactions(account_id, movement_id, transaction_id)
         transaction = db.exec(statement).one()
         return TransactionApiOut.from_orm(transaction)
+
+
+class CRUDSyncableAccount:
+    class CRUDInstitutionalAccount(
+        CRUDSyncedBase[
+            Account.InstitutionalAccount,
+            AccountPlaidOut.InstitutionalAccount,
+            AccountPlaidIn.InstitutionalAccount,
+        ]
+    ):
+        db_model = Account.InstitutionalAccount
+        out_model = AccountPlaidOut.InstitutionalAccount
+
+    @classmethod
+    def read_by_plaid_id(cls, db: Session, id: str) -> AccountPlaidOut:
+        institutionalaccount = Account.InstitutionalAccount.read_by_plaid_id(db, id)
+        account = institutionalaccount.account
+        return AccountPlaidOut.from_orm(account)
+
+    @classmethod
+    def create(
+        cls, db: Session, account_in: AccountPlaidIn, **kwargs: Any
+    ) -> AccountPlaidOut:
+        institutionalaccount_out = cls.CRUDInstitutionalAccount.create(
+            db, account_in.institutionalaccount, **kwargs
+        )
+        account = Account(
+            **account_in.dict(exclude={"institutionalaccount"}),
+            institutionalaccount_id=institutionalaccount_out.id
+        )
+        account = Account.create(db, account)
+        return AccountPlaidOut.from_orm(account)
+
+    @classmethod
+    def update(
+        cls, db: Session, account_id: int, account_in: AccountPlaidIn, **kwargs: Any
+    ) -> AccountPlaidOut:
+        account = Account.read(db, account_id)
+        assert account.institutionalaccount_id
+        institutionalaccount_out = cls.CRUDInstitutionalAccount.update(
+            db,
+            account.institutionalaccount_id,
+            account_in.institutionalaccount,
+            **kwargs
+        )
+        account = Account.update(
+            db,
+            account_id,
+            **account_in.dict(exclude={"institutionalaccount"}),
+            institutionalaccount_id=institutionalaccount_out.id
+        )
+        account = Account.update_balance(db, account_id)
+        return AccountPlaidOut.from_orm(account)

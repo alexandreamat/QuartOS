@@ -145,38 +145,38 @@ def fetch_transactions(
 
 def sync_transactions(
     db: Session,
-    user_institution_link: UserInstitutionLinkPlaidOut,
-    replacement_pattern: ReplacementPatternApiOut | None,
+    user_institution_link_out: UserInstitutionLinkPlaidOut,
+    replacement_pattern_out: ReplacementPatternApiOut | None,
 ) -> None:
     has_more = True
     while has_more:
         sync_result = __fetch_transaction_changes(
-            db, user_institution_link, replacement_pattern
+            db, user_institution_link_out, replacement_pattern_out
         )
-        for account_id, transaction in sync_result.added:
-            CRUDAccount.create_movement_plaid(db, account_id, transaction)
+        for account_id, transaction_in in sync_result.added:
+            CRUDAccount.create_movement_plaid(db, account_id, transaction_in)
         for account_id, transaction_in in sync_result.modified:
-            db_transaction = CRUDSyncableTransaction.read_by_plaid_id(
+            transaction_out = CRUDSyncableTransaction.read_by_plaid_id(
                 db, transaction_in.plaid_id
             )
             CRUDAccount.update_transaction(
                 db,
-                db_transaction.movement_id,
-                db_transaction.id,
+                transaction_out.movement_id,
+                transaction_out.id,
                 account_id,
                 transaction_in,
-                db_transaction.movement_id,
+                transaction_out.movement_id,
             )
         for plaid_id in sync_result.removed:
-            db_transaction = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)
+            transaction_out = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)
             CRUDAccount.delete_transaction(
-                db, db_transaction.movement_id, account_id, db_transaction.id
+                db, transaction_out.movement_id, account_id, transaction_out.id
             )
-        user_institution_link.cursor = sync_result.new_cursor
+        user_institution_link_out.cursor = sync_result.new_cursor
         user_institution_link_new = UserInstitutionLinkPlaidIn(
-            **user_institution_link.dict()
+            **user_institution_link_out.dict()
         )
         CRUDSyncableUserInstitutionLink.update(
-            db, user_institution_link.id, user_institution_link_new
+            db, user_institution_link_out.id, user_institution_link_new
         )
         has_more = sync_result.has_more
