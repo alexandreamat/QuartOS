@@ -39,7 +39,7 @@ const ActionButton = (props: {
         icon={props.icon}
         onClick={props.onClick}
         content={props.content}
-        style={{ ...props.style }}
+        style={props.style}
       />
     }
   />

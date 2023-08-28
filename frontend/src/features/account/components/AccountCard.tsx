@@ -56,7 +56,12 @@ export default function AccountCard(props: {
         <Card.Header>{props.account.name}</Card.Header>
         <Card.Meta>
           {props.account.institutionalaccount && (
-            <>**** {props.account.institutionalaccount.mask}</>
+            <>
+              {props.account.institutionalaccount.iban?.replace(
+                /^(\w{4})(\w{4})(\w{4})(\w{4})(\w{4})(\w{4})$/,
+                "$1 $2 $3 $4 $5 $6"
+              ) || `**** ${props.account.institutionalaccount.mask}`}
+            </>
           )}
         </Card.Meta>
         <Card.Meta>{institutionLinkQueries.institution?.name}</Card.Meta>
