@@ -1,12 +1,19 @@
-import React, { ReactNode } from "react";
+import React, { CSSProperties, ReactNode } from "react";
 
-export default function Inline(props: { children: ReactNode }) {
+type JustifyContent = "space-between" | "left" | "right";
+
+export default function Inline(props: {
+  children: ReactNode;
+  justifyContent?: JustifyContent;
+  style?: CSSProperties;
+}) {
   return (
     <div
       style={{
         display: "flex",
-        justifyContent: "space-evenly",
+        justifyContent: props.justifyContent || "space-between",
         alignItems: "center",
+        ...props.style,
       }}
     >
       {props.children}

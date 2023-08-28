@@ -1,15 +1,15 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Icon, Loader } from "semantic-ui-react";
-import Summary from "./Summary";
+import PLCard from "./PLCard";
 import FlexColumn from "components/FlexColumn";
-import { MovementsByAmount } from "./MovementsByAmount";
+import { PLMovements } from "./PLMovements";
 import { useState } from "react";
 import Form from "features/movements/components/Form";
 import { MovementApiOut, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 
-export default function Detail(props: {}) {
+export default function PLReport() {
   const navigate = useNavigate();
   const { startDate, endDate } = useParams();
 
@@ -70,14 +70,14 @@ export default function Detail(props: {}) {
           Go back
         </Button>
       </div>
-      <Summary
+      <PLCard
         aggregate={aggregateQuery.data}
         showIncome={showIncome}
         onClickIncome={handleClickIncome}
         onClickExpenses={handleClickExpenses}
       />
       <FlexColumn.Auto>
-        <MovementsByAmount
+        <PLMovements
           aggregate={aggregateQuery.data}
           showIncome={showIncome}
           onOpenEditForm={handleOpenEditForm}

@@ -3,7 +3,7 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import MovementUnifiedCard from "features/movements/components/MovementUnifiedCard";
 import { Card, Loader } from "semantic-ui-react";
 
-export function MovementsByAmount(props: {
+export function PLMovements(props: {
   aggregate: PlStatement;
   showIncome: boolean;
   onOpenEditForm: (x: MovementApiOut) => void;
