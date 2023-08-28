@@ -21,7 +21,7 @@ function InstitutionLinkRow(props: {
   const navigate = useNavigate();
 
   const [syncLink, syncLinkResult] =
-    api.endpoints.syncApiUsersMeInstitutionLinksUserinstitutionlinkIdSyncPost.useMutation();
+    api.endpoints.syncApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidSyncPost.useMutation();
   const [deleteInstitutionLink, deleteInstitutionLinkResult] =
     api.endpoints.deleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDelete.useMutation();
 

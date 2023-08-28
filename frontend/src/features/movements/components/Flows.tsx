@@ -11,7 +11,7 @@ import { useAccountQueries } from "features/account/hooks";
 import { Grid, Placeholder, Popup, Step } from "semantic-ui-react";
 import { RemoveCircle } from "./RemoveCircle";
 import { SimpleQuery } from "interfaces";
-import { EllipsisCircle } from "../../../components/EllipsisCircle";
+import { EllipsisCircle } from "components/EllipsisCircle";
 import { CSSProperties } from "react";
 
 const flowPadding = 5;
@@ -64,12 +64,7 @@ function Outflow(props: {
   return (
     <Popup
       hideOnScroll
-      content={
-        <>
-          {props.flow.name}
-          <FormattedTimestamp timestamp={props.flow.timestamp} />
-        </>
-      }
+      content={<FormattedTimestamp timestamp={props.flow.timestamp} />}
       trigger={
         <Grid.Row
           columns="equal"
@@ -106,12 +101,7 @@ function Inflow(props: {
   return (
     <Popup
       hideOnScroll
-      content={
-        <>
-          {props.flow.name}
-          <FormattedTimestamp timestamp={props.flow.timestamp} />
-        </>
-      }
+      content={<FormattedTimestamp timestamp={props.flow.timestamp} />}
       trigger={
         <Grid.Row
           columns="equal"

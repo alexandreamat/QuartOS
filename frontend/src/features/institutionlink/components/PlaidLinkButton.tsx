@@ -7,9 +7,9 @@ import { logMutationError } from "utils/error";
 
 export default function PlaidLinkButton(props: { onSuccess: () => void }) {
   const linkTokenQuery =
-    api.endpoints.getLinkTokenApiPlaidLinkTokenGet.useQuery();
+    api.endpoints.getLinkTokenApiUsersMeInstitutionLinksLinkTokenGet.useQuery();
   const [setPublicToken, setPublicTokenResult] =
-    api.endpoints.setPublicTokenApiPlaidPublicTokenPost.useMutation();
+    api.endpoints.setPublicTokenApiUsersMeInstitutionLinksPublicTokenPost.useMutation();
 
   const handleOnSuccess = async (
     publicToken: string,
