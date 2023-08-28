@@ -9,7 +9,7 @@ import { SemanticICONS } from "semantic-ui-react";
 import TransactionDeserialisers from "features/transactiondeserialiser";
 import Movements from "features/movements";
 import PL from "features/pl";
-import plDetail from "features/pl/components/Detail";
+import plDetail from "features/pl/components/PLReport";
 
 export interface RouteI {
   path: string;
