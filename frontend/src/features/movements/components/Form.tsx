@@ -17,7 +17,7 @@ export default function Form(props: {
   open: boolean;
   onClose: () => void;
   movementId?: number;
-  onMutate?: (x: number) => void;
+  onMutate?: () => void;
   onGoToPrev?: () => void;
   onGoToNext?: () => void;
 }) {
@@ -87,7 +87,6 @@ export default function Form(props: {
           },
           newMovementId: movementId,
         }).unwrap();
-        props.onMutate && props.onMutate!(movementId);
       } catch (error) {
         logMutationError(error, updateTransactionResult);
         return;
@@ -102,12 +101,12 @@ export default function Form(props: {
           },
         }).unwrap();
         setMovementId(movement.id);
-        props.onMutate && props.onMutate!(movement.id);
       } catch (error) {
         logMutationError(error, createMovementsResult);
         return;
       }
     }
+    props.onMutate && props.onMutate();
   }
 
   async function handleRemoveTransaction(transaction: TransactionApiOut) {
@@ -119,11 +118,11 @@ export default function Form(props: {
           transaction_ids: [transaction.id],
         },
       }).unwrap();
-      props.onMutate && props.onMutate!(transaction.movement_id);
     } catch (error) {
       logMutationError(error, createMovementsResult);
       return;
     }
+    props.onMutate && props.onMutate();
   }
 
   async function handleDelete() {
@@ -131,11 +130,11 @@ export default function Form(props: {
 
     try {
       await deleteMovement(movementId).unwrap();
-      props.onMutate && props.onMutate!(movementId);
     } catch (error) {
       logMutationError(error, deleteMovementResult);
       return;
     }
+    props.onMutate && props.onMutate();
     handleClose();
   }
 
@@ -160,18 +159,14 @@ export default function Form(props: {
               transaction={selectedTransaction}
               open={isTransactionFormOpen}
               onClose={handleCloseEditTransactionForm}
-              onEdited={
-                props.onMutate && ((t) => props.onMutate!(t.movement_id))
-              }
+              onEdited={props.onMutate && ((t) => props.onMutate!())}
             />
           ) : (
             <TransactionForm.Add
               open={isTransactionFormOpen}
               onClose={handleCloseAddTransactionForm}
               movementId={movementId}
-              onAdded={
-                props.onMutate && ((t) => props.onMutate!(t.movement_id))
-              }
+              onAdded={props.onMutate && ((t) => props.onMutate!())}
             />
           )}
         </>
@@ -181,7 +176,7 @@ export default function Form(props: {
           onClose={handleCloseCreateTransactionForm}
           onCreated={(m) => {
             setMovementId(m.id);
-            props.onMutate && props.onMutate!(m.id);
+            props.onMutate && props.onMutate();
           }}
         />
       )}

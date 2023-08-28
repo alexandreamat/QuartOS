@@ -12,6 +12,7 @@ import MovementUnifiedCard from "./components/MovementUnifiedCard";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
 
 const PER_PAGE = 10;
+const NOT_FOUND = -1;
 
 export default function Movements() {
   const location = useLocation();
@@ -25,7 +26,6 @@ export default function Movements() {
   const [isDescending, setIsDescending] = useState(true);
 
   const [movementId, setMovementId] = useState(0);
-  const [movementIdx, setMovementIdx] = useState<number | undefined>(undefined);
 
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeMovementsGet,
@@ -39,6 +39,8 @@ export default function Movements() {
     PER_PAGE
   );
 
+  const movementIdx = infiniteQuery.data.findIndex((m) => m.id === movementId);
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
 
@@ -51,7 +53,6 @@ export default function Movements() {
 
     const movementIdParam = params.get("movementId");
     if (movementIdParam) {
-      setMovementIdx(undefined);
       setMovementId(Number(movementIdParam));
       params.delete("movementId");
       navigate({ ...location, search: params.toString() }, { replace: true });
@@ -65,25 +66,18 @@ export default function Movements() {
     }
   }, [location, navigate]);
 
-  useEffect(() => {
-    if (movementIdx === undefined) return;
-    const movement = infiniteQuery.data[movementIdx];
-    if (movement === undefined) return;
-    setMovementId(movement.id);
-  }, [movementIdx, infiniteQuery.data]);
-
   const handleOpenCreateForm = () => {
     setMovementId(0);
     setIsFormOpen(true);
   };
 
-  function handleOpenEditForm(idx: number) {
-    setMovementIdx(idx);
+  function handleOpenEditForm(id: number) {
+    setMovementId(id);
     setIsFormOpen(true);
   }
 
   function handleGoToRelativeMovement(x: number) {
-    setMovementIdx((prev) => (prev === undefined ? undefined : prev + x));
+    setMovementId(infiniteQuery.data[movementIdx + x]?.id || 0);
   }
 
   const handleCloseForm = () => {
@@ -91,28 +85,20 @@ export default function Movements() {
     setMovementId(0);
   };
 
-  async function handleMutation(id: number) {
-    await infiniteQuery.onMutation();
-    Object.values(infiniteQuery.data).forEach((m, i) => {
-      if (id !== m.id) return;
-      setMovementIdx(i);
-    });
-  }
-
   return (
     <FlexColumn>
       <Form
         open={isFormOpen}
         onClose={handleCloseForm}
         movementId={movementId}
-        onMutate={handleMutation}
+        onMutate={infiniteQuery.onMutation}
         onGoToPrev={
-          movementIdx !== undefined && movementIdx > 0
+          movementIdx !== NOT_FOUND && movementIdx > 0
             ? () => handleGoToRelativeMovement(-1)
             : undefined
         }
         onGoToNext={
-          movementIdx !== undefined &&
+          movementIdx !== NOT_FOUND &&
           movementIdx + 1 < infiniteQuery.data.length
             ? () => handleGoToRelativeMovement(1)
             : undefined
@@ -134,11 +120,11 @@ export default function Movements() {
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         <Card.Group style={{ margin: 0 }}>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-          {infiniteQuery.data.map((movement, i) => (
+          {infiniteQuery.data.map((m) => (
             <MovementUnifiedCard
-              key={movement.id}
-              movement={movement}
-              onOpenEditForm={() => handleOpenEditForm(i)}
+              key={m.id}
+              movement={m}
+              onOpenEditForm={() => handleOpenEditForm(m.id)}
               selectedAccountId={accountId}
             />
           ))}
