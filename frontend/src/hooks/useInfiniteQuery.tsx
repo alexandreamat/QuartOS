@@ -52,7 +52,7 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
       setIsUninitialized(false);
       let cont = false;
       try {
-        const data = await fetchData(
+        const newData = await fetchData(
           {
             page,
             perPage,
@@ -60,10 +60,10 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
           } as any,
           true
         ).unwrap();
-        if (data.length === 0) {
+        if (newData.length === 0) {
           setIsExhausted(true);
         } else {
-          setData((prevData) => [...(page ? prevData : []), ...data]);
+          setData((prevData) => [...(page ? prevData : []), ...newData]);
           cont = true;
         }
         setIsSuccess(true);
@@ -146,7 +146,9 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
       const scrollBottom = target.scrollHeight - clientHeight - scrollTop;
       if (scrollBottom <= RATE * clientHeight) {
         isScrollLocked = true;
-        appendNextPage().then(() => (isScrollLocked = false));
+        appendNextPage().then(() =>
+          setTimeout(() => (isScrollLocked = false), 300)
+        );
       }
     }
 

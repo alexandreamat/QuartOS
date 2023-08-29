@@ -15,7 +15,7 @@ router = APIRouter()
 def read_many(
     db: DBSession,
     me: CurrentUser,
-    page: int = 1,
+    page: int = 0,
     per_page: int = 0,
     timestamp: date | None = None,
     search: str | None = None,
