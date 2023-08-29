@@ -105,7 +105,7 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
             statement = statement.where(col(Transaction.name).like(search))
 
         if per_page:
-            offset = (page - 1) * per_page
+            offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
 
         return statement
