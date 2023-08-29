@@ -83,9 +83,37 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
   );
 
   const handleMutation = useCallback(async () => {
-    setData([]);
-    for (let i = 0; i < page.current; i++) await appendPage(i);
-  }, [appendPage]);
+    if (memoizedParams === skipToken) return;
+
+    setIsFetching(true);
+    let newData: R[] = [];
+    try {
+      for (let i = 0; i < page.current; i++) {
+        const pageData = await fetchData(
+          {
+            i,
+            perPage,
+            ...memoizedParams,
+          } as any,
+          true
+        ).unwrap();
+        if (!pageData.length) {
+          setIsExhausted(true);
+          break;
+        }
+        newData = newData.concat(pageData);
+      }
+      setData(newData);
+      setIsSuccess(true);
+    } catch (error) {
+      setIsSuccess(false);
+      setIsError(true);
+      setError(error);
+    } finally {
+      setIsLoading(false);
+      setIsFetching(false);
+    }
+  }, [memoizedParams, fetchData, perPage]);
 
   useEffect(
     () => setIsLoading(isFetching && isUninitialized),
