@@ -119,7 +119,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         try:
             account_out = db.exec(statement).one()
         except NoResultFound:
-            raise ObjectNotFoundError("account")
+            raise ObjectNotFoundError("account", account_id)
         return AccountApiOut.from_orm(account_out)
 
     @classmethod

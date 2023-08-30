@@ -61,16 +61,15 @@ const ActionButtonPlaceholder = (props: {
   style?: CSSProperties;
 }) => (
   <Button
-    disabled
-    icon={props.icon}
-    style={props.style}
     floated={props.floated}
+    color={props.color}
     loading
     circular
     basic
     size="tiny"
-    color={props.color}
+    icon={props.icon}
     content={props.content}
+    style={props.style}
   />
 );
 
