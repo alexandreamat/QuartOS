@@ -26,10 +26,9 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         transaction: TransactionApiIn | int,
         **kwargs: Any,
     ) -> MovementApiOut:
-        movement = Movement.create(db, Movement())
-
         if isinstance(transaction, TransactionApiIn):
             transaction_in = transaction
+            movement = Movement.create(db, Movement(name=transaction_in.name))
             CRUDTransaction.create(
                 db,
                 transaction_in,
@@ -40,7 +39,8 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         else:
             transaction_id = transaction
             transaction_out = CRUDTransaction.read(db, transaction_id)
-            curr_movement_out = cls.read(db, transaction_out.movement_id)
+            movement = Movement.create(db, Movement(name=transaction_out.name))
+            movement_out = cls.read(db, transaction_out.movement_id)
             transaction_in = TransactionApiIn(
                 amount=transaction_out.amount,
                 timestamp=transaction_out.timestamp,
@@ -54,8 +54,8 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
                 movement_id=movement.id,
                 **kwargs,
             )
-            if not curr_movement_out.transactions:
-                cls.delete(db, curr_movement_out.id)
+            if not movement_out.transactions:
+                cls.delete(db, movement_out.id)
 
         return CRUDMovement.read(db, movement.id)
 
@@ -66,11 +66,10 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         transaction_in: TransactionPlaidIn,
         **kwargs: Any,
     ) -> MovementApiOut:
-        movement = Movement.create(db, Movement())
+        movement = Movement.create(db, Movement(name=transaction_in.name))
         CRUDSyncableTransaction.create(
             db, transaction_in, movement_id=movement.id, **kwargs
         )
-        CRUDMovement.read(db, movement.id)
         return CRUDMovement.read(db, movement.id)
 
     @classmethod

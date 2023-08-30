@@ -9,6 +9,7 @@ from app.database.deps import DBSession
 from app.features.user import CurrentUser, CRUDUser
 from app.features.movement import (
     MovementApiOut,
+    MovementApiIn,
     MovementField,
     CRUDMovement,
 )
@@ -58,6 +59,17 @@ def read(
     movement_id: int,
 ) -> MovementApiOut:
     return CRUDUser.read_movement(db, me.id, None, None, movement_id)
+
+
+@router.put("/{movement_id}")
+def update(
+    db: DBSession,
+    me: CurrentUser,
+    movement_id: int,
+    movement_in: MovementApiIn,
+) -> MovementApiOut:
+    CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    return CRUDMovement.update(db, movement_id, movement_in)
 
 
 @router.delete("/{movement_id}")

@@ -239,6 +239,7 @@ export default function Form(props: {
                           ? handleRemoveTransaction
                           : undefined
                       }
+                      onMutate={props.onMutate}
                     />
                     <ActionButton
                       disabled={!props.onGoToNext}
