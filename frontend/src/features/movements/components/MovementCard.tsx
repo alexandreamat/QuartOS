@@ -5,7 +5,8 @@ import { Flows } from "./Flows";
 import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import MutateActionButton from "components/MutateActionButton";
-import LimitedText from "components/LimitedString";
+import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
+import Inline from "components/Inline";
 
 export function MovementCard(props: {
   movement: MovementApiOut;
@@ -28,9 +29,8 @@ export function MovementCard(props: {
             </Card.Meta>
           </Grid.Column>
           <Grid.Column>
-            <Header as="h5">
-              <LimitedText str={props.movement.name} maxLength={50} />
-            </Header>
+                  <LineWithHiddenOverflow content={props.movement.name} />
+                </Header>
           </Grid.Column>
           {props.onOpenEditForm && (
             <Grid.Column width={1} textAlign="center">

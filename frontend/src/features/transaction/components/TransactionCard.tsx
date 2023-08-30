@@ -16,7 +16,7 @@ import FormattedTimestamp from "components/FormattedTimestamp";
 import ActionButton from "components/ActionButton";
 import AccountIcon from "features/account/components/Icon";
 import { FormattedCurrency } from "components/FormattedCurrency";
-import LimitedText from "components/LimitedString";
+import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import MutateActionButton from "components/MutateActionButton";
 
 export function TransactionCard(
@@ -69,7 +69,7 @@ export function TransactionCard(
           </Grid.Column>
           <Grid.Column>
             <Header as="h5">
-              <LimitedText str={props.transaction.name} maxLength={50} />
+              <LineWithHiddenOverflow content={props.transaction.name} />
             </Header>
           </Grid.Column>
           {"onCheckboxChange" in props && (
