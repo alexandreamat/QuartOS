@@ -13,6 +13,7 @@ import { RemoveCircle } from "./RemoveCircle";
 import { SimpleQuery } from "interfaces";
 import { EllipsisCircle } from "components/EllipsisCircle";
 import { CSSProperties } from "react";
+import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 
 const flowPadding = 5;
 const stepPadding = 18;
@@ -49,7 +50,7 @@ const Amount = (props: { amount: number; currencyCode: string }) => (
 
 const TransactionName = (props: { name: string }) => (
   <Grid.Column textAlign="center" verticalAlign="middle">
-    {props.name}
+    <LineWithHiddenOverflow content={props.name} />
   </Grid.Column>
 );
 
