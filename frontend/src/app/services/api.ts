@@ -465,6 +465,17 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/api/users/me/movements/${queryArg}` }),
         providesTags: ["users", "movements"],
       }),
+      updateApiUsersMeMovementsMovementIdPut: build.mutation<
+        UpdateApiUsersMeMovementsMovementIdPutApiResponse,
+        UpdateApiUsersMeMovementsMovementIdPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/movements/${queryArg.movementId}`,
+          method: "PUT",
+          body: queryArg.movementApiIn,
+        }),
+        invalidatesTags: ["users", "movements"],
+      }),
       deleteApiUsersMeMovementsMovementIdDelete: build.mutation<
         DeleteApiUsersMeMovementsMovementIdDeleteApiResponse,
         DeleteApiUsersMeMovementsMovementIdDeleteApiArg
@@ -911,6 +922,12 @@ export type ReadManyApiUsersMeMovementsGetApiArg = {
 export type ReadApiUsersMeMovementsMovementIdGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
 export type ReadApiUsersMeMovementsMovementIdGetApiArg = number;
+export type UpdateApiUsersMeMovementsMovementIdPutApiResponse =
+  /** status 200 Successful Response */ MovementApiOut;
+export type UpdateApiUsersMeMovementsMovementIdPutApiArg = {
+  movementId: number;
+  movementApiIn: MovementApiIn;
+};
 export type DeleteApiUsersMeMovementsMovementIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
 export type DeleteApiUsersMeMovementsMovementIdDeleteApiArg = number;
@@ -1185,6 +1202,7 @@ export type TransactionApiOut = {
 };
 export type MovementApiOut = {
   id: number;
+  name: string;
   earliest_timestamp?: string;
   latest_timestamp?: string;
   transactions: TransactionApiOut[];
@@ -1192,9 +1210,11 @@ export type MovementApiOut = {
     [key: string]: number;
   };
   amount?: number;
-  name: string;
 };
 export type MovementField = "timestamp" | "amount";
+export type MovementApiIn = {
+  name: string;
+};
 export type PlStatement = {
   start_date: string;
   end_date: string;

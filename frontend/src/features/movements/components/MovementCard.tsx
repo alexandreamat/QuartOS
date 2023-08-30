@@ -1,12 +1,27 @@
-import { MovementApiOut, TransactionApiOut } from "app/services/api";
-import { Button, Card, Grid, Header, Placeholder } from "semantic-ui-react";
+import {
+  MovementApiIn,
+  MovementApiOut,
+  TransactionApiOut,
+  api,
+} from "app/services/api";
+import {
+  Button,
+  Card,
+  Grid,
+  Header,
+  Input,
+  Placeholder,
+} from "semantic-ui-react";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import { Flows } from "./Flows";
 import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import MutateActionButton from "components/MutateActionButton";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
-import Inline from "components/Inline";
+import { useState } from "react";
+import { ClickableIcon } from "components/ClickableIcon";
+import FlexRow from "components/FlexRow";
+import { logMutationError } from "utils/error";
 
 export function MovementCard(props: {
   movement: MovementApiOut;
@@ -16,7 +31,29 @@ export function MovementCard(props: {
   onRemoveTransaction?: (x: TransactionApiOut) => void;
   explanationRate?: number;
   selectedAccountId?: number;
+  onMutate?: () => void;
 }) {
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [name, setName] = useState(props.movement.name);
+
+  const [updateMovement, updateMovementResult] =
+    api.endpoints.updateApiUsersMeMovementsMovementIdPut.useMutation();
+
+  async function updateName() {
+    const newMovement: MovementApiIn = { ...props.movement, name };
+    try {
+      await updateMovement({
+        movementId: props.movement.id,
+        movementApiIn: newMovement,
+      });
+    } catch (error) {
+      logMutationError(error, updateMovementResult);
+      return;
+    }
+    setIsEditMode(false);
+    props.onMutate && props.onMutate();
+  }
+
   return (
     <Card fluid color="teal">
       <Card.Content>
@@ -29,8 +66,48 @@ export function MovementCard(props: {
             </Card.Meta>
           </Grid.Column>
           <Grid.Column>
+            {isEditMode ? (
+              <FlexRow style={{ alignItems: "center", gap: 5 }}>
+                <FlexRow.Auto>
+                  <Input
+                    style={{ width: "100%" }}
+                    value={name}
+                    onChange={(e, d) => setName(d.value)}
+                  />
+                </FlexRow.Auto>
+                <Button
+                  icon="cancel"
+                  circular
+                  size="tiny"
+                  onClick={() => {
+                    setName(props.movement.name);
+                    setIsEditMode(false);
+                  }}
+                />
+                <Button
+                  icon="check"
+                  positive
+                  circular
+                  size="tiny"
+                  onClick={updateName}
+                  disabled={name === props.movement.name}
+                  error={updateMovementResult.isError}
+                  loading={updateMovementResult.isLoading}
+                />
+              </FlexRow>
+            ) : (
+              <FlexRow style={{ gap: 5 }}>
+                <Header as="h5">
                   <LineWithHiddenOverflow content={props.movement.name} />
                 </Header>
+                {props.onMutate && (
+                  <ClickableIcon
+                    name="pencil"
+                    onClick={() => setIsEditMode(true)}
+                  />
+                )}
+              </FlexRow>
+            )}
           </Grid.Column>
           {props.onOpenEditForm && (
             <Grid.Column width={1} textAlign="center">

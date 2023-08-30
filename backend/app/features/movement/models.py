@@ -22,7 +22,7 @@ class PLStatement(SQLModel):
 
 
 class __MovementBase(SQLModel):
-    ...
+    name: str
 
 
 class MovementField(str, Enum):
@@ -36,7 +36,6 @@ class MovementApiOut(__MovementBase, Base):
     transactions: list[TransactionApiOut]
     amounts: dict[CurrencyCode, Decimal]
     amount: Decimal | None
-    name: str
 
 
 class MovementApiIn(__MovementBase):
@@ -48,10 +47,6 @@ class Movement(__MovementBase, Base, table=True):
         back_populates="movement",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
-
-    @property
-    def name(self) -> str:
-        return self.transactions[0].name
 
     @property
     def earliest_timestamp(self) -> date:
