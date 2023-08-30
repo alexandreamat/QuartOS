@@ -1,9 +1,10 @@
 import { PlStatement } from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
+import FlexRow from "components/FlexRow";
 import Inline from "components/Inline";
 import { addDays, format } from "date-fns";
-import { Card, Header, Label, Step } from "semantic-ui-react";
+import { Card, Header, Label, Placeholder, Step } from "semantic-ui-react";
 
 export default function PLCard(props: {
   aggregate: PlStatement;
@@ -21,7 +22,7 @@ export default function PLCard(props: {
     <Card fluid color="teal">
       <Card.Content>
         <Card.Header>
-          <Inline>
+          <FlexRow style={{ justifyContent: "space-between" }}>
             {format(new Date(props.aggregate.start_date), "MMMM yyyy")}
             {props.onGoToDetail && (
               <ActionButton
@@ -30,7 +31,7 @@ export default function PLCard(props: {
                 content="See Report"
               />
             )}
-          </Inline>
+          </FlexRow>
         </Card.Header>
         <Card.Meta>
           {`From ${startDate.toLocaleDateString()} to ${addDays(
@@ -74,7 +75,7 @@ export default function PLCard(props: {
         </Step.Group>
       </Card.Content>
       <Card.Content extra>
-        <Inline justifyContent="right">
+        <FlexRow style={{ justifyContent: "right" }}>
           <Header as="h5">
             Net Income:
             <CurrencyLabel
@@ -82,8 +83,59 @@ export default function PLCard(props: {
               currencyCode={props.aggregate.currency_code}
             />
           </Header>
+        </FlexRow>
+      </Card.Content>
+    </Card>
+  );
+}
+
+function PLCardPlaceholder(props: { onGoToDetail?: boolean }) {
+  return (
+    <Card fluid color="teal">
+      <Card.Content>
+        <Card.Header>
+          <FlexRow style={{ justifyContent: "space-between" }}>
+            <Placeholder style={{ width: "100%" }}>
+              <Placeholder.Line />
+            </Placeholder>
+            {props.onGoToDetail && (
+              <ActionButton.Placeholder
+                icon="file alternate outline"
+                content="See Report"
+              />
+            )}
+          </FlexRow>
+        </Card.Header>
+        <Card.Meta>
+          <Placeholder>
+            <Placeholder.Line />
+          </Placeholder>
+        </Card.Meta>
+        <Step.Group fluid widths={3}>
+          <Step>
+            <Step.Title>Income</Step.Title>
+            <Step.Content>
+              <CurrencyLabel.Placeholder />
+            </Step.Content>
+          </Step>
+          <Step>
+            <Step.Title>Expenses</Step.Title>
+            <Step.Content>
+              <CurrencyLabel.Placeholder />
+            </Step.Content>
+          </Step>
+        </Step.Group>
+      </Card.Content>
+      <Card.Content extra>
+        <Inline justifyContent="right">
+          <Header as="h5">
+            Net Income:
+            <CurrencyLabel.Placeholder />
+          </Header>
         </Inline>
       </Card.Content>
     </Card>
   );
 }
+
+PLCard.Placeholder = PLCardPlaceholder;

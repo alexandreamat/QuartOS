@@ -1,9 +1,14 @@
-import { PlStatement, api } from "app/services/api";
+import {
+  GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg,
+  PlStatement,
+  api,
+} from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useNavigate } from "react-router-dom";
-import { Card, Loader, Table } from "semantic-ui-react";
+import { Card } from "semantic-ui-react";
 import PLCard from "./components/PLCard";
 import FlexColumn from "components/FlexColumn";
+import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 
 function Row(props: { plStatement: PlStatement }) {
   const navigate = useNavigate();
@@ -19,26 +24,25 @@ function Row(props: { plStatement: PlStatement }) {
 }
 
 export default function IncomeStatement() {
-  const aggregatesQuery =
-    api.endpoints.getManyAggregatesApiUsersMeMovementsAggregatesGet.useQuery({
+  const aggregatesQuery = useInfiniteQuery(
+    api.endpoints.getManyAggregatesApiUsersMeMovementsAggregatesGet,
+    {
       currencyCode: "EUR",
-    });
-
-  if (aggregatesQuery.isUninitialized || aggregatesQuery.isLoading)
-    return <Loader active size="huge" />;
-
-  if (aggregatesQuery.isError)
-    return <QueryErrorMessage query={aggregatesQuery} />;
+    } as GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg,
+    12
+  );
 
   return (
     <FlexColumn>
-      <FlexColumn.Auto>
+      <FlexColumn.Auto reference={aggregatesQuery.reference}>
         <Card.Group style={{ margin: 0 }}>
           {aggregatesQuery.data.map((aggregate) => (
             <Row key={aggregate.start_date} plStatement={aggregate} />
           ))}
+          {aggregatesQuery.isFetching && <PLCard.Placeholder onGoToDetail />}
         </Card.Group>
       </FlexColumn.Auto>
+      {aggregatesQuery.error && <QueryErrorMessage query={aggregatesQuery} />}
     </FlexColumn>
   );
 }
