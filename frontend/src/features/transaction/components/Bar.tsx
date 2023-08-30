@@ -8,8 +8,8 @@ import {
   InputOnChangeData,
   Menu,
 } from "semantic-ui-react";
-import { RemoveCircle } from "features/movements/components/RemoveCircle";
 import MenuDateInput from "components/MenuDateInput";
+import { ClickableIcon } from "components/ClickableIcon";
 
 export default function Bar(props: {
   accountId: number;
@@ -54,7 +54,10 @@ export default function Bar(props: {
         />
         {props.accountId !== 0 && (
           <Menu.Item fitted>
-            <RemoveCircle onClick={() => props.onAccountIdChange(0)} />
+            <ClickableIcon
+              name="remove circle"
+              onClick={() => props.onAccountIdChange(0)}
+            />
           </Menu.Item>
         )}
       </Menu.Item>

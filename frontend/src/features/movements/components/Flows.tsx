@@ -9,9 +9,8 @@ import LoadableQuery from "components/LoadableCell";
 import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
 import { Grid, Placeholder, Popup, Step } from "semantic-ui-react";
-import { RemoveCircle } from "./RemoveCircle";
 import { SimpleQuery } from "interfaces";
-import { EllipsisCircle } from "components/EllipsisCircle";
+import { ClickableIcon } from "components/ClickableIcon";
 import { CSSProperties } from "react";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 
@@ -20,13 +19,13 @@ const stepPadding = 18;
 
 const RemoveFlow = (props: { onRemoveFlow: () => void }) => (
   <Grid.Column width={1} verticalAlign="middle">
-    <RemoveCircle onClick={props.onRemoveFlow} />
+    <ClickableIcon name="remove circle" onClick={props.onRemoveFlow} />
   </Grid.Column>
 );
 
 const EditFlow = (props: { onOpenEditForm: () => void }) => (
   <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-    <EllipsisCircle onClick={props.onOpenEditForm}></EllipsisCircle>
+    <ClickableIcon name="ellipsis horizontal" onClick={props.onOpenEditForm} />
   </Grid.Column>
 );
 
@@ -200,13 +199,13 @@ export function Flows(props: {
 
 const RemoveFlowPlaceholder = () => (
   <Grid.Column width={1} verticalAlign="middle">
-    <RemoveCircle.Placeholder />
+    <ClickableIcon.Placeholder name="remove circle" />
   </Grid.Column>
 );
 
 const EditFlowPlaceholder = () => (
   <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-    <EllipsisCircle.Placeholder />
+    <ClickableIcon.Placeholder name="ellipsis horizontal" />
   </Grid.Column>
 );
 
