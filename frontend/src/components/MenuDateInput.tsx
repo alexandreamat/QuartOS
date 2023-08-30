@@ -1,7 +1,7 @@
 import { Input, InputOnChangeData, Menu } from "semantic-ui-react";
-import { RemoveCircle } from "../features/movements/components/RemoveCircle";
 import { format } from "date-fns";
 import { stringToDate } from "utils/time";
+import { ClickableIcon } from "./ClickableIcon";
 
 export default function MenuDateInput(props: {
   label: string;
@@ -23,7 +23,10 @@ export default function MenuDateInput(props: {
       />
       {props.date && (
         <Menu.Item fitted>
-          <RemoveCircle onClick={() => props.onDateChange(undefined)} />
+          <ClickableIcon
+            name="remove circle"
+            onClick={() => props.onDateChange(undefined)}
+          />
         </Menu.Item>
       )}
     </Menu.Item>
