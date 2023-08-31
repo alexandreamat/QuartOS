@@ -54,12 +54,6 @@ class _AccountBase(SQLModel):
     initial_balance: Decimal
     name: str
 
-    @validator("currency_code")
-    def currency_code_must_exist(cls, value: str) -> str:
-        if value not in [currency.alpha_3 for currency in pycountry.currencies]:
-            raise ValueError("Invalid currency code")
-        return value
-
     @root_validator()
     def only_one_type_allowed(
         cls,

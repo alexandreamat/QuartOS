@@ -7,13 +7,18 @@ function CurrencyExchangeTip(props: {
   relatedTransaction: TransactionApiOut;
   currencyCode: string;
 }) {
+  const accountQuery =
+    api.endpoints.readApiUsersMeAccountsAccountIdGet.useQuery(
+      props.relatedTransaction.account_id
+    );
+
   const amount = props.relatedTransaction.amount;
-  const fromCurrency = props.relatedTransaction.currency_code;
+  const fromCurrency = accountQuery.data?.currency_code;
   const toCurrency = props.currencyCode;
 
   const exchangeRateQuery =
     api.endpoints.readExchangeRateApiExchangerateGet.useQuery(
-      fromCurrency !== toCurrency
+      fromCurrency !== toCurrency && fromCurrency !== undefined
         ? {
             fromCurrency,
             toCurrency,
@@ -21,6 +26,8 @@ function CurrencyExchangeTip(props: {
           }
         : skipToken
     );
+
+  if (!fromCurrency) return <Label />;
 
   return (
     <Label

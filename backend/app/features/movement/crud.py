@@ -45,7 +45,6 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
                 amount=transaction_out.amount,
                 timestamp=transaction_out.timestamp,
                 name=transaction_out.name,
-                currency_code=transaction_out.currency_code,
             )
             transaction_out = CRUDTransaction.update(
                 db,

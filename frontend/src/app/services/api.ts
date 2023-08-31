@@ -1167,7 +1167,6 @@ export type TransactionPlaidIn = {
   amount: number;
   timestamp: string;
   name: string;
-  currency_code: string;
 };
 export type TransactionPlaidOut = {
   id: number;
@@ -1176,7 +1175,6 @@ export type TransactionPlaidOut = {
   amount: number;
   timestamp: string;
   name: string;
-  currency_code: string;
   account_balance: number;
   account_id: number;
   movement_id: number;
@@ -1186,7 +1184,6 @@ export type TransactionApiOut = {
   amount: number;
   timestamp: string;
   name: string;
-  currency_code: string;
   account_balance: number;
   account_id: number;
   movement_id: number;
@@ -1267,7 +1264,6 @@ export type TransactionApiIn = {
   amount: number;
   timestamp: string;
   name: string;
-  currency_code: string;
 };
 export type BodyPreviewApiUsersMeAccountsPreviewPost = {
   file: Blob;
