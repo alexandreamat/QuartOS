@@ -5,7 +5,6 @@ from decimal import Decimal
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-from app.common.models import CurrencyCode
 
 from app.features.user import CurrentUser, CRUDUser
 from app.features.movement import PLStatement, MovementApiOut, MovementField
@@ -19,7 +18,6 @@ def read_expenses(
     me: CurrentUser,
     start_date: date,
     end_date: date,
-    currency_code: CurrencyCode,
 ) -> Iterable[MovementApiOut]:
     return CRUDUser.read_movements(
         db,
@@ -29,7 +27,6 @@ def read_expenses(
         sort_by=MovementField.AMOUNT,
         is_descending=False,
         amount_lt=Decimal(0),
-        currency_code=currency_code,
     )
 
 
@@ -39,7 +36,6 @@ def read_income(
     me: CurrentUser,
     start_date: date,
     end_date: date,
-    currency_code: CurrencyCode,
 ) -> Iterable[MovementApiOut]:
     return CRUDUser.read_movements(
         db,
@@ -49,7 +45,6 @@ def read_income(
         sort_by=MovementField.AMOUNT,
         is_descending=True,
         amount_gt=Decimal(0),
-        currency_code=currency_code,
     )
 
 
@@ -59,14 +54,12 @@ def get_aggregate(
     me: CurrentUser,
     start_date: date,
     end_date: date,
-    currency_code: CurrencyCode,
 ) -> PLStatement:
     return CRUDUser.get_movement_aggregate(
         db,
         me.id,
         start_date=start_date,
         end_date=end_date,
-        currency_code=currency_code,
     )
 
 
@@ -74,10 +67,9 @@ def get_aggregate(
 def get_many_aggregates(
     db: DBSession,
     me: CurrentUser,
-    currency_code: CurrencyCode,
     page: int = 0,
     per_page: int = 12,
 ) -> Iterable[PLStatement]:
     return CRUDUser.get_many_movement_aggregates(
-        db, me.id, page=page, per_page=per_page, currency_code=currency_code
+        db, me.id, page=page, per_page=per_page
     )

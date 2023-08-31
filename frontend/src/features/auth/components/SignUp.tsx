@@ -1,27 +1,39 @@
-import React, { useState } from "react";
+import React from "react";
 import { Segment, Grid, Form, Button, Header } from "semantic-ui-react";
 import { useNavigate } from "react-router";
 
 import { api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { logMutationError } from "utils/error";
+import FormCurrencyCodeDropdown from "components/FormCurrencyCodeDropdown";
+import useFormField from "hooks/useFormField";
+import FormTextInput from "components/FormTextInput";
 
 export function SignUp() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirmation, setPasswordConfirmation] = useState("");
+
+  const fields = {
+    email: useFormField(""),
+    fullName: useFormField(""),
+    password: useFormField(""),
+    passwordConfirmation: useFormField(""),
+    defaultCurrencyCode: useFormField(""),
+  };
+
   const [signUp, signUpResult] =
     api.endpoints.signupApiUsersSignupPost.useMutation();
 
   const handleSubmit = async (_: React.MouseEvent) => {
+    const invalidFields = Object.values(fields).filter((f) => !f.validate());
+    if (invalidFields.length > 0) return;
+
     try {
       await signUp({
-        email: email,
-        password: password,
-        full_name: fullName,
+        email: fields.email.value!,
+        password: fields.password.value!,
+        full_name: fields.fullName.value!,
         is_superuser: false,
+        default_currency_code: fields.defaultCurrencyCode.value!,
       }).unwrap();
     } catch (error) {
       logMutationError(error, signUpResult);
@@ -38,54 +50,33 @@ export function SignUp() {
         </Header>
         <Form size="large">
           <Segment>
-            <Form.Input
+            <FormTextInput
               icon="user"
-              iconPosition="left"
-              placeholder="E-mail address"
-              value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setEmail(e.currentTarget.value)
-              }
-              autoFocus
-              required
+              field={fields.email}
+              label="E-mail address"
               type="email"
-            ></Form.Input>
-            <Form.Input
+            />
+            <FormTextInput
               icon="user"
-              iconPosition="left"
-              placeholder="Full name"
-              value={fullName}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setFullName(e.currentTarget.value)
-              }
-              autoFocus
-              required
+              field={fields.fullName}
+              label="Full name"
               type="name"
-            ></Form.Input>
-            <Form.Input
-              fluid
+            />
+            <FormTextInput
               icon="lock"
-              iconPosition="left"
-              placeholder="Password"
+              field={fields.password}
+              label="Password"
               type="password"
-              value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPassword(e.currentTarget.value)
-              }
-              required
-            ></Form.Input>
-            <Form.Input
-              fluid
+            />
+            <FormTextInput
               icon="lock"
-              iconPosition="left"
-              value={passwordConfirmation}
+              field={fields.password}
+              label="Confirm password"
               type="password"
-              placeholder="Confirm password"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPasswordConfirmation(e.currentTarget.value)
-              }
-              required
-            ></Form.Input>
+            />
+            <FormCurrencyCodeDropdown
+              currencyCode={fields.defaultCurrencyCode}
+            />
             <QueryErrorMessage query={signUpResult} />
             <Button
               color="teal"

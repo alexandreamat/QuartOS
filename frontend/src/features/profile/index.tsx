@@ -4,6 +4,7 @@ import FormTextInput from "components/FormTextInput";
 import useFormField from "hooks/useFormField";
 import { Button, Form, Loader, Message, Segment } from "semantic-ui-react";
 import { logMutationError, renderErrorMessage } from "utils/error";
+import FormCurrencyCodeDropdown from "components/FormCurrencyCodeDropdown";
 
 export default function Profile() {
   const me = api.endpoints.readMeApiUsersMeGet.useQuery();
@@ -14,12 +15,16 @@ export default function Profile() {
   const fullName = useFormField(me.data?.full_name || "");
   const email = useFormField(me.data?.email || "");
   const password = useFormField("");
+  const defaultCurrencyCode = useFormField(
+    me.data?.default_currency_code || ""
+  );
 
-  const fields = [fullName, email, password];
+  const fields = [fullName, email, password, defaultCurrencyCode];
 
   const handleCancel = () => {
     fullName.set(me.data?.full_name || "");
     email.set(me.data?.email || "");
+    defaultCurrencyCode.set(me.data?.default_currency_code || "");
     password.set("");
     fields.forEach((field) => field.reset());
     setEditMode(false);
@@ -34,6 +39,7 @@ export default function Profile() {
         email: email.value!,
         password: password.value!,
         is_superuser: false,
+        default_currency_code: defaultCurrencyCode.value!,
       }).unwrap();
     } catch (error) {
       logMutationError(error, updateMeResult);
@@ -58,6 +64,11 @@ export default function Profile() {
             readOnly={!editMode}
             label="E-mail"
             field={email}
+          />
+          <FormCurrencyCodeDropdown
+            readOnly={!editMode}
+            currencyCode={defaultCurrencyCode}
+            label="Default currency"
           />
           {editMode && (
             <FormTextInput type="password" label="Password" field={password} />

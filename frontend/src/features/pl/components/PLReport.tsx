@@ -2,7 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button, Icon, Loader } from "semantic-ui-react";
 import PLCard from "./PLCard";
 import FlexColumn from "components/FlexColumn";
-import { PLMovements } from "./PLMovements";
+import PLMovements from "./PLMovements";
 import { useState } from "react";
 import Form from "features/movements/components/Form";
 import { MovementApiOut, api } from "app/services/api";
@@ -23,7 +23,6 @@ export default function PLReport() {
         ? {
             startDate: startDate,
             endDate: endDate,
-            currencyCode: "EUR",
           }
         : skipToken
     );

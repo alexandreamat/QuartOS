@@ -493,7 +493,6 @@ const injectedRtkApi = api
         >({
           query: (queryArg) => ({
             url: `/api/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}/expenses`,
-            params: { currency_code: queryArg.currencyCode },
           }),
           providesTags: ["users", "movements"],
         }),
@@ -504,7 +503,6 @@ const injectedRtkApi = api
         >({
           query: (queryArg) => ({
             url: `/api/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}/income`,
-            params: { currency_code: queryArg.currencyCode },
           }),
           providesTags: ["users", "movements"],
         }),
@@ -514,7 +512,6 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/api/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}`,
-          params: { currency_code: queryArg.currencyCode },
         }),
         providesTags: ["users", "movements"],
       }),
@@ -524,11 +521,7 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/api/users/me/movements/aggregates/`,
-          params: {
-            currency_code: queryArg.currencyCode,
-            page: queryArg.page,
-            per_page: queryArg.perPage,
-          },
+          params: { page: queryArg.page, per_page: queryArg.perPage },
         }),
         providesTags: ["users", "movements"],
       }),
@@ -937,7 +930,6 @@ export type ReadExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGet
   {
     startDate: string;
     endDate: string;
-    currencyCode: string;
   };
 export type ReadIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
@@ -945,7 +937,6 @@ export type ReadIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiA
   {
     startDate: string;
     endDate: string;
-    currencyCode: string;
   };
 export type GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiResponse =
   /** status 200 Successful Response */ PlStatement;
@@ -953,12 +944,10 @@ export type GetAggregateApiUsersMeMovementsAggregatesStartDateEndDateGetApiArg =
   {
     startDate: string;
     endDate: string;
-    currencyCode: string;
   };
 export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiResponse =
   /** status 200 Successful Response */ PlStatement[];
 export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg = {
-  currencyCode: string;
   page?: number;
   perPage?: number;
 };
@@ -1145,11 +1134,13 @@ export type UserApiOut = {
   email: string;
   full_name: string;
   is_superuser: boolean;
+  default_currency_code: string;
 };
 export type UserApiIn = {
   email: string;
   full_name: string;
   is_superuser: boolean;
+  default_currency_code: string;
   password: string;
 };
 export type UserInstitutionLinkPlaidOut = {
@@ -1209,7 +1200,7 @@ export type MovementApiOut = {
   amounts: {
     [key: string]: number;
   };
-  amount?: number;
+  amount: number;
 };
 export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {

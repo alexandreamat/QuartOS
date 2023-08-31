@@ -1,27 +1,15 @@
 import useFormField from "hooks/useFormField";
 import { Form, InputOnChangeData } from "semantic-ui-react";
-import FormDropdownInput from "./FormDropdownInput";
-import { codes } from "currency-codes";
-
-const currencyCodeOptions = codes().map((code, index) => ({
-  key: index,
-  value: code,
-  text: code,
-}));
+import FormCurrencyCodeDropdown from "./FormCurrencyCodeDropdown";
 
 export default function FormCurrencyInputs(props: {
   label: string;
   amount: ReturnType<typeof useFormField<string>>;
-  currency: ReturnType<typeof useFormField<string>>;
+  currencyCode: ReturnType<typeof useFormField<string>>;
 }) {
   return (
     <Form.Group widths="equal">
-      <FormDropdownInput
-        field={props.currency}
-        label="Currency"
-        options={currencyCodeOptions}
-        compact
-      />
+      <FormCurrencyCodeDropdown currencyCode={props.currencyCode} />
       <Form.Input
         type="number"
         input={{
