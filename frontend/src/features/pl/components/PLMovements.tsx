@@ -3,7 +3,7 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import MovementUnifiedCard from "features/movements/components/MovementUnifiedCard";
 import { Card, Loader } from "semantic-ui-react";
 
-export function PLMovements(props: {
+export default function PLMovements(props: {
   aggregate: PlStatement;
   showIncome: boolean;
   onOpenEditForm: (x: MovementApiOut) => void;
@@ -17,7 +17,6 @@ export function PLMovements(props: {
   const movementsQuery = movementsEndpoint.useQuery({
     startDate: props.aggregate.start_date,
     endDate: props.aggregate.end_date,
-    currencyCode: "EUR",
   });
 
   if (movementsQuery.isLoading || movementsQuery.isUninitialized)
@@ -37,7 +36,7 @@ export function PLMovements(props: {
   return (
     <Card.Group style={{ margin: 0 }}>
       {movements.map((movement) => {
-        cumulativeAmount += movement.amount || NaN;
+        cumulativeAmount += movement.amount;
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         return (
           <MovementUnifiedCard

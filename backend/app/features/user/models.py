@@ -6,7 +6,7 @@ from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, select, or_
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import Base
+from app.common.models import Base, CurrencyCode
 from app.utils import verify_password
 
 from app.features.userinstitutionlink import UserInstitutionLink
@@ -19,6 +19,7 @@ class __UserBase(SQLModel):
     email: EmailStr
     full_name: str
     is_superuser: bool
+    default_currency_code: CurrencyCode
 
 
 class UserApiOut(__UserBase, Base):

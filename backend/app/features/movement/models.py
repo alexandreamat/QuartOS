@@ -35,7 +35,7 @@ class MovementApiOut(__MovementBase, Base):
     latest_timestamp: date | None
     transactions: list[TransactionApiOut]
     amounts: dict[CurrencyCode, Decimal]
-    amount: Decimal | None
+    amount: Decimal
 
 
 class MovementApiIn(__MovementBase):
@@ -149,21 +149,26 @@ class Movement(__MovementBase, Base, table=True):
         amount_lt: Decimal | None,
         is_descending: bool,
         sort_by: MovementField,
+        currency_code: CurrencyCode,
     ) -> Iterable["Movement"]:
         if amount_gt is not None:
             movements = [
-                m for m in movements if m.get_amount(CurrencyCode("USD")) > amount_gt
+                m
+                for m in movements
+                if m.get_amount(CurrencyCode(currency_code)) > amount_gt
             ]
 
         if amount_lt is not None:
             movements = [
-                m for m in movements if m.get_amount(CurrencyCode("USD")) < amount_lt
+                m
+                for m in movements
+                if m.get_amount(CurrencyCode(currency_code)) < amount_lt
             ]
 
         if sort_by is MovementField.AMOUNT:
             movements = sorted(
                 movements,
-                key=lambda m: m.get_amount(CurrencyCode("USD")),
+                key=lambda m: m.get_amount(CurrencyCode(currency_code)),
                 reverse=is_descending,
             )
 

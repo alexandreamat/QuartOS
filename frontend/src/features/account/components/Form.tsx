@@ -225,7 +225,7 @@ export default function AccountForm(props: {
           <FormCurrencyInputs
             label="Current Balance"
             amount={initialBalanceStr}
-            currency={currencyCode}
+            currencyCode={currencyCode}
           />
           <FormValidationError fields={requiredFields} />
           <QueryErrorMessage query={createAccountResult} />

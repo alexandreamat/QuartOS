@@ -139,7 +139,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     def read_movements(
         cls,
         db: Session,
-        user_id: int | None = None,
+        user_id: int,
         userinstitutionlink_id: int | None = None,
         account_id: int | None = None,
         page: int = 0,
@@ -151,7 +151,6 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         sort_by: MovementField = MovementField.TIMESTAMP,
         amount_gt: Decimal | None = None,
         amount_lt: Decimal | None = None,
-        currency_code: CurrencyCode = CurrencyCode("USD"),
     ) -> Iterable[MovementApiOut]:
         statement = User.select_movements(
             user_id=user_id,
@@ -166,27 +165,35 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             sort_by=sort_by,
         )
         movements: Iterable[Movement] = db.exec(statement).all()
+        user_out = cls.read(db, user_id)
+        currency_code = user_out.default_currency_code
         movements = Movement.filter_movements(
-            movements, amount_gt, amount_lt, is_descending, sort_by
+            movements, amount_gt, amount_lt, is_descending, sort_by, currency_code
         )
-        for m in movements:
-            yield MovementApiOut.from_orm(m, {"amount": m.get_amount(currency_code)})
+        for movement in movements:
+            yield MovementApiOut.from_orm(
+                movement,
+                {"amount": movement.get_amount(currency_code)},
+            )
 
     @classmethod
     def read_movement(
         cls,
         db: Session,
-        user_id: int | None,
+        user_id: int,
         userinstitutionlink_id: int | None,
         account_id: int | None,
         movement_id: int,
         **kwargs: Any,
     ) -> MovementApiOut:
+        user_out = cls.read(db, user_id)
         statement = User.select_movements(
             user_id, userinstitutionlink_id, account_id, movement_id, **kwargs
         )
-        movement_out = db.exec(statement).one()
-        return MovementApiOut.from_orm(movement_out)
+        movement = db.exec(statement).one()
+        return MovementApiOut.from_orm(
+            movement, {"amount": movement.get_amount(user_out.default_currency_code)}
+        )
 
     @classmethod
     def get_movement_aggregate(
@@ -195,7 +202,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_id: int,
         start_date: date,
         end_date: date,
-        currency_code: CurrencyCode,
+        currency_code: CurrencyCode | None = None,
     ) -> PLStatement:
         statement = User.select_movements(
             user_id=user_id,
@@ -203,6 +210,9 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             end_date=end_date,
         )
         movements = db.exec(statement).all()
+        if not currency_code:
+            user_out = cls.read(db, user_id)
+            currency_code = user_out.default_currency_code
         return Movement.get_aggregate(
             movements,
             start_date=start_date,
@@ -217,8 +227,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_id: int,
         page: int,
         per_page: int,
-        currency_code: CurrencyCode,
     ) -> Iterable[PLStatement]:
+        user_out = cls.read(db, user_id)
         today = date.today()
         last_start_date = today.replace(day=1)
         offset = per_page * page
@@ -233,5 +243,5 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
                 user_id,
                 start_date=start_date,
                 end_date=end_date,
-                currency_code=currency_code,
+                currency_code=user_out.default_currency_code,
             )

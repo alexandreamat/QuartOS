@@ -1,5 +1,5 @@
 import useFormField from "hooks/useFormField";
-import { Form, InputOnChangeData } from "semantic-ui-react";
+import { Form, InputOnChangeData, SemanticICONS } from "semantic-ui-react";
 import { capitaliseFirstLetter } from "utils/string";
 
 export default function FormTextInput(props: {
@@ -7,6 +7,7 @@ export default function FormTextInput(props: {
   field: ReturnType<typeof useFormField<string>>;
   type?: string;
   readOnly?: boolean;
+  icon?: SemanticICONS;
 }) {
   const label = props.label || props.field.label;
 
@@ -21,6 +22,7 @@ export default function FormTextInput(props: {
 
   return (
     <Form.Input
+      icon={props.icon}
       type={props.type}
       label={label && capitaliseFirstLetter(label)}
       placeholder={label && "Enter " + label.toLocaleLowerCase()}
