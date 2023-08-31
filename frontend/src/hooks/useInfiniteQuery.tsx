@@ -24,118 +24,37 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
   const memoizedParams = useMemo(() => params, [JSON.stringify(params)]);
 
   const reference = useRef<HTMLDivElement | null>(null);
-  const page = useRef(0);
+
+  const [page, setPage] = useState(0);
+  const [pages, setPages] = useState(1);
+  const [isScrollLocked, setIsScrollLocked] = useState(false);
 
   const [data, setData] = useState<R[]>([]);
-  const [isUninitialized, setIsUninitialized] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isError, setIsError] = useState(false);
   const [isExhausted, setIsExhausted] = useState(false);
-  const [error, setError] = useState<any>(undefined);
 
-  const [fetchData] = endpoint.useLazyQuery();
-
-  const appendPage = useCallback(
-    async (page: number) => {
-      if (memoizedParams === skipToken) {
-        setData([]);
-        setIsUninitialized(true);
-        setIsLoading(false);
-        setIsFetching(false);
-        setIsExhausted(false);
-        return false;
-      }
-
-      setIsFetching(true);
-      setIsUninitialized(false);
-      let cont = false;
-      try {
-        const newData = await fetchData(
-          {
-            page,
-            perPage,
-            ...memoizedParams,
-          } as any,
-          true
-        ).unwrap();
-        if (newData.length === 0) {
-          setIsExhausted(true);
-        } else {
-          setData((prevData) => [...(page ? prevData : []), ...newData]);
-          cont = true;
-        }
-        setIsSuccess(true);
-        setIsError(false);
-        setError(undefined);
-      } catch (error) {
-        setIsSuccess(false);
-        setIsError(true);
-        setError(error);
-      } finally {
-        setIsLoading(false);
-        setIsFetching(false);
-      }
-      return cont;
-    },
-    [fetchData, memoizedParams, perPage]
+  const query = endpoint.useQuery(
+    memoizedParams !== skipToken && page < pages && !isExhausted
+      ? ({
+          ...memoizedParams,
+          page,
+          perPage,
+        } as any)
+      : skipToken
   );
 
   const handleMutation = useCallback(async () => {
-    if (memoizedParams === skipToken) return;
+    setData([]);
+    setPage(0);
+  }, []);
 
-    setIsFetching(true);
-    let newData: R[] = [];
-    try {
-      for (let i = 0; i < page.current; i++) {
-        const pageData = await fetchData(
-          {
-            i,
-            perPage,
-            ...memoizedParams,
-          } as any,
-          true
-        ).unwrap();
-        if (!pageData.length) {
-          setIsExhausted(true);
-          break;
-        }
-        newData = newData.concat(pageData);
-      }
-      setData(newData);
-      setIsSuccess(true);
-    } catch (error) {
-      setIsSuccess(false);
-      setIsError(true);
-      setError(error);
-    } finally {
-      setIsLoading(false);
-      setIsFetching(false);
-    }
-  }, [memoizedParams, fetchData, perPage]);
-
-  useEffect(
-    () => setIsLoading(isFetching && isUninitialized),
-    [isUninitialized, isFetching]
-  );
+  useEffect(() => {
+    setData([]);
+    setPage(0);
+    setPages(1);
+  }, [memoizedParams]);
 
   useEffect(() => {
     const ref = reference.current;
-
-    let isExhausted = false;
-    let cancelled = false;
-
-    async function appendNextPage() {
-      if (isExhausted || cancelled) return;
-
-      const cont = await appendPage(page.current);
-      if (cancelled) return;
-      if (cont) page.current++;
-      else isExhausted = true;
-    }
-
-    let isScrollLocked = false;
 
     function handleScroll(event: Event) {
       if (isScrollLocked) return;
@@ -145,43 +64,35 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
       const scrollTop = target.scrollTop;
       const scrollBottom = target.scrollHeight - clientHeight - scrollTop;
       if (scrollBottom <= RATE * clientHeight) {
-        isScrollLocked = true;
-        appendNextPage().then(() =>
-          setTimeout(() => (isScrollLocked = false), 300)
-        );
+        setIsScrollLocked(true);
+        setPages((p) => p + 1);
       }
     }
 
-    appendNextPage().then(() => {
-      if (!cancelled) ref?.addEventListener("scroll", handleScroll);
-    });
+    ref?.addEventListener("scroll", handleScroll);
 
-    return () => {
-      cancelled = true;
-      if (ref) ref.scrollTop = 0;
-      page.current = 0;
-      setData([]);
-      setIsUninitialized(true);
-      setIsLoading(false);
-      setIsFetching(false);
-      setIsSuccess(false);
-      setIsError(false);
-      setIsExhausted(false);
-      setError(undefined);
-      ref?.removeEventListener("scroll", handleScroll);
-    };
-  }, [appendPage]);
+    return () => ref?.removeEventListener("scroll", handleScroll);
+  }, [isScrollLocked]);
+
+  useEffect(() => {
+    if (!query.data) return;
+    if (!query.data.length) return;
+    setData((prevData) => [...prevData, ...query.data!]);
+    setPage((p) => p + 1);
+    setIsScrollLocked(false);
+    if (!query.data.length) setIsExhausted(true);
+  }, [query.data]);
 
   return {
     reference,
     data,
     onMutation: handleMutation,
-    isUninitialized,
-    isLoading,
-    isFetching,
-    isError,
-    isSuccess,
+    isUninitialized: query.isUninitialized,
+    isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    isError: query.isError,
+    isSuccess: query.isSuccess,
     isExhausted,
-    error,
+    error: query.error,
   };
 }
