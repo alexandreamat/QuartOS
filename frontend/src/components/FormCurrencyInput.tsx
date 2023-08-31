@@ -7,7 +7,7 @@ import CurrencyLabel from "./CurrencyLabel";
 export default function FormCurrencyInput(props: {
   label?: string;
   field: ReturnType<typeof useFormField<string>>;
-  currency: string;
+  currency?: string;
   query?: SimpleQuery;
   readOnly?: boolean;
 }) {
@@ -17,10 +17,14 @@ export default function FormCurrencyInput(props: {
     return (
       <Form.Field>
         <label>{label && capitaliseFirstLetter(label)}</label>
-        <CurrencyLabel
-          currencyCode={props.currency}
-          amount={Number(props.field.value)}
-        />
+        {props.query?.isLoading ? (
+          <CurrencyLabel.Placeholder />
+        ) : (
+          <CurrencyLabel
+            currencyCode={props.currency!}
+            amount={Number(props.field.value)}
+          />
+        )}
       </Form.Field>
     );
   }

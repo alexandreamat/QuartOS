@@ -40,7 +40,6 @@ export default function TransactionForm(props: {
     amountStr: useFormField("", "amount"),
     timestamp: useFormField(new Date(), "date"),
     name: useFormField("", "name"),
-    currencyCode: useFormField("", "currency"),
     accountId: useFormField(0, "account"),
   };
 
@@ -66,11 +65,6 @@ export default function TransactionForm(props: {
     form.timestamp.set(timestamp ? new Date(timestamp) : new Date());
     form.name.set(movement.name);
   }, [movementQuery.isSuccess, movementQuery.data, props.open]);
-
-  useEffect(() => {
-    accountQuery.isSuccess &&
-      form.currencyCode.set(accountQuery.data.currency_code);
-  }, [accountQuery.isSuccess, accountQuery.data, props.open]);
 
   useEffect(() => {
     props.transaction && transactionApiOutToForm(props.transaction, form);
@@ -123,13 +117,13 @@ export default function TransactionForm(props: {
           <FormCurrencyInput
             query={accountQuery}
             field={form.amountStr}
-            currency={form.currencyCode.value || "USD"}
+            currency={accountQuery.data?.currency_code}
             readOnly={disableSynced}
           />
-          {movementQuery.isSuccess && form.currencyCode.value && (
+          {movementQuery.isSuccess && accountQuery.data?.currency_code && (
             <CurrencyExchangeTips
               relatedTransactions={movementQuery.data.transactions}
-              currencyCode={form.currencyCode.value}
+              currencyCode={accountQuery.data.currency_code}
             />
           )}
           <FormTextInput field={form.name} readOnly={disableSynced} />

@@ -27,8 +27,6 @@ def create_transaction_plaid_in(
 
     return TransactionPlaidIn(
         amount=-transaction.amount,
-        currency_code=getattr(transaction, "iso_currency_code", None)
-        or transaction.unofficial_currency_code,
         name=name,
         plaid_id=transaction.transaction_id,
         timestamp=transaction.date,

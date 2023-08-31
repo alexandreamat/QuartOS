@@ -12,7 +12,6 @@ export function transactionApiOutToForm(
   );
   form.name.set(transaction.name);
   form.accountId.set(transaction.account_id);
-  form.currencyCode.set(transaction.currency_code);
 }
 
 export function transactionFormToApiIn(
@@ -22,6 +21,5 @@ export function transactionFormToApiIn(
     amount: Number(form.amountStr.value!),
     timestamp: formatDateParam(form.timestamp.value!),
     name: form.name.value!,
-    currency_code: form.currencyCode.value!,
   };
 }

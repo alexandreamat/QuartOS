@@ -5,11 +5,9 @@ import {
 } from "app/services/api";
 import CurrencyLabel from "components/CurrencyLabel";
 import FormattedTimestamp from "components/FormattedTimestamp";
-import LoadableQuery from "components/LoadableCell";
 import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
 import { Grid, Placeholder, Popup, Step } from "semantic-ui-react";
-import { SimpleQuery } from "interfaces";
 import { ClickableIcon } from "components/ClickableIcon";
 import { CSSProperties } from "react";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
@@ -30,14 +28,11 @@ const EditFlow = (props: { onOpenEditForm: () => void }) => (
 );
 
 const AccountLogo = (props: {
-  query: SimpleQuery;
   account: AccountApiOut;
-  institution: InstitutionApiOut;
+  institution?: InstitutionApiOut;
 }) => (
   <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-    <LoadableQuery query={props.query}>
-      <AccountIcon account={props.account} institution={props.institution} />
-    </LoadableQuery>
+    <AccountIcon account={props.account} institution={props.institution} />
   </Grid.Column>
 );
 
@@ -61,30 +56,43 @@ function Outflow(props: {
 }) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
+  const Row = (props: {
+    flow: TransactionApiOut;
+    account: AccountApiOut;
+    institution?: InstitutionApiOut;
+    onRemove?: () => void;
+    onOpenEditForm?: () => void;
+    style?: CSSProperties;
+  }) => (
+    <Grid.Row columns="equal" style={{ padding: flowPadding, ...props.style }}>
+      {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+      {props.onOpenEditForm && (
+        <EditFlow onOpenEditForm={props.onOpenEditForm} />
+      )}
+      <AccountLogo account={props.account} institution={props.institution} />
+      <TransactionName name={props.flow.name} />
+      <Amount
+        amount={props.flow.amount}
+        currencyCode={props.account.currency_code}
+      />
+    </Grid.Row>
+  );
+
+  if (!accountQueries.account)
+    return <OutflowPlaceholder onRemove onOpenEditForm />;
+
   return (
     <Popup
       hideOnScroll
       content={<FormattedTimestamp timestamp={props.flow.timestamp} />}
       trigger={
-        <Grid.Row
-          columns="equal"
-          style={{ padding: flowPadding, ...props.style }}
-        >
-          {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
-          {props.onOpenEditForm && (
-            <EditFlow onOpenEditForm={props.onOpenEditForm} />
-          )}
-          <AccountLogo
-            query={accountQueries}
-            account={accountQueries.account!}
-            institution={accountQueries.institution!}
-          />
-          <TransactionName name={props.flow.name} />
-          <Amount
-            amount={props.flow.amount}
-            currencyCode={props.flow.currency_code}
-          />
-        </Grid.Row>
+        <Row
+          flow={props.flow}
+          onOpenEditForm={props.onOpenEditForm}
+          onRemove={props.onRemove}
+          account={accountQueries.account}
+          institution={accountQueries.institution}
+        />
       }
     />
   );
@@ -98,30 +106,44 @@ function Inflow(props: {
 }) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
+  const Row = (props: {
+    flow: TransactionApiOut;
+    account: AccountApiOut;
+    institution?: InstitutionApiOut;
+    onRemove?: () => void;
+    onOpenEditForm?: () => void;
+    style?: CSSProperties;
+  }) => (
+    <Grid.Row columns="equal" style={{ padding: flowPadding, ...props.style }}>
+      <Amount
+        amount={props.flow.amount}
+        currencyCode={props.account.currency_code}
+      />
+      <TransactionName name={props.flow.name} />
+      <AccountLogo account={props.account} institution={props.institution} />
+      {props.onOpenEditForm && (
+        <EditFlow onOpenEditForm={props.onOpenEditForm} />
+      )}
+      {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+    </Grid.Row>
+  );
+
+  if (!accountQueries.account)
+    return <InflowPlaceholder onRemove onOpenEditForm />;
+
   return (
     <Popup
       hideOnScroll
       content={<FormattedTimestamp timestamp={props.flow.timestamp} />}
       trigger={
-        <Grid.Row
-          columns="equal"
-          style={{ padding: flowPadding, ...props.style }}
-        >
-          <Amount
-            amount={props.flow.amount}
-            currencyCode={props.flow.currency_code}
-          />
-          <TransactionName name={props.flow.name} />
-          <AccountLogo
-            query={accountQueries}
-            account={accountQueries.account!}
-            institution={accountQueries.institution!}
-          />
-          {props.onOpenEditForm && (
-            <EditFlow onOpenEditForm={props.onOpenEditForm} />
-          )}
-          {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
-        </Grid.Row>
+        <Row
+          flow={props.flow}
+          account={accountQueries.account}
+          institution={accountQueries.institution}
+          onRemove={props.onRemove}
+          onOpenEditForm={props.onOpenEditForm}
+          style={props.style}
+        />
       }
     />
   );

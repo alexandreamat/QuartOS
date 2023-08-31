@@ -49,6 +49,20 @@ export function TransactionCard(
     "accountId" in props ? props.accountId : props.transaction.account_id
   );
 
+  const currencyLabel = (
+    <div>
+      Total:
+      {accountQueries.account ? (
+        <CurrencyLabel
+          amount={props.transaction.amount}
+          currencyCode={accountQueries.account.currency_code}
+        />
+      ) : (
+        <CurrencyLabel.Placeholder />
+      )}
+    </div>
+  );
+
   return (
     <Card fluid color="teal">
       <Card.Content>
@@ -121,30 +135,18 @@ export function TransactionCard(
               content={
                 <p>
                   Account balance:
-                  <FormattedCurrency
-                    amount={props.transaction.account_balance || 0}
-                    currencyCode={props.transaction.currency_code}
-                  />
+                  {accountQueries.account && (
+                    <FormattedCurrency
+                      amount={props.transaction.account_balance || 0}
+                      currencyCode={accountQueries.account.currency_code}
+                    />
+                  )}
                 </p>
               }
-              trigger={
-                <div>
-                  Total:
-                  <CurrencyLabel
-                    amount={props.transaction.amount}
-                    currencyCode={props.transaction.currency_code}
-                  />
-                </div>
-              }
+              trigger={currencyLabel}
             />
           ) : (
-            <div>
-              Total:
-              <CurrencyLabel
-                amount={props.transaction.amount}
-                currencyCode={props.transaction.currency_code}
-              />
-            </div>
+            currencyLabel
           )}
         </Header>
       </Card.Content>

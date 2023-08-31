@@ -20,7 +20,6 @@ class __TransactionBase(SQLModel):
     amount: Decimal
     timestamp: date
     name: str
-    currency_code: CurrencyCode
 
 
 class TransactionApiOut(__TransactionBase, Base):
@@ -48,6 +47,10 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
 
     account: "Account" = Relationship(back_populates="transactions")
     movement: "Movement" = Relationship(back_populates="transactions")
+
+    @property
+    def currency_code(self) -> CurrencyCode:
+        return self.account.currency_code
 
     @property
     def user(self) -> "User":
