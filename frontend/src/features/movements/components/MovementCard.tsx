@@ -32,9 +32,11 @@ export function MovementCard(props: {
   explanationRate?: number;
   selectedAccountId?: number;
   onMutate?: () => void;
+  showFlows?: boolean;
+  editable?: boolean;
 }) {
-  const [isEditMode, setIsEditMode] = useState(false);
   const [name, setName] = useState(props.movement.name);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const [updateMovement, updateMovementResult] =
     api.endpoints.updateApiUsersMeMovementsMovementIdPut.useMutation();
@@ -45,13 +47,13 @@ export function MovementCard(props: {
       await updateMovement({
         movementId: props.movement.id,
         movementApiIn: newMovement,
-      });
+      }).unwrap();
     } catch (error) {
       logMutationError(error, updateMovementResult);
       return;
     }
     setIsEditMode(false);
-    props.onMutate && props.onMutate();
+    props.onMutate && props.onMutate!();
   }
 
   return (
@@ -91,7 +93,7 @@ export function MovementCard(props: {
                   size="tiny"
                   onClick={updateName}
                   disabled={name === props.movement.name}
-                  error={updateMovementResult.isError}
+                  negative={updateMovementResult.isError}
                   loading={updateMovementResult.isLoading}
                 />
               </FlexRow>
@@ -100,7 +102,7 @@ export function MovementCard(props: {
                 <Header as="h5">
                   <LineWithHiddenOverflow content={props.movement.name} />
                 </Header>
-                {props.onMutate && (
+                {props.editable && (
                   <ClickableIcon
                     name="pencil"
                     onClick={() => setIsEditMode(true)}
@@ -115,12 +117,14 @@ export function MovementCard(props: {
             </Grid.Column>
           )}
         </Grid>
-        <Flows
-          transactions={props.movement.transactions}
-          onRemove={props.onRemoveTransaction}
-          onOpenEditForm={props.onOpenEditTransactionForm}
-          selectedAccountId={props.selectedAccountId}
-        />
+        {props.showFlows && (
+          <Flows
+            transactions={props.movement.transactions}
+            onRemove={props.onRemoveTransaction}
+            onOpenEditForm={props.onOpenEditTransactionForm}
+            selectedAccountId={props.selectedAccountId}
+          />
+        )}
       </Card.Content>
       <Card.Content extra>
         {props.onOpenCreateTransactionForm && (
@@ -159,6 +163,7 @@ function MovementCardPlaceholder(props: {
   onOpenEditTransactionForm?: boolean;
   onRemoveTransaction?: boolean;
   explanationRate?: boolean;
+  showFlows?: boolean;
 }) {
   return (
     <Card fluid color="teal">
@@ -190,10 +195,12 @@ function MovementCardPlaceholder(props: {
             </Grid.Column>
           )}
         </Grid>
-        <Flows.Placeholder
-          onRemove={props.onRemoveTransaction}
-          onOpenEditForm={props.onOpenEditTransactionForm}
-        />
+        {props.showFlows && (
+          <Flows.Placeholder
+            onRemove={props.onRemoveTransaction}
+            onOpenEditForm={props.onOpenEditTransactionForm}
+          />
+        )}
       </Card.Content>
       <Card.Content extra>
         {props.onOpenCreateTransactionForm && (

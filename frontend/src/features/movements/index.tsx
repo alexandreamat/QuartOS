@@ -8,8 +8,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { formatDateParam } from "utils/time";
 import { Card } from "semantic-ui-react";
-import MovementUnifiedCard from "./components/MovementUnifiedCard";
-import { TransactionCard } from "features/transaction/components/TransactionCard";
+import { MovementCard } from "./components/MovementCard";
 
 const PER_PAGE = 10;
 const NOT_FOUND = -1;
@@ -121,15 +120,16 @@ export default function Movements() {
         <Card.Group style={{ margin: 0 }}>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
           {infiniteQuery.data.map((m) => (
-            <MovementUnifiedCard
+            <MovementCard
               key={m.id}
               movement={m}
               onOpenEditForm={() => handleOpenEditForm(m.id)}
               selectedAccountId={accountId}
+              showFlows={m.transactions.length > 1}
             />
           ))}
           {infiniteQuery.isFetching && (
-            <TransactionCard.Placeholder key="placeholder" onOpenEditForm />
+            <MovementCard.Placeholder key="placeholder" onOpenEditForm />
           )}
           {infiniteQuery.isExhausted && (
             <Card fluid>

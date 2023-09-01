@@ -1,8 +1,4 @@
-import {
-  BaseQueryFn,
-  createApi,
-  fetchBaseQuery,
-} from "@reduxjs/toolkit/query/react";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { RootState } from "app/store";
 import { BASE_URL } from "env";
 

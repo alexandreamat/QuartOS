@@ -56,28 +56,6 @@ function Outflow(props: {
 }) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
-  const Row = (props: {
-    flow: TransactionApiOut;
-    account: AccountApiOut;
-    institution?: InstitutionApiOut;
-    onRemove?: () => void;
-    onOpenEditForm?: () => void;
-    style?: CSSProperties;
-  }) => (
-    <Grid.Row columns="equal" style={{ padding: flowPadding, ...props.style }}>
-      {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
-      {props.onOpenEditForm && (
-        <EditFlow onOpenEditForm={props.onOpenEditForm} />
-      )}
-      <AccountLogo account={props.account} institution={props.institution} />
-      <TransactionName name={props.flow.name} />
-      <Amount
-        amount={props.flow.amount}
-        currencyCode={props.account.currency_code}
-      />
-    </Grid.Row>
-  );
-
   if (!accountQueries.account)
     return <OutflowPlaceholder onRemove onOpenEditForm />;
 
@@ -86,13 +64,24 @@ function Outflow(props: {
       hideOnScroll
       content={<FormattedTimestamp timestamp={props.flow.timestamp} />}
       trigger={
-        <Row
-          flow={props.flow}
-          onOpenEditForm={props.onOpenEditForm}
-          onRemove={props.onRemove}
-          account={accountQueries.account}
-          institution={accountQueries.institution}
-        />
+        <Grid.Row
+          columns="equal"
+          style={{ padding: flowPadding, ...props.style }}
+        >
+          {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+          {props.onOpenEditForm && (
+            <EditFlow onOpenEditForm={props.onOpenEditForm} />
+          )}
+          <AccountLogo
+            account={accountQueries.account}
+            institution={accountQueries.institution}
+          />
+          <TransactionName name={props.flow.name} />
+          <Amount
+            amount={props.flow.amount}
+            currencyCode={accountQueries.account.currency_code}
+          />
+        </Grid.Row>
       }
     />
   );
@@ -106,28 +95,6 @@ function Inflow(props: {
 }) {
   const accountQueries = useAccountQueries(props.flow.account_id);
 
-  const Row = (props: {
-    flow: TransactionApiOut;
-    account: AccountApiOut;
-    institution?: InstitutionApiOut;
-    onRemove?: () => void;
-    onOpenEditForm?: () => void;
-    style?: CSSProperties;
-  }) => (
-    <Grid.Row columns="equal" style={{ padding: flowPadding, ...props.style }}>
-      <Amount
-        amount={props.flow.amount}
-        currencyCode={props.account.currency_code}
-      />
-      <TransactionName name={props.flow.name} />
-      <AccountLogo account={props.account} institution={props.institution} />
-      {props.onOpenEditForm && (
-        <EditFlow onOpenEditForm={props.onOpenEditForm} />
-      )}
-      {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
-    </Grid.Row>
-  );
-
   if (!accountQueries.account)
     return <InflowPlaceholder onRemove onOpenEditForm />;
 
@@ -136,14 +103,24 @@ function Inflow(props: {
       hideOnScroll
       content={<FormattedTimestamp timestamp={props.flow.timestamp} />}
       trigger={
-        <Row
-          flow={props.flow}
-          account={accountQueries.account}
-          institution={accountQueries.institution}
-          onRemove={props.onRemove}
-          onOpenEditForm={props.onOpenEditForm}
-          style={props.style}
-        />
+        <Grid.Row
+          columns="equal"
+          style={{ padding: flowPadding, ...props.style }}
+        >
+          <Amount
+            amount={props.flow.amount}
+            currencyCode={accountQueries.account.currency_code}
+          />
+          <TransactionName name={props.flow.name} />
+          <AccountLogo
+            account={accountQueries.account}
+            institution={accountQueries.institution}
+          />
+          {props.onOpenEditForm && (
+            <EditFlow onOpenEditForm={props.onOpenEditForm} />
+          )}
+          {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+        </Grid.Row>
       }
     />
   );

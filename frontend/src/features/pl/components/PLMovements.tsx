@@ -1,6 +1,6 @@
 import { MovementApiOut, PlStatement, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import MovementUnifiedCard from "features/movements/components/MovementUnifiedCard";
+import { MovementCard } from "features/movements/components/MovementCard";
 import { Card, Loader } from "semantic-ui-react";
 
 export default function PLMovements(props: {
@@ -39,11 +39,12 @@ export default function PLMovements(props: {
         cumulativeAmount += movement.amount;
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         return (
-          <MovementUnifiedCard
+          <MovementCard
             key={movement.id}
             movement={movement}
             onOpenEditForm={() => props.onOpenEditForm(movement)}
             explanationRate={explanationRate}
+            showFlows={movement.transactions.length > 1}
           />
         );
       })}
