@@ -1,4 +1,4 @@
-import { TransactionApiIn, TransactionApiOut } from "app/services/api";
+import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import {
   Button,
   Card,
@@ -18,6 +18,7 @@ import AccountIcon from "features/account/components/Icon";
 import { FormattedCurrency } from "components/FormattedCurrency";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import MutateActionButton from "components/MutateActionButton";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export function TransactionCard(
   props:
@@ -48,6 +49,13 @@ export function TransactionCard(
   const accountQueries = useAccountQueries(
     "accountId" in props ? props.accountId : props.transaction.account_id
   );
+
+  const movementQuery =
+    api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
+      "movement_id" in props.transaction
+        ? props.transaction.movement_id
+        : skipToken
+    );
 
   const currencyLabel = (
     <div>
@@ -106,20 +114,22 @@ export function TransactionCard(
               />
             </Grid.Column>
           )}
-          {"onGoMovement" in props && (
-            <Grid.Column width={1} textAlign="center">
+          <Grid.Column width={2} textAlign="center">
+            {"onGoMovement" in props && (
               <ActionButton
                 tooltip="Edit Movement"
                 icon="arrows alternate horizontal"
+                content={
+                  movementQuery.data?.transactions.length.toFixed(0) ||
+                  undefined
+                }
                 onClick={props.onGoMovement!}
               />
-            </Grid.Column>
-          )}
-          {"onOpenEditForm" in props && (
-            <Grid.Column width={1} textAlign="center">
+            )}
+            {"onOpenEditForm" in props && (
               <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
-            </Grid.Column>
-          )}
+            )}
+          </Grid.Column>
         </Grid>
       </Card.Content>
       <Card.Content extra>
