@@ -204,6 +204,7 @@ export default function Form(props: {
                 onOpenCreateTransactionForm
                 onOpenEditTransactionForm
                 onRemoveTransaction
+                showFlows
               />
               <ActionButton.Placeholder
                 icon="arrow right"
@@ -240,6 +241,8 @@ export default function Form(props: {
                           : undefined
                       }
                       onMutate={props.onMutate}
+                      showFlows
+                      editable
                     />
                     <ActionButton
                       disabled={!props.onGoToNext}
