@@ -7,6 +7,7 @@ from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
 
 from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
+from app.common.utils import filter_query_by_search
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -85,11 +86,27 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         search: str | None = None,
         timestamp: date | None = None,
         is_descending: bool = True,
+        amount_ge: Decimal | None = None,
+        amount_le: Decimal | None = None,
     ) -> SelectOfScalar["Transaction"]:
+        # SELECT
         statement = Transaction.select()
+
+        # WHERE
         if transaction_id:
             statement = statement.where(Transaction.id == transaction_id)
+        if timestamp:
+            where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
+            where_clause = getattr(col(Transaction.timestamp), where_op)(timestamp)
+            statement = statement.where(where_clause)
+        if search:
+            statement = filter_query_by_search(search, statement, col(Transaction.name))
+        if amount_ge:
+            statement = statement.where(Transaction.amount >= amount_ge)
+        if amount_le:
+            statement = statement.where(Transaction.amount <= amount_le)
 
+        # ORDER BY
         statement = statement.order_by(
             *(
                 cls.get_timestamp_desc_clauses()
@@ -98,15 +115,7 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
             )
         )
 
-        if timestamp:
-            where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
-            where_clause = getattr(col(Transaction.timestamp), where_op)(timestamp)
-            statement = statement.where(where_clause)
-
-        if search:
-            search = f"%{search}%"
-            statement = statement.where(col(Transaction.name).like(search))
-
+        # OFFSET and LIMIT
         if per_page:
             offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
