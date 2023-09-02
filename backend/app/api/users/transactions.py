@@ -1,3 +1,4 @@
+from decimal import Decimal
 from datetime import date
 from typing import Iterable
 
@@ -20,6 +21,8 @@ def read_many(
     timestamp: date | None = None,
     search: str | None = None,
     is_descending: bool = True,
+    amount_ge: Decimal | None = None,
+    amount_le: Decimal | None = None,
 ) -> Iterable[TransactionApiOut]:
     return CRUDUser.read_transactions(
         db,
@@ -32,4 +35,6 @@ def read_many(
         search=search,
         timestamp=timestamp,
         is_descending=is_descending,
+        amount_ge=amount_ge,
+        amount_le=amount_le,
     )

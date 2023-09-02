@@ -262,10 +262,9 @@ export default function Form(props: {
           <QueryErrorMessage query={createMovementsResult} />
           <QueryErrorMessage query={updateTransactionResult} />
           <QueryErrorMessage query={deleteMovementResult} />
+          <Divider horizontal>or pick existing ones</Divider>
           <FlexColumn.Auto>
-            <Divider horizontal>or pick existing ones</Divider>
             <TransactionCards
-              onMutation={handleOpenCreateTransactionForm}
               onFlowCheckboxChange={handleFlowCheckboxChange}
               checked={movementQuery.data?.transactions.map((t) => t.id)}
             />
