@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Table, Loader, Label } from "semantic-ui-react";
-import InstitutionLinkForm from "./components/Form";
+import Form from "./components/Form";
 import { UserInstitutionLinkApiOut, api } from "app/services/api";
 import { logMutationError } from "utils/error";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
@@ -8,39 +8,41 @@ import ActionButton from "components/ActionButton";
 import LoadableLine from "components/LoadableLine";
 import TableHeader from "components/TableHeader";
 import TableFooter from "components/TableFooter";
-import EditActionButton from "components/EditActionButton";
-import ConfirmDeleteButton from "components/ConfirmDeleteButton";
+import MutateActionButton from "components/MutateActionButton";
 import { useNavigate } from "react-router-dom";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 
 function InstitutionLinkRow(props: {
   institutionLink: UserInstitutionLinkApiOut;
-  onOpenEditForm: (userInstitutionLink: UserInstitutionLinkApiOut) => void;
+  onOpenEditForm: () => void;
 }) {
   const navigate = useNavigate();
 
   const [syncLink, syncLinkResult] =
     api.endpoints.syncApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidSyncPost.useMutation();
-  const [deleteInstitutionLink, deleteInstitutionLinkResult] =
-    api.endpoints.deleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDelete.useMutation();
 
-  const handleDelete = async (institutionLink: UserInstitutionLinkApiOut) => {
-    try {
-      await deleteInstitutionLink(institutionLink.id).unwrap();
-    } catch (error) {
-      logMutationError(error, deleteInstitutionLinkResult);
-      return;
-    }
-  };
   const handleSync = async (userInstitutionLink: UserInstitutionLinkApiOut) => {
     try {
       await syncLink(userInstitutionLink.id).unwrap();
     } catch (error) {
+      if (typeof error === "object" && error) {
+        if ("data" in error && typeof error.data === "object" && error.data) {
+          const data = error.data;
+          if ("detail" in data && typeof data.detail === "string") {
+            const detail = data.detail;
+            if (detail === "ITEM_LOGIN_REQUIRED") {
+              props.onOpenEditForm();
+              return;
+            }
+          }
+        }
+      }
       logMutationError(error, syncLinkResult);
       return;
     }
   };
+
   const institutionQuery =
     api.endpoints.readApiInstitutionsInstitutionIdGet.useQuery(
       props.institutionLink.institution_id
@@ -97,19 +99,7 @@ function InstitutionLinkRow(props: {
         />
       </Table.Cell>
       <Table.Cell collapsing>
-        <EditActionButton
-          disabled={props.institutionLink.is_synced}
-          onOpenEditForm={() => props.onOpenEditForm(props.institutionLink)}
-        />
-      </Table.Cell>
-      <Table.Cell collapsing>
-        <ConfirmDeleteButton
-          query={deleteInstitutionLinkResult}
-          onDelete={async () => await handleDelete(props.institutionLink)}
-          confirmContent={
-            "All associated account and transaction data WILL BE LOST. Are you sure?"
-          }
-        />
+        <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
       </Table.Cell>
     </Table.Row>
   );
@@ -125,13 +115,13 @@ const InstitutionLinksTable = (props: {
 
   return (
     <Table>
-      <TableHeader headers={["", "Institution", "Website"]} actions={4} />
+      <TableHeader headers={["", "Institution", "Website"]} actions={3} />
       <Table.Body>
         {props.institutionLinks.map((institutionLink) => (
           <InstitutionLinkRow
             key={institutionLink.id}
             institutionLink={institutionLink}
-            onOpenEditForm={props.onOpenEditForm}
+            onOpenEditForm={() => props.onOpenEditForm(institutionLink)}
           />
         ))}
       </Table.Body>
@@ -174,7 +164,7 @@ export default function InstitutionsLinks() {
         onOpenEditForm={handleOpenEditForm}
         institutionLinks={institutionsLinksQuery.data || []}
       />
-      <InstitutionLinkForm
+      <Form
         institutionLink={selectedInstitutionLink}
         open={isFormOpen}
         onClose={handleCloseForm}

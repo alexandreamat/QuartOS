@@ -1,4 +1,6 @@
 import urllib3
+import plaid
+import json
 from typing import Iterable
 from datetime import date
 
@@ -85,12 +87,17 @@ def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
         db, institution_link_out.plaid_id
     )
     replacement_pattern_out = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, institution_link_plaid_out.id
+        db, userinstitutionlink_id
     )
     try:
         _sync_transactions(db, institution_link_plaid_out, replacement_pattern_out)
     except urllib3.exceptions.ReadTimeoutError:
         raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
+    except plaid.ApiException as e:
+        error_code = json.loads(e.body).get("error_code")
+        if error_code == "ITEM_LOGIN_REQUIRED":
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=error_code)
+        raise
 
 
 @router.put("/resync/{start_date}/{end_date}")

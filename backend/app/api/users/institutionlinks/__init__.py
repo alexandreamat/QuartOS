@@ -24,8 +24,22 @@ router = APIRouter()
 
 
 @router.get("/link_token")
-def get_link_token(me: CurrentUser) -> str:
-    return create_link_token(me.id)
+def get_link_token(
+    db: DBSession,
+    me: CurrentUser,
+    userinstitutionlink_id: int | None = None,
+) -> str:
+    if userinstitutionlink_id:
+        userinstitutionlink_out = CRUDUser.read_user_institution_link(
+            db, me.id, userinstitutionlink_id
+        )
+        userinstitutionlink_plaid_out = CRUDSyncableUserInstitutionLink.read(
+            db, userinstitutionlink_out.id
+        )
+        access_token = userinstitutionlink_plaid_out.access_token
+    else:
+        access_token = None
+    return create_link_token(me.id, access_token)
 
 
 @router.post("/public_token")
