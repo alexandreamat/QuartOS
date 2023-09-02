@@ -69,7 +69,7 @@ def update(
     movement_in: MovementApiIn,
 ) -> MovementApiOut:
     CRUDUser.read_movement(db, me.id, None, None, movement_id)
-    return CRUDMovement.update(db, movement_id, movement_in)
+    return CRUDUser.update_movement(db, me.id, movement_id, movement_in)
 
 
 @router.delete("/{movement_id}")
