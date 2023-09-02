@@ -1,13 +1,18 @@
-import { api } from "app/services/api";
+import { UserInstitutionLinkApiOut, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import React from "react";
 import { PlaidLink, PlaidLinkOnSuccessMetadata } from "react-plaid-link";
 import { Header, Icon, Loader, Segment } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 
-export default function PlaidLinkButton(props: { onSuccess: () => void }) {
+export default function PlaidLinkButton(props: {
+  onSuccess: () => void;
+  institutionLink?: UserInstitutionLinkApiOut;
+}) {
   const linkTokenQuery =
-    api.endpoints.getLinkTokenApiUsersMeInstitutionLinksLinkTokenGet.useQuery();
+    api.endpoints.getLinkTokenApiUsersMeInstitutionLinksLinkTokenGet.useQuery(
+      props.institutionLink?.id || 0
+    );
   const [setPublicToken, setPublicTokenResult] =
     api.endpoints.setPublicTokenApiUsersMeInstitutionLinksPublicTokenPost.useMutation();
 
@@ -19,14 +24,16 @@ export default function PlaidLinkButton(props: { onSuccess: () => void }) {
       console.error("Same-Day micro-deposit verifications are not supported!");
       return;
     }
-    try {
-      await setPublicToken({
-        publicToken,
-        institutionPlaidId: metadata.institution.institution_id,
-      }).unwrap();
-    } catch (error) {
-      logMutationError(error, setPublicTokenResult);
-      return;
+    if (!props.institutionLink) {
+      try {
+        await setPublicToken({
+          publicToken,
+          institutionPlaidId: metadata.institution.institution_id,
+        }).unwrap();
+      } catch (error) {
+        logMutationError(error, setPublicTokenResult);
+        return;
+      }
     }
     props.onSuccess();
   };
@@ -40,7 +47,9 @@ export default function PlaidLinkButton(props: { onSuccess: () => void }) {
         <>
           <Header icon>
             <Icon name="university" />
-            Connect with your Financial Institution
+            {props.institutionLink
+              ? "Re-connect with your Financial Institution"
+              : "Connect with your Financial Institution"}
           </Header>
           <PlaidLink
             clientName="QuartOS"

@@ -1,22 +1,29 @@
-import { Divider, Header, Message } from "semantic-ui-react";
+import {
+  Button,
+  Divider,
+  Form,
+  Header,
+  Message,
+  Modal,
+} from "semantic-ui-react";
 import { useEffect } from "react";
 import {
   UserInstitutionLinkApiIn,
   UserInstitutionLinkApiOut,
   api,
 } from "app/services/api";
-import FormModal from "components/FormModal";
 import useFormField from "hooks/useFormField";
 import FormDropdownInput from "components/FormDropdownInput";
-import PlaidLinkButton from "features/institutionlink/components/PlaidLinkButton";
+import PlaidLinkButton from "./PlaidLinkButton";
 import { useInstitutionOptions } from "features/institution/hooks";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { logMutationError } from "utils/error";
+import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 
 export default function InstitutionLinkForm(props: {
-  institutionLink?: UserInstitutionLinkApiOut;
   open: boolean;
   onClose: () => void;
+  institutionLink?: UserInstitutionLinkApiOut;
 }) {
   const institutionId = useFormField(0);
 
@@ -26,6 +33,8 @@ export default function InstitutionLinkForm(props: {
     api.endpoints.createApiUsersMeInstitutionLinksPost.useMutation();
   const [updateInstitutionLink, updateInstitutionLinkResult] =
     api.endpoints.updateApiUsersMeInstitutionLinksUserinstitutionlinkIdPut.useMutation();
+  const [deleteInstitutionLink, deleteInstitutionLinkResult] =
+    api.endpoints.deleteApiUsersMeInstitutionLinksUserinstitutionlinkIdDelete.useMutation();
 
   useEffect(() => {
     if (!props.institutionLink) return;
@@ -67,38 +76,76 @@ export default function InstitutionLinkForm(props: {
     handleClose();
   };
 
+  async function handleDelete() {
+    if (!props.institutionLink) return;
+
+    try {
+      await deleteInstitutionLink(props.institutionLink.id).unwrap();
+    } catch (error) {
+      logMutationError(error, deleteInstitutionLinkResult);
+      return;
+    }
+  }
+
   return (
-    <FormModal
-      open={props.open}
-      onClose={handleClose}
-      title={
-        (props.institutionLink ? "Edit" : "Add") +
-        " a Financial Institution Link"
-      }
-      onSubmit={handleSubmit}
-    >
-      {!props.institutionLink && (
-        <>
-          <PlaidLinkButton onSuccess={handleClose} />
-          <Divider horizontal>Or</Divider>
-          <Header textAlign="center">Create one manually</Header>
-        </>
-      )}
-      <FormDropdownInput
-        label="Institution"
-        options={institutionOptions.data || []}
-        query={institutionOptions}
-        field={institutionId}
-      />
-      {institutionId.isError && (
-        <Message
-          error
-          header="Action Forbidden"
-          content="All fields are required!"
+    <Modal open={props.open} onClose={handleClose}>
+      <Modal.Header>
+        {(props.institutionLink ? "Edit" : "Add") +
+          " a Financial Institution Link"}
+      </Modal.Header>
+      <Modal.Content>
+        <Form>
+          {(!props.institutionLink || props.institutionLink.is_synced) && (
+            <PlaidLinkButton
+              onSuccess={handleClose}
+              institutionLink={props.institutionLink}
+            />
+          )}
+          {!props.institutionLink && (
+            <>
+              <Divider horizontal>Or</Divider>
+              <Header textAlign="center">Create one manually</Header>
+            </>
+          )}
+          {(!props.institutionLink || !props.institutionLink.is_synced) && (
+            <FormDropdownInput
+              label="Institution"
+              options={institutionOptions.data}
+              query={institutionOptions}
+              field={institutionId}
+            />
+          )}
+        </Form>
+        {institutionId.isError && (
+          <Message
+            error
+            header="Action Forbidden"
+            content="All fields are required!"
+          />
+        )}
+        <QueryErrorMessage query={createInstitutionLinkResult} />
+        <QueryErrorMessage query={updateInstitutionLinkResult} />
+      </Modal.Content>
+      <Modal.Actions>
+        {props.institutionLink && (
+          <ConfirmDeleteButtonModal
+            query={deleteInstitutionLinkResult}
+            onDelete={handleDelete}
+            confirmContent={
+              "All associated account and transaction data WILL BE LOST. Are you sure?"
+            }
+          />
+        )}
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button
+          content="Save"
+          type="submit"
+          labelPosition="right"
+          icon="checkmark"
+          onClick={handleSubmit}
+          positive
         />
-      )}
-      <QueryErrorMessage query={createInstitutionLinkResult} />
-      <QueryErrorMessage query={updateInstitutionLinkResult} />
-    </FormModal>
+      </Modal.Actions>
+    </Modal>
   );
 }

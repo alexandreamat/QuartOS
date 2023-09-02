@@ -12,6 +12,7 @@ from plaid.model.item_public_token_exchange_request import (
 from plaid.model.item_public_token_exchange_response import (
     ItemPublicTokenExchangeResponse,
 )
+from plaid.model.link_token_create_request_update import LinkTokenCreateRequestUpdate
 from plaid.model.country_code import CountryCode
 
 
@@ -44,14 +45,26 @@ products = [Products(p) for p in PLAID_PRODUCTS]
 country_codes = [CountryCode(cc) for cc in PLAID_COUNTRY_CODES]
 
 
-def create_link_token(user_id: int) -> str:
-    request = LinkTokenCreateRequest(
-        products=products,
-        client_name="QuartOS",
-        country_codes=country_codes,
-        language="en",
-        user=LinkTokenCreateRequestUser(client_user_id=str(user_id)),
-    )
+def create_link_token(user_id: int, access_token: str | None = None) -> str:
+    if access_token:
+        request = LinkTokenCreateRequest(
+            products=products,
+            client_name="QuartOS",
+            country_codes=country_codes,
+            language="en",
+            user=LinkTokenCreateRequestUser(client_user_id=str(user_id)),
+            access_token=access_token,
+            update=LinkTokenCreateRequestUpdate(account_selection_enabled=True),
+            # link_customization_name="account_selection_v2_customization",
+        )
+    else:
+        request = LinkTokenCreateRequest(
+            products=products,
+            client_name="QuartOS",
+            country_codes=country_codes,
+            language="en",
+            user=LinkTokenCreateRequestUser(client_user_id=str(user_id)),
+        )
     response: LinkTokenCreateResponse = client.link_token_create(request)
     link_token: str = response.link_token
     return link_token

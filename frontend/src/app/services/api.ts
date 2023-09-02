@@ -303,7 +303,10 @@ const injectedRtkApi = api
         GetLinkTokenApiUsersMeInstitutionLinksLinkTokenGetApiResponse,
         GetLinkTokenApiUsersMeInstitutionLinksLinkTokenGetApiArg
       >({
-        query: () => ({ url: `/api/users/me/institution-links/link_token` }),
+        query: (queryArg) => ({
+          url: `/api/users/me/institution-links/link_token`,
+          params: { userinstitutionlink_id: queryArg },
+        }),
         providesTags: ["users", "institution-links"],
       }),
       setPublicTokenApiUsersMeInstitutionLinksPublicTokenPost: build.mutation<
@@ -537,6 +540,8 @@ const injectedRtkApi = api
             timestamp: queryArg.timestamp,
             search: queryArg.search,
             is_descending: queryArg.isDescending,
+            amount_ge: queryArg.amountGe,
+            amount_le: queryArg.amountLe,
           },
         }),
         providesTags: ["users", "transactions"],
@@ -623,6 +628,8 @@ const injectedRtkApi = api
             timestamp: queryArg.timestamp,
             search: queryArg.search,
             is_descending: queryArg.isDescending,
+            amount_ge: queryArg.amountGe,
+            amount_le: queryArg.amountLe,
           },
         }),
         providesTags: ["users", "accounts", "transactions"],
@@ -832,7 +839,7 @@ export type CreateApiUsersPostApiResponse =
 export type CreateApiUsersPostApiArg = UserApiIn;
 export type GetLinkTokenApiUsersMeInstitutionLinksLinkTokenGetApiResponse =
   /** status 200 Successful Response */ string;
-export type GetLinkTokenApiUsersMeInstitutionLinksLinkTokenGetApiArg = void;
+export type GetLinkTokenApiUsersMeInstitutionLinksLinkTokenGetApiArg = number;
 export type SetPublicTokenApiUsersMeInstitutionLinksPublicTokenPostApiResponse =
   /** status 200 Successful Response */ any;
 export type SetPublicTokenApiUsersMeInstitutionLinksPublicTokenPostApiArg = {
@@ -959,6 +966,8 @@ export type ReadManyApiUsersMeTransactionsGetApiArg = {
   timestamp?: string;
   search?: string;
   isDescending?: boolean;
+  amountGe?: number;
+  amountLe?: number;
 };
 export type ReadManyApiUsersMeAccountsGetApiResponse =
   /** status 200 Successful Response */ AccountApiOut[];
@@ -1001,6 +1010,8 @@ export type ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg = {
   timestamp?: string;
   search?: string;
   isDescending?: boolean;
+  amountGe?: number;
+  amountLe?: number;
 };
 export type CreateManyApiUsersMeAccountsAccountIdMovementsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
