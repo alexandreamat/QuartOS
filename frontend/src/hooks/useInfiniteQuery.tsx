@@ -27,44 +27,50 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
 
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
-  const [isScrollLocked, setIsScrollLocked] = useState(false);
 
   const [data, setData] = useState<R[]>([]);
   const [isExhausted, setIsExhausted] = useState(false);
 
-  const query = endpoint.useQuery(
-    memoizedParams !== skipToken && page < pages && !isExhausted
-      ? ({
-          ...memoizedParams,
-          page,
-          perPage,
-        } as any)
-      : skipToken
-  );
+  const cont = memoizedParams !== skipToken && page < pages && !isExhausted;
 
-  const handleMutation = useCallback(async () => {
+  const arg = cont
+    ? {
+        ...memoizedParams,
+        page,
+        perPage,
+      }
+    : skipToken;
+
+  const query = endpoint.useQuery(arg as any);
+
+  const handleMutation = useCallback(() => {
     setData([]);
+    setIsExhausted(false);
     setPage(0);
   }, []);
 
-  useEffect(() => {
+  const handleReset = useCallback(() => {
     setData([]);
+    setIsExhausted(false);
     setPage(0);
     setPages(1);
-  }, [memoizedParams]);
+  }, []);
+
+  useEffect(() => {
+    handleReset();
+  }, [memoizedParams, handleReset]);
 
   useEffect(() => {
     const ref = reference.current;
 
     function handleScroll(event: Event) {
-      if (isScrollLocked) return;
+      if (query.isFetching) return;
 
       const target = event.target as HTMLDivElement;
       const clientHeight = target.clientHeight;
       const scrollTop = target.scrollTop;
       const scrollBottom = target.scrollHeight - clientHeight - scrollTop;
       if (scrollBottom <= RATE * clientHeight) {
-        setIsScrollLocked(true);
         setPages((p) => p + 1);
       }
     }
@@ -72,15 +78,16 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
     ref?.addEventListener("scroll", handleScroll);
 
     return () => ref?.removeEventListener("scroll", handleScroll);
-  }, [isScrollLocked]);
+  }, [query.isFetching]);
 
   useEffect(() => {
     if (!query.data) return;
-    if (!query.data.length) return;
-    setData((prevData) => [...prevData, ...query.data!]);
-    setPage((p) => p + 1);
-    setIsScrollLocked(false);
-    if (!query.data.length) setIsExhausted(true);
+    if (query.data.length) {
+      setData((prevData) => [...prevData, ...query.data!]);
+      setPage((p) => p + 1);
+    } else {
+      setIsExhausted(true);
+    }
   }, [query.data]);
 
   return {
