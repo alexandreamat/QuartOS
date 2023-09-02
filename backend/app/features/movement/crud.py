@@ -3,6 +3,7 @@ from typing import Iterable, Any
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase
+from app.common.models import CurrencyCode
 
 from app.features.transaction import (
     TransactionApiOut,
@@ -72,6 +73,15 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return CRUDMovement.read(db, movement.id)
 
     @classmethod
+    def read(
+        cls, db: Session, id: int, currency_code: CurrencyCode = CurrencyCode("USD")
+    ) -> MovementApiOut:
+        movement = Movement.read(db, id)
+        return cls.out_model.from_orm(
+            movement, {"amount": movement.get_amount(currency_code)}
+        )
+
+    @classmethod
     def create_transaction(
         cls,
         db: Session,
@@ -104,12 +114,12 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         new_movement_id: int,
         **kwargs: Any,
     ) -> TransactionApiOut:
-        movement_out = cls.read(db, movement_id)
+        movement = Movement.read(db, movement_id)
         transaction_out = CRUDTransaction.update(
             db, transaction_id, transaction_in, movement_id=new_movement_id, **kwargs
         )
-        if not movement_out.transactions:
-            cls.delete(db, movement_out.id)
+        if not movement.transactions:
+            cls.delete(db, movement.id)
         return TransactionApiOut.from_orm(transaction_out)
 
     @classmethod

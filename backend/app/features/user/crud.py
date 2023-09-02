@@ -14,7 +14,13 @@ from app.common.exceptions import ObjectNotFoundError
 from app.features.userinstitutionlink import UserInstitutionLinkApiOut
 from app.features.transaction import TransactionApiOut
 from app.features.account import AccountApiOut
-from app.features.movement import MovementApiOut, PLStatement, Movement, MovementField
+from app.features.movement import (
+    MovementApiOut,
+    MovementApiIn,
+    PLStatement,
+    Movement,
+    MovementField,
+)
 from app.features.user import UserApiIn, UserApiOut
 
 from .models import User, UserApiOut, UserApiIn
@@ -73,6 +79,20 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         statement = User.select_user_institution_links(user_id, userinstitutionlink_id)
         uil = db.exec(statement).one()
         return UserInstitutionLinkApiOut.from_orm(uil)
+
+    @classmethod
+    def update_movement(
+        cls,
+        db: Session,
+        user_id: int,
+        movement_id: int,
+        movement_in: MovementApiIn,
+    ) -> MovementApiOut:
+        user_out = cls.read(db, user_id)
+        movement = Movement.update(db, movement_id, **movement_in.dict())
+        return MovementApiOut.from_orm(
+            movement, {"amount": movement.get_amount(user_out.default_currency_code)}
+        )
 
     @classmethod
     def read_transactions(
