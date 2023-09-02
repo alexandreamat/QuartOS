@@ -5,10 +5,11 @@ from decimal import Decimal
 from datetime import date
 from typing import Iterable, Any
 
-from sqlmodel import SQLModel, Relationship, Session, and_, col, func
+from sqlmodel import SQLModel, Relationship, and_, or_, col, func
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base, CurrencyCode
+from app.common.utils import filter_query_by_search
 from app.features.exchangerate.client import get_exchange_rate
 from app.features.transaction import Transaction, TransactionApiOut
 
@@ -112,16 +113,7 @@ class Movement(__MovementBase, Base, table=True):
         if end_date:
             statement = statement.having(func.min(Transaction.timestamp) < end_date)
         if search:
-            tokens: list[str] = re.findall(r"-?\"[^\"]+\"|-?'[^']+'|\S+", search)
-            for token in tokens:
-                negative = token.startswith("-")
-                token_unquoted = token.strip("-'\"")
-                if not token_unquoted:
-                    continue
-                clause = col(Transaction.name).like(f"%{token_unquoted}%")
-                if negative:
-                    clause = ~clause
-                statement = statement.where(clause)
+            statement = filter_query_by_search(search, statement, col(Transaction.name))
 
         # GROUP BY
         statement = statement.group_by(Movement.id)
@@ -153,22 +145,18 @@ class Movement(__MovementBase, Base, table=True):
     ) -> Iterable["Movement"]:
         if amount_gt is not None:
             movements = [
-                m
-                for m in movements
-                if m.get_amount(CurrencyCode(currency_code)) > amount_gt
+                m for m in movements if m.get_amount(currency_code) > amount_gt
             ]
 
         if amount_lt is not None:
             movements = [
-                m
-                for m in movements
-                if m.get_amount(CurrencyCode(currency_code)) < amount_lt
+                m for m in movements if m.get_amount(currency_code) < amount_lt
             ]
 
         if sort_by is MovementField.AMOUNT:
             movements = sorted(
                 movements,
-                key=lambda m: m.get_amount(CurrencyCode(currency_code)),
+                key=lambda m: m.get_amount(currency_code),
                 reverse=is_descending,
             )
 
