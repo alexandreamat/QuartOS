@@ -115,17 +115,15 @@ export function TransactionCard(
             </Grid.Column>
           )}
           <Grid.Column width={2} textAlign="center">
-            {"onGoMovement" in props && (
-              <ActionButton
-                tooltip="Edit Movement"
-                icon="arrows alternate horizontal"
-                content={
-                  movementQuery.data?.transactions.length.toFixed(0) ||
-                  undefined
-                }
-                onClick={props.onGoMovement!}
-              />
-            )}
+            <ActionButton
+              tooltip="Edit Movement"
+              icon="arrows alternate horizontal"
+              content={
+                movementQuery.data?.transactions.length.toFixed(0) || undefined
+              }
+              disabled={!("onGoMovement" in props)}
+              onClick={"onGoMovement" in props ? props.onGoMovement : undefined}
+            />
             {"onOpenEditForm" in props && (
               <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
             )}

@@ -20,8 +20,15 @@ export default function Bar(props: {
   onTimestampChange: (x: Date | undefined) => void;
   isDescending: boolean;
   onToggleIsDescending: () => void;
+  amountGe?: number;
+  onAmountGeChange: (x?: number) => void;
+  amountLe?: number;
+  onAmountLeChange: (x?: number) => void;
 }) {
   const accountOptions = useAccountOptions();
+
+  const amountGeStr = props.amountGe !== undefined ? props.amountGe : "";
+  const amountLeStr = props.amountLe !== undefined ? props.amountLe : "";
 
   return (
     <Menu secondary style={{ width: "100%" }}>
@@ -74,6 +81,62 @@ export default function Bar(props: {
             />
           </Button>
         </Menu.Item>
+      </Menu.Item>
+      <Menu.Item>
+        <Input
+          label="from"
+          type="number"
+          input={{
+            inputMode: "decimal",
+            step: "0.01",
+          }}
+          placeholder="Amount from"
+          value={amountGeStr}
+          onChange={(_, data) => {
+            if (data.value.length) {
+              const newAmount = Number(data.value);
+              if (isNaN(newAmount)) return;
+              props.onAmountGeChange(newAmount);
+            } else {
+              props.onAmountGeChange(undefined);
+            }
+          }}
+        />
+        {props.amountGe !== undefined && (
+          <Menu.Item fitted>
+            <ClickableIcon
+              name="remove circle"
+              onClick={() => props.onAmountGeChange(undefined)}
+            />
+          </Menu.Item>
+        )}
+        <Input
+          label="to"
+          type="number"
+          input={{
+            inputMode: "decimal",
+            step: "0.01",
+          }}
+          placeholder="Amount to"
+          value={amountLeStr}
+          onChange={(_, data) => {
+            if (data.value.length) {
+              const newAmount = Number(data.value);
+              if (isNaN(newAmount)) return;
+              props.onAmountLeChange(newAmount);
+            } else {
+              props.onAmountLeChange(undefined);
+            }
+          }}
+        />
+        {props.amountLe !== undefined && (
+          <Menu.Item fitted>
+            <ClickableIcon
+              name="remove circle"
+              onClick={() => props.onAmountLeChange(undefined)}
+            />
+          </Menu.Item>
+        )}
       </Menu.Item>
     </Menu>
   );

@@ -15,9 +15,9 @@ import { TransactionCard } from "./TransactionCard";
 import { Card } from "semantic-ui-react";
 import { formatDateParam } from "utils/time";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
+import ExhaustedDataCard from "components/ExhaustedDataCard";
 
 export default function TransactionCards(props: {
-  onMutation?: (x: TransactionApiOut) => void;
   onFlowCheckboxChange?: (
     flow: TransactionApiOut,
     checked: boolean
@@ -36,6 +36,8 @@ export default function TransactionCards(props: {
   const [search, setSearch] = useState("");
   const [timestamp, setTimestamp] = useState<Date | undefined>(undefined);
   const [isDescending, setIsDescending] = useState(true);
+  const [amountGe, setAmountGe] = useState<number | undefined>(undefined);
+  const [amountLe, setAmountLe] = useState<number | undefined>(undefined);
 
   const navigate = useNavigate();
 
@@ -62,28 +64,33 @@ export default function TransactionCards(props: {
     setIsFormOpen(false);
   };
 
+  const queryArg: ReadManyApiUsersMeTransactionsGetApiArg = {
+    timestamp: timestamp && formatDateParam(timestamp),
+    search,
+    isDescending,
+    amountGe,
+    amountLe,
+  };
+
   const transactionsQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeTransactionsGet,
-    accountId
-      ? skipToken
-      : ({
-          timestamp: timestamp && formatDateParam(timestamp),
-          search,
-          isDescending,
-        } as ReadManyApiUsersMeTransactionsGetApiArg),
+    accountId ? skipToken : queryArg,
     20
   );
 
+  const filteredQueryArg: ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg =
+    {
+      timestamp: timestamp && formatDateParam(timestamp),
+      accountId: accountId,
+      search,
+      isDescending,
+      amountGe,
+      amountLe,
+    };
+
   const accountTransactionsQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeAccountsAccountIdTransactionsGet,
-    accountId
-      ? ({
-          timestamp: timestamp && formatDateParam(timestamp),
-          accountId: accountId,
-          search,
-          isDescending,
-        } as ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg)
-      : skipToken,
+    accountId ? filteredQueryArg : skipToken,
     20
   );
 
@@ -92,7 +99,7 @@ export default function TransactionCards(props: {
     : transactionsQuery;
 
   return (
-    <FlexColumn>
+    <FlexColumn style={{ height: "100%" }}>
       {selectedTransaction && (
         <Form.Edit
           open={isFormOpen}
@@ -112,6 +119,10 @@ export default function TransactionCards(props: {
         onTimestampChange={setTimestamp}
         isDescending={isDescending}
         onToggleIsDescending={() => setIsDescending((x) => !x)}
+        amountGe={amountGe}
+        onAmountGeChange={setAmountGe}
+        amountLe={amountLe}
+        onAmountLeChange={setAmountLe}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
@@ -126,7 +137,10 @@ export default function TransactionCards(props: {
                   onOpenEditForm={() => handleOpenEditForm(t)}
                   onCheckboxChange={
                     props.onFlowCheckboxChange &&
-                    (async (c) => await props.onFlowCheckboxChange!(t, c))
+                    (async (c) => {
+                      await props.onFlowCheckboxChange!(t, c);
+                      infiniteQuery.onMutation();
+                    })
                   }
                   checkBoxDisabled={checked && props.checked?.length === 1}
                   checked={checked}
@@ -143,6 +157,10 @@ export default function TransactionCards(props: {
               );
             }
           })}
+          {infiniteQuery.isFetching && (
+            <TransactionCard.Placeholder onOpenEditForm />
+          )}
+          {infiniteQuery.isExhausted && <ExhaustedDataCard />}
         </Card.Group>
       </FlexColumn.Auto>
     </FlexColumn>

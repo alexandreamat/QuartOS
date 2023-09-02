@@ -9,6 +9,7 @@ import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { formatDateParam } from "utils/time";
 import { Card } from "semantic-ui-react";
 import { MovementCard } from "./components/MovementCard";
+import ExhaustedDataCard from "components/ExhaustedDataCard";
 
 const PER_PAGE = 10;
 const NOT_FOUND = -1;
@@ -131,13 +132,7 @@ export default function Movements() {
           {infiniteQuery.isFetching && (
             <MovementCard.Placeholder key="placeholder" onOpenEditForm />
           )}
-          {infiniteQuery.isExhausted && (
-            <Card fluid>
-              <Card.Content textAlign="center">
-                <Card.Meta>There is no more data available.</Card.Meta>
-              </Card.Content>
-            </Card>
-          )}
+          {infiniteQuery.isExhausted && <ExhaustedDataCard />}
         </Card.Group>
       </FlexColumn.Auto>
     </FlexColumn>
