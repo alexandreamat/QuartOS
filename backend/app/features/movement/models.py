@@ -113,7 +113,7 @@ class Movement(__MovementBase, Base, table=True):
         if end_date:
             statement = statement.having(func.min(Transaction.timestamp) < end_date)
         if search:
-            statement = filter_query_by_search(search, statement, col(Transaction.name))
+            statement = filter_query_by_search(search, statement, col(cls.name))
 
         # GROUP BY
         statement = statement.group_by(Movement.id)
