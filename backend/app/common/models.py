@@ -33,6 +33,15 @@ class Base(SQLModel):
     @classmethod
     def read(cls: Type[BaseType], db: Session, id: int) -> BaseType:
         statement = cls.select().where(cls.id == id)
+        return cls.read_one_from_query(db, statement, id)
+
+    @classmethod
+    def read_one_from_query(
+        cls: Type[BaseType],
+        db: Session,
+        statement: SelectOfScalar[BaseType],
+        id: int | None = None,
+    ) -> BaseType:
         try:
             return db.exec(statement).one()
         except NoResultFound:

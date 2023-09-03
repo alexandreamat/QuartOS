@@ -15,18 +15,20 @@ import { ClickableIcon } from "components/ClickableIcon";
 import DecimalInput from "components/DecimalInput";
 
 export default function Bar(props: {
-  accountId: number;
+  accountId?: number;
   onAccountIdChange: (x: number) => void;
   search: string;
   onSearchChange: (x: string) => void;
   timestamp?: Date;
   onTimestampChange: (x: Date | undefined) => void;
   isDescending: boolean;
-  onToggleIsDescending: () => void;
+  onIsDescendingToggle: () => void;
   amountGe?: number;
   onAmountGeChange: (x?: number) => void;
   amountLe?: number;
   onAmountLeChange: (x?: number) => void;
+  isMultipleChoice?: boolean;
+  onIsMultipleChoiceChange: (x: boolean) => void;
 }) {
   const accountOptions = useAccountOptions();
 
@@ -91,9 +93,17 @@ export default function Bar(props: {
             onAmountChange={props.onAmountGeChange}
           />
           {props.amountGe !== undefined && props.amountLe !== undefined ? (
-            <Divider horizontal>
-              {props.amountGe < props.amountLe ? "and" : "or"}
-            </Divider>
+            <div
+              onClick={() => {
+                props.onAmountGeChange(props.amountLe);
+                props.onAmountLeChange(props.amountGe);
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              <Divider horizontal>
+                {props.amountGe < props.amountLe ? "and" : "or"}
+              </Divider>
+            </div>
           ) : (
             <Divider />
           )}
@@ -117,11 +127,21 @@ export default function Bar(props: {
         )}
       </Menu.Item>
       <Menu.Item fitted>
-        <Button icon onClick={props.onToggleIsDescending}>
+        <Button icon onClick={props.onIsDescendingToggle}>
           <Icon
             name={props.isDescending ? "sort amount down" : "sort amount up"}
           />
         </Button>
+      </Menu.Item>
+      <Menu.Item fitted>
+        <Button
+          icon="check square"
+          toggle
+          active={props.isMultipleChoice}
+          onClick={() =>
+            props.onIsMultipleChoiceChange(!props.isMultipleChoice)
+          }
+        />
       </Menu.Item>
     </Menu>
   );

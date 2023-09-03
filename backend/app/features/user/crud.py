@@ -11,9 +11,12 @@ from app.common.crud import CRUDBase
 from app.common.models import CurrencyCode
 from app.common.exceptions import ObjectNotFoundError
 
-from app.features.userinstitutionlink import UserInstitutionLinkApiOut
-from app.features.transaction import TransactionApiOut
-from app.features.account import AccountApiOut
+from app.features.userinstitutionlink import (
+    UserInstitutionLinkApiOut,
+    UserInstitutionLink,
+)
+from app.features.transaction import TransactionApiOut, Transaction
+from app.features.account import AccountApiOut, Account
 from app.features.movement import (
     MovementApiOut,
     MovementApiIn,
@@ -77,7 +80,9 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         userinstitutionlink_id: int,
     ) -> UserInstitutionLinkApiOut:
         statement = User.select_user_institution_links(user_id, userinstitutionlink_id)
-        uil = db.exec(statement).one()
+        uil = UserInstitutionLink.read_one_from_query(
+            db, statement, userinstitutionlink_id
+        )
         return UserInstitutionLinkApiOut.from_orm(uil)
 
     @classmethod
@@ -124,8 +129,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         statement = User.select_transactions(
             user_id, userinstitutionlink_id, account_id, movement_id, transaction_id
         )
-        transaction_out = db.exec(statement).one()
-        return TransactionApiOut.from_orm(transaction_out)
+        transaction = Transaction.read_one_from_query(db, statement, transaction_id)
+        return TransactionApiOut.from_orm(transaction)
 
     @classmethod
     def read_account(
@@ -136,11 +141,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         account_id: int,
     ) -> AccountApiOut:
         statement = User.select_accounts(user_id, userinstitutionlink_id, account_id)
-        try:
-            account_out = db.exec(statement).one()
-        except NoResultFound:
-            raise ObjectNotFoundError("account", account_id)
-        return AccountApiOut.from_orm(account_out)
+        account = Account.read_one_from_query(db, statement, account_id)
+        return AccountApiOut.from_orm(account)
 
     @classmethod
     def read_accounts(
@@ -210,7 +212,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         statement = User.select_movements(
             user_id, userinstitutionlink_id, account_id, movement_id, **kwargs
         )
-        movement = db.exec(statement).one()
+        movement = Movement.read_one_from_query(db, statement, movement_id)
         return MovementApiOut.from_orm(
             movement, {"amount": movement.get_amount(user_out.default_currency_code)}
         )

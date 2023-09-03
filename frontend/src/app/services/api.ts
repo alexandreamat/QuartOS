@@ -461,6 +461,17 @@ const injectedRtkApi = api
         }),
         providesTags: ["users", "movements"],
       }),
+      createApiUsersMeMovementsPost: build.mutation<
+        CreateApiUsersMeMovementsPostApiResponse,
+        CreateApiUsersMeMovementsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/users/me/movements/`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["users", "movements"],
+      }),
       readApiUsersMeMovementsMovementIdGet: build.query<
         ReadApiUsersMeMovementsMovementIdGetApiResponse,
         ReadApiUsersMeMovementsMovementIdGetApiArg
@@ -920,6 +931,9 @@ export type ReadManyApiUsersMeMovementsGetApiArg = {
   isDescending?: boolean;
   sortBy?: MovementField;
 };
+export type CreateApiUsersMeMovementsPostApiResponse =
+  /** status 200 Successful Response */ MovementApiOut;
+export type CreateApiUsersMeMovementsPostApiArg = number[];
 export type ReadApiUsersMeMovementsMovementIdGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
 export type ReadApiUsersMeMovementsMovementIdGetApiArg = number;

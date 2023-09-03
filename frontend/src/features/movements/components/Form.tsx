@@ -266,7 +266,9 @@ export default function Form(props: {
           <FlexColumn.Auto>
             <TransactionCards
               onFlowCheckboxChange={handleFlowCheckboxChange}
-              checked={movementQuery.data?.transactions.map((t) => t.id)}
+              checked={
+                new Set(movementQuery.data?.transactions.map((t) => t.id) || [])
+              }
             />
           </FlexColumn.Auto>
         </FlexColumn>
