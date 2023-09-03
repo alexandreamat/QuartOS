@@ -12,6 +12,7 @@ import {
 } from "semantic-ui-react";
 import MenuDateInput from "components/MenuDateInput";
 import { ClickableIcon } from "components/ClickableIcon";
+import DecimalInput from "components/DecimalInput";
 
 export default function Bar(props: {
   accountId: number;
@@ -28,9 +29,6 @@ export default function Bar(props: {
   onAmountLeChange: (x?: number) => void;
 }) {
   const accountOptions = useAccountOptions();
-
-  const amountGeStr = props.amountGe !== undefined ? props.amountGe : "";
-  const amountLeStr = props.amountLe !== undefined ? props.amountLe : "";
 
   return (
     <Menu secondary>
@@ -79,7 +77,6 @@ export default function Bar(props: {
         date={props.timestamp}
         onDateChange={props.onTimestampChange}
       />
-
       <Menu.Item fitted>
         <Popup
           trigger={<Button icon="dollar" />}
@@ -87,24 +84,11 @@ export default function Bar(props: {
           position="bottom right"
           on="click"
         >
-          <Input
+          <DecimalInput
             label=">="
-            type="number"
-            input={{
-              inputMode: "decimal",
-              step: "0.01",
-            }}
             placeholder="Amount from"
-            value={amountGeStr}
-            onChange={(_, data) => {
-              if (data.value.length) {
-                const newAmount = Number(data.value);
-                if (isNaN(newAmount)) return;
-                props.onAmountGeChange(newAmount);
-              } else {
-                props.onAmountGeChange(undefined);
-              }
-            }}
+            amount={props.amountGe}
+            onAmountChange={props.onAmountGeChange}
           />
           {props.amountGe !== undefined && props.amountLe !== undefined ? (
             <Divider horizontal>
@@ -113,25 +97,11 @@ export default function Bar(props: {
           ) : (
             <Divider />
           )}
-
-          <Input
+          <DecimalInput
             label="<="
-            type="number"
-            input={{
-              inputMode: "decimal",
-              step: "0.01",
-            }}
             placeholder="Amount to"
-            value={amountLeStr}
-            onChange={(_, data) => {
-              if (data.value.length) {
-                const newAmount = Number(data.value);
-                if (isNaN(newAmount)) return;
-                props.onAmountLeChange(newAmount);
-              } else {
-                props.onAmountLeChange(undefined);
-              }
-            }}
+            amount={props.amountLe}
+            onAmountChange={props.onAmountLeChange}
           />
         </Popup>
         {(props.amountGe !== undefined || props.amountLe !== undefined) && (
