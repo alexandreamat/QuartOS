@@ -535,6 +535,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/api/users/me/transactions/`,
           params: {
+            account_id: queryArg.accountId,
             page: queryArg.page,
             per_page: queryArg.perPage,
             timestamp: queryArg.timestamp,
@@ -961,6 +962,7 @@ export type GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg = {
 export type ReadManyApiUsersMeTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyApiUsersMeTransactionsGetApiArg = {
+  accountId?: number;
   page?: number;
   perPage?: number;
   timestamp?: string;
