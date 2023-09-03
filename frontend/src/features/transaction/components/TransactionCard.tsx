@@ -26,9 +26,9 @@ export function TransactionCard(
         transaction: TransactionApiOut;
       }
     | {
-        // from transactions or movement with 1 transaction
+        // from transactions
         transaction: TransactionApiOut;
-        onGoMovement: () => void;
+        onOpenEditMovementForm: () => void;
         onOpenEditForm: () => void;
         explanationRate?: number;
       }
@@ -121,8 +121,12 @@ export function TransactionCard(
               content={
                 movementQuery.data?.transactions.length.toFixed(0) || undefined
               }
-              disabled={!("onGoMovement" in props)}
-              onClick={"onGoMovement" in props ? props.onGoMovement : undefined}
+              disabled={!("onOpenEditMovementForm" in props)}
+              onClick={
+                "onOpenEditMovementForm" in props
+                  ? props.onOpenEditMovementForm
+                  : undefined
+              }
             />
             {"onOpenEditForm" in props && (
               <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
