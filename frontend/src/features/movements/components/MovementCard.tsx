@@ -18,7 +18,7 @@ import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import MutateActionButton from "components/MutateActionButton";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ClickableIcon } from "components/ClickableIcon";
 import FlexRow from "components/FlexRow";
 import { logMutationError } from "utils/error";
@@ -55,6 +55,8 @@ export function MovementCard(props: {
     setIsEditMode(false);
     props.onMutate && props.onMutate!();
   }
+
+  useEffect(() => setName(props.movement.name), [props.movement]);
 
   return (
     <Card fluid color="teal">
@@ -98,10 +100,12 @@ export function MovementCard(props: {
                 />
               </FlexRow>
             ) : (
-              <FlexRow style={{ gap: 5 }}>
-                <Header as="h5">
-                  <LineWithHiddenOverflow content={props.movement.name} />
-                </Header>
+              <FlexRow style={{ gap: 5, justifyContent: "left" }}>
+                <FlexRow.Auto>
+                  <Header as="h5">
+                    <LineWithHiddenOverflow content={props.movement.name} />
+                  </Header>
+                </FlexRow.Auto>
                 {props.editable && (
                   <ClickableIcon
                     name="pencil"
