@@ -20,6 +20,7 @@ from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
     TransactionPlaidIn,
+    Transaction,
 )
 
 from .models import (
@@ -61,7 +62,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     ) -> TransactionDeserialiserApiOut:
         deserialiser = Account.read(db, id).transactiondeserialiser
         if not deserialiser:
-            raise ObjectNotFoundError(str(TransactionDeserialiser.__tablename__))
+            raise ObjectNotFoundError(str(TransactionDeserialiser.__tablename__), 0)
         return TransactionDeserialiserApiOut.from_orm(deserialiser)
 
     @classmethod
@@ -164,49 +165,21 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     ) -> Iterable[MovementApiOut]:
         min_timestamp = None
         for transaction_in in transactions:
-            min_timestamp = (
-                min(transaction_in.timestamp, min_timestamp)
-                if min_timestamp
-                else transaction_in.timestamp
-            )
+            if min_timestamp:
+                min_timestamp = min(transaction_in.timestamp, min_timestamp)
+            else:
+                min_timestamp = transaction_in.timestamp
             yield CRUDMovement.create(
-                db, transaction_in, account_id=account_id, account_balance=Decimal(0)
+                db, [transaction_in], account_id=account_id, account_balance=Decimal(0)
             )
         for transaction_id in transaction_ids:
             transaction_out = cls.read_transaction(db, account_id, None, transaction_id)
-            min_timestamp = (
-                min(transaction_out.timestamp, min_timestamp)
-                if min_timestamp
-                else transaction_out.timestamp
-            )
-            yield CRUDMovement.create(db, transaction_id)
+            if min_timestamp:
+                min_timestamp = min(transaction_out.timestamp, min_timestamp)
+            else:
+                min_timestamp = transaction_out.timestamp
+            yield CRUDMovement.create(db, [transaction_id])
         CRUDAccount.update_balance(db, account_id, min_timestamp)
-
-    @classmethod
-    def create_movement(
-        cls,
-        db: Session,
-        account_id: int,
-        transaction: TransactionApiIn | int,
-    ) -> MovementApiOut:
-        if isinstance(transaction, TransactionApiIn):
-            transaction_in = transaction
-            timestamp = transaction_in.timestamp
-            movement_out = CRUDMovement.create(
-                db, transaction_in, account_id=account_id, account_balance=Decimal(0)
-            )
-
-        else:
-            transaction_id = transaction
-            transaction_out = cls.read_transaction(db, account_id, None, transaction_id)
-            timestamp = transaction_out.timestamp
-            movement_out = CRUDMovement.create(
-                db,
-                transaction_id,
-            )
-
-        CRUDAccount.update_balance(db, account_id, timestamp)
-        return movement_out
 
     @classmethod
     def create_movement_plaid(
@@ -281,7 +254,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         transaction_id: int,
     ) -> TransactionApiOut:
         statement = Account.select_transactions(account_id, movement_id, transaction_id)
-        transaction = db.exec(statement).one()
+        transaction = Transaction.read_one_from_query(db, statement, transaction_id)
         return TransactionApiOut.from_orm(transaction)
 
 

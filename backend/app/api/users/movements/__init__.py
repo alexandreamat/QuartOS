@@ -19,6 +19,17 @@ from . import aggregates
 router = APIRouter()
 
 
+@router.post("/")
+def create(
+    db: DBSession,
+    me: CurrentUser,
+    transaction_ids: list[int],
+) -> MovementApiOut:
+    for transaction_id in transaction_ids:
+        CRUDUser.read_transaction(db, me.id, None, None, None, transaction_id)
+    return CRUDMovement.create(db, transaction_ids)
+
+
 @router.get("/")
 def read_many(
     db: DBSession,

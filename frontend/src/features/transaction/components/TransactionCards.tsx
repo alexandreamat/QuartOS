@@ -10,21 +10,26 @@ import Form from "./Form";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { TransactionCard } from "./TransactionCard";
-import { Card } from "semantic-ui-react";
+import { Button, Card, Menu } from "semantic-ui-react";
 import { formatDateParam } from "utils/time";
 import ExhaustedDataCard from "components/ExhaustedDataCard";
 import MovementForm from "features/movements/components/Form";
+import { logMutationError } from "utils/error";
 
 const NOT_FOUND = -1;
 
-export default function TransactionCards(props: {
-  onFlowCheckboxChange?: (
-    flow: TransactionApiOut,
-    checked: boolean
-  ) => Promise<void>;
-  checked?: number[];
-  accountId?: number;
-}) {
+export default function TransactionCards(
+  props:
+    | {
+        // from movement form
+        onFlowCheckboxChange: (t: TransactionApiOut, x: boolean) => void;
+        checked: Set<number>;
+      }
+    | {
+        // from index
+        accountId: number;
+      }
+) {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   const [selectedTransaction, setSelectedTransaction] = useState<
@@ -32,7 +37,9 @@ export default function TransactionCards(props: {
   >(undefined);
 
   const [selectedAccountId, setSelectedAccountId] = useState(0);
-  const [accountId, setAccountId] = useState(props.accountId || 0);
+  const [accountId, setAccountId] = useState<number | undefined>(
+    "accountId" in props ? props.accountId : undefined
+  );
   const [search, setSearch] = useState("");
   const [timestamp, setTimestamp] = useState<Date | undefined>(undefined);
   const [isDescending, setIsDescending] = useState(true);
@@ -42,9 +49,43 @@ export default function TransactionCards(props: {
   const [isEditMovementFormOpen, setIsEditMovementFormOpen] = useState(false);
   const [movementId, setMovementId] = useState<number | undefined>(undefined);
 
+  const [isMultipleChoice, setIsMultipleChoice] = useState(false);
+  const [checkedTransactions, setCheckedTransactions] = useState(
+    new Set<number>()
+  );
+
+  const [createMovement, createMovementResult] =
+    api.endpoints.createApiUsersMeMovementsPost.useMutation();
+
   useEffect(() => {
-    if (props.accountId) setAccountId(props.accountId);
-  }, [props.accountId]);
+    if ("accountId" in props && props.accountId) setAccountId(props.accountId);
+  }, [props]);
+
+  function handleTransactionCheckboxChange(
+    transaction: TransactionApiOut,
+    checked: boolean
+  ) {
+    setCheckedTransactions((x) => {
+      if (checked) {
+        x.add(transaction.id);
+      } else {
+        x.delete(transaction.id);
+      }
+      return new Set(x);
+    });
+  }
+
+  async function handleMergeTransactions() {
+    try {
+      await createMovement([...checkedTransactions]).unwrap();
+    } catch (error) {
+      logMutationError(error, createMovementResult);
+      return;
+    }
+    setIsMultipleChoice(false);
+    setCheckedTransactions(new Set());
+    infiniteQuery.onMutation();
+  }
 
   function handleOpenEditMovementForm(transaction: TransactionApiOut) {
     setMovementId(transaction.movement_id);
@@ -127,31 +168,33 @@ export default function TransactionCards(props: {
         timestamp={timestamp}
         onTimestampChange={setTimestamp}
         isDescending={isDescending}
-        onToggleIsDescending={() => setIsDescending((x) => !x)}
+        onIsDescendingToggle={() => setIsDescending((x) => !x)}
         amountGe={amountGe}
         onAmountGeChange={setAmountGe}
         amountLe={amountLe}
         onAmountLeChange={setAmountLe}
+        isMultipleChoice={isMultipleChoice}
+        onIsMultipleChoiceChange={(x) => {
+          setCheckedTransactions(new Set());
+          setIsMultipleChoice(x);
+        }}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
         <Card.Group style={{ margin: 0 }}>
           {infiniteQuery.data.map((t, i) => {
-            if (props.onFlowCheckboxChange) {
-              const checked = props.checked?.includes(t.id);
+            if ("onFlowCheckboxChange" in props) {
+              const checked = props.checked?.has(t.id);
               return (
                 <TransactionCard
                   key={i}
                   transaction={t}
                   onOpenEditForm={() => handleOpenEditForm(t)}
-                  onCheckboxChange={
-                    props.onFlowCheckboxChange &&
-                    (async (c) => {
-                      await props.onFlowCheckboxChange!(t, c);
-                      infiniteQuery.onMutation();
-                    })
-                  }
-                  checkBoxDisabled={checked && props.checked?.length === 1}
+                  onCheckboxChange={async (c) => {
+                    props.onFlowCheckboxChange!(t, c);
+                    infiniteQuery.onMutation();
+                  }}
+                  checkBoxDisabled={checked && props.checked.size === 1}
                   checked={checked}
                 />
               );
@@ -162,6 +205,12 @@ export default function TransactionCards(props: {
                   transaction={t}
                   onOpenEditMovementForm={() => handleOpenEditMovementForm(t)}
                   onOpenEditForm={() => handleOpenEditForm(t)}
+                  onCheckboxChange={
+                    isMultipleChoice
+                      ? (x) => handleTransactionCheckboxChange(t, x)
+                      : undefined
+                  }
+                  checked={checkedTransactions.has(t.id)}
                 />
               );
             }
@@ -172,6 +221,23 @@ export default function TransactionCards(props: {
           {infiniteQuery.isExhausted && <ExhaustedDataCard />}
         </Card.Group>
       </FlexColumn.Auto>
+      {isMultipleChoice && (
+        <Menu secondary>
+          <Menu.Item style={{ width: "100%" }}>
+            <Button
+              fluid
+              positive
+              circular
+              disabled={checkedTransactions.size <= 1}
+              onClick={handleMergeTransactions}
+              loading={createMovementResult.isLoading}
+              negative={createMovementResult.isError}
+            >
+              {`Combine ${checkedTransactions.size} transactions into one movement`}
+            </Button>
+          </Menu.Item>
+        </Menu>
+      )}
     </FlexColumn>
   );
 }

@@ -1,4 +1,4 @@
-from typing import Iterable, Any
+from typing import Iterable, Any, Sequence
 
 from sqlmodel import Session
 
@@ -24,38 +24,42 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def create(  # type: ignore[override]
         cls,
         db: Session,
-        transaction: TransactionApiIn | int,
+        transactions: Sequence[TransactionApiIn | int],
         **kwargs: Any,
     ) -> MovementApiOut:
-        if isinstance(transaction, TransactionApiIn):
-            transaction_in = transaction
-            movement = Movement.create(db, Movement(name=transaction_in.name))
-            CRUDTransaction.create(
-                db,
-                transaction_in,
-                movement_id=movement.id,
-                **kwargs,
-            )
+        movement = Movement.create(db, Movement(name=""))
+        for transaction in transactions:
+            if isinstance(transaction, TransactionApiIn):
+                transaction_in = transaction
+                if not movement.name:
+                    movement.name = transaction_in.name
+                CRUDTransaction.create(
+                    db,
+                    transaction_in,
+                    movement_id=movement.id,
+                    **kwargs,
+                )
 
-        else:
-            transaction_id = transaction
-            transaction_out = CRUDTransaction.read(db, transaction_id)
-            movement = Movement.create(db, Movement(name=transaction_out.name))
-            movement_out = cls.read(db, transaction_out.movement_id)
-            transaction_in = TransactionApiIn(
-                amount=transaction_out.amount,
-                timestamp=transaction_out.timestamp,
-                name=transaction_out.name,
-            )
-            transaction_out = CRUDTransaction.update(
-                db,
-                transaction_id,
-                transaction_in,
-                movement_id=movement.id,
-                **kwargs,
-            )
-            if not movement_out.transactions:
-                cls.delete(db, movement_out.id)
+            else:
+                transaction_id = transaction
+                transaction_out = CRUDTransaction.read(db, transaction_id)
+                if not movement.name:
+                    movement.name = transaction_out.name
+                movement_out = cls.read(db, transaction_out.movement_id)
+                transaction_in = TransactionApiIn(
+                    amount=transaction_out.amount,
+                    timestamp=transaction_out.timestamp,
+                    name=transaction_out.name,
+                )
+                transaction_out = CRUDTransaction.update(
+                    db,
+                    transaction_id,
+                    transaction_in,
+                    movement_id=movement.id,
+                    **kwargs,
+                )
+                if not movement_out.transactions:
+                    cls.delete(db, movement_out.id)
 
         return CRUDMovement.read(db, movement.id)
 

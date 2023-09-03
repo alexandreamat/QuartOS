@@ -33,5 +33,6 @@ def init_db(db: Session) -> None:
             password=settings.FIRST_SUPERUSER_PASSWORD,
             full_name=settings.FIRST_SUPERUSER_FULL_NAME,
             is_superuser=True,
+            default_currency_code="USD",
         )
         CRUDUser.create(db, obj_in=user_in)

@@ -31,12 +31,15 @@ export function TransactionCard(
         onOpenEditMovementForm: () => void;
         onOpenEditForm: () => void;
         explanationRate?: number;
+        onCheckboxChange?: (x: boolean) => void;
+        checked?: boolean;
+        checkBoxDisabled: false;
       }
     | {
         // from movement form
         transaction: TransactionApiOut;
         onOpenEditForm: () => void;
-        onCheckboxChange: (x: boolean) => Promise<void>;
+        onCheckboxChange: (x: boolean) => void;
         checkBoxDisabled: boolean;
         checked: boolean;
       }
@@ -75,6 +78,28 @@ export function TransactionCard(
     <Card fluid color="teal">
       <Card.Content>
         <Grid columns="equal" verticalAlign="middle">
+          {"onCheckboxChange" in props && props.onCheckboxChange && (
+            <Grid.Column width={1} textAlign="center" verticalAlign="middle">
+              <Popup
+                content={
+                  props.checked
+                    ? "Remove from the movement"
+                    : "Add to the movement"
+                }
+                trigger={
+                  <Checkbox
+                    disabled={
+                      "checkBoxDisabled" in props && props.checkBoxDisabled
+                    }
+                    checked={props.checked}
+                    onChange={async (_: unknown, data: CheckboxProps) =>
+                      await props.onCheckboxChange!(data.checked || false)
+                    }
+                  />
+                }
+              />
+            </Grid.Column>
+          )}
           <Grid.Column width={2}>
             <Card.Meta>
               <FormattedTimestamp timestamp={props.transaction.timestamp} />
@@ -94,26 +119,7 @@ export function TransactionCard(
               <LineWithHiddenOverflow content={props.transaction.name} />
             </Header>
           </Grid.Column>
-          {"onCheckboxChange" in props && (
-            <Grid.Column width={1} textAlign="center" verticalAlign="middle">
-              <Popup
-                content={
-                  props.checked
-                    ? "Remove from the movement"
-                    : "Add to the movement"
-                }
-                trigger={
-                  <Checkbox
-                    disabled={props.checkBoxDisabled}
-                    checked={props.checked}
-                    onChange={async (_: unknown, data: CheckboxProps) =>
-                      await props.onCheckboxChange!(data.checked || false)
-                    }
-                  />
-                }
-              />
-            </Grid.Column>
-          )}
+
           <Grid.Column width={2} textAlign="center">
             <ActionButton
               tooltip="Edit Movement"
