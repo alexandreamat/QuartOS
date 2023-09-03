@@ -1,5 +1,4 @@
 import {
-  ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg,
   ReadManyApiUsersMeTransactionsGetApiArg,
   TransactionApiOut,
   api,
@@ -10,12 +9,13 @@ import FlexColumn from "components/FlexColumn";
 import Form from "./Form";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { useNavigate } from "react-router-dom";
 import { TransactionCard } from "./TransactionCard";
 import { Card } from "semantic-ui-react";
 import { formatDateParam } from "utils/time";
-import { skipToken } from "@reduxjs/toolkit/dist/query";
 import ExhaustedDataCard from "components/ExhaustedDataCard";
+import MovementForm from "features/movements/components/Form";
+
+const NOT_FOUND = -1;
 
 export default function TransactionCards(props: {
   onFlowCheckboxChange?: (
@@ -39,17 +39,25 @@ export default function TransactionCards(props: {
   const [amountGe, setAmountGe] = useState<number | undefined>(undefined);
   const [amountLe, setAmountLe] = useState<number | undefined>(undefined);
 
-  const navigate = useNavigate();
+  const [isEditMovementFormOpen, setIsEditMovementFormOpen] = useState(false);
+  const [movementId, setMovementId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (props.accountId) setAccountId(props.accountId);
   }, [props.accountId]);
 
-  function handleGoToMovement(transaction: TransactionApiOut) {
-    let params = new URLSearchParams();
-    params.append("isFormOpen", "true");
-    params.append("movementId", transaction.movement_id.toString());
-    navigate(`/movements/?${params.toString()}`);
+  function handleOpenEditMovementForm(transaction: TransactionApiOut) {
+    setMovementId(transaction.movement_id);
+    setIsEditMovementFormOpen(true);
+  }
+
+  function handleCloseEditMovementForm() {
+    setIsEditMovementFormOpen(false);
+    setMovementId(undefined);
+  }
+
+  function handleGoToRelativeMovement(x: number) {
+    setMovementId(infiniteQuery.data[movementIdx + x].movement_id);
   }
 
   const handleOpenEditForm = (transaction: TransactionApiOut) => {
@@ -70,33 +78,18 @@ export default function TransactionCards(props: {
     isDescending,
     amountGe,
     amountLe,
+    accountId,
   };
 
-  const transactionsQuery = useInfiniteQuery(
+  const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeTransactionsGet,
-    accountId ? skipToken : queryArg,
+    queryArg,
     20
   );
 
-  const filteredQueryArg: ReadManyApiUsersMeAccountsAccountIdTransactionsGetApiArg =
-    {
-      timestamp: timestamp && formatDateParam(timestamp),
-      accountId: accountId,
-      search,
-      isDescending,
-      amountGe,
-      amountLe,
-    };
-
-  const accountTransactionsQuery = useInfiniteQuery(
-    api.endpoints.readManyApiUsersMeAccountsAccountIdTransactionsGet,
-    accountId ? filteredQueryArg : skipToken,
-    20
+  const movementIdx = infiniteQuery.data.findIndex(
+    (t) => t.movement_id === movementId
   );
-
-  const infiniteQuery = accountId
-    ? accountTransactionsQuery
-    : transactionsQuery;
 
   return (
     <FlexColumn style={{ height: "100%" }}>
@@ -110,6 +103,22 @@ export default function TransactionCards(props: {
           onEdited={infiniteQuery.onMutation}
         />
       )}
+      <MovementForm
+        onClose={handleCloseEditMovementForm}
+        open={isEditMovementFormOpen}
+        movementId={movementId}
+        onGoToPrev={
+          movementIdx !== NOT_FOUND && movementIdx > 0
+            ? () => handleGoToRelativeMovement(-1)
+            : undefined
+        }
+        onGoToNext={
+          movementIdx !== NOT_FOUND &&
+          movementIdx + 1 < infiniteQuery.data.length
+            ? () => handleGoToRelativeMovement(1)
+            : undefined
+        }
+      />
       <Bar
         accountId={accountId}
         onAccountIdChange={setAccountId}
@@ -151,7 +160,7 @@ export default function TransactionCards(props: {
                 <TransactionCard
                   key={i}
                   transaction={t}
-                  onGoMovement={() => handleGoToMovement(t)}
+                  onOpenEditMovementForm={() => handleOpenEditMovementForm(t)}
                   onOpenEditForm={() => handleOpenEditForm(t)}
                 />
               );

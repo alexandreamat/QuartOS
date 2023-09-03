@@ -1,4 +1,4 @@
-import { BaseQueryFn, SkipToken, skipToken } from "@reduxjs/toolkit/dist/query";
+import { BaseQueryFn, skipToken } from "@reduxjs/toolkit/dist/query";
 import { QueryHooks } from "@reduxjs/toolkit/dist/query/react/buildHooks";
 import {
   QueryDefinition,
@@ -17,7 +17,7 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
     QueryHooks<
       QueryDefinition<P & { page?: number; perPage?: number }, B, T, R[]>
     >,
-  params: P | SkipToken,
+  params: P,
   perPage: number
 ) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -31,7 +31,7 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
   const [data, setData] = useState<R[]>([]);
   const [isExhausted, setIsExhausted] = useState(false);
 
-  const cont = memoizedParams !== skipToken && page < pages && !isExhausted;
+  const cont = page < pages && !isExhausted;
 
   const arg = cont
     ? {
