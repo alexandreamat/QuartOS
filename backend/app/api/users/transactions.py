@@ -16,6 +16,7 @@ router = APIRouter()
 def read_many(
     db: DBSession,
     me: CurrentUser,
+    account_id: int | None = None,
     page: int = 0,
     per_page: int = 0,
     timestamp: date | None = None,
@@ -28,7 +29,7 @@ def read_many(
         db,
         me.id,
         None,
-        None,
+        account_id,
         None,
         page=page,
         per_page=per_page,
