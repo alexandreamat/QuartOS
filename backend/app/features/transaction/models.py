@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from decimal import Decimal
 from datetime import date
 
-from sqlmodel import Field, Relationship, SQLModel, asc, desc, col
+from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, or_, and_
 from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
 
@@ -101,10 +101,25 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
             statement = statement.where(where_clause)
         if search:
             statement = filter_query_by_search(search, statement, col(Transaction.name))
-        if amount_ge:
-            statement = statement.where(Transaction.amount >= amount_ge)
-        if amount_le:
-            statement = statement.where(Transaction.amount <= amount_le)
+
+        if amount_ge and amount_le:
+            if amount_ge <= amount_le:  # Normal interval: [from, to]
+                statement = statement.where(
+                    and_(
+                        Transaction.amount >= amount_ge, Transaction.amount <= amount_le
+                    )
+                )
+            else:  # Inverse interval: (-Inf, from] U [to, +Inf)
+                statement = statement.where(
+                    or_(
+                        Transaction.amount >= amount_ge, Transaction.amount <= amount_le
+                    )
+                )
+        else:
+            if amount_ge:
+                statement = statement.where(Transaction.amount >= amount_ge)
+            if amount_le:
+                statement = statement.where(Transaction.amount <= amount_le)
 
         # ORDER BY
         statement = statement.order_by(
