@@ -47,9 +47,6 @@ def deserialize_amount(row: list[str]) -> Decimal:
 
 def deserialize_timestamp(row: list[str]) -> date:
     return ${props.transactionDeserialiser.timestamp_deserialiser}
-
-def deserialize_currency_code(row: list[str]) -> str:
-    return ${props.transactionDeserialiser.currency_code_deserialiser}
 `}
         </SyntaxHighlighter>
       </Card.Content>
