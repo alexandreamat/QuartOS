@@ -43,9 +43,9 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             else:
                 transaction_id = transaction
                 transaction_out = CRUDTransaction.read(db, transaction_id)
+                old_movement_id = transaction_out.movement_id
                 if not movement.name:
                     movement.name = transaction_out.name
-                movement_out = cls.read(db, transaction_out.movement_id)
                 transaction_in = TransactionApiIn(
                     amount=transaction_out.amount,
                     timestamp=transaction_out.timestamp,
@@ -58,8 +58,9 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
                     movement_id=movement.id,
                     **kwargs,
                 )
-                if not movement_out.transactions:
-                    cls.delete(db, movement_out.id)
+                old_movement = Movement.read(db, old_movement_id)
+                if not old_movement.transactions:
+                    cls.delete(db, old_movement_id)
 
         return CRUDMovement.read(db, movement.id)
 
