@@ -119,21 +119,20 @@ export function TransactionCard(
               <LineWithHiddenOverflow content={props.transaction.name} />
             </Header>
           </Grid.Column>
-
           <Grid.Column width={2} textAlign="center">
-            <ActionButton
-              tooltip="Edit Movement"
-              icon="arrows alternate horizontal"
-              content={
-                movementQuery.data?.transactions.length.toFixed(0) || undefined
-              }
-              disabled={!("onOpenEditMovementForm" in props)}
-              onClick={
-                "onOpenEditMovementForm" in props
-                  ? props.onOpenEditMovementForm
-                  : undefined
-              }
-            />
+            {movementQuery.data && (
+              <ActionButton
+                tooltip="Edit Movement"
+                icon="arrows alternate horizontal"
+                content={movementQuery.data.transactions.length.toFixed(0)}
+                disabled={!("onOpenEditMovementForm" in props)}
+                onClick={
+                  "onOpenEditMovementForm" in props
+                    ? props.onOpenEditMovementForm
+                    : undefined
+                }
+              />
+            )}
             {"onOpenEditForm" in props && (
               <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
             )}
