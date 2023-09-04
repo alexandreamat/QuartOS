@@ -554,6 +554,7 @@ const injectedRtkApi = api
             is_descending: queryArg.isDescending,
             amount_ge: queryArg.amountGe,
             amount_le: queryArg.amountLe,
+            is_amount_abs: queryArg.isAmountAbs,
           },
         }),
         providesTags: ["users", "transactions"],
@@ -984,6 +985,7 @@ export type ReadManyApiUsersMeTransactionsGetApiArg = {
   isDescending?: boolean;
   amountGe?: number;
   amountLe?: number;
+  isAmountAbs?: boolean;
 };
 export type ReadManyApiUsersMeAccountsGetApiResponse =
   /** status 200 Successful Response */ AccountApiOut[];
