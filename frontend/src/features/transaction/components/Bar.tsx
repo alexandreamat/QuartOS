@@ -1,18 +1,10 @@
-import { useAccountOptions } from "features/account/hooks";
-import {
-  Button,
-  Divider,
-  Dropdown,
-  DropdownProps,
-  Icon,
-  Input,
-  InputOnChangeData,
-  Menu,
-  Popup,
-} from "semantic-ui-react";
+import { Button, Checkbox, Menu, Popup } from "semantic-ui-react";
 import MenuDateInput from "components/MenuDateInput";
 import { ClickableIcon } from "components/ClickableIcon";
 import DecimalInput from "components/DecimalInput";
+import MenuInputSearch from "components/MenuInputSearch";
+import MenuDropdownAccount from "components/MenuDropdownAccount";
+import MenuOrderButton from "components/MenuOrderButton";
 
 export default function Bar(props: {
   accountId?: number;
@@ -27,53 +19,21 @@ export default function Bar(props: {
   onAmountGeChange: (x?: number) => void;
   amountLe?: number;
   onAmountLeChange: (x?: number) => void;
+  isAmountAbs: boolean;
+  onIsAmountAbsChange: (x: boolean) => void;
   isMultipleChoice?: boolean;
   onIsMultipleChoiceChange: (x: boolean) => void;
 }) {
-  const accountOptions = useAccountOptions();
-
   return (
     <Menu secondary>
-      <Menu.Item fitted style={{ flex: 1 }}>
-        <Input
-          icon="search"
-          placeholder="Search..."
-          value={props.search}
-          onChange={(
-            event: React.ChangeEvent<HTMLInputElement>,
-            data: InputOnChangeData
-          ) => props.onSearchChange(data.value as string)}
-        />
-      </Menu.Item>
-      <Menu.Item fitted>
-        <Popup
-          trigger={<Button icon="filter" />}
-          hoverable
-          position="bottom right"
-          on="click"
-        >
-          <Dropdown
-            button
-            placeholder="Filter by account"
-            search
-            selection
-            value={props.accountId}
-            options={accountOptions.data || []}
-            onChange={(
-              event: React.SyntheticEvent<HTMLElement>,
-              data: DropdownProps
-            ) => props.onAccountIdChange(data.value as number)}
-          />
-        </Popup>
-        {props.accountId !== 0 && (
-          <Menu.Item fitted>
-            <ClickableIcon
-              name="remove circle"
-              onClick={() => props.onAccountIdChange(0)}
-            />
-          </Menu.Item>
-        )}
-      </Menu.Item>
+      <MenuInputSearch
+        search={props.search}
+        onSearchChange={props.onSearchChange}
+      />
+      <MenuDropdownAccount
+        accountId={props.accountId}
+        onAccountIdChange={props.onAccountIdChange}
+      />
       <MenuDateInput
         label="from"
         date={props.timestamp}
@@ -86,33 +46,33 @@ export default function Bar(props: {
           position="bottom right"
           on="click"
         >
-          <DecimalInput
-            label=">="
-            placeholder="Amount from"
-            amount={props.amountGe}
-            onAmountChange={props.onAmountGeChange}
-          />
-          {props.amountGe !== undefined && props.amountLe !== undefined ? (
-            <div
-              onClick={() => {
-                props.onAmountGeChange(props.amountLe);
-                props.onAmountLeChange(props.amountGe);
-              }}
-              style={{ cursor: "pointer" }}
-            >
-              <Divider horizontal>
-                {props.amountGe < props.amountLe ? "and" : "or"}
-              </Divider>
-            </div>
-          ) : (
-            <Divider />
-          )}
-          <DecimalInput
-            label="<="
-            placeholder="Amount to"
-            amount={props.amountLe}
-            onAmountChange={props.onAmountLeChange}
-          />
+          <Menu vertical secondary fluid>
+            <Menu.Item fitted>
+              <DecimalInput
+                label=">="
+                placeholder="Amount from"
+                amount={props.amountGe}
+                onAmountChange={props.onAmountGeChange}
+              />
+            </Menu.Item>
+            <Menu.Item fitted>
+              <DecimalInput
+                label="<="
+                placeholder="Amount to"
+                amount={props.amountLe}
+                onAmountChange={props.onAmountLeChange}
+              />
+            </Menu.Item>
+            <Menu.Item fitted>
+              <Checkbox
+                label="Ignore sign"
+                checked={props.isAmountAbs}
+                onChange={(_, data) =>
+                  props.onIsAmountAbsChange(data.checked || false)
+                }
+              />
+            </Menu.Item>
+          </Menu>
         </Popup>
         {(props.amountGe !== undefined || props.amountLe !== undefined) && (
           <Menu.Item fitted>
@@ -126,13 +86,10 @@ export default function Bar(props: {
           </Menu.Item>
         )}
       </Menu.Item>
-      <Menu.Item fitted>
-        <Button icon onClick={props.onIsDescendingToggle}>
-          <Icon
-            name={props.isDescending ? "sort amount down" : "sort amount up"}
-          />
-        </Button>
-      </Menu.Item>
+      <MenuOrderButton
+        isDescending={props.isDescending}
+        onIsDescendingToggle={props.onIsDescendingToggle}
+      />
       <Menu.Item fitted>
         <Button
           icon="check square"

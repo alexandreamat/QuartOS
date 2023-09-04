@@ -24,6 +24,7 @@ def read_many(
     is_descending: bool = True,
     amount_ge: Decimal | None = None,
     amount_le: Decimal | None = None,
+    is_amount_abs: bool = False,
 ) -> Iterable[TransactionApiOut]:
     return CRUDUser.read_transactions(
         db,
@@ -38,4 +39,5 @@ def read_many(
         is_descending=is_descending,
         amount_ge=amount_ge,
         amount_le=amount_le,
+        is_amount_abs=is_amount_abs,
     )

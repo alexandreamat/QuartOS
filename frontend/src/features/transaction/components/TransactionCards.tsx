@@ -45,6 +45,7 @@ export default function TransactionCards(
   const [isDescending, setIsDescending] = useState(true);
   const [amountGe, setAmountGe] = useState<number | undefined>(undefined);
   const [amountLe, setAmountLe] = useState<number | undefined>(undefined);
+  const [isAmountAbs, setIsAmountAbs] = useState(false);
 
   const [isEditMovementFormOpen, setIsEditMovementFormOpen] = useState(false);
   const [movementId, setMovementId] = useState<number | undefined>(undefined);
@@ -119,6 +120,7 @@ export default function TransactionCards(
     isDescending,
     amountGe,
     amountLe,
+    isAmountAbs,
     accountId,
   };
 
@@ -173,6 +175,8 @@ export default function TransactionCards(
         onAmountGeChange={setAmountGe}
         amountLe={amountLe}
         onAmountLeChange={setAmountLe}
+        isAmountAbs={isAmountAbs}
+        onIsAmountAbsChange={setIsAmountAbs}
         isMultipleChoice={isMultipleChoice}
         onIsMultipleChoiceChange={(x) => {
           setCheckedTransactions(new Set());

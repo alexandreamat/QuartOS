@@ -1,15 +1,8 @@
-import {
-  Button,
-  Dropdown,
-  DropdownProps,
-  Icon,
-  Input,
-  InputOnChangeData,
-  Menu,
-} from "semantic-ui-react";
-import { useAccountOptions } from "features/account/hooks";
+import { Button, Menu } from "semantic-ui-react";
 import MenuDateInput from "components/MenuDateInput";
-import { ClickableIcon } from "components/ClickableIcon";
+import MenuInputSearch from "components/MenuInputSearch";
+import MenuDropdownAccount from "components/MenuDropdownAccount";
+import MenuOrderButton from "components/MenuOrderButton";
 
 export function Bar(props: {
   onOpenCreateForm: () => void;
@@ -24,49 +17,19 @@ export function Bar(props: {
   isDescending: boolean;
   onToggleIsDescending: () => void;
 }) {
-  const accountOptions = useAccountOptions();
-
   return (
     <Menu secondary>
       <Menu.Item fitted>
-        <Button icon="plus" primary onClick={props.onOpenCreateForm}></Button>
+        <Button icon="plus" circular primary onClick={props.onOpenCreateForm} />
       </Menu.Item>
-      <Menu.Item fitted>
-        <Input
-          icon="search"
-          placeholder="Search..."
-          value={props.search}
-          onChange={(
-            event: React.ChangeEvent<HTMLInputElement>,
-            data: InputOnChangeData
-          ) => props.onSearchChange(data.value as string)}
-        />
-      </Menu.Item>
-      <Menu.Item fitted>
-        <Dropdown
-          icon="filter"
-          labeled
-          className="icon"
-          button
-          placeholder="Filter by account"
-          search
-          selection
-          value={props.accountId}
-          options={accountOptions.data || []}
-          onChange={(
-            event: React.SyntheticEvent<HTMLElement>,
-            data: DropdownProps
-          ) => props.onAccountIdChange(data.value as number)}
-        />
-        {props.accountId !== 0 && (
-          <Menu.Item fitted>
-            <ClickableIcon
-              name="remove circle"
-              onClick={() => props.onAccountIdChange(0)}
-            />
-          </Menu.Item>
-        )}
-      </Menu.Item>
+      <MenuInputSearch
+        search={props.search}
+        onSearchChange={props.onSearchChange}
+      />
+      <MenuDropdownAccount
+        accountId={props.accountId}
+        onAccountIdChange={props.onAccountIdChange}
+      />
       <MenuDateInput
         label="from"
         date={props.startDate}
@@ -77,13 +40,10 @@ export function Bar(props: {
         date={props.endDate}
         onDateChange={props.onEndDateChange}
       />
-      <Menu.Item fitted>
-        <Button icon onClick={props.onToggleIsDescending}>
-          <Icon
-            name={props.isDescending ? "sort amount down" : "sort amount up"}
-          />
-        </Button>
-      </Menu.Item>
+      <MenuOrderButton
+        isDescending={props.isDescending}
+        onIsDescendingToggle={props.onToggleIsDescending}
+      />
     </Menu>
   );
 }
