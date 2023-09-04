@@ -43,6 +43,8 @@ def read_many(
     search: str | None = None,
     amount_gt: Decimal | None = None,
     amount_lt: Decimal | None = None,
+    transactionsGe: int | None = None,
+    transactionsLe: int | None = None,
     is_descending: bool = True,
     sort_by: MovementField = MovementField.TIMESTAMP,
 ) -> Iterable[MovementApiOut]:
@@ -57,6 +59,8 @@ def read_many(
         end_date=end_date,
         search=search,
         is_descending=is_descending,
+        transactionsGe=transactionsGe,
+        transactionsLe=transactionsLe,
         sort_by=sort_by,
         amount_gt=amount_gt,
         amount_lt=amount_lt,

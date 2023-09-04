@@ -100,6 +100,8 @@ class Movement(__MovementBase, Base, table=True):
         end_date: date | None = None,
         search: str | None = None,
         is_descending: bool = True,
+        transactionsGe: int | None = None,
+        transactionsLe: int | None = None,
         sort_by: MovementField = MovementField.TIMESTAMP,
     ) -> SelectOfScalar["Movement"]:
         # SELECT
@@ -108,10 +110,6 @@ class Movement(__MovementBase, Base, table=True):
         # WHERE
         if movement_id:
             statement = statement.where(cls.id == movement_id)
-        if start_date:
-            statement = statement.having(func.min(Transaction.timestamp) >= start_date)
-        if end_date:
-            statement = statement.having(func.min(Transaction.timestamp) < end_date)
         if search:
             statement = filter_query_by_search(search, statement, col(cls.name))
 
@@ -125,6 +123,16 @@ class Movement(__MovementBase, Base, table=True):
             else:
                 order_clauses = Transaction.get_timestamp_asc_clauses()
             statement = statement.order_by(*order_clauses)
+
+        # HAVING
+        if start_date:
+            statement = statement.having(func.min(Transaction.timestamp) >= start_date)
+        if end_date:
+            statement = statement.having(func.min(Transaction.timestamp) < end_date)
+        if transactionsGe:
+            statement = statement.having(func.count(Transaction.id) >= transactionsGe)
+        if transactionsLe:
+            statement = statement.having(func.count(Transaction.id) <= transactionsLe)
 
         # LIMIT OFFSET
         if per_page:
