@@ -1113,7 +1113,6 @@ export type TransactionDeserialiserApiOut = {
   amount_deserialiser: string;
   timestamp_deserialiser: string;
   name_deserialiser: string;
-  currency_code_deserialiser: string;
   skip_rows: number;
   columns: number;
   delimiter: string;
@@ -1124,7 +1123,6 @@ export type TransactionDeserialiserApiIn = {
   amount_deserialiser: string;
   timestamp_deserialiser: string;
   name_deserialiser: string;
-  currency_code_deserialiser: string;
   skip_rows: number;
   columns: number;
   delimiter: string;

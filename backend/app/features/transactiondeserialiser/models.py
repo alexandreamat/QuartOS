@@ -12,7 +12,6 @@ class __TransactionDeserialiserBase(SQLModel):
     amount_deserialiser: CodeSnippet
     timestamp_deserialiser: CodeSnippet
     name_deserialiser: CodeSnippet
-    currency_code_deserialiser: CodeSnippet
     skip_rows: int
     columns: int
     delimiter: str

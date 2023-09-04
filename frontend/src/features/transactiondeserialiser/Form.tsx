@@ -25,7 +25,6 @@ export default function TransactionDeserialiserForm(props: {
   const name = useFormField("");
   const amount = useFormField("");
   const timestamp = useFormField("");
-  const currencyCode = useFormField("");
 
   const fields = [
     moduleName,
@@ -36,7 +35,6 @@ export default function TransactionDeserialiserForm(props: {
     name,
     amount,
     timestamp,
-    currencyCode,
   ];
 
   const [createTransactionDeserialiser, createTransactionDeserialiserResult] =
@@ -52,7 +50,6 @@ export default function TransactionDeserialiserForm(props: {
     name.set(props.transactionDeserialiser.name_deserialiser);
     amount.set(props.transactionDeserialiser.amount_deserialiser);
     timestamp.set(props.transactionDeserialiser.timestamp_deserialiser);
-    currencyCode.set(props.transactionDeserialiser.currency_code_deserialiser);
     delimiter.set(props.transactionDeserialiser.delimiter);
     encoding.set(props.transactionDeserialiser.encoding);
   }, [props.transactionDeserialiser]);
@@ -72,7 +69,6 @@ export default function TransactionDeserialiserForm(props: {
       name_deserialiser: name.value!,
       amount_deserialiser: amount.value!,
       timestamp_deserialiser: timestamp.value!,
-      currency_code_deserialiser: currencyCode.value!,
       delimiter: delimiter.value!,
       encoding: encoding.value!,
     };
@@ -115,10 +111,6 @@ export default function TransactionDeserialiserForm(props: {
           <FormTextArea
             label="deserialise_timestamp = lambda row:"
             field={timestamp}
-          />
-          <FormTextArea
-            label="deserialise_currency_code = lambda row:"
-            field={currencyCode}
           />
           <FormValidationError fields={fields} />
           <QueryErrorMessage query={createTransactionDeserialiserResult} />
