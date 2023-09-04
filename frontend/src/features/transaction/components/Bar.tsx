@@ -5,40 +5,27 @@ import DecimalInput from "components/DecimalInput";
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuDropdownAccount from "components/MenuDropdownAccount";
 import MenuOrderButton from "components/MenuOrderButton";
+import { UseStateType } from "types";
 
 export default function Bar(props: {
-  accountId?: number;
-  onAccountIdChange: (x: number) => void;
-  search: string;
-  onSearchChange: (x: string) => void;
-  timestamp?: Date;
-  onTimestampChange: (x: Date | undefined) => void;
-  isDescending: boolean;
-  onIsDescendingToggle: () => void;
-  amountGe?: number;
-  onAmountGeChange: (x?: number) => void;
-  amountLe?: number;
-  onAmountLeChange: (x?: number) => void;
-  isAmountAbs: boolean;
-  onIsAmountAbsChange: (x: boolean) => void;
-  isMultipleChoice?: boolean;
-  onIsMultipleChoiceChange: (x: boolean) => void;
+  accountIdState: UseStateType<number | undefined>;
+  searchState: UseStateType<string | undefined>;
+  timestampState: UseStateType<Date | undefined>;
+  isDescendingState: UseStateType<boolean>;
+  amountGeState: UseStateType<number | undefined>;
+  amountLeState: UseStateType<number | undefined>;
+  isAmountAbsState: UseStateType<boolean>;
+  isMultipleChoiceState: UseStateType<boolean>;
 }) {
+  const [amountGe, setAmountGe] = props.amountGeState;
+  const [amountLe, setAmountLe] = props.amountLeState;
+  const [isMultipleChoice, setIsMultipleChoice] = props.isMultipleChoiceState;
+  const [isAmountAbs, setIsAmountAbs] = props.isAmountAbsState;
   return (
     <Menu secondary>
-      <MenuInputSearch
-        search={props.search}
-        onSearchChange={props.onSearchChange}
-      />
-      <MenuDropdownAccount
-        accountId={props.accountId}
-        onAccountIdChange={props.onAccountIdChange}
-      />
-      <MenuDateInput
-        label="from"
-        date={props.timestamp}
-        onDateChange={props.onTimestampChange}
-      />
+      <MenuInputSearch searchState={props.searchState} />
+      <MenuDropdownAccount accountIdState={props.accountIdState} />
+      <MenuDateInput label="from" dateState={props.timestampState} />
       <Menu.Item fitted>
         <Popup
           trigger={<Button icon="dollar" />}
@@ -51,53 +38,44 @@ export default function Bar(props: {
               <DecimalInput
                 label=">="
                 placeholder="Amount from"
-                amount={props.amountGe}
-                onAmountChange={props.onAmountGeChange}
+                amountState={props.amountGeState}
               />
             </Menu.Item>
             <Menu.Item fitted>
               <DecimalInput
                 label="<="
                 placeholder="Amount to"
-                amount={props.amountLe}
-                onAmountChange={props.onAmountLeChange}
+                amountState={props.amountLeState}
               />
             </Menu.Item>
             <Menu.Item fitted>
               <Checkbox
                 label="Ignore sign"
-                checked={props.isAmountAbs}
-                onChange={(_, data) =>
-                  props.onIsAmountAbsChange(data.checked || false)
-                }
+                checked={isAmountAbs}
+                onChange={(_, data) => setIsAmountAbs(data.checked || false)}
               />
             </Menu.Item>
           </Menu>
         </Popup>
-        {(props.amountGe !== undefined || props.amountLe !== undefined) && (
+        {(amountGe !== undefined || amountLe !== undefined) && (
           <Menu.Item fitted>
             <ClickableIcon
               name="remove circle"
               onClick={() => {
-                props.onAmountGeChange(undefined);
-                props.onAmountLeChange(undefined);
+                setAmountGe(undefined);
+                setAmountLe(undefined);
               }}
             />
           </Menu.Item>
         )}
       </Menu.Item>
-      <MenuOrderButton
-        isDescending={props.isDescending}
-        onIsDescendingToggle={props.onIsDescendingToggle}
-      />
+      <MenuOrderButton isDescendingState={props.isDescendingState} />
       <Menu.Item fitted>
         <Button
           icon="check square"
           toggle
-          active={props.isMultipleChoice}
-          onClick={() =>
-            props.onIsMultipleChoiceChange(!props.isMultipleChoice)
-          }
+          active={isMultipleChoice}
+          onClick={() => setIsMultipleChoice((x) => !x)}
         />
       </Menu.Item>
     </Menu>

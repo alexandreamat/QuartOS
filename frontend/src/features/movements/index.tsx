@@ -19,22 +19,28 @@ export default function Movements() {
   const navigate = useNavigate();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [accountId, setAccountId] = useState(0);
-  const [isDescending, setIsDescending] = useState(true);
-
   const [movementId, setMovementId] = useState(0);
+
+  const searchState = useState<string | undefined>(undefined);
+  const startDateState = useState<Date | undefined>(undefined);
+  const endDateState = useState<Date | undefined>(undefined);
+  const accountIdState = useState<number | undefined>(undefined);
+  const isDescendingState = useState(true);
+
+  const [search] = searchState;
+  const [startDate] = startDateState;
+  const [endDate] = endDateState;
+  const [accountId, setAccountId] = accountIdState;
+  const [isDescending] = isDescendingState;
 
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeMovementsGet,
     {
-      search: search.length ? search : undefined,
+      search: search,
       isDescending,
       startDate: startDate && formatDateParam(startDate),
       endDate: endDate && formatDateParam(endDate),
-      accountId: accountId ? accountId : undefined,
+      accountId: accountId,
     } as ReadManyApiUsersMeMovementsGetApiArg,
     PER_PAGE
   );
@@ -48,13 +54,6 @@ export default function Movements() {
     if (isFormOpenParam) {
       setIsFormOpen(isFormOpenParam === "true");
       params.delete("isFormOpen");
-      navigate({ ...location, search: params.toString() }, { replace: true });
-    }
-
-    const movementIdParam = params.get("movementId");
-    if (movementIdParam) {
-      setMovementId(Number(movementIdParam));
-      params.delete("movementId");
       navigate({ ...location, search: params.toString() }, { replace: true });
     }
 
@@ -106,16 +105,11 @@ export default function Movements() {
       />
       <Bar
         onOpenCreateForm={handleOpenCreateForm}
-        search={search}
-        onSearchChange={setSearch}
-        startDate={startDate}
-        onStartDateChange={setStartDate}
-        endDate={endDate}
-        onEndDateChange={setEndDate}
-        accountId={accountId}
-        onAccountIdChange={setAccountId}
-        isDescending={isDescending}
-        onToggleIsDescending={() => setIsDescending((x) => !x)}
+        searchState={searchState}
+        startDateState={startDateState}
+        endDateState={endDateState}
+        accountIdState={accountIdState}
+        isDescendingState={isDescendingState}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         <Card.Group style={{ margin: 0 }}>

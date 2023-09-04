@@ -1,20 +1,15 @@
-import {
-  Button,
-  Input,
-  InputOnChangeData,
-  Menu,
-  Popup,
-} from "semantic-ui-react";
+import { Button, Input, Menu, Popup } from "semantic-ui-react";
 import { format } from "date-fns";
 import { stringToDate } from "utils/time";
 import { ClickableIcon } from "./ClickableIcon";
+import { UseStateType } from "types";
 
 export default function MenuDateInput(props: {
   label: string;
-  date?: Date;
-  onDateChange: (x: Date | undefined) => void;
+  dateState: UseStateType<Date | undefined>;
 }) {
-  const dateStr = props.date ? format(props.date, "yyyy-MM-dd") : "";
+  const [date, setDate] = props.dateState;
+  const dateStr = date ? format(date, "yyyy-MM-dd") : "";
   return (
     <Menu.Item fitted>
       <Popup
@@ -27,18 +22,18 @@ export default function MenuDateInput(props: {
           label={props.label}
           type="date"
           value={dateStr}
-          onChange={(_: unknown, data: InputOnChangeData) => {
+          onChange={(_, data) => {
             const newDate = stringToDate(data.value);
             if (isNaN(newDate.getTime())) return;
-            props.onDateChange(newDate);
+            setDate(newDate);
           }}
         />
       </Popup>
-      {props.date && (
+      {date && (
         <Menu.Item fitted>
           <ClickableIcon
             name="remove circle"
-            onClick={() => props.onDateChange(undefined)}
+            onClick={() => setDate(undefined)}
           />
         </Menu.Item>
       )}

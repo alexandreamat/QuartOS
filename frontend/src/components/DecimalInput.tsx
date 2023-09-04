@@ -1,12 +1,13 @@
 import { Input } from "semantic-ui-react";
+import { UseStateType } from "types";
 
 export default function DecimalInput(props: {
-  amount?: number;
-  onAmountChange: (x?: number) => void;
+  amountState: UseStateType<number | undefined>;
   placeholder: string;
   label: string;
 }) {
-  const amountGeStr = props.amount !== undefined ? props.amount : "";
+  const [amount, setAmount] = props.amountState;
+  const amountGeStr = amount !== undefined ? amount : "";
   return (
     <Input
       label={props.label}
@@ -21,9 +22,9 @@ export default function DecimalInput(props: {
         if (data.value.length) {
           const newAmount = Number(data.value);
           if (isNaN(newAmount)) return;
-          props.onAmountChange(newAmount);
+          setAmount(newAmount);
         } else {
-          props.onAmountChange(undefined);
+          setAmount(undefined);
         }
       }}
     />

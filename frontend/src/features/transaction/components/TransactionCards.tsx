@@ -36,21 +36,31 @@ export default function TransactionCards(
     TransactionApiOut | undefined
   >(undefined);
 
-  const [selectedAccountId, setSelectedAccountId] = useState(0);
-  const [accountId, setAccountId] = useState<number | undefined>(
+  const [selectedAccountId, setSelectedAccountId] = useState<number>();
+
+  const accountIdState = useState<number | undefined>(
     "accountId" in props ? props.accountId : undefined
   );
-  const [search, setSearch] = useState("");
-  const [timestamp, setTimestamp] = useState<Date | undefined>(undefined);
-  const [isDescending, setIsDescending] = useState(true);
-  const [amountGe, setAmountGe] = useState<number | undefined>(undefined);
-  const [amountLe, setAmountLe] = useState<number | undefined>(undefined);
-  const [isAmountAbs, setIsAmountAbs] = useState(false);
+  const searchState = useState<string>();
+  const timestampState = useState<Date>();
+  const isDescendingState = useState(true);
+  const amountGeState = useState<number>();
+  const amountLeState = useState<number>();
+  const isAmountAbsState = useState(false);
+  const isMultipleChoiceState = useState(false);
+
+  const [accountId, setAccountId] = accountIdState;
+  const [search] = searchState;
+  const [timestamp] = timestampState;
+  const [isDescending] = isDescendingState;
+  const [amountGe] = amountGeState;
+  const [amountLe] = amountLeState;
+  const [isAmountAbs] = isAmountAbsState;
+  const [isMultipleChoice, setIsMultipleChoice] = isMultipleChoiceState;
 
   const [isEditMovementFormOpen, setIsEditMovementFormOpen] = useState(false);
   const [movementId, setMovementId] = useState<number | undefined>(undefined);
 
-  const [isMultipleChoice, setIsMultipleChoice] = useState(false);
   const [checkedTransactions, setCheckedTransactions] = useState(
     new Set<number>()
   );
@@ -103,13 +113,13 @@ export default function TransactionCards(
   }
 
   const handleOpenEditForm = (transaction: TransactionApiOut) => {
-    setSelectedAccountId(0);
+    setSelectedAccountId(undefined);
     setSelectedTransaction(transaction);
     setIsFormOpen(true);
   };
 
   const handleCloseForm = () => {
-    setSelectedAccountId(0);
+    setSelectedAccountId(undefined);
     setSelectedTransaction(undefined);
     setIsFormOpen(false);
   };
@@ -163,25 +173,14 @@ export default function TransactionCards(
         }
       />
       <Bar
-        accountId={accountId}
-        onAccountIdChange={setAccountId}
-        search={search}
-        onSearchChange={setSearch}
-        timestamp={timestamp}
-        onTimestampChange={setTimestamp}
-        isDescending={isDescending}
-        onIsDescendingToggle={() => setIsDescending((x) => !x)}
-        amountGe={amountGe}
-        onAmountGeChange={setAmountGe}
-        amountLe={amountLe}
-        onAmountLeChange={setAmountLe}
-        isAmountAbs={isAmountAbs}
-        onIsAmountAbsChange={setIsAmountAbs}
-        isMultipleChoice={isMultipleChoice}
-        onIsMultipleChoiceChange={(x) => {
-          setCheckedTransactions(new Set());
-          setIsMultipleChoice(x);
-        }}
+        accountIdState={accountIdState}
+        searchState={searchState}
+        timestampState={timestampState}
+        isDescendingState={isDescendingState}
+        amountGeState={amountGeState}
+        amountLeState={amountLeState}
+        isAmountAbsState={isAmountAbsState}
+        isMultipleChoiceState={isMultipleChoiceState}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
