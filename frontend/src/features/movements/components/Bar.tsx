@@ -4,6 +4,7 @@ import MenuInputSearch from "components/MenuInputSearch";
 import MenuDropdownAccount from "components/MenuDropdownAccount";
 import MenuOrderButton from "components/MenuOrderButton";
 import { UseStateType } from "types";
+import MenuNumericRange from "components/MenuNumericRange";
 
 export function Bar(props: {
   onOpenCreateForm: () => void;
@@ -11,6 +12,8 @@ export function Bar(props: {
   startDateState: UseStateType<Date | undefined>;
   endDateState: UseStateType<Date | undefined>;
   accountIdState: UseStateType<number | undefined>;
+  transactionsGeState: UseStateType<number | undefined>;
+  transactionsLeState: UseStateType<number | undefined>;
   isDescendingState: UseStateType<boolean>;
 }) {
   return (
@@ -22,6 +25,11 @@ export function Bar(props: {
       <MenuDropdownAccount accountIdState={props.accountIdState} />
       <MenuDateInput label="from" dateState={props.startDateState} />
       <MenuDateInput label="to" dateState={props.endDateState} />
+      <MenuNumericRange
+        icon="exchange"
+        valueGeState={props.transactionsGeState}
+        valueLeState={props.transactionsLeState}
+      />
       <MenuOrderButton isDescendingState={props.isDescendingState} />
     </Menu>
   );

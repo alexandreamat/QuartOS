@@ -25,6 +25,8 @@ export default function Movements() {
   const startDateState = useState<Date | undefined>(undefined);
   const endDateState = useState<Date | undefined>(undefined);
   const accountIdState = useState<number | undefined>(undefined);
+  const transactionsGeState = useState<number | undefined>(undefined);
+  const transactionsLeState = useState<number | undefined>(undefined);
   const isDescendingState = useState(true);
 
   const [search] = searchState;
@@ -32,16 +34,21 @@ export default function Movements() {
   const [endDate] = endDateState;
   const [accountId, setAccountId] = accountIdState;
   const [isDescending] = isDescendingState;
+  const [transactionsGe] = transactionsGeState;
+  const [transactionsLe] = transactionsLeState;
 
+  const arg: ReadManyApiUsersMeMovementsGetApiArg = {
+    search: search,
+    isDescending,
+    startDate: startDate && formatDateParam(startDate),
+    endDate: endDate && formatDateParam(endDate),
+    accountId,
+    transactionsGe,
+    transactionsLe,
+  };
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeMovementsGet,
-    {
-      search: search,
-      isDescending,
-      startDate: startDate && formatDateParam(startDate),
-      endDate: endDate && formatDateParam(endDate),
-      accountId: accountId,
-    } as ReadManyApiUsersMeMovementsGetApiArg,
+    arg,
     PER_PAGE
   );
 
@@ -110,6 +117,8 @@ export default function Movements() {
         endDateState={endDateState}
         accountIdState={accountIdState}
         isDescendingState={isDescendingState}
+        transactionsGeState={transactionsGeState}
+        transactionsLeState={transactionsLeState}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         <Card.Group style={{ margin: 0 }}>

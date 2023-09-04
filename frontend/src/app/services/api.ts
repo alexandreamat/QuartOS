@@ -455,6 +455,8 @@ const injectedRtkApi = api
             search: queryArg.search,
             amount_gt: queryArg.amountGt,
             amount_lt: queryArg.amountLt,
+            transactionsGe: queryArg.transactionsGe,
+            transactionsLe: queryArg.transactionsLe,
             is_descending: queryArg.isDescending,
             sort_by: queryArg.sortBy,
           },
@@ -929,6 +931,8 @@ export type ReadManyApiUsersMeMovementsGetApiArg = {
   search?: string;
   amountGt?: number;
   amountLt?: number;
+  transactionsGe?: number;
+  transactionsLe?: number;
   isDescending?: boolean;
   sortBy?: MovementField;
 };

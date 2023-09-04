@@ -170,6 +170,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         end_date: date | None = None,
         search: str | None = None,
         is_descending: bool = True,
+        transactionsGe: int | None = None,
+        transactionsLe: int | None = None,
         sort_by: MovementField = MovementField.TIMESTAMP,
         amount_gt: Decimal | None = None,
         amount_lt: Decimal | None = None,
@@ -184,6 +186,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             end_date=end_date,
             search=search,
             is_descending=is_descending,
+            transactionsGe=transactionsGe,
+            transactionsLe=transactionsLe,
             sort_by=sort_by,
         )
         movements: Iterable[Movement] = db.exec(statement).all()

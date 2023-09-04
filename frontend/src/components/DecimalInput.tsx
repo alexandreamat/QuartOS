@@ -1,30 +1,33 @@
 import { Input } from "semantic-ui-react";
 import { UseStateType } from "types";
 
-export default function DecimalInput(props: {
-  amountState: UseStateType<number | undefined>;
+export default function NumericInput(props: {
+  valueState: UseStateType<number | undefined>;
   placeholder: string;
   label: string;
+  signed?: boolean;
+  decimal?: boolean;
 }) {
-  const [amount, setAmount] = props.amountState;
-  const amountGeStr = amount !== undefined ? amount : "";
+  const [value, setValue] = props.valueState;
+  const valueStr = value !== undefined ? value : "";
   return (
     <Input
       label={props.label}
       placeholder={props.placeholder}
       type="number"
       input={{
-        inputMode: "decimal",
-        step: "0.01",
+        inputMode: props.decimal ? "decimal" : "numeric",
+        step: props.decimal ? 0.01 : undefined,
+        min: props.signed ? 0 : undefined,
       }}
-      value={amountGeStr}
+      value={valueStr}
       onChange={(_, data) => {
         if (data.value.length) {
-          const newAmount = Number(data.value);
-          if (isNaN(newAmount)) return;
-          setAmount(newAmount);
+          const newValue = Number(data.value);
+          if (isNaN(newValue)) return;
+          setValue(newValue);
         } else {
-          setAmount(undefined);
+          setValue(undefined);
         }
       }}
     />
