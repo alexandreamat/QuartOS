@@ -38,7 +38,10 @@ def preview(
     CRUDUser.read_account(db, me.id, None, account_id)
     deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
     try:
-        yield from get_transactions_from_csv(deserialiser, file.file, account_id)
+        ts = [t for t in get_transactions_from_csv(deserialiser, file.file, account_id)]
+        # transactions normally come ordered from recent to old
+        for t in ts[::-1]:
+            yield t
     except Exception as e:
         raise UnknownError(e)
 
