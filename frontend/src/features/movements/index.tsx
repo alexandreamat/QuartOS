@@ -28,6 +28,9 @@ export default function Movements() {
   const transactionsGeState = useState<number | undefined>(undefined);
   const transactionsLeState = useState<number | undefined>(undefined);
   const isDescendingState = useState(true);
+  const amountGeState = useState<number>();
+  const amountLeState = useState<number>();
+  const isAmountAbsState = useState(false);
 
   const [search] = searchState;
   const [startDate] = startDateState;
@@ -36,6 +39,9 @@ export default function Movements() {
   const [isDescending] = isDescendingState;
   const [transactionsGe] = transactionsGeState;
   const [transactionsLe] = transactionsLeState;
+  const [amountGe] = amountGeState;
+  const [amountLe] = amountLeState;
+  const [isAmountAbs] = isAmountAbsState;
 
   const arg: ReadManyApiUsersMeMovementsGetApiArg = {
     search: search,
@@ -45,6 +51,9 @@ export default function Movements() {
     accountId,
     transactionsGe,
     transactionsLe,
+    amountGe,
+    amountLe,
+    isAmountAbs,
   };
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeMovementsGet,
@@ -119,6 +128,9 @@ export default function Movements() {
         isDescendingState={isDescendingState}
         transactionsGeState={transactionsGeState}
         transactionsLeState={transactionsLeState}
+        amountGeState={amountGeState}
+        amountLeState={amountLeState}
+        isAmountAbsState={isAmountAbsState}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         <Card.Group style={{ margin: 0 }}>

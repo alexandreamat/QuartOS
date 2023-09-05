@@ -15,6 +15,9 @@ export function Bar(props: {
   transactionsGeState: UseStateType<number | undefined>;
   transactionsLeState: UseStateType<number | undefined>;
   isDescendingState: UseStateType<boolean>;
+  amountGeState: UseStateType<number | undefined>;
+  amountLeState: UseStateType<number | undefined>;
+  isAmountAbsState: UseStateType<boolean>;
 }) {
   return (
     <Menu secondary>
@@ -29,6 +32,14 @@ export function Bar(props: {
         icon="exchange"
         valueGeState={props.transactionsGeState}
         valueLeState={props.transactionsLeState}
+      />
+      <MenuNumericRange
+        icon="dollar"
+        valueGeState={props.amountGeState}
+        valueLeState={props.amountLeState}
+        isAbsState={props.isAmountAbsState}
+        decimal
+        signed
       />
       <MenuOrderButton isDescendingState={props.isDescendingState} />
     </Menu>

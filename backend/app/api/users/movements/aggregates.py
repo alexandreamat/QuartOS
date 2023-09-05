@@ -26,7 +26,7 @@ def read_expenses(
         end_date=end_date,
         sort_by=MovementField.AMOUNT,
         is_descending=False,
-        amount_lt=Decimal(0),
+        amount_le=Decimal(0),
     )
 
 
@@ -44,7 +44,7 @@ def read_income(
         end_date=end_date,
         sort_by=MovementField.AMOUNT,
         is_descending=True,
-        amount_gt=Decimal(0),
+        amount_ge=Decimal(0),
     )
 
 
