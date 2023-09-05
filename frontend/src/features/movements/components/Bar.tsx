@@ -1,8 +1,7 @@
 import { Button, Menu } from "semantic-ui-react";
-import MenuDateInput from "components/MenuDateInput";
+import MenuDateRange from "components/MenuDateInput";
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuDropdownAccount from "components/MenuDropdownAccount";
-import MenuOrderButton from "components/MenuOrderButton";
 import { UseStateType } from "types";
 import MenuNumericRange from "components/MenuNumericRange";
 
@@ -26,8 +25,11 @@ export function Bar(props: {
       </Menu.Item>
       <MenuInputSearch searchState={props.searchState} />
       <MenuDropdownAccount accountIdState={props.accountIdState} />
-      <MenuDateInput label="from" dateState={props.startDateState} />
-      <MenuDateInput label="to" dateState={props.endDateState} />
+      <MenuDateRange
+        dateGeState={props.startDateState}
+        dateLeState={props.endDateState}
+        isDescendingState={props.isDescendingState}
+      />
       <MenuNumericRange
         icon="exchange"
         valueGeState={props.transactionsGeState}
@@ -41,7 +43,6 @@ export function Bar(props: {
         decimal
         signed
       />
-      <MenuOrderButton isDescendingState={props.isDescendingState} />
     </Menu>
   );
 }

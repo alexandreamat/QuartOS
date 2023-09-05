@@ -84,7 +84,8 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         page: int = 0,
         per_page: int = 0,
         search: str | None = None,
-        timestamp: date | None = None,
+        timestamp_ge: date | None = None,
+        timestamp_le: date | None = None,
         is_descending: bool = True,
         amount_ge: Decimal | None = None,
         amount_le: Decimal | None = None,
@@ -96,10 +97,11 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         # WHERE
         if transaction_id:
             statement = statement.where(Transaction.id == transaction_id)
-        if timestamp:
-            where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
-            where_clause = getattr(col(Transaction.timestamp), where_op)(timestamp)
-            statement = statement.where(where_clause)
+        if timestamp_ge:
+            # where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
+            statement = statement.where(Transaction.timestamp >= timestamp_ge)
+        if timestamp_le:
+            statement = statement.where(Transaction.timestamp <= timestamp_le)
         if search:
             statement = filter_query_by_search(search, statement, col(Transaction.name))
 

@@ -1,15 +1,15 @@
-import MenuDateInput from "components/MenuDateInput";
+import MenuDateRange from "components/MenuDateInput";
 import MenuDropdownAccount from "components/MenuDropdownAccount";
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuNumericRange from "components/MenuNumericRange";
-import MenuOrderButton from "components/MenuOrderButton";
 import { Button, Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
 
 export default function Bar(props: {
   accountIdState: UseStateType<number | undefined>;
   searchState: UseStateType<string | undefined>;
-  timestampState: UseStateType<Date | undefined>;
+  dateGeState: UseStateType<Date | undefined>;
+  dateLeState: UseStateType<Date | undefined>;
   isDescendingState: UseStateType<boolean>;
   amountGeState: UseStateType<number | undefined>;
   amountLeState: UseStateType<number | undefined>;
@@ -21,7 +21,11 @@ export default function Bar(props: {
     <Menu secondary>
       <MenuInputSearch searchState={props.searchState} />
       <MenuDropdownAccount accountIdState={props.accountIdState} />
-      <MenuDateInput label="from" dateState={props.timestampState} />
+      <MenuDateRange
+        dateGeState={props.dateGeState}
+        dateLeState={props.dateLeState}
+        isDescendingState={props.isDescendingState}
+      />
       <MenuNumericRange
         icon="dollar"
         valueGeState={props.amountGeState}
@@ -30,7 +34,6 @@ export default function Bar(props: {
         signed
         decimal
       />
-      <MenuOrderButton isDescendingState={props.isDescendingState} />
       <Menu.Item fitted>
         <Button
           icon="check square"

@@ -27,7 +27,7 @@ export default function TransactionCards(
       }
     | {
         // from index
-        accountId: number;
+        accountId?: number;
       }
 ) {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -36,13 +36,16 @@ export default function TransactionCards(
     TransactionApiOut | undefined
   >(undefined);
 
-  const [selectedAccountId, setSelectedAccountId] = useState<number>();
+  const [selectedAccountId, setSelectedAccountId] = useState<
+    number | undefined
+  >(undefined);
 
   const accountIdState = useState<number | undefined>(
     "accountId" in props ? props.accountId : undefined
   );
   const searchState = useState<string>();
-  const timestampState = useState<Date>();
+  const timestampGeState = useState<Date>();
+  const timestampLeState = useState<Date>();
   const isDescendingState = useState(true);
   const amountGeState = useState<number>();
   const amountLeState = useState<number>();
@@ -51,7 +54,8 @@ export default function TransactionCards(
 
   const [accountId, setAccountId] = accountIdState;
   const [search] = searchState;
-  const [timestamp] = timestampState;
+  const [timestampGe] = timestampGeState;
+  const [timestampLe] = timestampLeState;
   const [isDescending] = isDescendingState;
   const [amountGe] = amountGeState;
   const [amountLe] = amountLeState;
@@ -125,7 +129,8 @@ export default function TransactionCards(
   };
 
   const queryArg: ReadManyApiUsersMeTransactionsGetApiArg = {
-    timestamp: timestamp && formatDateParam(timestamp),
+    timestampGe: timestampGe && formatDateParam(timestampGe),
+    timestampLe: timestampLe && formatDateParam(timestampLe),
     search,
     isDescending,
     amountGe,
@@ -175,7 +180,8 @@ export default function TransactionCards(
       <Bar
         accountIdState={accountIdState}
         searchState={searchState}
-        timestampState={timestampState}
+        dateGeState={timestampGeState}
+        dateLeState={timestampLeState}
         isDescendingState={isDescendingState}
         amountGeState={amountGeState}
         amountLeState={amountLeState}
