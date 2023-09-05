@@ -5,7 +5,7 @@ from decimal import Decimal
 from datetime import date
 from typing import Iterable, Any
 
-from sqlmodel import SQLModel, Relationship, and_, or_, col, func
+from sqlmodel import SQLModel, Relationship, col, func, select
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base, CurrencyCode
@@ -100,6 +100,9 @@ class Movement(__MovementBase, Base, table=True):
         end_date: date | None = None,
         search: str | None = None,
         is_descending: bool = True,
+        amount_ge: Decimal | None = None,
+        amount_le: Decimal | None = None,
+        is_amount_abs: bool = False,
         transactionsGe: int | None = None,
         transactionsLe: int | None = None,
         sort_by: MovementField = MovementField.TIMESTAMP,
@@ -112,6 +115,38 @@ class Movement(__MovementBase, Base, table=True):
             statement = statement.where(cls.id == movement_id)
         if search:
             statement = filter_query_by_search(search, statement, col(cls.name))
+        if amount_ge:
+            if is_amount_abs:
+                statement = statement.where(func.abs(Transaction.amount) >= amount_ge)
+            else:
+                statement = statement.where(col(Transaction.amount) >= amount_ge)
+        if amount_le:
+            if is_amount_abs:
+                statement = statement.where(func.abs(Transaction.amount) <= amount_le)
+            else:
+                statement = statement.where(Transaction.amount <= amount_le)
+        if transactionsGe or transactionsLe:
+            transaction_counts = (
+                select(
+                    [
+                        Transaction.movement_id,
+                        func.count(Transaction.id).label("transaction_count"),
+                    ]
+                )
+                .group_by(Transaction.movement_id)
+                .subquery()
+            )
+            statement = statement.join(
+                transaction_counts, transaction_counts.c.movement_id == cls.id
+            )
+            if transactionsGe:
+                statement = statement.where(
+                    transaction_counts.c.transaction_count >= transactionsGe
+                )
+            if transactionsLe:
+                statement = statement.where(
+                    transaction_counts.c.transaction_count <= transactionsLe
+                )
 
         # GROUP BY
         statement = statement.group_by(Movement.id)
@@ -129,10 +164,6 @@ class Movement(__MovementBase, Base, table=True):
             statement = statement.having(func.min(Transaction.timestamp) >= start_date)
         if end_date:
             statement = statement.having(func.min(Transaction.timestamp) < end_date)
-        if transactionsGe:
-            statement = statement.having(func.count(Transaction.id) >= transactionsGe)
-        if transactionsLe:
-            statement = statement.having(func.count(Transaction.id) <= transactionsLe)
 
         # LIMIT OFFSET
         if per_page:
@@ -145,22 +176,10 @@ class Movement(__MovementBase, Base, table=True):
     def filter_movements(
         cls,
         movements: Iterable["Movement"],
-        amount_gt: Decimal | None,
-        amount_lt: Decimal | None,
         is_descending: bool,
         sort_by: MovementField,
         currency_code: CurrencyCode,
     ) -> Iterable["Movement"]:
-        if amount_gt is not None:
-            movements = [
-                m for m in movements if m.get_amount(currency_code) > amount_gt
-            ]
-
-        if amount_lt is not None:
-            movements = [
-                m for m in movements if m.get_amount(currency_code) < amount_lt
-            ]
-
         if sort_by is MovementField.AMOUNT:
             movements = sorted(
                 movements,
