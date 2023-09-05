@@ -552,7 +552,8 @@ const injectedRtkApi = api
             account_id: queryArg.accountId,
             page: queryArg.page,
             per_page: queryArg.perPage,
-            timestamp: queryArg.timestamp,
+            timestamp_ge: queryArg.timestampGe,
+            timestamp_le: queryArg.timestampLe,
             search: queryArg.search,
             is_descending: queryArg.isDescending,
             amount_ge: queryArg.amountGe,
@@ -986,7 +987,8 @@ export type ReadManyApiUsersMeTransactionsGetApiArg = {
   accountId?: number;
   page?: number;
   perPage?: number;
-  timestamp?: string;
+  timestampGe?: string;
+  timestampLe?: string;
   search?: string;
   isDescending?: boolean;
   amountGe?: number;
