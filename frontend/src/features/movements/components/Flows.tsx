@@ -32,97 +32,120 @@ const AccountLogo = (props: {
   institution?: InstitutionApiOut;
 }) => (
   <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-    <AccountIcon account={props.account} institution={props.institution} />
+    <Popup
+      hideOnScroll
+      content={props.account.name}
+      trigger={
+        <div>
+          <AccountIcon
+            account={props.account}
+            institution={props.institution}
+          />
+        </div>
+      }
+    />
   </Grid.Column>
 );
 
-const Amount = (props: { amount: number; currencyCode: string }) => (
+const Amount = (props: {
+  transaction: TransactionApiOut;
+  currencyCode: string;
+}) => (
   <Grid.Column width={5} textAlign="center" verticalAlign="middle">
-    <CurrencyLabel amount={props.amount} currencyCode={props.currencyCode} />
+    <Popup
+      hideOnScroll
+      position="top center"
+      content={`Account balance: ${props.transaction.account_balance.toLocaleString(
+        undefined,
+        {
+          style: "currency",
+          currency: props.currencyCode,
+        }
+      )}`}
+      trigger={
+        <div>
+          <CurrencyLabel
+            amount={props.transaction.amount}
+            currencyCode={props.currencyCode}
+          />
+        </div>
+      }
+    />
   </Grid.Column>
 );
 
-const TransactionName = (props: { name: string }) => (
+const TransactionName = (props: { transaction: TransactionApiOut }) => (
   <Grid.Column textAlign="center" verticalAlign="middle">
-    <LineWithHiddenOverflow content={props.name} />
+    <Popup
+      hideOnScroll
+      position="top center"
+      content={<FormattedTimestamp timestamp={props.transaction.timestamp} />}
+      trigger={
+        <div>
+          <LineWithHiddenOverflow content={props.transaction.name} />
+        </div>
+      }
+    />
   </Grid.Column>
 );
 
 function Outflow(props: {
-  flow: TransactionApiOut;
+  transaction: TransactionApiOut;
   onRemove?: () => void;
   onOpenEditForm?: () => void;
   style?: CSSProperties;
 }) {
-  const accountQueries = useAccountQueries(props.flow.account_id);
+  const accountQueries = useAccountQueries(props.transaction.account_id);
 
   if (!accountQueries.account)
     return <OutflowPlaceholder onRemove onOpenEditForm />;
 
   return (
-    <Popup
-      hideOnScroll
-      content={<FormattedTimestamp timestamp={props.flow.timestamp} />}
-      trigger={
-        <Grid.Row
-          columns="equal"
-          style={{ padding: flowPadding, ...props.style }}
-        >
-          {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
-          {props.onOpenEditForm && (
-            <EditFlow onOpenEditForm={props.onOpenEditForm} />
-          )}
-          <AccountLogo
-            account={accountQueries.account}
-            institution={accountQueries.institution}
-          />
-          <TransactionName name={props.flow.name} />
-          <Amount
-            amount={props.flow.amount}
-            currencyCode={accountQueries.account.currency_code}
-          />
-        </Grid.Row>
-      }
-    />
+    <Grid.Row columns="equal" style={{ padding: flowPadding, ...props.style }}>
+      {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+      {props.onOpenEditForm && (
+        <EditFlow onOpenEditForm={props.onOpenEditForm} />
+      )}
+      <AccountLogo
+        account={accountQueries.account}
+        institution={accountQueries.institution}
+      />
+      <TransactionName transaction={props.transaction} />
+      <Amount
+        transaction={props.transaction}
+        currencyCode={accountQueries.account.currency_code}
+      />
+    </Grid.Row>
   );
 }
 
 function Inflow(props: {
-  flow: TransactionApiOut;
+  transaction: TransactionApiOut;
   onRemove?: () => void;
   onOpenEditForm?: () => void;
   style?: CSSProperties;
 }) {
-  const accountQueries = useAccountQueries(props.flow.account_id);
+  const accountQueries = useAccountQueries(props.transaction.account_id);
 
   if (!accountQueries.account)
     return <InflowPlaceholder onRemove onOpenEditForm />;
 
   return (
-    <Popup
-      hideOnScroll
-      content={<FormattedTimestamp timestamp={props.flow.timestamp} />}
-      trigger={
-        <Grid.Row
-          columns="equal"
-          style={{ padding: flowPadding, ...props.style }}
-        >
-          <Amount
-            amount={props.flow.amount}
-            currencyCode={accountQueries.account.currency_code}
-          />
-          <TransactionName name={props.flow.name} />
-          <AccountLogo
-            account={accountQueries.account}
-            institution={accountQueries.institution}
-          />
-          {props.onOpenEditForm && (
-            <EditFlow onOpenEditForm={props.onOpenEditForm} />
-          )}
-          {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
-        </Grid.Row>
-      }
-    />
+    <Grid.Row columns="equal" style={{ padding: flowPadding, ...props.style }}>
+      <Amount
+        transaction={props.transaction}
+        currencyCode={accountQueries.account.currency_code}
+      />
+      <TransactionName transaction={props.transaction} />
+      <AccountLogo
+        account={accountQueries.account}
+        institution={accountQueries.institution}
+      />
+      {props.onOpenEditForm && (
+        <EditFlow onOpenEditForm={props.onOpenEditForm} />
+      )}
+      {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+    </Grid.Row>
   );
 }
 
@@ -143,7 +166,7 @@ export function Flows(props: {
               {outflows.map((transaction) => (
                 <Outflow
                   key={transaction.id}
-                  flow={transaction}
+                  transaction={transaction}
                   onRemove={
                     props.onRemove && (() => props.onRemove!(transaction))
                   }
@@ -170,7 +193,7 @@ export function Flows(props: {
               {inflows.map((transaction) => (
                 <Inflow
                   key={transaction.id}
-                  flow={transaction}
+                  transaction={transaction}
                   onRemove={
                     props.onRemove
                       ? () => props.onRemove!(transaction)
