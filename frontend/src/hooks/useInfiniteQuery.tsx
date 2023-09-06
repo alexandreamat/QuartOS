@@ -74,8 +74,10 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
         setPages((p) => p + 1);
       }
     }
-
-    ref?.addEventListener("scroll", handleScroll);
+    if (ref) {
+      if (ref.clientHeight === ref.scrollHeight) setPages((p) => p + 1);
+      else ref.addEventListener("scroll", handleScroll);
+    }
 
     return () => ref?.removeEventListener("scroll", handleScroll);
   }, [query.isFetching]);
