@@ -9,6 +9,8 @@ from sqlalchemy.sql.expression import ClauseElement
 from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
 from app.common.utils import filter_query_by_search
 
+from app.features.file import File
+
 if TYPE_CHECKING:
     from app.features.institution import Institution
     from app.features.user import User
@@ -45,6 +47,10 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
     account_id: int = Field(foreign_key="account.id")
     movement_id: int = Field(foreign_key="movement.id")
     account_balance: Decimal
+    files: list[File] = Relationship(
+        back_populates="transaction",
+        sa_relationship_kwargs={"cascade": "all, delete"},
+    )
 
     account: "Account" = Relationship(back_populates="transactions")
     movement: "Movement" = Relationship(back_populates="transactions")

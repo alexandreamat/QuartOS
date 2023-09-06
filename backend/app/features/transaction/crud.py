@@ -1,7 +1,7 @@
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
-from app.features.transaction.models import TransactionApiIn, TransactionApiOut
+
 
 from .models import (
     Transaction,
@@ -17,8 +17,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
     out_model = TransactionApiOut
 
     @classmethod
-    def is_synced(cls, db: Session, id: int) -> bool:
-        return cls.db_model.read(db, id).is_synced
+    def is_synced(cls, db: Session, transaction_id: int) -> bool:
+        return Transaction.read(db, transaction_id).is_synced
 
 
 class CRUDSyncableTransaction(

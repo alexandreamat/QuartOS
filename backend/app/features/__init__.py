@@ -9,4 +9,5 @@ from . import (
     transaction,
     movement,
     replacementpattern,
+    file,
 )

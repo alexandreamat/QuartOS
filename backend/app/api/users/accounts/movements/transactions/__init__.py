@@ -10,6 +10,8 @@ from app.features.transaction import (
     CRUDTransaction,
 )
 
+from . import files
+
 router = APIRouter()
 
 
@@ -69,3 +71,10 @@ def delete(
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
     return CRUDAccount.delete_transaction(db, movement_id, account_id, transaction_id)
+
+
+router.include_router(
+    files.router,
+    prefix="/{transaction_id}/files",
+    tags=["files"],
+)
