@@ -9,14 +9,13 @@ import TransactionsPreview from "features/transaction/components/TransactionsPre
 import {
   Button,
   Dimmer,
-  Header,
   Icon,
   Loader,
   Message,
   Modal,
-  Segment,
 } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
+import UploadSegment from "components/UploadSegment";
 
 export default function Uploader(props: {
   open: boolean;
@@ -29,19 +28,6 @@ export default function Uploader(props: {
   const handleClose = () => {
     uploadResult.reset();
     props.onClose();
-  };
-
-  const handleFileDrop = (event: React.DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const file = event.dataTransfer?.files[0];
-    if (file) {
-      handleFileUpload(file);
-    }
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files && event.target.files[0];
-    if (file) handleFileUpload(file);
   };
 
   const handleFileUpload = async (file: File) => {
@@ -96,33 +82,7 @@ export default function Uploader(props: {
               </Message>
             )}
             {uploadResult.isUninitialized && (
-              <Segment
-                placeholder
-                onDrop={handleFileDrop}
-                onDragOver={(event: any) => event.preventDefault()}
-                style={{ height: "100%" }}
-              >
-                <Header icon>
-                  <Icon name="file excel outline" />
-                  Upload your Transactions Sheet File
-                </Header>
-                <Button
-                  as="label"
-                  htmlFor="file-input"
-                  primary
-                  icon
-                  labelPosition="left"
-                >
-                  <Icon name="cloud upload" />
-                  Upload
-                </Button>
-                <input
-                  type="file"
-                  id="file-input"
-                  style={{ display: "none" }}
-                  onChange={handleFileChange}
-                />
-              </Segment>
+              <UploadSegment onUpload={handleFileUpload} />
             )}
             {uploadResult.isLoading && (
               <Dimmer active>
