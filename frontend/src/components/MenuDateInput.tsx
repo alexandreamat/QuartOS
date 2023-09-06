@@ -8,12 +8,14 @@ import { useEffect } from "react";
 function MenuDateInput(props: {
   label: string;
   dateState: UseStateType<Date | undefined>;
+  error?: boolean;
 }) {
   const [date, setDate] = props.dateState;
   const dateStr = date ? format(date, "yyyy-MM-dd") : "";
   return (
     <Menu.Item fitted>
       <Input
+        error={props.error}
         style={{ display: "flex" }}
         label={{
           content: props.label,
@@ -41,6 +43,8 @@ export default function MenuDateRange(props: {
   const [endDate, setEndDate] = props.dateLeState;
   const [isDescending, setIsDescending] = props.isDescendingState;
 
+  const error = startDate && endDate && startDate > endDate;
+
   useEffect(() => {
     if ((startDate !== undefined) === (endDate !== undefined)) return; // XNOR
 
@@ -57,11 +61,15 @@ export default function MenuDateRange(props: {
         on="click"
       >
         <Menu secondary vertical>
-          <MenuDateInput label="from" dateState={props.dateGeState} />
+          <MenuDateInput
+            label="From"
+            dateState={props.dateGeState}
+            error={error}
+          />
           <Menu.Item fitted>
             <Button
               fluid
-              disabled={(startDate !== undefined) === (endDate !== undefined)} // NXOR
+              disabled={!startDate && !endDate}
               icon="arrows alternate vertical"
               onClick={() => {
                 setStartDate(endDate);
@@ -69,13 +77,17 @@ export default function MenuDateRange(props: {
               }}
             />
           </Menu.Item>
-          <MenuDateInput label="to" dateState={props.dateLeState} />
+          <MenuDateInput
+            label="To"
+            dateState={props.dateLeState}
+            error={error}
+          />
           <Menu.Item fitted>
             <Button
               toggle
               fluid
               disabled={(startDate !== undefined) !== (endDate !== undefined)} // XOR
-              icon={isDescending ? "sort amount down" : "sort amount up"}
+              icon={isDescending ? "sort amount up" : "sort amount down"}
               active={isDescending}
               onClick={() => setIsDescending((x) => !x)}
             />
