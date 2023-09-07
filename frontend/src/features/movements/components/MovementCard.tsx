@@ -4,24 +4,18 @@ import {
   TransactionApiOut,
   api,
 } from "app/services/api";
-import {
-  Button,
-  Card,
-  Grid,
-  Header,
-  Input,
-  Placeholder,
-} from "semantic-ui-react";
-import FormattedTimestamp from "components/FormattedTimestamp";
-import { Flows } from "./Flows";
+import ActionButton from "components/ActionButton";
+import { ClickableIcon } from "components/ClickableIcon";
 import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
-import MutateActionButton from "components/MutateActionButton";
-import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
-import { useEffect, useState } from "react";
-import { ClickableIcon } from "components/ClickableIcon";
 import FlexRow from "components/FlexRow";
+import FormattedTimestamp from "components/FormattedTimestamp";
+import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
+import MutateActionButton from "components/MutateActionButton";
+import { useEffect, useState } from "react";
+import { Button, Card, Header, Input, Placeholder } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
+import { Flows } from "./Flows";
 
 export function MovementCard(props: {
   movement: MovementApiOut;
@@ -61,66 +55,57 @@ export function MovementCard(props: {
   return (
     <Card fluid color="teal">
       <Card.Content>
-        <Grid columns="equal">
-          <Grid.Column width={3}>
-            <Card.Meta>
-              <FormattedTimestamp
-                timestamp={props.movement.earliest_timestamp}
-              />
-            </Card.Meta>
-          </Grid.Column>
-          <Grid.Column>
+        <FlexRow style={{ alignItems: "center", gap: 5 }}>
+          <Card.Meta>
+            <FormattedTimestamp timestamp={props.movement.earliest_timestamp} />
+          </Card.Meta>
+          <FlexRow.Auto>
             {isEditMode ? (
-              <FlexRow style={{ alignItems: "center", gap: 5 }}>
-                <FlexRow.Auto>
-                  <Input
-                    style={{ width: "100%" }}
-                    value={name}
-                    onChange={(e, d) => setName(d.value)}
-                  />
-                </FlexRow.Auto>
-                <Button
-                  icon="cancel"
-                  circular
-                  size="tiny"
-                  onClick={() => {
-                    setName(props.movement.name);
-                    setIsEditMode(false);
-                  }}
-                />
-                <Button
-                  icon="check"
-                  positive
-                  circular
-                  size="tiny"
-                  onClick={updateName}
-                  disabled={name === props.movement.name}
-                  negative={updateMovementResult.isError}
-                  loading={updateMovementResult.isLoading}
-                />
-              </FlexRow>
+              <Input
+                style={{ width: "100%" }}
+                value={name}
+                onChange={(_, d) => setName(d.value)}
+              />
             ) : (
-              <FlexRow style={{ gap: 5, justifyContent: "left" }}>
-                <FlexRow.Auto>
-                  <Header as="h5">
-                    <LineWithHiddenOverflow content={props.movement.name} />
-                  </Header>
-                </FlexRow.Auto>
-                {props.editable && (
-                  <ClickableIcon
-                    name="pencil"
-                    onClick={() => setIsEditMode(true)}
-                  />
-                )}
-              </FlexRow>
+              <Header as="h5">
+                <LineWithHiddenOverflow content={props.movement.name} />
+              </Header>
             )}
-          </Grid.Column>
-          {props.onOpenEditForm && (
-            <Grid.Column width={1} textAlign="center">
-              <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
-            </Grid.Column>
+          </FlexRow.Auto>
+          {isEditMode ? (
+            <>
+              <Button
+                icon="cancel"
+                circular
+                size="tiny"
+                onClick={() => {
+                  setName(props.movement.name);
+                  setIsEditMode(false);
+                }}
+              />
+              <Button
+                icon="check"
+                positive
+                circular
+                size="tiny"
+                onClick={updateName}
+                disabled={name === props.movement.name}
+                negative={updateMovementResult.isError}
+                loading={updateMovementResult.isLoading}
+              />
+            </>
+          ) : (
+            props.editable && (
+              <ClickableIcon
+                name="pencil"
+                onClick={() => setIsEditMode(true)}
+              />
+            )
           )}
-        </Grid>
+          {props.onOpenEditForm && (
+            <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
+          )}
+        </FlexRow>
         {props.showFlows && (
           <Flows
             transactions={props.movement.transactions}
@@ -172,33 +157,24 @@ function MovementCardPlaceholder(props: {
   return (
     <Card fluid color="teal">
       <Card.Content>
-        <Grid columns="equal">
-          <Grid.Column width={3}>
+        <FlexRow style={{ alignItems: "center", gap: 5 }}>
+          <Placeholder fluid>
+            <Placeholder.Header>
+              <Placeholder.Line style={{ width: "10em" }} />
+            </Placeholder.Header>
+          </Placeholder>
+          <FlexRow.Auto>
             <Placeholder fluid>
               <Placeholder.Header>
-                <Placeholder.Line />
+                <Placeholder.Line style={{ width: "100%" }} />
               </Placeholder.Header>
             </Placeholder>
-          </Grid.Column>
-          <Grid.Column>
-            <Placeholder fluid>
-              <Placeholder.Header>
-                <Placeholder.Line />
-              </Placeholder.Header>
-            </Placeholder>
-          </Grid.Column>
+          </FlexRow.Auto>
           {props.onOpenEditForm && (
-            <Grid.Column width={1} textAlign="center">
-              <Button
-                circular
-                basic
-                icon="ellipsis horizontal"
-                size="tiny"
-                loading
-              />
-            </Grid.Column>
+            <ActionButton.Placeholder icon="ellipsis horizontal" />
           )}
-        </Grid>
+        </FlexRow>
+
         {props.showFlows && (
           <Flows.Placeholder
             onRemove={props.onRemoveTransaction}

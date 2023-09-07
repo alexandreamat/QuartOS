@@ -1,10 +1,8 @@
 import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import {
-  Button,
   Card,
   Checkbox,
   CheckboxProps,
-  Grid,
   Header,
   Placeholder,
   Popup,
@@ -19,6 +17,7 @@ import { FormattedCurrency } from "components/FormattedCurrency";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import MutateActionButton from "components/MutateActionButton";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
+import FlexRow from "components/FlexRow";
 
 export function TransactionCard(
   props:
@@ -77,67 +76,62 @@ export function TransactionCard(
   return (
     <Card fluid color="teal">
       <Card.Content>
-        <Grid columns="equal" verticalAlign="middle">
+        <FlexRow style={{ gap: 5 }}>
           {"onCheckboxChange" in props && props.onCheckboxChange && (
-            <Grid.Column width={1} textAlign="center" verticalAlign="middle">
-              <Popup
-                content={
-                  props.checked
-                    ? "Remove from the movement"
-                    : "Add to the movement"
-                }
-                trigger={
-                  <Checkbox
-                    disabled={
-                      "checkBoxDisabled" in props && props.checkBoxDisabled
-                    }
-                    checked={props.checked}
-                    onChange={async (_: unknown, data: CheckboxProps) =>
-                      await props.onCheckboxChange!(data.checked || false)
-                    }
-                  />
-                }
-              />
-            </Grid.Column>
+            <Popup
+              content={
+                props.checked
+                  ? "Remove from the movement"
+                  : "Add to the movement"
+              }
+              trigger={
+                <Checkbox
+                  disabled={
+                    "checkBoxDisabled" in props && props.checkBoxDisabled
+                  }
+                  checked={props.checked}
+                  onChange={async (_: unknown, data: CheckboxProps) =>
+                    await props.onCheckboxChange!(data.checked || false)
+                  }
+                />
+              }
+            />
           )}
-          <Grid.Column width={2}>
-            <Card.Meta>
-              <FormattedTimestamp timestamp={props.transaction.timestamp} />
-            </Card.Meta>
-          </Grid.Column>
-          <Grid.Column width={3}>
-            <LoadableQuery query={accountQueries}>
-              <AccountIcon
-                account={accountQueries.account!}
-                institution={accountQueries.institution}
-              />
-              {accountQueries.account?.name}
-            </LoadableQuery>
-          </Grid.Column>
-          <Grid.Column>
+          <Card.Meta>
+            <FormattedTimestamp timestamp={props.transaction.timestamp} />
+          </Card.Meta>
+          <LoadableQuery query={accountQueries}>
+            <AccountIcon
+              account={accountQueries.account!}
+              institution={accountQueries.institution}
+            />
+            <LineWithHiddenOverflow
+              content={accountQueries.account?.name || ""}
+              style={{ width: "9em" }}
+            />
+          </LoadableQuery>
+          <FlexRow.Auto>
             <Header as="h5">
               <LineWithHiddenOverflow content={props.transaction.name} />
             </Header>
-          </Grid.Column>
-          <Grid.Column width={2} textAlign="center">
-            {movementQuery.data && (
-              <ActionButton
-                tooltip="Edit Movement"
-                icon="arrows alternate horizontal"
-                content={movementQuery.data.transactions.length.toFixed(0)}
-                disabled={!("onOpenEditMovementForm" in props)}
-                onClick={
-                  "onOpenEditMovementForm" in props
-                    ? props.onOpenEditMovementForm
-                    : undefined
-                }
-              />
-            )}
-            {"onOpenEditForm" in props && (
-              <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
-            )}
-          </Grid.Column>
-        </Grid>
+          </FlexRow.Auto>
+          {movementQuery.data && (
+            <ActionButton
+              tooltip="Edit Movement"
+              icon="arrows alternate horizontal"
+              content={movementQuery.data.transactions.length.toFixed(0)}
+              disabled={!("onOpenEditMovementForm" in props)}
+              onClick={
+                "onOpenEditMovementForm" in props
+                  ? props.onOpenEditMovementForm
+                  : undefined
+              }
+            />
+          )}
+          {"onOpenEditForm" in props && (
+            <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
+          )}
+        </FlexRow>
       </Card.Content>
       <Card.Content extra>
         {"explanationRate" in props && props.explanationRate && (
@@ -182,38 +176,20 @@ function CardPlaceholder(props: {
   return (
     <Card fluid color="teal">
       <Card.Content>
-        <Grid columns="equal" verticalAlign="middle">
-          <Grid.Column width={2}>
-            <Placeholder fluid>
-              <Placeholder.Header>
-                <Placeholder.Line />
-              </Placeholder.Header>
+        <FlexRow style={{ gap: 5 }}>
+          <Placeholder style={{ width: "10em" }}>
+            <Placeholder.Header />
+          </Placeholder>
+          <Placeholder style={{ width: "18em" }}>
+            <Placeholder.Header image />
+          </Placeholder>
+          <FlexRow.Auto>
+            <Placeholder style={{ width: "100%" }}>
+              <Placeholder.Header />
             </Placeholder>
-          </Grid.Column>
-          <Grid.Column width={3}>
-            <Placeholder fluid>
-              <Placeholder.Header image>
-                <Placeholder.Line />
-              </Placeholder.Header>
-            </Placeholder>
-          </Grid.Column>
-          <Grid.Column>
-            <Placeholder fluid>
-              <Placeholder.Header>
-                <Placeholder.Line />
-              </Placeholder.Header>
-            </Placeholder>
-          </Grid.Column>
-          <Grid.Column width={1} textAlign="center">
-            <Button
-              circular
-              basic
-              icon="ellipsis horizontal"
-              size="tiny"
-              loading
-            />
-          </Grid.Column>
-        </Grid>
+          </FlexRow.Auto>
+          <ActionButton icon="ellipsis horizontal" />
+        </FlexRow>
       </Card.Content>
       <Card.Content extra>
         <Header as="h5" floated="right">
