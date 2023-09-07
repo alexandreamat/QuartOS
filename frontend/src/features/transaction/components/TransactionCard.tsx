@@ -18,6 +18,7 @@ import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import MutateActionButton from "components/MutateActionButton";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import FlexRow from "components/FlexRow";
+import ModalFileViewer from "./ModalFileViewer";
 
 export function TransactionCard(
   props:
@@ -73,8 +74,23 @@ export function TransactionCard(
     </div>
   );
 
+  const account = accountQueries.account;
+  const movement = movementQuery.data;
+  const transaction = props.transaction;
+
+  const filesQuery =
+    api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+      "id" in props.transaction && account && movement
+        ? {
+            accountId: account.id,
+            movementId: movement.id,
+            transactionId: props.transaction.id,
+          }
+        : skipToken
+    );
+
   return (
-    <Card fluid color="teal">
+    <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
       <Card.Content>
         <FlexRow style={{ gap: 5 }}>
           {"onCheckboxChange" in props && props.onCheckboxChange && (
@@ -104,10 +120,11 @@ export function TransactionCard(
             <AccountIcon
               account={accountQueries.account!}
               institution={accountQueries.institution}
+              width={"1.5em"}
             />
             <LineWithHiddenOverflow
               content={accountQueries.account?.name || ""}
-              style={{ width: "9em" }}
+              style={{ width: "8em" }}
             />
           </LoadableQuery>
           <FlexRow.Auto>
@@ -115,6 +132,14 @@ export function TransactionCard(
               <LineWithHiddenOverflow content={props.transaction.name} />
             </Header>
           </FlexRow.Auto>
+          {"id" in transaction &&
+            filesQuery.data &&
+            filesQuery.data.length !== 0 && (
+              <ModalFileViewer
+                files={filesQuery.data}
+                transaction={transaction}
+              />
+            )}
           {movementQuery.data && (
             <ActionButton
               tooltip="Edit Movement"

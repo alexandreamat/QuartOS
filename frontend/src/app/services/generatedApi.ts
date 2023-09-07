@@ -10,6 +10,7 @@ export const addTagTypes = [
   "transactions",
   "movements",
   "accounts",
+  "files",
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -714,6 +715,73 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["users", "accounts", "movements", "transactions"],
         }),
+      readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet:
+        build.query<
+          ReadManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiResponse,
+          ReadManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}/files/`,
+          }),
+          providesTags: [
+            "users",
+            "accounts",
+            "movements",
+            "transactions",
+            "files",
+          ],
+        }),
+      createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
+        build.mutation<
+          CreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPostApiResponse,
+          CreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPostApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}/files/`,
+            method: "POST",
+            body: queryArg.bodyCreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost,
+          }),
+          invalidatesTags: [
+            "users",
+            "accounts",
+            "movements",
+            "transactions",
+            "files",
+          ],
+        }),
+      readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet:
+        build.query<
+          ReadApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGetApiResponse,
+          ReadApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}/files/${queryArg.fileId}`,
+          }),
+          providesTags: [
+            "users",
+            "accounts",
+            "movements",
+            "transactions",
+            "files",
+          ],
+        }),
+      deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete:
+        build.mutation<
+          DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDeleteApiResponse,
+          DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDeleteApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}/files/${queryArg.fileId}`,
+            method: "DELETE",
+          }),
+          invalidatesTags: [
+            "users",
+            "accounts",
+            "movements",
+            "transactions",
+            "files",
+          ],
+        }),
       updateBalancesApiAccountsUpdateBalancesPost: build.mutation<
         UpdateBalancesApiAccountsUpdateBalancesPostApiResponse,
         UpdateBalancesApiAccountsUpdateBalancesPostApiArg
@@ -742,7 +810,7 @@ const injectedRtkApi = api
     }),
     overrideExisting: false,
   });
-export { injectedRtkApi as api };
+export { injectedRtkApi as generatedApi };
 export type LoginApiAuthLoginPostApiResponse =
   /** status 200 Successful Response */ Token;
 export type LoginApiAuthLoginPostApiArg = BodyLoginApiAuthLoginPost;
@@ -1079,6 +1147,41 @@ export type DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTran
     movementId: number;
     transactionId: number;
   };
+export type ReadManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiResponse =
+  /** status 200 Successful Response */ FileApiOut[];
+export type ReadManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionId: number;
+  };
+export type CreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPostApiResponse =
+  /** status 200 Successful Response */ FileApiOut;
+export type CreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPostApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionId: number;
+    bodyCreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost: BodyCreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost;
+  };
+export type ReadApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGetApiResponse =
+  /** status 200 Successful Response */ Blob;
+export type ReadApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGetApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionId: number;
+    fileId: number;
+  };
+export type DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDeleteApiResponse =
+  /** status 200 Successful Response */ any;
+export type DeleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDeleteApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionId: number;
+    fileId: number;
+  };
 export type UpdateBalancesApiAccountsUpdateBalancesPostApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateBalancesApiAccountsUpdateBalancesPostApiArg = void;
@@ -1307,3 +1410,13 @@ export type BodyCreateManyApiUsersMeAccountsAccountIdMovementsPost = {
   transactions: TransactionApiIn[];
   transaction_ids: number[];
 };
+export type FileApiOut = {
+  id: number;
+  name: string;
+  uploaded: string;
+  transaction_id: number;
+};
+export type BodyCreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost =
+  {
+    file: Blob;
+  };
