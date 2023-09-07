@@ -247,7 +247,7 @@ class Account(_AccountBase, Base, table=True):
     ) -> SelectOfScalar[BaseType]:
         statement = statement.join(cls)
         statement = cls.join_subclasses(statement)
-        if account_id:
+        if account_id is not None:
             statement = statement.where(cls.id == account_id)
         return statement
 

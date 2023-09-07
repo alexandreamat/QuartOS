@@ -101,7 +101,7 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         statement = Transaction.select()
 
         # WHERE
-        if transaction_id:
+        if transaction_id is not None:
             statement = statement.where(Transaction.id == transaction_id)
         if timestamp_ge:
             # where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=

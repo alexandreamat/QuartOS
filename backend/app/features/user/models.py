@@ -131,7 +131,7 @@ class User(__UserBase, Base, table=True):
             account_id, movement_id, transaction_id, **kwargs
         )
 
-        if userinstitutionlink_id:
+        if userinstitutionlink_id is not None:
             statement = statement.where(
                 UserInstitutionLink.id == userinstitutionlink_id
             )
