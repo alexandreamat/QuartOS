@@ -2,12 +2,13 @@ import io
 import mimetypes
 from typing import Annotated, Iterable
 from fastapi import APIRouter, File as _File, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response
 
 from app.database.deps import DBSession
 
 from app.features.file import CRUDFile, FileApiIn, FileApiOut
 from app.features.user import CurrentUser, CRUDUser
+from app.features.transaction import CRUDTransaction
 
 router = APIRouter()
 
@@ -36,10 +37,16 @@ def read_many(
     transaction_id: int,
 ) -> Iterable[FileApiOut]:
     CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
-    return CRUDFile.read_many(db, 0, 0)
+    return CRUDTransaction.read_files(db, transaction_id)
 
 
-@router.get("/{file_id}")
+@router.get(
+    "/{file_id}",
+    responses={
+        200: {"content": {"application/octet-stream": {}}},
+    },
+    response_class=Response,
+)
 def read(
     db: DBSession,
     me: CurrentUser,
@@ -47,7 +54,7 @@ def read(
     movement_id: int,
     transaction_id: int,
     file_id: int,
-) -> StreamingResponse:
+) -> Response:
     CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
     file_out = CRUDFile.read(db, file_id)
     headers = {"Content-Disposition": f"attachment; filename={file_out.name}"}
@@ -55,7 +62,7 @@ def read(
     if mime_type:
         headers.update({"Content-Type": mime_type})
     data = CRUDFile.read_data(db, file_id)
-    return StreamingResponse(io.BytesIO(data), headers=headers)
+    return Response(data, headers=headers, media_type="application/octet-stream")
 
 
 @router.delete("/{file_id}")

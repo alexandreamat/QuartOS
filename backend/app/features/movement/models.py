@@ -85,7 +85,7 @@ class Movement(__MovementBase, Base, table=True):
         statement = Transaction.select_transactions(transaction_id, **kwargs)
 
         statement = statement.join(cls)
-        if movement_id:
+        if movement_id is not None:
             statement = statement.where(cls.id == movement_id)
 
         return statement

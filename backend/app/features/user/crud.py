@@ -124,7 +124,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         userinstitutionlink_id: int | None,
         account_id: int | None,
         movement_id: int | None,
-        transaction_id: int | None,
+        transaction_id: int,
     ) -> TransactionApiOut:
         statement = User.select_transactions(
             user_id, userinstitutionlink_id, account_id, movement_id, transaction_id

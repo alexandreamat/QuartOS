@@ -1,7 +1,10 @@
+from typing import Iterable
+
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 
+from app.features.file import FileApiOut
 
 from .models import (
     Transaction,
@@ -19,6 +22,11 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
     @classmethod
     def is_synced(cls, db: Session, transaction_id: int) -> bool:
         return Transaction.read(db, transaction_id).is_synced
+
+    @classmethod
+    def read_files(cls, db: Session, transaction_id: int) -> Iterable[FileApiOut]:
+        for f in Transaction.read(db, transaction_id).files:
+            yield FileApiOut.from_orm(f)
 
 
 class CRUDSyncableTransaction(
