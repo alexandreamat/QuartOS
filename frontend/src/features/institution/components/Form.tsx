@@ -73,9 +73,9 @@ export default function InstitutionForm(props: {
     } else {
       try {
         await createInstitution({
-          transactiondeserialiserId:transactionDeserialiserId.value!,
-          institutionApiIn: institution
-      }).unwrap();
+          transactiondeserialiserId: transactionDeserialiserId.value!,
+          institutionApiIn: institution,
+        }).unwrap();
       } catch (error) {
         logMutationError(error, createInstitutionResult);
         return;

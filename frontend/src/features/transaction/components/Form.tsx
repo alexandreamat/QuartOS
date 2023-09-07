@@ -1,5 +1,6 @@
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import {
+  BodyCreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost,
   MovementApiOut,
   TransactionApiIn,
   TransactionApiOut,
@@ -21,6 +22,7 @@ import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
 import { SimpleQuery } from "interfaces";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
+import UploadButton from "components/UploadButton";
 
 export default function TransactionForm(props: {
   title: string;
@@ -30,6 +32,7 @@ export default function TransactionForm(props: {
   movementId?: number;
   transaction?: TransactionApiOut;
   onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
+  onUpload?: (transaction: TransactionApiOut, file: File) => void;
   resultQuery: SimpleQuery;
   onDelete?: () => Promise<void>;
   deleteQuery?: SimpleQuery;
@@ -138,6 +141,11 @@ export default function TransactionForm(props: {
                 not fully editable.
               </Message.Content>
             </Message>
+          )}
+          {props.onUpload && props.transaction && (
+            <UploadButton
+              onUpload={(f) => props.onUpload!(props.transaction!, f)}
+            />
           )}
         </Form>
       </Modal.Content>
@@ -257,10 +265,13 @@ function FormEdit(props: {
   const [deleteTransaction, deleteTransactionResult] =
     api.endpoints.deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
 
-  const handleSubmit = async (
+  const [uploadFile, uploadFileResult] =
+    api.endpoints.createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost.useMutation();
+
+  async function handleSubmit(
     transactionIn: TransactionApiIn,
     accountId: number
-  ) => {
+  ) {
     try {
       const transactionOut = await updateTransaction({
         accountId: accountId,
@@ -274,7 +285,7 @@ function FormEdit(props: {
       logMutationError(error, updateTransactionResult);
       throw error;
     }
-  };
+  }
 
   async function handleDelete() {
     try {
@@ -286,6 +297,23 @@ function FormEdit(props: {
     } catch (error) {
       logMutationError(error, deleteTransactionResult);
       throw error;
+    }
+  }
+
+  async function handleUploadFile(transaction: TransactionApiOut, file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      await uploadFile({
+        accountId: transaction.account_id,
+        movementId: transaction.movement_id,
+        transactionId: transaction.id,
+        bodyCreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
+          formData as unknown as BodyCreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost,
+      }).unwrap();
+    } catch (error) {
+      logMutationError(error, uploadFileResult);
+      return;
     }
   }
 
@@ -301,6 +329,7 @@ function FormEdit(props: {
       resultQuery={updateTransactionResult}
       onDelete={handleDelete}
       deleteQuery={deleteTransactionResult}
+      onUpload={handleUploadFile}
     />
   );
 }
