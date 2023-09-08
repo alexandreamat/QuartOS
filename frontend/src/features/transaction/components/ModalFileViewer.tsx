@@ -8,6 +8,25 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import { logMutationError } from "utils/error";
 
+function FileContent(props: { blob: Blob }) {
+  if (props.blob.type === "image/png")
+    return <Image src={URL.createObjectURL(props.blob)} />;
+
+  if (props.blob.type === "application/pdf")
+    return (
+      <iframe
+        src={URL.createObjectURL(props.blob)}
+        title={props.blob.type}
+        style={{
+          height: "70vh",
+          width: "100%",
+        }}
+      />
+    );
+
+  return <p>Unknown type {props.blob.type}</p>;
+}
+
 export default function ModalFileViewer(props: {
   transaction: TransactionApiOut;
   trigger: ReactNode;
@@ -16,11 +35,22 @@ export default function ModalFileViewer(props: {
   const [open, setOpen] = useState(false);
   const [fileIdx, setFileIdx] = useState(0);
 
-  const selectedFile = props.transaction.files[fileIdx];
+  const filesQuery =
+    api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+      open
+        ? {
+            accountId: props.transaction.account_id,
+            movementId: props.transaction.movement_id,
+            transactionId: props.transaction.id,
+          }
+        : skipToken
+    );
+
+  const selectedFile = filesQuery.data ? filesQuery.data[fileIdx] : undefined;
 
   const fileQuery =
     api.endpoints.readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet.useQuery(
-      open
+      open && selectedFile
         ? {
             accountId: props.transaction.account_id,
             movementId: props.transaction.movement_id,
@@ -33,7 +63,14 @@ export default function ModalFileViewer(props: {
   const [deleteFile, deleteFileResult] =
     api.endpoints.deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete.useMutation();
 
+  function handleClose() {
+    setOpen(false);
+    setFileIdx(0);
+  }
+
   async function handleDeleteFile() {
+    if (!selectedFile || !filesQuery.data) return;
+
     try {
       await deleteFile({
         accountId: props.transaction.account_id,
@@ -44,16 +81,15 @@ export default function ModalFileViewer(props: {
     } catch (error) {
       logMutationError(error, deleteFileResult);
     }
-    setFileIdx(0);
     props.onMutation && props.onMutation();
+    const newLength = filesQuery.data.length - 1;
+    if (newLength) setFileIdx((x) => Math.min(newLength - 1, x));
+    else handleClose();
   }
 
   return (
     <Modal
-      onClose={() => {
-        setOpen(false);
-        setFileIdx(0);
-      }}
+      onClose={handleClose}
       onOpen={() => setOpen(true)}
       open={open}
       trigger={props.trigger}
@@ -69,23 +105,13 @@ export default function ModalFileViewer(props: {
             style={{ marginRight: "10px" }}
           />
           <FlexRow.Auto>
-            {fileQuery.isLoading || fileQuery.isUninitialized ? (
+            {fileQuery.isFetching || filesQuery.isFetching ? (
               <Loader active />
             ) : fileQuery.isError ? (
               <QueryErrorMessage query={fileQuery} />
-            ) : fileQuery.data.type === "image/png" ? (
-              <Image src={URL.createObjectURL(fileQuery.data)} />
-            ) : fileQuery.data.type === "application/pdf" ? (
-              <iframe
-                src={URL.createObjectURL(fileQuery.data)}
-                title={selectedFile.name}
-                style={{
-                  height: "70vh",
-                  width: "100%",
-                }}
-              />
             ) : (
-              <p>Unknown type {fileQuery.data.type}</p>
+              fileQuery.isSuccess &&
+              filesQuery.isSuccess && <FileContent blob={fileQuery.data} />
             )}
           </FlexRow.Auto>
           <ActionButton
@@ -102,7 +128,7 @@ export default function ModalFileViewer(props: {
           onDelete={handleDeleteFile}
           query={deleteFileResult}
         />
-        <Button positive onClick={() => setOpen(false)}>
+        <Button positive onClick={handleClose}>
           Close
         </Button>
       </Modal.Actions>
