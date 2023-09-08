@@ -176,9 +176,10 @@ function MovementCardPlaceholder(props: {
         </FlexRow>
 
         {props.showFlows && (
-          <Flows.Placeholder
+          <Flows
             onRemove={props.onRemoveTransaction}
             onOpenEditForm={props.onOpenEditTransactionForm}
+            loading
           />
         )}
       </Card.Content>
