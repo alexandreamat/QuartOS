@@ -75,8 +75,10 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
       }
     }
     if (ref) {
-      if (ref.clientHeight === ref.scrollHeight) setPages((p) => p + 1);
-      else ref.addEventListener("scroll", handleScroll);
+      // Todo: deal with not enough data returned
+      // if (ref.clientHeight === ref.scrollHeight) setPages((p) => p + 1);
+      // else
+      ref.addEventListener("scroll", handleScroll);
     }
 
     return () => ref?.removeEventListener("scroll", handleScroll);

@@ -17,6 +17,7 @@ import MovementForm from "features/movements/components/Form";
 import { logMutationError } from "utils/error";
 
 const NOT_FOUND = -1;
+const PER_PAGE = 20;
 
 export default function TransactionCards(
   props:
@@ -136,7 +137,7 @@ export default function TransactionCards(
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeTransactionsGet,
     queryArg,
-    20
+    PER_PAGE
   );
 
   const movementIdx = infiniteQuery.data.findIndex(
