@@ -1306,6 +1306,12 @@ export type TransactionPlaidIn = {
   timestamp: string;
   name: string;
 };
+export type FileApiOut = {
+  id: number;
+  name: string;
+  uploaded: string;
+  transaction_id: number;
+};
 export type TransactionPlaidOut = {
   id: number;
   plaid_id: string;
@@ -1316,6 +1322,7 @@ export type TransactionPlaidOut = {
   account_balance: number;
   account_id: number;
   movement_id: number;
+  files: FileApiOut[];
 };
 export type TransactionApiOut = {
   id: number;
@@ -1325,6 +1332,7 @@ export type TransactionApiOut = {
   account_balance: number;
   account_id: number;
   movement_id: number;
+  files: FileApiOut[];
 };
 export type MovementApiOut = {
   id: number;
@@ -1409,12 +1417,6 @@ export type BodyPreviewApiUsersMeAccountsPreviewPost = {
 export type BodyCreateManyApiUsersMeAccountsAccountIdMovementsPost = {
   transactions: TransactionApiIn[];
   transaction_ids: number[];
-};
-export type FileApiOut = {
-  id: number;
-  name: string;
-  uploaded: string;
-  transaction_id: number;
 };
 export type BodyCreateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost =
   {

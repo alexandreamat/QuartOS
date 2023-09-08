@@ -60,34 +60,23 @@ export function TransactionCard(
         : skipToken
     );
 
+  const account = accountQueries.account;
+  const movement = movementQuery.data;
+  const transaction = props.transaction;
+
   const currencyLabel = (
     <div>
       Total:
-      {accountQueries.account ? (
+      {account ? (
         <CurrencyLabel
           amount={props.transaction.amount}
-          currencyCode={accountQueries.account.currency_code}
+          currencyCode={account.currency_code}
         />
       ) : (
         <CurrencyLabel.Placeholder />
       )}
     </div>
   );
-
-  const account = accountQueries.account;
-  const movement = movementQuery.data;
-  const transaction = props.transaction;
-
-  const filesQuery =
-    api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
-      "id" in props.transaction && account && movement
-        ? {
-            accountId: account.id,
-            movementId: movement.id,
-            transactionId: props.transaction.id,
-          }
-        : skipToken
-    );
 
   return (
     <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
@@ -118,12 +107,11 @@ export function TransactionCard(
           </Card.Meta>
           <LoadableQuery query={accountQueries}>
             <AccountIcon
-              account={accountQueries.account!}
+              account={account!}
               institution={accountQueries.institution}
-              width={"1.5em"}
             />
             <LineWithHiddenOverflow
-              content={accountQueries.account?.name || ""}
+              content={account?.name || ""}
               style={{ width: "8em" }}
             />
           </LoadableQuery>
@@ -132,19 +120,23 @@ export function TransactionCard(
               <LineWithHiddenOverflow content={props.transaction.name} />
             </Header>
           </FlexRow.Auto>
-          {"id" in transaction &&
-            filesQuery.data &&
-            filesQuery.data.length !== 0 && (
-              <ModalFileViewer
-                files={filesQuery.data}
-                transaction={transaction}
-              />
-            )}
-          {movementQuery.data && (
+          {"id" in transaction && transaction.files.length > 0 && (
+            <ModalFileViewer
+              transaction={transaction}
+              trigger={
+                <ActionButton
+                  tooltip="See files"
+                  icon="file"
+                  content={transaction.files.length.toFixed(0)}
+                />
+              }
+            />
+          )}
+          {movement && (
             <ActionButton
               tooltip="Edit Movement"
               icon="arrows alternate horizontal"
-              content={movementQuery.data.transactions.length.toFixed(0)}
+              content={movement.transactions.length.toFixed(0)}
               disabled={!("onOpenEditMovementForm" in props)}
               onClick={
                 "onOpenEditMovementForm" in props
@@ -171,10 +163,10 @@ export function TransactionCard(
               content={
                 <p>
                   Account balance:
-                  {accountQueries.account && (
+                  {account && (
                     <FormattedCurrency
                       amount={props.transaction.account_balance || 0}
-                      currencyCode={accountQueries.account.currency_code}
+                      currencyCode={account.currency_code}
                     />
                   )}
                 </p>
