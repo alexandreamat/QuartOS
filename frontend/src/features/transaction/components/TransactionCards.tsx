@@ -220,6 +220,7 @@ export default function TransactionCards(
                       : undefined
                   }
                   checked={checkedTransactions.has(t.id)}
+                  onMutation={infiniteQuery.onMutation}
                 />
               );
             }

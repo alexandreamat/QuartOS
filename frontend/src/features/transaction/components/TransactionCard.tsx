@@ -19,6 +19,7 @@ import MutateActionButton from "components/MutateActionButton";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import FlexRow from "components/FlexRow";
 import ModalFileViewer from "./ModalFileViewer";
+import { useUploadTransactionFile } from "./useUploadTransactionFile";
 
 export function TransactionCard(
   props:
@@ -34,6 +35,7 @@ export function TransactionCard(
         onCheckboxChange?: (x: boolean) => void;
         checked?: boolean;
         checkBoxDisabled: false;
+        onMutation: () => void;
       }
     | {
         // from movement form
@@ -60,6 +62,10 @@ export function TransactionCard(
         : skipToken
     );
 
+  const uploadTransactionFile = useUploadTransactionFile(
+    "id" in props.transaction ? props.transaction : undefined
+  );
+
   const account = accountQueries.account;
   const movement = movementQuery.data;
   const transaction = props.transaction;
@@ -78,8 +84,21 @@ export function TransactionCard(
     </div>
   );
 
+  async function handleFileDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    const file = event.dataTransfer?.files[0];
+    if (!file) return;
+    await uploadTransactionFile.onUpload(file);
+    if ("onMutation" in props) props.onMutation();
+  }
+
   return (
-    <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
+    <Card
+      fluid
+      color="teal"
+      onDrop={handleFileDrop}
+      onDragOver={(e: DragEvent) => e.preventDefault()}
+    >
       <Card.Content>
         <FlexRow style={{ gap: 5 }}>
           {"onCheckboxChange" in props && props.onCheckboxChange && (
@@ -130,6 +149,7 @@ export function TransactionCard(
                   content={transaction.files.length.toFixed(0)}
                 />
               }
+              onMutation={"onMutation" in props ? props.onMutation : undefined}
             />
           )}
           {movement && (
