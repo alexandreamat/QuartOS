@@ -12,91 +12,78 @@ import { ClickableIcon } from "components/ClickableIcon";
 import { CSSProperties } from "react";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import ModalFileViewer from "features/transaction/components/ModalFileViewer";
+import FlexRow from "components/FlexRow";
 
-const flowPadding = 5;
-const stepPadding = 18;
+const flowPadding = "5px 15px 5px 15px";
+const flowGap = "10px";
+const stepPadding = "10px";
 
 const RemoveFlow = (props: { onRemoveFlow: () => void }) => (
-  <Grid.Column width={1} verticalAlign="middle">
-    <ClickableIcon name="remove circle" onClick={props.onRemoveFlow} />
-  </Grid.Column>
+  <ClickableIcon name="remove circle" onClick={props.onRemoveFlow} />
 );
 
 const EditFlow = (props: { onOpenEditForm: () => void }) => (
-  <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-    <ClickableIcon name="ellipsis horizontal" onClick={props.onOpenEditForm} />
-  </Grid.Column>
+  <ClickableIcon name="ellipsis horizontal" onClick={props.onOpenEditForm} />
 );
 
 const ViewFilesButton = (props: { transaction: TransactionApiOut }) => (
-  <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-    <ModalFileViewer
-      transaction={props.transaction}
-      trigger={<ClickableIcon name="file" />}
-    />
-  </Grid.Column>
+  <ModalFileViewer
+    transaction={props.transaction}
+    trigger={<ClickableIcon name="file" />}
+  />
 );
 
 const AccountLogo = (props: {
   account: AccountApiOut;
   institution?: InstitutionApiOut;
 }) => (
-  <Grid.Column width={2} textAlign="center" verticalAlign="middle">
-    <Popup
-      hideOnScroll
-      content={props.account.name}
-      trigger={
-        <div>
-          <AccountIcon
-            account={props.account}
-            institution={props.institution}
-          />
-        </div>
-      }
-    />
-  </Grid.Column>
+  <Popup
+    hideOnScroll
+    content={props.account.name}
+    trigger={
+      <div>
+        <AccountIcon account={props.account} institution={props.institution} />
+      </div>
+    }
+  />
 );
 
 const Amount = (props: {
   transaction: TransactionApiOut;
   currencyCode: string;
 }) => (
-  <Grid.Column width={5} textAlign="center" verticalAlign="middle">
-    <Popup
-      hideOnScroll
-      position="top center"
-      content={`Account balance: ${props.transaction.account_balance.toLocaleString(
-        undefined,
-        {
-          style: "currency",
-          currency: props.currencyCode,
-        }
-      )}`}
-      trigger={
-        <div>
-          <CurrencyLabel
-            amount={props.transaction.amount}
-            currencyCode={props.currencyCode}
-          />
-        </div>
+  <Popup
+    hideOnScroll
+    position="top center"
+    content={`Account balance: ${props.transaction.account_balance.toLocaleString(
+      undefined,
+      {
+        style: "currency",
+        currency: props.currencyCode,
       }
-    />
-  </Grid.Column>
+    )}`}
+    trigger={
+      <div>
+        <CurrencyLabel
+          amount={props.transaction.amount}
+          currencyCode={props.currencyCode}
+        />
+      </div>
+    }
+  />
 );
 
 const TransactionName = (props: { transaction: TransactionApiOut }) => (
-  <Grid.Column textAlign="center" verticalAlign="middle">
-    <Popup
-      hideOnScroll
-      position="top center"
-      content={<FormattedTimestamp timestamp={props.transaction.timestamp} />}
-      trigger={
-        <div>
-          <LineWithHiddenOverflow content={props.transaction.name} />
-        </div>
-      }
-    />
-  </Grid.Column>
+  <Popup
+    hideOnScroll
+    position="top center"
+    content={<FormattedTimestamp timestamp={props.transaction.timestamp} />}
+    trigger={
+      <div>
+        <LineWithHiddenOverflow content={props.transaction.name} />
+      </div>
+    }
+  />
 );
 
 function Outflow(props: {
@@ -111,7 +98,13 @@ function Outflow(props: {
     return <OutflowPlaceholder onRemove onOpenEditForm />;
 
   return (
-    <Grid.Row columns="equal" style={{ padding: flowPadding, ...props.style }}>
+    <FlexRow
+      style={{
+        alignItems: "center",
+        gap: flowGap,
+        padding: flowPadding,
+      }}
+    >
       {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
       {props.onOpenEditForm && (
         <EditFlow onOpenEditForm={props.onOpenEditForm} />
@@ -123,12 +116,14 @@ function Outflow(props: {
         account={accountQueries.account}
         institution={accountQueries.institution}
       />
-      <TransactionName transaction={props.transaction} />
+      <FlexRow.Auto>
+        <TransactionName transaction={props.transaction} />
+      </FlexRow.Auto>
       <Amount
         transaction={props.transaction}
         currencyCode={accountQueries.account.currency_code}
       />
-    </Grid.Row>
+    </FlexRow>
   );
 }
 
@@ -144,13 +139,16 @@ function Inflow(props: {
     return <InflowPlaceholder onRemove onOpenEditForm />;
 
   return (
-    <Grid.Row columns="equal" style={{ padding: flowPadding, ...props.style }}>
+    <FlexRow
+      style={{ alignItems: "center", gap: flowGap, padding: flowPadding }}
+    >
       <Amount
         transaction={props.transaction}
         currencyCode={accountQueries.account.currency_code}
       />
-      <TransactionName transaction={props.transaction} />
-      <ViewFilesButton transaction={props.transaction} />
+      <FlexRow.Auto>
+        <TransactionName transaction={props.transaction} />
+      </FlexRow.Auto>
       <AccountLogo
         account={accountQueries.account}
         institution={accountQueries.institution}
@@ -162,7 +160,7 @@ function Inflow(props: {
         <EditFlow onOpenEditForm={props.onOpenEditForm} />
       )}
       {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
-    </Grid.Row>
+    </FlexRow>
   );
 }
 
@@ -179,56 +177,52 @@ export function Flows(props: {
       {outflows.length !== 0 && (
         <Step style={{ padding: stepPadding }}>
           <Step.Content style={{ width: "100%" }}>
-            <Grid>
-              {outflows.map((transaction) => (
-                <Outflow
-                  key={transaction.id}
-                  transaction={transaction}
-                  onRemove={
-                    props.onRemove && (() => props.onRemove!(transaction))
-                  }
-                  onOpenEditForm={
-                    props.onOpenEditForm &&
-                    (() => props.onOpenEditForm!(transaction))
-                  }
-                  style={{
-                    fontWeight:
-                      transaction.account_id === props.selectedAccountId
-                        ? "bold"
-                        : "normal",
-                  }}
-                />
-              ))}
-            </Grid>
+            {outflows.map((transaction) => (
+              <Outflow
+                key={transaction.id}
+                transaction={transaction}
+                onRemove={
+                  props.onRemove && (() => props.onRemove!(transaction))
+                }
+                onOpenEditForm={
+                  props.onOpenEditForm &&
+                  (() => props.onOpenEditForm!(transaction))
+                }
+                style={{
+                  fontWeight:
+                    transaction.account_id === props.selectedAccountId
+                      ? "bold"
+                      : "normal",
+                }}
+              />
+            ))}
           </Step.Content>
         </Step>
       )}
       {inflows.length !== 0 && (
         <Step style={{ padding: stepPadding }}>
           <Step.Content style={{ width: "100%" }}>
-            <Grid>
-              {inflows.map((transaction) => (
-                <Inflow
-                  key={transaction.id}
-                  transaction={transaction}
-                  onRemove={
-                    props.onRemove
-                      ? () => props.onRemove!(transaction)
-                      : undefined
-                  }
-                  onOpenEditForm={
-                    props.onOpenEditForm &&
-                    (() => props.onOpenEditForm!(transaction))
-                  }
-                  style={{
-                    fontWeight:
-                      transaction.account_id === props.selectedAccountId
-                        ? "bold"
-                        : "normal",
-                  }}
-                />
-              ))}
-            </Grid>
+            {inflows.map((transaction) => (
+              <Inflow
+                key={transaction.id}
+                transaction={transaction}
+                onRemove={
+                  props.onRemove
+                    ? () => props.onRemove!(transaction)
+                    : undefined
+                }
+                onOpenEditForm={
+                  props.onOpenEditForm &&
+                  (() => props.onOpenEditForm!(transaction))
+                }
+                style={{
+                  fontWeight:
+                    transaction.account_id === props.selectedAccountId
+                      ? "bold"
+                      : "normal",
+                }}
+              />
+            ))}
           </Step.Content>
         </Step>
       )}
@@ -277,13 +271,13 @@ function OutflowPlaceholder(props: {
   onOpenEditForm?: boolean;
 }) {
   return (
-    <Grid.Row columns="equal" style={{ padding: flowPadding }}>
+    <FlexRow>
       {props.onRemove && <RemoveFlow.Placeholder />}
       {props.onOpenEditForm && <EditFlow.Placeholder />}
       <AccountLogo.Placeholder />
       <TransactionName.Placeholder />
       <Amount.Placeholder />
-    </Grid.Row>
+    </FlexRow>
   );
 }
 
@@ -292,13 +286,13 @@ function InflowPlaceholder(props: {
   onOpenEditForm?: boolean;
 }) {
   return (
-    <Grid.Row columns="equal" style={{ padding: flowPadding }}>
+    <FlexRow>
       <Amount.Placeholder />
       <TransactionName.Placeholder />
       <AccountLogo.Placeholder />
       {props.onOpenEditForm && <EditFlow.Placeholder />}
       {props.onRemove && <RemoveFlow.Placeholder />}
-    </Grid.Row>
+    </FlexRow>
   );
 }
 

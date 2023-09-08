@@ -133,7 +133,7 @@ export default function Movements() {
         isAmountAbsState={isAmountAbsState}
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
-        <Card.Group style={{ margin: 0 }}>
+        <Card.Group style={{ margin: 0, padding: 0 }}>
           {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
           {infiniteQuery.data.map((m) => (
             <MovementCard
