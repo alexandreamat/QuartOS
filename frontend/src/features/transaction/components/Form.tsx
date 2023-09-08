@@ -148,6 +148,13 @@ export default function TransactionForm(
     props.onClose();
   };
 
+  const { timestamp, ...comparableForm } = form;
+  const hasChanged =
+    isEdit &&
+    (Object.values(comparableForm).some((v) => v.hasChanged) ||
+      timestamp.value?.getTime() !==
+        new Date(props.transaction.timestamp).getTime());
+
   return (
     <Modal open={props.open} onClose={handleClose} size="small">
       <Modal.Header>{props.title}</Modal.Header>
@@ -222,7 +229,7 @@ export default function TransactionForm(
         )}
         <Button onClick={handleClose}>Cancel</Button>
         <Button
-          disabled={!Object.values(form).some((v) => v.hasChanged)}
+          disabled={!hasChanged}
           content="Save"
           type="submit"
           labelPosition="right"

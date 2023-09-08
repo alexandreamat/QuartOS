@@ -35,7 +35,9 @@ const useFormField = <T,>(
     setIsError(false);
   };
 
-  return { value, label, set: setValue, isError, validate, reset };
+  const hasChanged = initialValue !== value;
+
+  return { value, label, set: setValue, isError, validate, reset, hasChanged };
 };
 
 export default useFormField;
