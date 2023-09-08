@@ -1,21 +1,22 @@
-import { FileApiOut, TransactionApiOut, api } from "app/services/api";
+import { TransactionApiOut, api } from "app/services/api";
 import { Button, Image, Loader, Modal } from "semantic-ui-react";
 import ActionButton from "components/ActionButton";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import FlexRow from "components/FlexRow";
-import { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import { logMutationError } from "utils/error";
 
 export default function ModalFileViewer(props: {
   transaction: TransactionApiOut;
-  files: FileApiOut[];
+  trigger: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [fileIdx, setFileIdx] = useState(0);
 
-  const selectedFile = props.files[fileIdx];
+  const selectedFile = props.transaction.files[fileIdx];
+
   const fileQuery =
     api.endpoints.readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet.useQuery(
       open
@@ -52,13 +53,7 @@ export default function ModalFileViewer(props: {
       }}
       onOpen={() => setOpen(true)}
       open={open}
-      trigger={
-        <ActionButton
-          tooltip="See files"
-          icon="file"
-          content={props.files.length.toFixed(0)}
-        />
-      }
+      trigger={props.trigger}
       size="large"
     >
       <Modal.Content>
@@ -91,7 +86,7 @@ export default function ModalFileViewer(props: {
             )}
           </FlexRow.Auto>
           <ActionButton
-            disabled={fileIdx >= props.files.length - 1}
+            disabled={fileIdx >= props.transaction.files.length - 1}
             icon="arrow right"
             onClick={() => setFileIdx((x) => x + 1)}
             tooltip="Next file"

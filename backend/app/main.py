@@ -1,3 +1,5 @@
+import json
+
 from fastapi import FastAPI
 
 from app import initial_data
@@ -11,3 +13,6 @@ app = FastAPI(
 )
 
 app.include_router(router, prefix=settings.API_STR)
+
+with open("openapi.json", "w") as file:
+    json.dump(app.openapi(), file, indent=2)

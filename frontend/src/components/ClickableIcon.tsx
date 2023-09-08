@@ -2,7 +2,7 @@ import { Icon, SemanticICONS } from "semantic-ui-react";
 
 export function ClickableIcon(props: {
   name: SemanticICONS;
-  onClick: () => void;
+  onClick?: () => void;
 }) {
   return (
     <div onClick={props.onClick} style={{ cursor: "pointer" }}>

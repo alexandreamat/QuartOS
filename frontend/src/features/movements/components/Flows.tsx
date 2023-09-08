@@ -11,6 +11,7 @@ import { Grid, Placeholder, Popup, Step } from "semantic-ui-react";
 import { ClickableIcon } from "components/ClickableIcon";
 import { CSSProperties } from "react";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
+import ModalFileViewer from "features/transaction/components/ModalFileViewer";
 
 const flowPadding = 5;
 const stepPadding = 18;
@@ -24,6 +25,15 @@ const RemoveFlow = (props: { onRemoveFlow: () => void }) => (
 const EditFlow = (props: { onOpenEditForm: () => void }) => (
   <Grid.Column width={2} textAlign="center" verticalAlign="middle">
     <ClickableIcon name="ellipsis horizontal" onClick={props.onOpenEditForm} />
+  </Grid.Column>
+);
+
+const ViewFilesButton = (props: { transaction: TransactionApiOut }) => (
+  <Grid.Column width={2} textAlign="center" verticalAlign="middle">
+    <ModalFileViewer
+      transaction={props.transaction}
+      trigger={<ClickableIcon name="file" />}
+    />
   </Grid.Column>
 );
 
@@ -106,6 +116,9 @@ function Outflow(props: {
       {props.onOpenEditForm && (
         <EditFlow onOpenEditForm={props.onOpenEditForm} />
       )}
+      {props.transaction.files.length > 0 && (
+        <ViewFilesButton transaction={props.transaction} />
+      )}
       <AccountLogo
         account={accountQueries.account}
         institution={accountQueries.institution}
@@ -137,10 +150,14 @@ function Inflow(props: {
         currencyCode={accountQueries.account.currency_code}
       />
       <TransactionName transaction={props.transaction} />
+      <ViewFilesButton transaction={props.transaction} />
       <AccountLogo
         account={accountQueries.account}
         institution={accountQueries.institution}
       />
+      {props.transaction.files.length > 0 && (
+        <ViewFilesButton transaction={props.transaction} />
+      )}
       {props.onOpenEditForm && (
         <EditFlow onOpenEditForm={props.onOpenEditForm} />
       )}

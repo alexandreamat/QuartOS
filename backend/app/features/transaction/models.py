@@ -9,7 +9,7 @@ from sqlalchemy.sql.expression import ClauseElement
 from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
 from app.common.utils import filter_query_by_search
 
-from app.features.file import File
+from app.features.file import File, FileApiOut
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -29,6 +29,7 @@ class TransactionApiOut(__TransactionBase, Base):
     account_balance: Decimal
     account_id: int
     movement_id: int
+    files: list[FileApiOut]
 
 
 class TransactionApiIn(__TransactionBase):
