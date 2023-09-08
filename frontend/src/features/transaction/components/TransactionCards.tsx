@@ -36,10 +36,6 @@ export default function TransactionCards(
     TransactionApiOut | undefined
   >(undefined);
 
-  const [selectedAccountId, setSelectedAccountId] = useState<
-    number | undefined
-  >(undefined);
-
   const accountIdState = useState<number | undefined>(
     "accountId" in props ? props.accountId : undefined
   );
@@ -117,13 +113,11 @@ export default function TransactionCards(
   }
 
   const handleOpenEditForm = (transaction: TransactionApiOut) => {
-    setSelectedAccountId(undefined);
     setSelectedTransaction(transaction);
     setIsFormOpen(true);
   };
 
   const handleCloseForm = () => {
-    setSelectedAccountId(undefined);
     setSelectedTransaction(undefined);
     setIsFormOpen(false);
   };
@@ -155,7 +149,6 @@ export default function TransactionCards(
         <Form.Edit
           open={isFormOpen}
           onClose={handleCloseForm}
-          accountId={selectedAccountId}
           movementId={selectedTransaction.movement_id}
           transaction={selectedTransaction}
           onEdited={infiniteQuery.onMutation}

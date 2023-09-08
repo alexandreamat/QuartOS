@@ -27,5 +27,9 @@ export function useUploadTransactionFile(transaction?: TransactionApiOut) {
       return;
     }
   }
-  return { onUpload: handleUploadFile };
+
+  return {
+    onUpload: handleUploadFile,
+    result: uploadFileResult,
+  };
 }

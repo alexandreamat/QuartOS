@@ -19,7 +19,7 @@ import MutateActionButton from "components/MutateActionButton";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import FlexRow from "components/FlexRow";
 import ModalFileViewer from "./ModalFileViewer";
-import { useUploadTransactionFile } from "./useUploadTransactionFile";
+import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 
 export function TransactionCard(
   props:

@@ -159,14 +159,14 @@ export default function Form(props: {
               transaction={selectedTransaction}
               open={isTransactionFormOpen}
               onClose={handleCloseEditTransactionForm}
-              onEdited={props.onMutate && ((t) => props.onMutate!())}
+              onEdited={props.onMutate}
             />
           ) : (
             <TransactionForm.Add
               open={isTransactionFormOpen}
               onClose={handleCloseAddTransactionForm}
               movementId={movementId}
-              onAdded={props.onMutate && ((t) => props.onMutate!())}
+              onAdded={props.onMutate}
             />
           )}
         </>
