@@ -14,7 +14,14 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useAccountOptions } from "features/account/hooks";
 import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
-import { Icon, Message, Modal, Form, Button } from "semantic-ui-react";
+import {
+  Icon,
+  Message,
+  Modal,
+  Form,
+  Button,
+  Placeholder,
+} from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
@@ -22,28 +29,67 @@ import CurrencyExchangeTips from "./CurrencyExchangeTips";
 import { SimpleQuery } from "interfaces";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import UploadButton from "components/UploadButton";
-import { useUploadTransactionFile } from "./useUploadTransactionFile";
+import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 
-export default function TransactionForm(props: {
-  title: string;
-  open: boolean;
-  onClose: () => void;
-  accountId?: number;
-  movementId?: number;
-  transaction?: TransactionApiOut;
-  onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
-  onUpload?: (file: File) => void;
-  resultQuery: SimpleQuery;
-  onDelete?: () => Promise<void>;
-  deleteQuery?: SimpleQuery;
-}) {
-  const isEdit = props.transaction !== undefined;
+export default function TransactionForm(
+  props: {
+    // Common
+    title: string;
+    open: boolean;
+    onClose: () => void;
+  } & (
+    | {
+        // Create tx
+        onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
+        submitResult: SimpleQuery;
+      }
+    | {
+        // Add new tx to movement
+        movementId: number;
+        onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
+        submitResult: SimpleQuery;
+      }
+    | {
+        // Edit existing tx
+        movementId: number;
+        transaction: TransactionApiOut;
+        onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
+        submitResult: SimpleQuery;
+        onDelete: () => Promise<void>;
+        deleteResult: SimpleQuery;
+        onUpload: (file: File) => void;
+        uploadResult: SimpleQuery;
+      }
+  )
+) {
+  const isEdit = "transaction" in props;
+  const hasMovement = "movementId" in props;
+
+  const filesQuery =
+    api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+      isEdit
+        ? {
+            accountId: props.transaction.account_id,
+            movementId: props.transaction.movement_id,
+            transactionId: props.transaction.id,
+          }
+        : skipToken
+    );
 
   const form: TransactionApiInForm = {
-    amountStr: useFormField("", "amount"),
-    timestamp: useFormField(new Date(), "date"),
-    name: useFormField("", "name"),
-    accountId: useFormField(0, "account"),
+    amountStr: useFormField(
+      isEdit ? props.transaction.amount.toFixed(2) : "",
+      "amount"
+    ),
+    timestamp: useFormField(
+      isEdit ? new Date(props.transaction.timestamp) : new Date(),
+      "date"
+    ),
+    name: useFormField(isEdit ? props.transaction.name : "", "name"),
+    accountId: useFormField(
+      isEdit ? props.transaction.account_id : 0,
+      "account"
+    ),
   };
 
   const accountQuery =
@@ -53,7 +99,7 @@ export default function TransactionForm(props: {
 
   const movementQuery =
     api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
-      props.movementId || skipToken
+      hasMovement ? props.movementId : skipToken
     );
 
   const disableSynced = isEdit && accountQuery.data?.is_synced;
@@ -61,7 +107,7 @@ export default function TransactionForm(props: {
   const accountOptions = useAccountOptions();
 
   useEffect(() => {
-    if (props.transaction !== undefined) return;
+    if (isEdit) return;
     if (!movementQuery.isSuccess) return;
     const movement = movementQuery.data;
     const timestamp = movement.earliest_timestamp;
@@ -70,12 +116,8 @@ export default function TransactionForm(props: {
   }, [movementQuery.isSuccess, movementQuery.data, props.open]);
 
   useEffect(() => {
-    props.transaction && transactionApiOutToForm(props.transaction, form);
-  }, [props.transaction, props.open]);
-
-  useEffect(() => {
-    props.accountId && form.accountId.set(props.accountId);
-  }, [props.accountId, props.open]);
+    isEdit && transactionApiOutToForm(props.transaction, form);
+  }, [isEdit, props.open]);
 
   const handleSubmit = async () => {
     const invalidFields = Object.values(form).filter(
@@ -92,7 +134,7 @@ export default function TransactionForm(props: {
   };
 
   async function handleDelete() {
-    if (!props.onDelete) return;
+    if (!isEdit || !props.onDelete) return;
     try {
       await props.onDelete();
     } catch (error) {
@@ -132,7 +174,7 @@ export default function TransactionForm(props: {
           <FormTextInput field={form.name} readOnly={disableSynced} />
           <FormDateTimeInput field={form.timestamp} readOnly={disableSynced} />
           <FormValidationError fields={Object.values(form)} />
-          <QueryErrorMessage query={props.resultQuery} />
+          <QueryErrorMessage query={props.submitResult} />
           {disableSynced && (
             <Message info icon>
               <Icon name="info circle" />
@@ -142,18 +184,45 @@ export default function TransactionForm(props: {
               </Message.Content>
             </Message>
           )}
-          {props.onUpload && <UploadButton onUpload={props.onUpload} />}
+          {isEdit && (
+            <>
+              <UploadButton
+                disabled={!filesQuery.isSuccess}
+                onUpload={props.onUpload}
+                negative={props.uploadResult.isError}
+                loading={props.uploadResult.isLoading}
+              />
+              {filesQuery.isFetching || filesQuery.isUninitialized ? (
+                <Placeholder as="p">
+                  <Placeholder.Line />
+                </Placeholder>
+              ) : filesQuery.isError ? (
+                <QueryErrorMessage query={filesQuery} />
+              ) : (
+                filesQuery.isSuccess && (
+                  <p>
+                    {filesQuery.data.length === 0
+                      ? "No files uploaded"
+                      : filesQuery.data.length === 1
+                      ? "1 File uploaded"
+                      : `${filesQuery.data.length} files uploaded`}
+                  </p>
+                )
+              )}
+            </>
+          )}
         </Form>
       </Modal.Content>
       <Modal.Actions>
-        {props.onDelete && props.deleteQuery && (
+        {isEdit && (
           <ConfirmDeleteButtonModal
             onDelete={handleDelete}
-            query={props.deleteQuery}
+            query={props.deleteResult}
           />
         )}
         <Button onClick={handleClose}>Cancel</Button>
         <Button
+          disabled={!Object.values(form).some((v) => v.hasChanged)}
           content="Save"
           type="submit"
           labelPosition="right"
@@ -167,7 +236,6 @@ export default function TransactionForm(props: {
 }
 
 function FormCreate(props: {
-  accountId?: number;
   open: boolean;
   onClose: () => void;
   onCreated: (x: MovementApiOut) => void;
@@ -199,15 +267,13 @@ function FormCreate(props: {
       title="Create a Transaction"
       open={props.open}
       onClose={props.onClose}
-      accountId={props.accountId}
       onSubmit={handleSubmit}
-      resultQuery={createMovementResult}
+      submitResult={createMovementResult}
     />
   );
 }
 
 function FormAdd(props: {
-  accountId?: number;
   open: boolean;
   movementId: number;
   onClose: () => void;
@@ -238,22 +304,20 @@ function FormAdd(props: {
       title="Add a Transaction to Movement"
       open={props.open}
       onClose={props.onClose}
-      accountId={props.accountId}
       movementId={props.movementId}
       onSubmit={handleSubmit}
-      resultQuery={createTransactionResult}
+      submitResult={createTransactionResult}
     />
   );
 }
 
 function FormEdit(props: {
-  transaction: TransactionApiOut;
-  accountId?: number;
-  relatedTransactions?: TransactionApiOut[];
   open: boolean;
   onClose: () => void;
-  onEdited?: (x: TransactionApiOut) => void;
+  transaction: TransactionApiOut;
   movementId: number;
+  relatedTransactions?: TransactionApiOut[];
+  onEdited?: () => void;
 }) {
   const [updateTransaction, updateTransactionResult] =
     api.endpoints.updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
@@ -268,14 +332,14 @@ function FormEdit(props: {
     accountId: number
   ) {
     try {
-      const transactionOut = await updateTransaction({
+      await updateTransaction({
         accountId: accountId,
         movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
         transactionApiIn: transactionIn,
         newMovementId: props.transaction.movement_id,
       }).unwrap();
-      props.onEdited && props.onEdited(transactionOut);
+      props.onEdited && props.onEdited();
     } catch (error) {
       logMutationError(error, updateTransactionResult);
       throw error;
@@ -300,14 +364,17 @@ function FormEdit(props: {
       title="Edit a Transaction"
       open={props.open}
       onClose={props.onClose}
-      accountId={props.accountId}
       movementId={props.movementId}
       transaction={props.transaction}
       onSubmit={handleSubmit}
-      resultQuery={updateTransactionResult}
+      submitResult={updateTransactionResult}
       onDelete={handleDelete}
-      deleteQuery={deleteTransactionResult}
-      onUpload={uploadTransactionFile.onUpload}
+      deleteResult={deleteTransactionResult}
+      onUpload={async (f) => {
+        await uploadTransactionFile.onUpload(f);
+        props.onEdited && props.onEdited();
+      }}
+      uploadResult={uploadTransactionFile.result}
     />
   );
 }
