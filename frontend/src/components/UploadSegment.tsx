@@ -12,7 +12,7 @@ export default function UploadSegment(props: { onUpload: (x: File) => void }) {
     <Segment
       placeholder
       onDrop={handleFileDrop}
-      onDragOver={(event: any) => event.preventDefault()}
+      onDragOver={(e: DragEvent) => e.preventDefault()}
       style={{ height: "100%" }}
     >
       <Header icon>

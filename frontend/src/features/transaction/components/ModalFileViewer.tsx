@@ -11,6 +11,7 @@ import { logMutationError } from "utils/error";
 export default function ModalFileViewer(props: {
   transaction: TransactionApiOut;
   trigger: ReactNode;
+  onMutation?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [fileIdx, setFileIdx] = useState(0);
@@ -43,6 +44,8 @@ export default function ModalFileViewer(props: {
     } catch (error) {
       logMutationError(error, deleteFileResult);
     }
+    setFileIdx(0);
+    props.onMutation && props.onMutation();
   }
 
   return (
