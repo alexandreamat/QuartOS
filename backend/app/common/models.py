@@ -87,10 +87,7 @@ class SyncableBase(Base):
     def read_by_plaid_id(
         cls: Type[SyncableBaseType], db: Session, plaid_id: str
     ) -> SyncableBaseType:
-        obj = db.exec(select(cls).where(cls.plaid_id == plaid_id)).first()
-        if not obj:
-            raise NoResultFound
-        return obj
+        return db.exec(select(cls).where(cls.plaid_id == plaid_id)).one()
 
 
 class SyncedBase(SyncableBase):
