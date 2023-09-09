@@ -102,7 +102,7 @@ export default function TransactionForm(
       hasMovement ? props.movementId : skipToken
     );
 
-  const disableSynced = isEdit && accountQuery.data?.is_synced;
+  const disableSynced = isEdit && props.transaction.is_synced;
 
   const accountOptions = useAccountOptions();
 

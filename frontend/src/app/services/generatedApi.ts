@@ -1323,6 +1323,7 @@ export type TransactionPlaidOut = {
   account_id: number;
   movement_id: number;
   files: FileApiOut[];
+  is_synced: boolean;
 };
 export type TransactionApiOut = {
   id: number;
@@ -1333,6 +1334,7 @@ export type TransactionApiOut = {
   account_id: number;
   movement_id: number;
   files: FileApiOut[];
+  is_synced: boolean;
 };
 export type MovementApiOut = {
   id: number;
