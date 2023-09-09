@@ -10,11 +10,12 @@ import Form from "./Form";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { TransactionCard } from "./TransactionCard";
-import { Button, Card, Menu } from "semantic-ui-react";
+import { Card } from "semantic-ui-react";
 import { formatDateParam } from "utils/time";
 import ExhaustedDataCard from "components/ExhaustedDataCard";
 import MovementForm from "features/movements/components/Form";
 import { logMutationError } from "utils/error";
+import SpanButton from "./SpanButton";
 
 const NOT_FOUND = -1;
 const PER_PAGE = 20;
@@ -226,21 +227,14 @@ export default function TransactionCards(
         </Card.Group>
       </FlexColumn.Auto>
       {isMultipleChoice && (
-        <Menu secondary>
-          <Menu.Item style={{ width: "100%" }}>
-            <Button
-              fluid
-              positive
-              circular
-              disabled={checkedTransactions.size <= 1}
-              onClick={handleMergeTransactions}
-              loading={createMovementResult.isLoading}
-              negative={createMovementResult.isError}
-            >
-              {`Combine ${checkedTransactions.size} transactions into one movement`}
-            </Button>
-          </Menu.Item>
-        </Menu>
+        <SpanButton
+          disabled={checkedTransactions.size <= 1}
+          onClick={handleMergeTransactions}
+          loading={createMovementResult.isLoading}
+          negative={createMovementResult.isError}
+        >
+          {`Combine ${checkedTransactions.size} transactions into one movement`}
+        </SpanButton>
       )}
     </FlexColumn>
   );
