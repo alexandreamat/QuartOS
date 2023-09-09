@@ -161,9 +161,9 @@ def sync_transactions(
             )
             CRUDAccount.update_transaction(
                 db,
+                account_id,
                 transaction_out.movement_id,
                 transaction_out.id,
-                account_id,
                 transaction_in,
                 transaction_out.movement_id,
             )
