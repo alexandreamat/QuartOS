@@ -30,6 +30,7 @@ class TransactionApiOut(__TransactionBase, Base):
     account_id: int
     movement_id: int
     files: list[FileApiOut]
+    is_synced: bool
 
 
 class TransactionApiIn(__TransactionBase):
@@ -74,7 +75,7 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
 
     @property
     def is_synced(self) -> bool:
-        return self.account.is_synced
+        return self.plaid_id != None
 
     @classmethod
     def get_timestamp_desc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
