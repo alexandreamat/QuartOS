@@ -229,7 +229,7 @@ export default function TransactionForm(
         )}
         <Button onClick={handleClose}>Cancel</Button>
         <Button
-          disabled={!hasChanged}
+          disabled={isEdit ? !hasChanged : false}
           content="Save"
           type="submit"
           labelPosition="right"
