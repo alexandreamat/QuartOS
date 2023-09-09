@@ -4,6 +4,7 @@ import MenuInputSearch from "components/MenuInputSearch";
 import MenuDropdownAccount from "components/MenuDropdownAccount";
 import { UseStateType } from "types";
 import MenuNumericRange from "components/MenuNumericRange";
+import MenuCheckbox from "components/MenuCheckbox";
 
 export function Bar(props: {
   onOpenCreateForm: () => void;
@@ -17,6 +18,7 @@ export function Bar(props: {
   amountGeState: UseStateType<number | undefined>;
   amountLeState: UseStateType<number | undefined>;
   isAmountAbsState: UseStateType<boolean>;
+  isMultipleChoiceState: UseStateType<boolean>;
 }) {
   return (
     <Menu secondary>
@@ -43,6 +45,7 @@ export function Bar(props: {
         decimal
         signed
       />
+      <MenuCheckbox isMultipleChoiceState={props.isMultipleChoiceState} />
     </Menu>
   );
 }

@@ -13,7 +13,14 @@ import FormattedTimestamp from "components/FormattedTimestamp";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import MutateActionButton from "components/MutateActionButton";
 import { useEffect, useState } from "react";
-import { Button, Card, Header, Input, Placeholder } from "semantic-ui-react";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Header,
+  Input,
+  Placeholder,
+} from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { Flows } from "./Flows";
 
@@ -28,6 +35,8 @@ export function MovementCard(props: {
   onMutate?: () => void;
   showFlows?: boolean;
   editable?: boolean;
+  onCheckedChange?: (x: boolean) => void;
+  checked?: boolean;
 }) {
   const [name, setName] = useState(props.movement.name);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -53,9 +62,17 @@ export function MovementCard(props: {
   useEffect(() => setName(props.movement.name), [props.movement]);
 
   return (
-    <Card fluid color="teal">
+    <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
       <Card.Content>
-        <FlexRow style={{ alignItems: "center", gap: 5 }}>
+        <FlexRow style={{ alignItems: "center", gap: "1em" }}>
+          {props.onCheckedChange && (
+            <Checkbox
+              checked={props.checked}
+              onChange={(_, data) =>
+                props.onCheckedChange!(data.checked || false)
+              }
+            />
+          )}
           <Card.Meta>
             <FormattedTimestamp timestamp={props.movement.earliest_timestamp} />
           </Card.Meta>

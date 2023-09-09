@@ -2,8 +2,9 @@ import MenuDateRange from "components/MenuDateInput";
 import MenuDropdownAccount from "components/MenuDropdownAccount";
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuNumericRange from "components/MenuNumericRange";
-import { Button, Menu } from "semantic-ui-react";
+import { Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
+import MenuCheckbox from "components/MenuCheckbox";
 
 export default function Bar(props: {
   accountIdState: UseStateType<number | undefined>;
@@ -16,7 +17,6 @@ export default function Bar(props: {
   isAmountAbsState: UseStateType<boolean>;
   isMultipleChoiceState: UseStateType<boolean>;
 }) {
-  const [isMultipleChoice, setIsMultipleChoice] = props.isMultipleChoiceState;
   return (
     <Menu secondary>
       <MenuInputSearch searchState={props.searchState} />
@@ -34,14 +34,7 @@ export default function Bar(props: {
         signed
         decimal
       />
-      <Menu.Item fitted>
-        <Button
-          icon="check square"
-          toggle
-          active={isMultipleChoice}
-          onClick={() => setIsMultipleChoice((x) => !x)}
-        />
-      </Menu.Item>
+      <MenuCheckbox isMultipleChoiceState={props.isMultipleChoiceState} />
     </Menu>
   );
 }
