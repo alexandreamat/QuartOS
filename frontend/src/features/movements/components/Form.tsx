@@ -12,6 +12,7 @@ import TransactionForm from "features/transaction/components/Form";
 import { MovementCard } from "./MovementCard";
 import ActionButton from "components/ActionButton";
 import Inline from "components/Inline";
+import FlexRow from "components/FlexRow";
 
 export default function Form(props: {
   open: boolean;
@@ -217,11 +218,14 @@ export default function Form(props: {
                 <div
                   style={{
                     maxHeight: "35vh",
-                    overflow: "hidden",
-                    padding: 2,
+                    overflow: "auto",
                   }}
                 >
-                  <Inline>
+                  <FlexRow
+                    style={{
+                      alignItems: "center",
+                    }}
+                  >
                     <ActionButton
                       disabled={!props.onGoToPrev}
                       icon="arrow left"
@@ -229,21 +233,25 @@ export default function Form(props: {
                       tooltip="Previous movement"
                       style={{ marginRight: "10px" }}
                     />
-                    <MovementCard
-                      movement={movementQuery.data}
-                      onOpenCreateTransactionForm={
-                        handleOpenCreateTransactionForm
-                      }
-                      onOpenEditTransactionForm={handleOpenEditTransactionForm}
-                      onRemoveTransaction={
-                        movementQuery.data.transactions.length > 1
-                          ? handleRemoveTransaction
-                          : undefined
-                      }
-                      onMutate={props.onMutate}
-                      showFlows
-                      editable
-                    />
+                    <FlexRow.Auto>
+                      <MovementCard
+                        movement={movementQuery.data}
+                        onOpenCreateTransactionForm={
+                          handleOpenCreateTransactionForm
+                        }
+                        onOpenEditTransactionForm={
+                          handleOpenEditTransactionForm
+                        }
+                        onRemoveTransaction={
+                          movementQuery.data.transactions.length > 1
+                            ? handleRemoveTransaction
+                            : undefined
+                        }
+                        onMutate={props.onMutate}
+                        showFlows
+                        editable
+                      />
+                    </FlexRow.Auto>
                     <ActionButton
                       disabled={!props.onGoToNext}
                       icon="arrow right"
@@ -251,7 +259,7 @@ export default function Form(props: {
                       tooltip="Next movement"
                       style={{ marginLeft: "10px" }}
                     />
-                  </Inline>
+                  </FlexRow>
                 </div>
               )}
               {movementQuery.isError && (

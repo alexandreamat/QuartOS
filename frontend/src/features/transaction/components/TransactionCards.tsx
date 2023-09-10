@@ -185,7 +185,7 @@ export default function TransactionCards(
       />
       <FlexColumn.Auto reference={infiniteQuery.reference}>
         {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-        <Card.Group style={{ margin: 1, padding: 0 }}>
+        <Card.Group style={{ margin: 0, overflow: "hidden" }}>
           {infiniteQuery.data.map((t, i) => {
             if ("onFlowCheckboxChange" in props) {
               const checked = props.checked?.has(t.id);
