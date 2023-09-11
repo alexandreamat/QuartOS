@@ -24,37 +24,29 @@ import {
 import { logMutationError } from "utils/error";
 import { Flows } from "./Flows";
 
-export function MovementCard(
-  props: (
-    | {
-        movement: MovementApiOut;
-        loading?: false;
-      }
-    | {
-        loading: true;
-      }
-  ) & {
-    onOpenEditForm?: () => void;
-    onOpenCreateTransactionForm?: () => void;
-    onOpenEditTransactionForm?: (x: TransactionApiOut) => void;
-    onRemoveTransaction?: (x: TransactionApiOut) => void;
-    explanationRate?: number;
-    selectedAccountId?: number;
-    onMutate?: () => void;
-    showFlows?: boolean;
-    editable?: boolean;
-    onCheckedChange?: (x: boolean) => void;
-    checked?: boolean;
-  }
-) {
-  const [name, setName] = useState(props.loading ? "" : props.movement.name);
+export function MovementCard(props: {
+  movement?: MovementApiOut;
+  loading?: boolean;
+  onOpenEditForm?: () => void;
+  onOpenCreateTransactionForm?: () => void;
+  onOpenEditTransactionForm?: (x: TransactionApiOut) => void;
+  onRemoveTransaction?: (x: TransactionApiOut) => void;
+  explanationRate?: number;
+  selectedAccountId?: number;
+  onMutate?: () => void;
+  showFlows?: boolean;
+  editable?: boolean;
+  onCheckedChange?: (x: boolean) => void;
+  checked?: boolean;
+}) {
+  const [name, setName] = useState(props.movement?.name || "");
   const [isEditMode, setIsEditMode] = useState(false);
 
   const [updateMovement, updateMovementResult] =
     api.endpoints.updateApiUsersMeMovementsMovementIdPut.useMutation();
 
   async function updateName() {
-    if (props.loading) return;
+    if (!props.movement) return;
 
     const newMovement: MovementApiIn = { ...props.movement, name };
     try {
@@ -71,8 +63,8 @@ export function MovementCard(
   }
 
   useEffect(() => {
-    if (!props.loading) setName(props.movement.name);
-  }, [props]);
+    if (props.movement) setName(props.movement.name);
+  }, [props.movement]);
 
   return (
     <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
@@ -98,7 +90,7 @@ export function MovementCard(
           ) : (
             <Card.Meta>
               <FormattedTimestamp
-                timestamp={props.movement.earliest_timestamp}
+                timestamp={props.movement?.earliest_timestamp}
               />
             </Card.Meta>
           )}
@@ -119,13 +111,13 @@ export function MovementCard(
               />
             ) : (
               <Header as="h5">
-                <LineWithHiddenOverflow content={props.movement.name} />
+                <LineWithHiddenOverflow content={props.movement?.name} />
               </Header>
             )}
           </FlexRow.Auto>
 
           {/* Edit name controls */}
-          {!props.loading &&
+          {props.movement &&
             (isEditMode ? (
               <>
                 <Button
@@ -133,7 +125,7 @@ export function MovementCard(
                   circular
                   size="tiny"
                   onClick={() => {
-                    setName(props.movement.name);
+                    setName(props.movement!.name);
                     setIsEditMode(false);
                   }}
                 />
@@ -168,24 +160,12 @@ export function MovementCard(
 
         {/* Flows */}
         {props.showFlows && (
-          /**
-           * The properties for the Flows component are spread conditionally based on the `loading` state:
-           * This pattern ensures that the component's props adhere to the discriminated union type
-           * defined in the Flows component's prop type, while also consolidating and streamlining prop assignment.
-           */
           <Flows
-            {...{
-              onRemove: props.onRemoveTransaction,
-              onOpenEditForm: props.onOpenEditTransactionForm,
-              selectedAccountId: props.selectedAccountId,
-              ...(props.loading
-                ? {
-                    loading: true,
-                  }
-                : {
-                    transactions: props.movement.transactions,
-                  }),
-            }}
+            onRemove={props.onRemoveTransaction}
+            onOpenEditForm={props.onOpenEditTransactionForm}
+            selectedAccountId={props.selectedAccountId}
+            loading={props.loading}
+            transactions={props.movement?.transactions}
           />
         )}
       </Card.Content>
@@ -205,9 +185,7 @@ export function MovementCard(
         )}
         <Header as="h5" floated="right">
           Total:
-          {props.loading ? (
-            <CurrencyLabel.Placeholder />
-          ) : (
+          {props.movement ? (
             Object.entries(props.movement.amounts).map(
               ([currencyCode, amount], i) => (
                 <CurrencyLabel
@@ -217,6 +195,8 @@ export function MovementCard(
                 />
               )
             )
+          ) : (
+            <CurrencyLabel.Placeholder />
           )}
         </Header>
       </Card.Content>
