@@ -198,8 +198,8 @@ export default function TransactionCards(
                     props.onFlowCheckboxChange!(t, c);
                     infiniteQuery.onMutation();
                   }}
-                  checkBoxDisabled={checked && props.checked.size === 1}
                   checked={checked}
+                  checkBoxDisabled={checked && props.checked.size === 1}
                 />
               );
             } else {
@@ -207,7 +207,6 @@ export default function TransactionCards(
                 <TransactionCard
                   key={i}
                   transaction={t}
-                  onOpenEditMovementForm={() => handleOpenEditMovementForm(t)}
                   onOpenEditForm={() => handleOpenEditForm(t)}
                   onCheckboxChange={
                     isMultipleChoice
@@ -215,6 +214,7 @@ export default function TransactionCards(
                       : undefined
                   }
                   checked={checkedTransactions.has(t.id)}
+                  onOpenEditMovementForm={() => handleOpenEditMovementForm(t)}
                   onMutation={infiniteQuery.onMutation}
                 />
               );

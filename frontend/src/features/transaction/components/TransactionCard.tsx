@@ -24,9 +24,6 @@ import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 export function TransactionCard(
   props:
     | {
-        transaction: TransactionApiOut;
-      }
-    | {
         // from transactions
         transaction: TransactionApiOut;
         onOpenEditMovementForm: () => void;
@@ -34,7 +31,7 @@ export function TransactionCard(
         explanationRate?: number;
         onCheckboxChange?: (x: boolean) => void;
         checked?: boolean;
-        checkBoxDisabled: false;
+        checkBoxDisabled?: false;
         onMutation: () => void;
       }
     | {

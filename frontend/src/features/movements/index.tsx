@@ -195,9 +195,7 @@ export default function Movements() {
               }
             />
           ))}
-          {infiniteQuery.isFetching && (
-            <MovementCard.Placeholder key="placeholder" onOpenEditForm />
-          )}
+          {infiniteQuery.isFetching && <MovementCard loading />}
           {infiniteQuery.isExhausted && <ExhaustedDataCard />}
         </Card.Group>
       </FlexColumn.Auto>
