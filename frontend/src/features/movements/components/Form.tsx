@@ -11,7 +11,6 @@ import CreateNewButton from "components/CreateNewButton";
 import TransactionForm from "features/transaction/components/Form";
 import { MovementCard } from "./MovementCard";
 import ActionButton from "components/ActionButton";
-import Inline from "components/Inline";
 import FlexRow from "components/FlexRow";
 
 export default function Form(props: {
@@ -187,85 +186,68 @@ export default function Form(props: {
       </Modal.Header>
       <Modal.Content>
         <FlexColumn style={{ height: "70vh" }}>
-          {movementQuery.isUninitialized && (
+          {movementQuery.isUninitialized ? (
             <Segment placeholder>
               <Header icon>Add transactions here</Header>
               <Segment.Inline>
                 <CreateNewButton onCreate={handleOpenCreateTransactionForm} />
               </Segment.Inline>
             </Segment>
-          )}
-          {movementQuery.isFetching ? (
-            <Inline>
-              <ActionButton.Placeholder
-                icon="arrow left"
-                style={{ marginRight: "10px" }}
-              />
-              <MovementCard.Placeholder
-                onOpenCreateTransactionForm
-                onOpenEditTransactionForm
-                onRemoveTransaction
-                showFlows
-              />
-              <ActionButton.Placeholder
-                icon="arrow right"
-                style={{ marginLeft: "10px" }}
-              />
-            </Inline>
+          ) : movementQuery.isError ? (
+            <QueryErrorMessage query={movementQuery} />
           ) : (
-            <>
-              {movementQuery.isSuccess && (
-                <div
-                  style={{
-                    maxHeight: "35vh",
-                    overflow: "auto",
-                  }}
-                >
-                  <FlexRow
-                    style={{
-                      alignItems: "center",
+            <div
+              style={{
+                maxHeight: "35vh",
+                overflow: "auto",
+              }}
+            >
+              <FlexRow
+                style={{
+                  alignItems: "center",
+                }}
+              >
+                <ActionButton
+                  disabled={!props.onGoToPrev}
+                  icon="arrow left"
+                  onClick={props.onGoToPrev}
+                  tooltip="Previous movement"
+                  style={{ marginRight: "10px" }}
+                />
+                <FlexRow.Auto>
+                  <MovementCard
+                    {...{
+                      onOpenCreateTransactionForm:
+                        handleOpenCreateTransactionForm,
+                      onOpenEditTransactionForm: handleOpenEditTransactionForm,
+                      onRemoveTransaction:
+                        movementQuery.isSuccess &&
+                        movementQuery.data.transactions.length > 1
+                          ? handleRemoveTransaction
+                          : undefined,
+
+                      onMutate: props.onMutate,
+                      showFlows: true,
+                      editable: true,
+                      ...(movementQuery.isLoading
+                        ? {
+                            loading: true,
+                          }
+                        : {
+                            movement: movementQuery.data,
+                          }),
                     }}
-                  >
-                    <ActionButton
-                      disabled={!props.onGoToPrev}
-                      icon="arrow left"
-                      onClick={props.onGoToPrev}
-                      tooltip="Previous movement"
-                      style={{ marginRight: "10px" }}
-                    />
-                    <FlexRow.Auto>
-                      <MovementCard
-                        movement={movementQuery.data}
-                        onOpenCreateTransactionForm={
-                          handleOpenCreateTransactionForm
-                        }
-                        onOpenEditTransactionForm={
-                          handleOpenEditTransactionForm
-                        }
-                        onRemoveTransaction={
-                          movementQuery.data.transactions.length > 1
-                            ? handleRemoveTransaction
-                            : undefined
-                        }
-                        onMutate={props.onMutate}
-                        showFlows
-                        editable
-                      />
-                    </FlexRow.Auto>
-                    <ActionButton
-                      disabled={!props.onGoToNext}
-                      icon="arrow right"
-                      onClick={props.onGoToNext}
-                      tooltip="Next movement"
-                      style={{ marginLeft: "10px" }}
-                    />
-                  </FlexRow>
-                </div>
-              )}
-              {movementQuery.isError && (
-                <QueryErrorMessage query={movementQuery} />
-              )}
-            </>
+                  />
+                </FlexRow.Auto>
+                <ActionButton
+                  disabled={!props.onGoToNext}
+                  icon="arrow right"
+                  onClick={props.onGoToNext}
+                  tooltip="Next movement"
+                  style={{ marginLeft: "10px" }}
+                />
+              </FlexRow>
+            </div>
           )}
           <QueryErrorMessage query={createMovementsResult} />
           <QueryErrorMessage query={updateTransactionResult} />

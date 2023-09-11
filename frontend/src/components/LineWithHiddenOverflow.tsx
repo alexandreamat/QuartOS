@@ -1,7 +1,7 @@
 import { CSSProperties } from "react";
 
 export default function LineWithHiddenOverflow(props: {
-  content: string;
+  content?: string;
   style?: CSSProperties;
 }) {
   return (

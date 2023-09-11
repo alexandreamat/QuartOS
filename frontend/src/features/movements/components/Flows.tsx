@@ -7,7 +7,7 @@ import CurrencyLabel from "components/CurrencyLabel";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
-import { Grid, Placeholder, Popup, Step } from "semantic-ui-react";
+import { Placeholder, Popup, Step } from "semantic-ui-react";
 import { ClickableIcon } from "components/ClickableIcon";
 import { CSSProperties } from "react";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
@@ -43,15 +43,11 @@ const ViewFilesButton = (props: { transaction: TransactionApiOut }) => (
   />
 );
 
-const AccountLogo = (
-  props:
-    | {
-        account: AccountApiOut;
-        institution?: InstitutionApiOut;
-        loading?: false;
-      }
-    | { loading: true }
-) =>
+const AccountLogo = (props: {
+  account?: AccountApiOut;
+  institution?: InstitutionApiOut;
+  loading?: boolean;
+}) =>
   props.loading ? (
     <Placeholder>
       <Placeholder.Header image />
@@ -59,34 +55,32 @@ const AccountLogo = (
   ) : (
     <Popup
       hideOnScroll
-      content={props.account.name}
+      content={props.account?.name}
       trigger={
-        <div>
-          <AccountIcon
-            account={props.account}
-            institution={props.institution}
-          />
-        </div>
+        props.account && (
+          <div>
+            <AccountIcon
+              account={props.account}
+              institution={props.institution}
+            />
+          </div>
+        )
       }
     />
   );
 
-const Amount = (
-  props:
-    | {
-        transaction: TransactionApiOut;
-        currencyCode: string;
-        loading?: false;
-      }
-    | { loading: true }
-) =>
+const Amount = (props: {
+  transaction?: TransactionApiOut;
+  currencyCode?: string;
+  loading?: boolean;
+}) =>
   props.loading ? (
     <CurrencyLabel.Placeholder />
   ) : (
     <Popup
       hideOnScroll
       position="top center"
-      content={`Account balance: ${props.transaction.account_balance.toLocaleString(
+      content={`Account balance: ${props.transaction?.account_balance.toLocaleString(
         undefined,
         {
           style: "currency",
@@ -94,19 +88,23 @@ const Amount = (
         }
       )}`}
       trigger={
-        <div>
-          <CurrencyLabel
-            amount={props.transaction.amount}
-            currencyCode={props.currencyCode}
-          />
-        </div>
+        props.currencyCode &&
+        props.transaction && (
+          <div>
+            <CurrencyLabel
+              amount={props.transaction.amount}
+              currencyCode={props.currencyCode}
+            />
+          </div>
+        )
       }
     />
   );
 
-const TransactionName = (
-  props: { transaction: TransactionApiOut; loading?: false } | { loading: true }
-) =>
+const TransactionName = (props: {
+  transaction?: TransactionApiOut;
+  loading?: boolean;
+}) =>
   props.loading ? (
     <Placeholder>
       <Placeholder.Header>
@@ -117,44 +115,25 @@ const TransactionName = (
     <Popup
       hideOnScroll
       position="top center"
-      content={<FormattedTimestamp timestamp={props.transaction.timestamp} />}
+      content={<FormattedTimestamp timestamp={props.transaction?.timestamp} />}
       trigger={
         <div>
-          <LineWithHiddenOverflow content={props.transaction.name} />
+          <LineWithHiddenOverflow content={props.transaction?.name} />
         </div>
       }
     />
   );
 
-function Outflow(
-  props:
-    | {
-        transaction: TransactionApiOut;
-        onRemove?: () => void;
-        onOpenEditForm?: () => void;
-        style?: CSSProperties;
-        loading?: false;
-      }
-    | {
-        onRemove?: boolean;
-        onOpenEditForm?: boolean;
-        loading: true;
-      }
-) {
-  const accountQueries = useAccountQueries(
-    !props.loading ? props.transaction.account_id : undefined
-  );
+interface FlowProps {
+  transaction?: TransactionApiOut;
+  onRemove?: () => void;
+  onOpenEditForm?: () => void;
+  loading?: boolean;
+  style?: CSSProperties;
+}
 
-  if (props.loading || !accountQueries.account)
-    return (
-      <FlexRow>
-        {props.onRemove && <RemoveFlow loading />}
-        {props.onOpenEditForm && <EditFlow loading />}
-        <AccountLogo loading />
-        <TransactionName loading />
-        <Amount loading />
-      </FlexRow>
-    );
+function Outflow(props: FlowProps) {
+  const accountQueries = useAccountQueries(props.transaction?.account_id);
 
   return (
     <FlexRow
@@ -164,57 +143,40 @@ function Outflow(
         padding: flowPadding,
       }}
     >
-      {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
-      {props.onOpenEditForm && (
-        <EditFlow onOpenEditForm={props.onOpenEditForm} />
+      {props.onRemove && (
+        <RemoveFlow onRemoveFlow={props.onRemove} loading={props.loading} />
       )}
-      {props.transaction.files.length > 0 && (
+      {props.onOpenEditForm && (
+        <EditFlow
+          onOpenEditForm={props.onOpenEditForm}
+          loading={props.loading}
+        />
+      )}
+      {props.transaction && props.transaction.files.length > 0 && (
         <ViewFilesButton transaction={props.transaction} />
       )}
       <AccountLogo
         account={accountQueries.account}
         institution={accountQueries.institution}
+        loading={props.loading || accountQueries.isLoading}
       />
       <FlexRow.Auto>
-        <TransactionName transaction={props.transaction} />
+        <TransactionName
+          transaction={props.transaction}
+          loading={props.loading}
+        />
       </FlexRow.Auto>
       <Amount
         transaction={props.transaction}
-        currencyCode={accountQueries.account.currency_code}
+        currencyCode={accountQueries.account?.currency_code}
+        loading={props.loading || accountQueries.isLoading}
       />
     </FlexRow>
   );
 }
 
-function Inflow(
-  props:
-    | {
-        transaction: TransactionApiOut;
-        onRemove?: () => void;
-        onOpenEditForm?: () => void;
-        style?: CSSProperties;
-        loading?: false;
-      }
-    | {
-        onRemove?: boolean;
-        onOpenEditForm?: boolean;
-        loading: true;
-      }
-) {
-  const accountQueries = useAccountQueries(
-    props.loading ? undefined : props.transaction.account_id
-  );
-
-  if (!accountQueries.account || props.loading)
-    return (
-      <FlexRow>
-        <Amount loading />
-        <TransactionName loading />
-        <AccountLogo loading />
-        {props.onOpenEditForm && <EditFlow loading />}
-        {props.onRemove && <RemoveFlow loading />}
-      </FlexRow>
-    );
+function Inflow(props: FlowProps) {
+  const accountQueries = useAccountQueries(props.transaction?.account_id);
 
   return (
     <FlexRow
@@ -222,117 +184,109 @@ function Inflow(
     >
       <Amount
         transaction={props.transaction}
-        currencyCode={accountQueries.account.currency_code}
+        currencyCode={accountQueries.account?.currency_code}
+        loading={props.loading || accountQueries.isLoading}
       />
       <FlexRow.Auto>
-        <TransactionName transaction={props.transaction} />
+        <TransactionName
+          transaction={props.transaction}
+          loading={props.loading}
+        />
       </FlexRow.Auto>
       <AccountLogo
         account={accountQueries.account}
         institution={accountQueries.institution}
+        loading={props.loading || accountQueries.isLoading}
       />
-      {props.transaction.files.length > 0 && (
+      {props.transaction && props.transaction.files.length > 0 && (
         <ViewFilesButton transaction={props.transaction} />
       )}
       {props.onOpenEditForm && (
-        <EditFlow onOpenEditForm={props.onOpenEditForm} />
+        <EditFlow
+          onOpenEditForm={props.onOpenEditForm}
+          loading={props.loading}
+        />
       )}
-      {props.onRemove && <RemoveFlow onRemoveFlow={props.onRemove} />}
+      {props.onRemove && (
+        <RemoveFlow onRemoveFlow={props.onRemove} loading={props.loading} />
+      )}
     </FlexRow>
   );
 }
 
-export function Flows(
-  props:
-    | {
-        transactions: TransactionApiOut[];
-        onRemove?: (x: TransactionApiOut) => void;
-        onOpenEditForm?: (x: TransactionApiOut) => void;
-        selectedAccountId?: number;
-        loading?: false;
-      }
-    | {
-        onRemove?: boolean;
-        onOpenEditForm?: boolean;
-        loading: true;
-      }
-) {
-  if (props.loading)
-    return (
-      <Step.Group fluid widths={2}>
-        <Step style={{ padding: stepPadding }}>
-          <Step.Content style={{ width: "100%" }}>
-            <Grid>
-              <Outflow loading />
-            </Grid>
-          </Step.Content>
-        </Step>
-        <Step style={{ padding: stepPadding }}>
-          <Step.Content style={{ width: "100%" }}>
-            <Grid>
-              <Inflow loading />
-            </Grid>
-          </Step.Content>
-        </Step>
-      </Step.Group>
-    );
+function StepFlows(props: {
+  onRemove?: (x: TransactionApiOut) => void;
+  onOpenEditForm?: (x: TransactionApiOut) => void;
+  selectedAccountId?: number;
+  transactions?: TransactionApiOut[];
+  loading?: boolean;
+  filterPredicate: (t: TransactionApiOut) => boolean;
+  flowComponent: (props: FlowProps) => JSX.Element;
+}) {
+  const flows = props.transactions?.filter(props.filterPredicate);
 
-  const outflows = props.transactions.filter((t) => t.amount < 0) || [];
-  const inflows = props.transactions.filter((t) => t.amount >= 0) || [];
+  const hasFlows = flows && flows.length > 0;
+
+  if (!props.loading && !hasFlows) return <></>;
+
+  return (
+    <Step style={{ padding: stepPadding }}>
+      <Step.Content style={{ width: "100%" }}>
+        {props.loading ? (
+          <props.flowComponent
+            loading
+            onRemove={() => {}}
+            onOpenEditForm={() => {}}
+          />
+        ) : (
+          hasFlows &&
+          flows.map((t) => (
+            <props.flowComponent
+              key={t.id}
+              transaction={t}
+              onRemove={props.onRemove && (() => props.onRemove!(t))}
+              onOpenEditForm={
+                props.onOpenEditForm && (() => props.onOpenEditForm!(t))
+              }
+              style={{
+                fontWeight:
+                  t.account_id === props.selectedAccountId ? "bold" : "normal",
+              }}
+            />
+          ))
+        )}
+      </Step.Content>
+    </Step>
+  );
+}
+
+export function Flows(props: {
+  onRemove?: (x: TransactionApiOut) => void;
+  onOpenEditForm?: (x: TransactionApiOut) => void;
+  selectedAccountId?: number;
+  transactions?: TransactionApiOut[];
+  loading?: boolean;
+}) {
   return (
     <Step.Group fluid widths={2}>
-      {outflows.length !== 0 && (
-        <Step style={{ padding: stepPadding }}>
-          <Step.Content style={{ width: "100%" }}>
-            {outflows.map((transaction) => (
-              <Outflow
-                key={transaction.id}
-                transaction={transaction}
-                onRemove={
-                  props.onRemove && (() => props.onRemove!(transaction))
-                }
-                onOpenEditForm={
-                  props.onOpenEditForm &&
-                  (() => props.onOpenEditForm!(transaction))
-                }
-                style={{
-                  fontWeight:
-                    transaction.account_id === props.selectedAccountId
-                      ? "bold"
-                      : "normal",
-                }}
-              />
-            ))}
-          </Step.Content>
-        </Step>
-      )}
-      {inflows.length !== 0 && (
-        <Step style={{ padding: stepPadding }}>
-          <Step.Content style={{ width: "100%" }}>
-            {inflows.map((transaction) => (
-              <Inflow
-                key={transaction.id}
-                transaction={transaction}
-                onRemove={
-                  props.onRemove
-                    ? () => props.onRemove!(transaction)
-                    : undefined
-                }
-                onOpenEditForm={
-                  props.onOpenEditForm &&
-                  (() => props.onOpenEditForm!(transaction))
-                }
-                style={{
-                  fontWeight:
-                    transaction.account_id === props.selectedAccountId
-                      ? "bold"
-                      : "normal",
-                }}
-              />
-            ))}
-          </Step.Content>
-        </Step>
-      )}
+      <StepFlows
+        loading={props.loading}
+        onOpenEditForm={props.onOpenEditForm}
+        onRemove={props.onRemove}
+        selectedAccountId={props.selectedAccountId}
+        transactions={props.transactions}
+        filterPredicate={(t) => t.amount < 0}
+        flowComponent={Outflow}
+      />
+      <StepFlows
+        loading={props.loading}
+        onOpenEditForm={props.onOpenEditForm}
+        onRemove={props.onRemove}
+        selectedAccountId={props.selectedAccountId}
+        transactions={props.transactions}
+        filterPredicate={(t) => t.amount >= 0}
+        flowComponent={Inflow}
+      />
     </Step.Group>
   );
 }
