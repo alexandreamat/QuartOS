@@ -124,92 +124,49 @@ const TransactionName = (props: {
     />
   );
 
-interface FlowProps {
+function Flow(props: {
   transaction?: TransactionApiOut;
   onRemove?: () => void;
   onOpenEditForm?: () => void;
   loading?: boolean;
   style?: CSSProperties;
-}
-
-function Outflow(props: FlowProps) {
+  reverse?: boolean;
+}) {
   const accountQueries = useAccountQueries(props.transaction?.account_id);
 
-  return (
-    <FlexRow
-      style={{
-        alignItems: "center",
-        gap: flowGap,
-        padding: flowPadding,
-      }}
-    >
-      {props.onRemove && (
-        <RemoveFlow onRemoveFlow={props.onRemove} loading={props.loading} />
-      )}
-      {props.onOpenEditForm && (
-        <EditFlow
-          onOpenEditForm={props.onOpenEditForm}
-          loading={props.loading}
-        />
-      )}
-      {props.transaction && props.transaction.files.length > 0 && (
-        <ViewFilesButton transaction={props.transaction} />
-      )}
-      <AccountLogo
-        account={accountQueries.account}
-        institution={accountQueries.institution}
-        loading={props.loading || accountQueries.isLoading}
-      />
-      <FlexRow.Auto>
-        <TransactionName
-          transaction={props.transaction}
-          loading={props.loading}
-        />
-      </FlexRow.Auto>
-      <Amount
+  const children = [
+    <Amount
+      transaction={props.transaction}
+      currencyCode={accountQueries.account?.currency_code}
+      loading={props.loading || accountQueries.isLoading}
+    />,
+    <FlexRow.Auto>
+      <TransactionName
         transaction={props.transaction}
-        currencyCode={accountQueries.account?.currency_code}
-        loading={props.loading || accountQueries.isLoading}
+        loading={props.loading}
       />
-    </FlexRow>
-  );
-}
-
-function Inflow(props: FlowProps) {
-  const accountQueries = useAccountQueries(props.transaction?.account_id);
+    </FlexRow.Auto>,
+    <AccountLogo
+      account={accountQueries.account}
+      institution={accountQueries.institution}
+      loading={props.loading || accountQueries.isLoading}
+    />,
+    props.transaction && props.transaction.files.length > 0 && (
+      <ViewFilesButton transaction={props.transaction} />
+    ),
+    props.onOpenEditForm && (
+      <EditFlow onOpenEditForm={props.onOpenEditForm} loading={props.loading} />
+    ),
+    props.onRemove && (
+      <RemoveFlow onRemoveFlow={props.onRemove} loading={props.loading} />
+    ),
+  ];
 
   return (
     <FlexRow
       style={{ alignItems: "center", gap: flowGap, padding: flowPadding }}
     >
-      <Amount
-        transaction={props.transaction}
-        currencyCode={accountQueries.account?.currency_code}
-        loading={props.loading || accountQueries.isLoading}
-      />
-      <FlexRow.Auto>
-        <TransactionName
-          transaction={props.transaction}
-          loading={props.loading}
-        />
-      </FlexRow.Auto>
-      <AccountLogo
-        account={accountQueries.account}
-        institution={accountQueries.institution}
-        loading={props.loading || accountQueries.isLoading}
-      />
-      {props.transaction && props.transaction.files.length > 0 && (
-        <ViewFilesButton transaction={props.transaction} />
-      )}
-      {props.onOpenEditForm && (
-        <EditFlow
-          onOpenEditForm={props.onOpenEditForm}
-          loading={props.loading}
-        />
-      )}
-      {props.onRemove && (
-        <RemoveFlow onRemoveFlow={props.onRemove} loading={props.loading} />
-      )}
+      {props.reverse ? children : children.reverse()}
     </FlexRow>
   );
 }
@@ -221,7 +178,7 @@ function StepFlows(props: {
   transactions?: TransactionApiOut[];
   loading?: boolean;
   filterPredicate: (t: TransactionApiOut) => boolean;
-  flowComponent: (props: FlowProps) => JSX.Element;
+  reverse?: boolean;
 }) {
   const flows = props.transactions?.filter(props.filterPredicate);
 
@@ -233,15 +190,16 @@ function StepFlows(props: {
     <Step style={{ padding: stepPadding }}>
       <Step.Content style={{ width: "100%" }}>
         {props.loading ? (
-          <props.flowComponent
+          <Flow
             loading
             onRemove={() => {}}
             onOpenEditForm={() => {}}
+            reverse={props.reverse}
           />
         ) : (
           hasFlows &&
           flows.map((t) => (
-            <props.flowComponent
+            <Flow
               key={t.id}
               transaction={t}
               onRemove={props.onRemove && (() => props.onRemove!(t))}
@@ -252,6 +210,7 @@ function StepFlows(props: {
                 fontWeight:
                   t.account_id === props.selectedAccountId ? "bold" : "normal",
               }}
+              reverse={props.reverse}
             />
           ))
         )}
@@ -276,7 +235,6 @@ export function Flows(props: {
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
         filterPredicate={(t) => t.amount < 0}
-        flowComponent={Outflow}
       />
       <StepFlows
         loading={props.loading}
@@ -285,7 +243,7 @@ export function Flows(props: {
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
         filterPredicate={(t) => t.amount >= 0}
-        flowComponent={Inflow}
+        reverse
       />
     </Step.Group>
   );
