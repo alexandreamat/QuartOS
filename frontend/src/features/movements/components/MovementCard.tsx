@@ -4,8 +4,7 @@ import {
   TransactionApiOut,
   api,
 } from "app/services/api";
-import ActionButton from "components/ActionButton";
-import { ClickableIcon } from "components/ClickableIcon";
+import ClickableIcon from "components/ClickableIcon";
 import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
@@ -150,19 +149,18 @@ export function MovementCard(props: {
             ))}
 
           {/* "See more" button */}
-          {props.onOpenEditForm &&
-            (props.loading ? (
-              <ActionButton.Placeholder icon="ellipsis horizontal" />
-            ) : (
-              <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
-            ))}
+          {props.onOpenEditForm && (
+            <MutateActionButton
+              onOpenEditForm={props.onOpenEditForm}
+              loading={props.loading}
+            />
+          )}
         </FlexRow>
 
         {/* Flows */}
         {props.showFlows && (
           <Flows
             onRemove={props.onRemoveTransaction}
-            onOpenEditForm={props.onOpenEditTransactionForm}
             selectedAccountId={props.selectedAccountId}
             loading={props.loading}
             transactions={props.movement?.transactions}
@@ -196,7 +194,7 @@ export function MovementCard(props: {
               )
             )
           ) : (
-            <CurrencyLabel.Placeholder />
+            <CurrencyLabel loading />
           )}
         </Header>
       </Card.Content>

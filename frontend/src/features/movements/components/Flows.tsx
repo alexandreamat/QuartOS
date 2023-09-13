@@ -1,164 +1,105 @@
-import {
-  AccountApiOut,
-  InstitutionApiOut,
-  TransactionApiOut,
-} from "app/services/api";
+import { TransactionApiOut } from "app/services/api";
 import CurrencyLabel from "components/CurrencyLabel";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
-import { Placeholder, Popup, Step } from "semantic-ui-react";
-import { ClickableIcon } from "components/ClickableIcon";
-import { CSSProperties } from "react";
+import { Popup, Step } from "semantic-ui-react";
+import ClickableIcon from "components/ClickableIcon";
+import { CSSProperties, useState } from "react";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import ModalFileViewer from "features/transaction/components/ModalFileViewer";
 import FlexRow from "components/FlexRow";
+import TransactionForm from "features/transaction/components/Form";
 
 const flowPadding = "5px 15px 5px 15px";
 const flowGap = "10px";
 const stepPadding = "10px";
 
-const RemoveFlow = (
-  props: { onRemoveFlow: () => void; loading?: false } | { loading: true }
-) =>
-  props.loading ? (
-    <ClickableIcon.Placeholder name="remove circle" />
-  ) : (
-    <ClickableIcon name="remove circle" onClick={props.onRemoveFlow} />
-  );
-
-const EditFlow = (
-  props: { onOpenEditForm: () => void; loading?: false } | { loading: true }
-) =>
-  props.loading ? (
-    <ClickableIcon.Placeholder name="ellipsis horizontal" />
-  ) : (
-    <ClickableIcon name="ellipsis horizontal" onClick={props.onOpenEditForm} />
-  );
-
-const ViewFilesButton = (props: { transaction: TransactionApiOut }) => (
-  <ModalFileViewer
-    transaction={props.transaction}
-    trigger={<ClickableIcon name="file" />}
-  />
-);
-
-const AccountLogo = (props: {
-  account?: AccountApiOut;
-  institution?: InstitutionApiOut;
-  loading?: boolean;
-}) =>
-  props.loading ? (
-    <Placeholder>
-      <Placeholder.Header image />
-    </Placeholder>
-  ) : (
-    <Popup
-      hideOnScroll
-      content={props.account?.name}
-      trigger={
-        props.account && (
-          <div>
-            <AccountIcon
-              account={props.account}
-              institution={props.institution}
-            />
-          </div>
-        )
-      }
-    />
-  );
-
-const Amount = (props: {
+function Flow(props: {
   transaction?: TransactionApiOut;
-  currencyCode?: string;
+  onRemove?: () => void;
   loading?: boolean;
-}) =>
-  props.loading ? (
-    <CurrencyLabel.Placeholder />
-  ) : (
+  style?: CSSProperties;
+  reverse?: boolean;
+}) {
+  const [formOpen, setFormOpen] = useState(false);
+  const [fileOpen, setFileOpen] = useState(false);
+
+  const accountQueries = useAccountQueries(props.transaction?.account_id);
+
+  const currencyCode = accountQueries.account?.currency_code;
+
+  const children = [
     <Popup
+      disabled={!props.loading && !accountQueries.isLoading}
       hideOnScroll
       position="top center"
       content={`Account balance: ${props.transaction?.account_balance.toLocaleString(
         undefined,
         {
           style: "currency",
-          currency: props.currencyCode,
+          currency: currencyCode,
         }
       )}`}
       trigger={
-        props.currencyCode &&
-        props.transaction && (
-          <div>
-            <CurrencyLabel
-              amount={props.transaction.amount}
-              currencyCode={props.currencyCode}
-            />
-          </div>
-        )
-      }
-    />
-  );
-
-const TransactionName = (props: {
-  transaction?: TransactionApiOut;
-  loading?: boolean;
-}) =>
-  props.loading ? (
-    <Placeholder>
-      <Placeholder.Header>
-        <Placeholder.Line />
-      </Placeholder.Header>
-    </Placeholder>
-  ) : (
-    <Popup
-      hideOnScroll
-      position="top center"
-      content={<FormattedTimestamp timestamp={props.transaction?.timestamp} />}
-      trigger={
         <div>
-          <LineWithHiddenOverflow content={props.transaction?.name} />
+          <CurrencyLabel
+            amount={props.transaction?.amount}
+            currencyCode={currencyCode}
+            loading={props.loading || accountQueries.isLoading}
+          />
         </div>
       }
-    />
-  );
-
-function Flow(props: {
-  transaction?: TransactionApiOut;
-  onRemove?: () => void;
-  onOpenEditForm?: () => void;
-  loading?: boolean;
-  style?: CSSProperties;
-  reverse?: boolean;
-}) {
-  const accountQueries = useAccountQueries(props.transaction?.account_id);
-
-  const children = [
-    <Amount
-      transaction={props.transaction}
-      currencyCode={accountQueries.account?.currency_code}
-      loading={props.loading || accountQueries.isLoading}
     />,
     <FlexRow.Auto>
-      <TransactionName
-        transaction={props.transaction}
-        loading={props.loading}
+      <Popup
+        hideOnScroll
+        position="top center"
+        content={
+          <FormattedTimestamp timestamp={props.transaction?.timestamp} />
+        }
+        trigger={
+          <div>
+            <LineWithHiddenOverflow
+              content={props.transaction?.name}
+              loading={props.loading}
+            />
+          </div>
+        }
       />
     </FlexRow.Auto>,
-    <AccountLogo
-      account={accountQueries.account}
-      institution={accountQueries.institution}
-      loading={props.loading || accountQueries.isLoading}
+    <Popup
+      disabled={!props.loading && !accountQueries.isLoading}
+      hideOnScroll
+      content={accountQueries.account?.name}
+      trigger={
+        <div>
+          <AccountIcon
+            account={accountQueries.account}
+            institution={accountQueries.institution}
+            loading={props.loading || accountQueries.isLoading}
+          />
+        </div>
+      }
     />,
     props.transaction && props.transaction.files.length > 0 && (
-      <ViewFilesButton transaction={props.transaction} />
+      <ClickableIcon
+        name="file"
+        onClick={() => setFileOpen(true)}
+        loading={props.loading}
+      />
     ),
-    props.onOpenEditForm && (
-      <EditFlow onOpenEditForm={props.onOpenEditForm} loading={props.loading} />
-    ),
+    <ClickableIcon
+      name="ellipsis horizontal"
+      onClick={() => setFormOpen(true)}
+      loading={props.loading}
+    />,
     props.onRemove && (
-      <RemoveFlow onRemoveFlow={props.onRemove} loading={props.loading} />
+      <ClickableIcon
+        name="remove circle"
+        onClick={props.onRemove}
+        loading={props.loading}
+      />
     ),
   ];
 
@@ -166,6 +107,20 @@ function Flow(props: {
     <FlexRow
       style={{ alignItems: "center", gap: flowGap, padding: flowPadding }}
     >
+      {fileOpen && props.transaction && (
+        <ModalFileViewer
+          transaction={props.transaction}
+          onClose={() => setFileOpen(false)}
+        />
+      )}
+      {formOpen && props.transaction && (
+        <TransactionForm.Edit
+          open
+          onClose={() => setFormOpen(false)}
+          movementId={props.transaction.movement_id}
+          transaction={props.transaction}
+        />
+      )}
       {props.reverse ? children : children.reverse()}
     </FlexRow>
   );
@@ -173,7 +128,6 @@ function Flow(props: {
 
 function StepFlows(props: {
   onRemove?: (x: TransactionApiOut) => void;
-  onOpenEditForm?: (x: TransactionApiOut) => void;
   selectedAccountId?: number;
   transactions?: TransactionApiOut[];
   loading?: boolean;
@@ -190,12 +144,7 @@ function StepFlows(props: {
     <Step style={{ padding: stepPadding }}>
       <Step.Content style={{ width: "100%" }}>
         {props.loading ? (
-          <Flow
-            loading
-            onRemove={() => {}}
-            onOpenEditForm={() => {}}
-            reverse={props.reverse}
-          />
+          <Flow loading onRemove={() => {}} reverse={props.reverse} />
         ) : (
           hasFlows &&
           flows.map((t) => (
@@ -203,9 +152,6 @@ function StepFlows(props: {
               key={t.id}
               transaction={t}
               onRemove={props.onRemove && (() => props.onRemove!(t))}
-              onOpenEditForm={
-                props.onOpenEditForm && (() => props.onOpenEditForm!(t))
-              }
               style={{
                 fontWeight:
                   t.account_id === props.selectedAccountId ? "bold" : "normal",
@@ -221,7 +167,6 @@ function StepFlows(props: {
 
 export function Flows(props: {
   onRemove?: (x: TransactionApiOut) => void;
-  onOpenEditForm?: (x: TransactionApiOut) => void;
   selectedAccountId?: number;
   transactions?: TransactionApiOut[];
   loading?: boolean;
@@ -230,7 +175,6 @@ export function Flows(props: {
     <Step.Group fluid widths={2}>
       <StepFlows
         loading={props.loading}
-        onOpenEditForm={props.onOpenEditForm}
         onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
@@ -238,7 +182,6 @@ export function Flows(props: {
       />
       <StepFlows
         loading={props.loading}
-        onOpenEditForm={props.onOpenEditForm}
         onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}

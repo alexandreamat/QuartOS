@@ -4,7 +4,13 @@ import {
   QueryDefinition,
   UpdateDefinitions,
 } from "@reduxjs/toolkit/dist/query/endpointDefinitions";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { ApiEndpointQuery } from "@reduxjs/toolkit/dist/query/core/module";
 
 const RATE = 1;
@@ -18,12 +24,11 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
       QueryDefinition<P & { page?: number; perPage?: number }, B, T, R[]>
     >,
   params: P,
-  perPage: number
+  perPage: number,
+  reference: MutableRefObject<HTMLDivElement | null>
 ) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const memoizedParams = useMemo(() => params, [JSON.stringify(params)]);
-
-  const reference = useRef<HTMLDivElement | null>(null);
 
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);

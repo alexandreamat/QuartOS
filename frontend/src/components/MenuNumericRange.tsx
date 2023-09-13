@@ -5,7 +5,7 @@ import {
   Popup,
   SemanticICONS,
 } from "semantic-ui-react";
-import { ClickableIcon } from "components/ClickableIcon";
+import ClickableIcon from "components/ClickableIcon";
 import NumericInput from "components/DecimalInput";
 import { UseStateType } from "types";
 

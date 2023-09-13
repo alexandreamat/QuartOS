@@ -99,9 +99,10 @@ function PLCardPlaceholder(props: { onGoToDetail?: boolean }) {
               <Placeholder.Line />
             </Placeholder>
             {props.onGoToDetail && (
-              <ActionButton.Placeholder
+              <ActionButton
                 icon="file alternate outline"
                 content="See Report"
+                loading
               />
             )}
           </FlexRow>
@@ -115,13 +116,13 @@ function PLCardPlaceholder(props: { onGoToDetail?: boolean }) {
           <Step>
             <Step.Title>Income</Step.Title>
             <Step.Content>
-              <CurrencyLabel.Placeholder />
+              <CurrencyLabel loading />
             </Step.Content>
           </Step>
           <Step>
             <Step.Title>Expenses</Step.Title>
             <Step.Content>
-              <CurrencyLabel.Placeholder />
+              <CurrencyLabel loading />
             </Step.Content>
           </Step>
         </Step.Group>
@@ -130,7 +131,7 @@ function PLCardPlaceholder(props: { onGoToDetail?: boolean }) {
         <Inline justifyContent="right">
           <Header as="h5">
             Net Income:
-            <CurrencyLabel.Placeholder />
+            <CurrencyLabel loading />
           </Header>
         </Inline>
       </Card.Content>

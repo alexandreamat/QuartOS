@@ -3,7 +3,7 @@ import { Button, Image, Loader, Modal } from "semantic-ui-react";
 import ActionButton from "components/ActionButton";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import FlexRow from "components/FlexRow";
-import React, { ReactNode, useState } from "react";
+import React, { useState } from "react";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import { logMutationError } from "utils/error";
@@ -28,29 +28,25 @@ function FileContent(props: { blob: Blob }) {
 }
 
 export default function ModalFileViewer(props: {
+  onClose: () => void;
   transaction: TransactionApiOut;
-  trigger: ReactNode;
-  onMutation?: () => void;
 }) {
-  const [open, setOpen] = useState(false);
   const [fileIdx, setFileIdx] = useState(0);
 
   const filesQuery =
     api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
-      open
-        ? {
-            accountId: props.transaction.account_id,
-            movementId: props.transaction.movement_id,
-            transactionId: props.transaction.id,
-          }
-        : skipToken
+      {
+        accountId: props.transaction.account_id,
+        movementId: props.transaction.movement_id,
+        transactionId: props.transaction.id,
+      }
     );
 
   const selectedFile = filesQuery.data ? filesQuery.data[fileIdx] : undefined;
 
   const fileQuery =
     api.endpoints.readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet.useQuery(
-      open && selectedFile
+      selectedFile
         ? {
             accountId: props.transaction.account_id,
             movementId: props.transaction.movement_id,
@@ -62,11 +58,6 @@ export default function ModalFileViewer(props: {
 
   const [deleteFile, deleteFileResult] =
     api.endpoints.deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete.useMutation();
-
-  function handleClose() {
-    setOpen(false);
-    setFileIdx(0);
-  }
 
   async function handleDeleteFile() {
     if (!selectedFile || !filesQuery.data) return;
@@ -81,28 +72,20 @@ export default function ModalFileViewer(props: {
     } catch (error) {
       logMutationError(error, deleteFileResult);
     }
-    props.onMutation && props.onMutation();
     const newLength = filesQuery.data.length - 1;
     if (newLength) setFileIdx((x) => Math.min(newLength - 1, x));
-    else handleClose();
+    else props.onClose();
   }
 
   return (
-    <Modal
-      onClose={handleClose}
-      onOpen={() => setOpen(true)}
-      open={open}
-      trigger={props.trigger}
-      size="large"
-    >
+    <Modal onClose={props.onClose} open size="large">
       <Modal.Content>
-        <FlexRow style={{ alignItems: "center" }}>
+        <FlexRow style={{ alignItems: "center", gap: 10 }}>
           <ActionButton
             disabled={fileIdx <= 0}
             icon="arrow left"
             onClick={() => setFileIdx((x) => x - 1)}
             tooltip="Previous file"
-            style={{ marginRight: "10px" }}
           />
           <FlexRow.Auto>
             {fileQuery.isFetching || filesQuery.isFetching ? (
@@ -119,7 +102,6 @@ export default function ModalFileViewer(props: {
             icon="arrow right"
             onClick={() => setFileIdx((x) => x + 1)}
             tooltip="Next file"
-            style={{ marginLeft: "10px" }}
           />
         </FlexRow>
       </Modal.Content>
@@ -128,7 +110,7 @@ export default function ModalFileViewer(props: {
           onDelete={handleDeleteFile}
           query={deleteFileResult}
         />
-        <Button positive onClick={handleClose}>
+        <Button positive onClick={props.onClose}>
           Close
         </Button>
       </Modal.Actions>

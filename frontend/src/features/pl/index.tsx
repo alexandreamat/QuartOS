@@ -9,6 +9,7 @@ import { Card } from "semantic-ui-react";
 import PLCard from "./components/PLCard";
 import FlexColumn from "components/FlexColumn";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
+import { useRef } from "react";
 
 function Row(props: { plStatement: PlStatement }) {
   const navigate = useNavigate();
@@ -24,12 +25,15 @@ function Row(props: { plStatement: PlStatement }) {
 }
 
 export default function IncomeStatement() {
+  const reference = useRef<HTMLDivElement | null>(null);
+
   const aggregatesQuery = useInfiniteQuery(
     api.endpoints.getManyAggregatesApiUsersMeMovementsAggregatesGet,
     {
       currencyCode: "EUR",
     } as GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg,
-    12
+    12,
+    reference
   );
 
   return (

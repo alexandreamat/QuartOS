@@ -1,83 +1,65 @@
-import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
-import {
-  Card,
-  Checkbox,
-  CheckboxProps,
-  Header,
-  Placeholder,
-  Popup,
-} from "semantic-ui-react";
-import LoadableQuery from "components/LoadableCell";
-import { useAccountQueries } from "features/account/hooks";
-import CurrencyLabel from "components/CurrencyLabel";
-import FormattedTimestamp from "components/FormattedTimestamp";
-import ActionButton from "components/ActionButton";
-import AccountIcon from "features/account/components/Icon";
-import { FormattedCurrency } from "components/FormattedCurrency";
-import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
-import MutateActionButton from "components/MutateActionButton";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
+import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
+import ActionButton from "components/ActionButton";
+import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
-import ModalFileViewer from "./ModalFileViewer";
+import { FormattedCurrency } from "components/FormattedCurrency";
+import FormattedTimestamp from "components/FormattedTimestamp";
+import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
+import AccountIcon from "features/account/components/Icon";
+import { useAccountQueries } from "features/account/hooks";
+import MovementForm from "features/movements/components/Form";
+import { useState } from "react";
+import { Card, Checkbox, Header, Popup } from "semantic-ui-react";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
+import TransactionForm from "./Form";
+import ModalFileViewer from "./ModalFileViewer";
 
 export function TransactionCard(
   props:
     | {
-        // from transactions
-        transaction: TransactionApiOut;
-        onOpenEditMovementForm: () => void;
-        onOpenEditForm: () => void;
-        explanationRate?: number;
-        onCheckboxChange?: (x: boolean) => void;
+        // from transactions or movement
+        transaction?: TransactionApiOut;
         checked?: boolean;
-        checkBoxDisabled?: false;
-        onMutation: () => void;
-      }
-    | {
-        // from movement form
-        transaction: TransactionApiOut;
-        onOpenEditForm: () => void;
-        onCheckboxChange: (x: boolean) => void;
-        checkBoxDisabled: boolean;
-        checked: boolean;
+        onCheckedChange?: (x: boolean) => void;
+        checkBoxDisabled?: boolean;
+        preview?: false;
+        loading?: boolean;
       }
     | {
         // from preview
-        transaction: TransactionApiIn;
+        transaction?: TransactionApiIn;
         accountId: number;
+        preview: true;
+        loading?: false;
       }
 ) {
   const accountQueries = useAccountQueries(
-    "accountId" in props ? props.accountId : props.transaction.account_id
+    props.preview ? props.accountId : props.transaction?.account_id
   );
 
   const movementQuery =
     api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
-      "movement_id" in props.transaction
-        ? props.transaction.movement_id
-        : skipToken
+      props.preview || !props.transaction
+        ? skipToken
+        : props.transaction.movement_id
     );
 
   const uploadTransactionFile = useUploadTransactionFile(
-    "id" in props.transaction ? props.transaction : undefined
+    props.preview ? undefined : props.transaction
   );
 
   const account = accountQueries.account;
   const movement = movementQuery.data;
-  const transaction = props.transaction;
 
   const currencyLabel = (
     <div>
       Total:
-      {account ? (
-        <CurrencyLabel
-          amount={props.transaction.amount}
-          currencyCode={account.currency_code}
-        />
-      ) : (
-        <CurrencyLabel.Placeholder />
-      )}
+      <CurrencyLabel
+        amount={props.transaction?.amount}
+        currencyCode={account?.currency_code}
+        loading={accountQueries.isLoading || props.loading}
+      />
     </div>
   );
 
@@ -86,8 +68,11 @@ export function TransactionCard(
     const file = event.dataTransfer?.files[0];
     if (!file) return;
     await uploadTransactionFile.onUpload(file);
-    if ("onMutation" in props) props.onMutation();
   }
+
+  const [movementOpen, setMovementOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [fileOpen, setFileOpen] = useState(false);
 
   return (
     <Card
@@ -98,83 +83,96 @@ export function TransactionCard(
     >
       <Card.Content>
         <FlexRow style={{ gap: 5 }}>
-          {"onCheckboxChange" in props && props.onCheckboxChange && (
-            <Popup
-              content={
-                props.checked
-                  ? "Remove from the movement"
-                  : "Add to the movement"
-              }
-              trigger={
-                <Checkbox
-                  disabled={
-                    "checkBoxDisabled" in props && props.checkBoxDisabled
-                  }
-                  checked={props.checked}
-                  onChange={async (_: unknown, data: CheckboxProps) =>
-                    await props.onCheckboxChange!(data.checked || false)
-                  }
-                />
-              }
+          {!props.preview && props.onCheckedChange && (
+            <Checkbox
+              disabled={props.checkBoxDisabled}
+              checked={props.checked}
+              onChange={(_, d) => props.onCheckedChange!(d.checked || false)}
             />
           )}
           <Card.Meta>
-            <FormattedTimestamp timestamp={props.transaction.timestamp} />
+            <FormattedTimestamp
+              timestamp={props.transaction?.timestamp}
+              loading={props.loading}
+            />
           </Card.Meta>
-          <LoadableQuery query={accountQueries}>
-            <AccountIcon
-              account={account!}
-              institution={accountQueries.institution}
-            />
-            <LineWithHiddenOverflow
-              content={account?.name || ""}
-              style={{ width: "8em" }}
-            />
-          </LoadableQuery>
+          <AccountIcon
+            account={account}
+            institution={accountQueries.institution}
+            loading={props.loading || accountQueries.isLoading}
+          />
+          <LineWithHiddenOverflow
+            content={account?.name}
+            style={{ width: "8em" }}
+            loading={props.loading || accountQueries.isLoading}
+          />
           <FlexRow.Auto>
             <Header as="h5">
-              <LineWithHiddenOverflow content={props.transaction.name} />
+              <LineWithHiddenOverflow
+                content={props.transaction?.name}
+                loading={props.loading}
+              />
             </Header>
           </FlexRow.Auto>
-          {"id" in transaction && transaction.files.length > 0 && (
-            <ModalFileViewer
-              transaction={transaction}
-              trigger={
+          {!props.preview && props.transaction && (
+            <>
+              {/* See files button and form */}
+              {fileOpen && (
+                <ModalFileViewer
+                  transaction={props.transaction}
+                  onClose={() => setFileOpen(false)}
+                />
+              )}
+              {props.transaction?.files.length !== 0 && (
                 <ActionButton
                   tooltip="See files"
                   icon="file"
-                  content={transaction.files.length.toFixed(0)}
+                  content={props.transaction?.files.length.toFixed(0)}
+                  loading={props.loading}
+                  onClick={() => setFileOpen(true)}
                 />
-              }
-              onMutation={"onMutation" in props ? props.onMutation : undefined}
-            />
-          )}
-          {movement && (
-            <ActionButton
-              tooltip="Edit Movement"
-              icon="arrows alternate horizontal"
-              content={movement.transactions.length.toFixed(0)}
-              disabled={!("onOpenEditMovementForm" in props)}
-              onClick={
-                "onOpenEditMovementForm" in props
-                  ? props.onOpenEditMovementForm
-                  : undefined
-              }
-            />
-          )}
-          {"onOpenEditForm" in props && (
-            <MutateActionButton onOpenEditForm={props.onOpenEditForm} />
+              )}
+
+              {/* See movement button and form */}
+              {movementOpen && (
+                <MovementForm
+                  onClose={() => setMovementOpen(false)}
+                  movementId={props.transaction.movement_id}
+                  open
+                />
+              )}
+              <ActionButton
+                tooltip="See Movement"
+                icon="arrows alternate horizontal"
+                content={movement?.transactions.length.toFixed(0)}
+                onClick={() => setMovementOpen(true)}
+                loading={props.loading || movementQuery.isLoading}
+                negative={movementQuery.isError}
+              />
+
+              {/* See more button and form */}
+              {formOpen && (
+                <TransactionForm.Edit
+                  onClose={() => setFormOpen(false)}
+                  movementId={props.transaction.movement_id}
+                  transaction={props.transaction}
+                  open
+                />
+              )}
+              <ActionButton
+                icon="ellipsis horizontal"
+                onClick={() => setFormOpen(true)}
+                loading={props.loading}
+              />
+            </>
           )}
         </FlexRow>
       </Card.Content>
       <Card.Content extra>
-        {"explanationRate" in props && props.explanationRate && (
-          <Header sub floated="left">
-            {props.explanationRate.toFixed(0)}%
-          </Header>
-        )}
         <Header as="h5" floated="right">
-          {"account_balance" in props.transaction ? (
+          {props.preview ? (
+            currencyLabel
+          ) : (
             <Popup
               position="left center"
               content={
@@ -182,7 +180,7 @@ export function TransactionCard(
                   Account balance:
                   {account && (
                     <FormattedCurrency
-                      amount={props.transaction.account_balance || 0}
+                      amount={props.transaction?.account_balance || 0}
                       currencyCode={account.currency_code}
                     />
                   )}
@@ -190,51 +188,9 @@ export function TransactionCard(
               }
               trigger={currencyLabel}
             />
-          ) : (
-            currencyLabel
           )}
         </Header>
       </Card.Content>
     </Card>
   );
 }
-
-function CardPlaceholder(props: {
-  onGoMovement?: boolean;
-  explanationRate?: boolean;
-  onOpenEditForm?: boolean;
-  onCheckboxChange?: boolean;
-  checkBoxDisabled?: boolean;
-  checked?: boolean;
-}) {
-  return (
-    <Card fluid color="teal">
-      <Card.Content>
-        <FlexRow style={{ gap: 5 }}>
-          <Placeholder style={{ width: "10em" }}>
-            <Placeholder.Header />
-          </Placeholder>
-          <Placeholder style={{ width: "18em" }}>
-            <Placeholder.Header image />
-          </Placeholder>
-          <FlexRow.Auto>
-            <Placeholder style={{ width: "100%" }}>
-              <Placeholder.Header />
-            </Placeholder>
-          </FlexRow.Auto>
-          <ActionButton icon="ellipsis horizontal" />
-        </FlexRow>
-      </Card.Content>
-      <Card.Content extra>
-        <Header as="h5" floated="right">
-          <div>
-            Total:
-            <CurrencyLabel.Placeholder />
-          </div>
-        </Header>
-      </Card.Content>
-    </Card>
-  );
-}
-
-TransactionCard.Placeholder = CardPlaceholder;
