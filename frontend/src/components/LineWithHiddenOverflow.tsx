@@ -8,7 +8,7 @@ export default function LineWithHiddenOverflow(props: {
 }) {
   if (props.loading)
     return (
-      <Placeholder as="p">
+      <Placeholder>
         <Placeholder.Line />
       </Placeholder>
     );

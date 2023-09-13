@@ -5,10 +5,11 @@ import MenuNumericRange from "components/MenuNumericRange";
 import { Menu } from "semantic-ui-react";
 import MenuCheckbox from "components/MenuCheckbox";
 import { useState } from "react";
+import { UseStateType } from "types";
 
 export type BarState = ReturnType<typeof useTransactionBarState>;
 
-export function useTransactionBarState(accountId?: number) {
+export function useTransactionBarState() {
   return {
     accountId: useState<number | undefined>(),
     search: useState<string>(),
@@ -18,11 +19,13 @@ export function useTransactionBarState(accountId?: number) {
     amountGe: useState<number>(),
     amountLe: useState<number>(),
     isAmountAbs: useState(false),
-    isMultipleChoice: useState(false),
   };
 }
 
-export default function Bar(props: { barState: BarState }) {
+export default function Bar(props: {
+  barState: BarState;
+  isMultipleChoiceState?: UseStateType<boolean>;
+}) {
   return (
     <Menu secondary>
       <MenuInputSearch searchState={props.barState.search} />
@@ -40,8 +43,8 @@ export default function Bar(props: { barState: BarState }) {
         signed
         decimal
       />
-      {props.barState.isMultipleChoice && (
-        <MenuCheckbox isMultipleChoiceState={props.barState.isMultipleChoice} />
+      {props.isMultipleChoiceState && (
+        <MenuCheckbox isMultipleChoiceState={props.isMultipleChoiceState} />
       )}
     </Menu>
   );

@@ -27,12 +27,9 @@ export function MovementCard(props: {
   movement?: MovementApiOut;
   loading?: boolean;
   onOpenEditForm?: () => void;
-  onOpenCreateTransactionForm?: () => void;
-  onOpenEditTransactionForm?: (x: TransactionApiOut) => void;
   onRemoveTransaction?: (x: TransactionApiOut) => void;
   explanationRate?: number;
   selectedAccountId?: number;
-  onMutate?: () => void;
   showFlows?: boolean;
   editable?: boolean;
   onCheckedChange?: (x: boolean) => void;
@@ -58,7 +55,6 @@ export function MovementCard(props: {
       return;
     }
     setIsEditMode(false);
-    props.onMutate && props.onMutate!();
   }
 
   useEffect(() => {
@@ -168,14 +164,6 @@ export function MovementCard(props: {
         )}
       </Card.Content>
       <Card.Content extra>
-        {props.onOpenCreateTransactionForm && (
-          <CreateNewButton
-            floated="left"
-            compact
-            onCreate={props.onOpenCreateTransactionForm}
-            content="Add Transaction"
-          />
-        )}
         {"explanationRate" in props && props.explanationRate && (
           <Header sub floated="left">
             {props.explanationRate.toFixed(0)}%

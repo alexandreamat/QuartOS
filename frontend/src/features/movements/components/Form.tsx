@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import TransactionCards from "features/transaction/components/TransactionCards";
-import { Button, Divider, Header, Modal, Segment } from "semantic-ui-react";
-import FlexColumn from "components/FlexColumn";
+import { Button, Header, Modal, Segment } from "semantic-ui-react";
 import { TransactionApiOut, api } from "app/services/api";
 import { logMutationError } from "utils/error";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
@@ -12,20 +10,19 @@ import TransactionForm from "features/transaction/components/Form";
 import { MovementCard } from "./MovementCard";
 import ActionButton from "components/ActionButton";
 import FlexRow from "components/FlexRow";
+import AddTransactionsModal from "./AddTransactionsModal";
 
 export default function Form(props: {
   open: boolean;
   onClose: () => void;
   movementId?: number;
-  onMutate?: () => void;
   onGoToPrev?: () => void;
   onGoToNext?: () => void;
 }) {
-  const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
+  const [transactionFormOpen, setTransactionFormOpen] = useState(false);
+  const [transactionsModalOpen, setTransactionsModalOpen] = useState(false);
+
   const [movementId, setMovementId] = useState(props.movementId || 0);
-  const [selectedTransaction, setSelectedTransaction] = useState<
-    TransactionApiOut | undefined
-  >(undefined);
 
   const movementQuery =
     api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
@@ -34,9 +31,6 @@ export default function Form(props: {
 
   const [createMovements, createMovementsResult] =
     api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
-
-  const [updateTransaction, updateTransactionResult] =
-    api.endpoints.updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
 
   const [deleteMovement, deleteMovementResult] =
     api.endpoints.deleteApiUsersMeMovementsMovementIdDelete.useMutation();
@@ -47,66 +41,8 @@ export default function Form(props: {
 
   function handleClose() {
     setMovementId(0);
-    setSelectedTransaction(undefined);
-    setIsTransactionFormOpen(false);
+    setTransactionFormOpen(false);
     props.onClose();
-  }
-
-  function handleOpenCreateTransactionForm() {
-    setSelectedTransaction(undefined);
-    setIsTransactionFormOpen(true);
-  }
-
-  function handleOpenEditTransactionForm(transaction: TransactionApiOut) {
-    setSelectedTransaction(transaction);
-    setIsTransactionFormOpen(true);
-  }
-
-  function handleCloseCreateTransactionForm() {
-    setIsTransactionFormOpen(false);
-  }
-
-  function handleCloseAddTransactionForm() {
-    setIsTransactionFormOpen(false);
-  }
-
-  function handleCloseEditTransactionForm() {
-    setSelectedTransaction(undefined);
-    setIsTransactionFormOpen(false);
-  }
-
-  async function handleAddTransaction(transaction: TransactionApiOut) {
-    if (movementId) {
-      try {
-        await updateTransaction({
-          accountId: transaction.account_id,
-          movementId: transaction.movement_id,
-          transactionId: transaction.id,
-          transactionApiIn: {
-            ...transaction,
-          },
-          newMovementId: movementId,
-        }).unwrap();
-      } catch (error) {
-        logMutationError(error, updateTransactionResult);
-        return;
-      }
-    } else {
-      try {
-        const [movement] = await createMovements({
-          accountId: transaction.account_id,
-          bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
-            transactions: [],
-            transaction_ids: [transaction.id],
-          },
-        }).unwrap();
-        setMovementId(movement.id);
-      } catch (error) {
-        logMutationError(error, createMovementsResult);
-        return;
-      }
-    }
-    props.onMutate && props.onMutate();
   }
 
   async function handleRemoveTransaction(transaction: TransactionApiOut) {
@@ -122,7 +58,6 @@ export default function Form(props: {
       logMutationError(error, createMovementsResult);
       return;
     }
-    props.onMutate && props.onMutate();
   }
 
   async function handleDelete() {
@@ -134,134 +69,74 @@ export default function Form(props: {
       logMutationError(error, deleteMovementResult);
       return;
     }
-    props.onMutate && props.onMutate();
     handleClose();
-  }
-
-  async function handleFlowCheckboxChange(
-    transaction: TransactionApiOut,
-    checked: boolean
-  ) {
-    if (checked) {
-      await handleAddTransaction(transaction);
-    } else {
-      await handleRemoveTransaction(transaction);
-    }
   }
 
   return (
     <Modal open={props.open} onClose={handleClose} size="fullscreen">
       {movementId ? (
-        <>
-          {selectedTransaction ? (
-            <TransactionForm.Edit
-              movementId={movementId}
-              transaction={selectedTransaction}
-              open={isTransactionFormOpen}
-              onClose={handleCloseEditTransactionForm}
-              onEdited={props.onMutate}
-            />
-          ) : (
-            <TransactionForm.Add
-              open={isTransactionFormOpen}
-              onClose={handleCloseAddTransactionForm}
-              movementId={movementId}
-              onAdded={props.onMutate}
-            />
-          )}
-        </>
+        <TransactionForm.Add
+          open={transactionFormOpen}
+          onClose={() => setTransactionFormOpen(false)}
+          movementId={movementId}
+        />
       ) : (
         <TransactionForm.Create
-          open={isTransactionFormOpen}
-          onClose={handleCloseCreateTransactionForm}
-          onCreated={(m) => {
-            setMovementId(m.id);
-            props.onMutate && props.onMutate();
-          }}
+          open={transactionFormOpen}
+          onClose={() => setTransactionFormOpen(false)}
+          onCreated={(m) => setMovementId(m.id)}
         />
       )}
-
       <Modal.Header>
         {movementId ? "Edit movement" : "Create a movement"}
       </Modal.Header>
       <Modal.Content>
-        <FlexColumn style={{ height: "70vh" }}>
-          {movementQuery.isUninitialized ? (
-            <Segment placeholder>
-              <Header icon>Add transactions here</Header>
-              <Segment.Inline>
-                <CreateNewButton onCreate={handleOpenCreateTransactionForm} />
-              </Segment.Inline>
-            </Segment>
-          ) : movementQuery.isError ? (
-            <QueryErrorMessage query={movementQuery} />
-          ) : (
-            <div
-              style={{
-                maxHeight: "35vh",
-                overflow: "auto",
-              }}
-            >
-              <FlexRow
-                style={{
-                  alignItems: "center",
-                }}
-              >
-                <ActionButton
-                  disabled={!props.onGoToPrev}
-                  icon="arrow left"
-                  onClick={props.onGoToPrev}
-                  tooltip="Previous movement"
-                  style={{ marginRight: "10px" }}
-                />
-                <FlexRow.Auto>
-                  <MovementCard
-                    {...{
-                      onOpenCreateTransactionForm:
-                        handleOpenCreateTransactionForm,
-                      onOpenEditTransactionForm: handleOpenEditTransactionForm,
-                      onRemoveTransaction:
-                        movementQuery.isSuccess &&
-                        movementQuery.data.transactions.length > 1
-                          ? handleRemoveTransaction
-                          : undefined,
-
-                      onMutate: props.onMutate,
-                      showFlows: true,
-                      editable: true,
-                      ...(movementQuery.isLoading
-                        ? {
-                            loading: true,
-                          }
-                        : {
-                            movement: movementQuery.data,
-                          }),
-                    }}
-                  />
-                </FlexRow.Auto>
-                <ActionButton
-                  disabled={!props.onGoToNext}
-                  icon="arrow right"
-                  onClick={props.onGoToNext}
-                  tooltip="Next movement"
-                  style={{ marginLeft: "10px" }}
-                />
-              </FlexRow>
-            </div>
-          )}
-          <QueryErrorMessage query={createMovementsResult} />
-          <QueryErrorMessage query={updateTransactionResult} />
-          <QueryErrorMessage query={deleteMovementResult} />
-          <Divider horizontal>or pick existing ones</Divider>
-          <FlexColumn.Auto>
-            <TransactionCards
-              onFlowCheckboxChange={handleFlowCheckboxChange}
-              checked={
-                new Set(movementQuery.data?.transactions.map((t) => t.id) || [])
-              }
+        {movementQuery.isUninitialized ? (
+          <Segment placeholder>
+            <Header icon>Add transactions here</Header>
+            <Segment.Inline>
+              <CreateNewButton onCreate={() => setTransactionFormOpen(true)} />
+            </Segment.Inline>
+          </Segment>
+        ) : movementQuery.isError ? (
+          <QueryErrorMessage query={movementQuery} />
+        ) : (
+          <FlexRow
+            style={{
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <ActionButton
+              disabled={!props.onGoToPrev}
+              icon="arrow left"
+              onClick={props.onGoToPrev}
+              tooltip="Previous movement"
             />
-          </FlexColumn.Auto>
-        </FlexColumn>
+            <FlexRow.Auto>
+              <MovementCard
+                onRemoveTransaction={
+                  movementQuery.isSuccess &&
+                  movementQuery.data.transactions.length > 1
+                    ? handleRemoveTransaction
+                    : undefined
+                }
+                showFlows
+                editable
+                loading={movementQuery.isLoading}
+                movement={movementQuery.data}
+              />
+            </FlexRow.Auto>
+            <ActionButton
+              disabled={!props.onGoToNext}
+              icon="arrow right"
+              onClick={props.onGoToNext}
+              tooltip="Next movement"
+            />
+          </FlexRow>
+        )}
+        <QueryErrorMessage query={createMovementsResult} />
+        <QueryErrorMessage query={deleteMovementResult} />
       </Modal.Content>
       <Modal.Actions>
         {movementId !== 0 && (
@@ -270,6 +145,26 @@ export default function Form(props: {
             query={deleteMovementResult}
           />
         )}
+        {transactionsModalOpen && (
+          <AddTransactionsModal
+            onClose={() => setTransactionsModalOpen(false)}
+            movementId={movementId}
+          />
+        )}
+        <Button
+          content="Select transactions"
+          floated="left"
+          color="blue"
+          icon="plus square"
+          onClick={() => setTransactionsModalOpen(true)}
+        />
+        <Button
+          floated="left"
+          icon="plus"
+          color="blue"
+          onCreate={() => setTransactionFormOpen(true)}
+          content="Create new Transaction"
+        />
         <Button
           content="Done"
           labelPosition="right"

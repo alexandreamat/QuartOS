@@ -7,7 +7,7 @@ export default function FormattedTimestamp(props: {
 }) {
   if (props.loading)
     return (
-      <Placeholder as="p">
+      <Placeholder>
         <Placeholder.Line />
       </Placeholder>
     );

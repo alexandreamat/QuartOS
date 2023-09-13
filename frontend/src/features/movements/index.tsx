@@ -153,7 +153,6 @@ export default function Movements() {
         open={isFormOpen}
         onClose={handleCloseForm}
         movementId={movementId}
-        onMutate={infiniteQuery.onMutation}
         onGoToPrev={
           movementIdx !== NOT_FOUND && movementIdx > 0
             ? () => handleGoToRelativeMovement(-1)

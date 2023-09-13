@@ -89,6 +89,19 @@ def update(
     return CRUDUser.update_movement(db, me.id, movement_id, movement_in)
 
 
+@router.put("/{movement_id}/transactions/")
+def add_transactions(
+    db: DBSession,
+    me: CurrentUser,
+    movement_id: int,
+    transaction_ids: list[int],
+) -> MovementApiOut:
+    CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    for transaction_id in transaction_ids:
+        CRUDUser.read_transaction(db, me.id, None, None, None, transaction_id)
+    return CRUDMovement.add_transactions(db, movement_id, transaction_ids)
+
+
 @router.delete("/{movement_id}")
 def delete(
     db: DBSession,
