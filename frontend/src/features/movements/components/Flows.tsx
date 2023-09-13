@@ -31,16 +31,21 @@ function Flow(props: {
 
   const children = [
     <Popup
+      key={1}
       disabled={!props.loading && !accountQueries.isLoading}
       hideOnScroll
       position="top center"
-      content={`Account balance: ${props.transaction?.account_balance.toLocaleString(
-        undefined,
-        {
-          style: "currency",
-          currency: currencyCode,
-        }
-      )}`}
+      content={
+        props.transaction &&
+        currencyCode &&
+        `Account balance: ${props.transaction.account_balance.toLocaleString(
+          undefined,
+          {
+            style: "currency",
+            currency: currencyCode,
+          }
+        )}`
+      }
       trigger={
         <div>
           <CurrencyLabel
@@ -51,7 +56,7 @@ function Flow(props: {
         </div>
       }
     />,
-    <FlexRow.Auto>
+    <FlexRow.Auto key={2}>
       <Popup
         hideOnScroll
         position="top center"
@@ -69,6 +74,7 @@ function Flow(props: {
       />
     </FlexRow.Auto>,
     <Popup
+      key={3}
       disabled={!props.loading && !accountQueries.isLoading}
       hideOnScroll
       content={accountQueries.account?.name}
@@ -84,18 +90,21 @@ function Flow(props: {
     />,
     props.transaction && props.transaction.files.length > 0 && (
       <ClickableIcon
+        key={4}
         name="file"
         onClick={() => setFileOpen(true)}
         loading={props.loading}
       />
     ),
     <ClickableIcon
+      key={5}
       name="ellipsis horizontal"
       onClick={() => setFormOpen(true)}
       loading={props.loading}
     />,
     props.onRemove && (
       <ClickableIcon
+        key={6}
         name="remove circle"
         onClick={props.onRemove}
         loading={props.loading}

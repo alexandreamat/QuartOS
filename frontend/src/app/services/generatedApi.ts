@@ -504,6 +504,18 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "movements"],
       }),
+      addTransactionsApiUsersMeMovementsMovementIdTransactionsPut:
+        build.mutation<
+          AddTransactionsApiUsersMeMovementsMovementIdTransactionsPutApiResponse,
+          AddTransactionsApiUsersMeMovementsMovementIdTransactionsPutApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/api/users/me/movements/${queryArg.movementId}/transactions/`,
+            method: "PUT",
+            body: queryArg.body,
+          }),
+          invalidatesTags: ["users", "movements"],
+        }),
       readExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGet:
         build.query<
           ReadExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiResponse,
@@ -1022,6 +1034,13 @@ export type UpdateApiUsersMeMovementsMovementIdPutApiArg = {
 export type DeleteApiUsersMeMovementsMovementIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
 export type DeleteApiUsersMeMovementsMovementIdDeleteApiArg = number;
+export type AddTransactionsApiUsersMeMovementsMovementIdTransactionsPutApiResponse =
+  /** status 200 Successful Response */ MovementApiOut;
+export type AddTransactionsApiUsersMeMovementsMovementIdTransactionsPutApiArg =
+  {
+    movementId: number;
+    body: number[];
+  };
 export type ReadExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
 export type ReadExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiArg =

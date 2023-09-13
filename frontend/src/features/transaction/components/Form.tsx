@@ -200,7 +200,7 @@ export default function TransactionForm(
                 loading={props.uploadResult.isLoading}
               />
               {filesQuery.isFetching || filesQuery.isUninitialized ? (
-                <Placeholder as="p">
+                <Placeholder>
                   <Placeholder.Line />
                 </Placeholder>
               ) : filesQuery.isError ? (
