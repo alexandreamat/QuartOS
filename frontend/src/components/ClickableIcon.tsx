@@ -1,18 +1,13 @@
 import { Icon, SemanticICONS } from "semantic-ui-react";
 
-export function ClickableIcon(props: {
+const ClickableIcon = (props: {
   name: SemanticICONS;
   onClick?: () => void;
-}) {
-  return (
-    <div onClick={props.onClick} style={{ cursor: "pointer" }}>
-      <Icon name={props.name} color="grey" />
-    </div>
-  );
-}
+  loading?: boolean;
+}) => (
+  <div onClick={props.onClick} style={{ cursor: "pointer" }}>
+    <Icon name={props.name} color="grey" disabled={props.loading} />
+  </div>
+);
 
-function ClickableIconPlaceholder(props: { name: SemanticICONS }) {
-  return <Icon name={props.name} disabled color="grey" />;
-}
-
-ClickableIcon.Placeholder = ClickableIconPlaceholder;
+export default ClickableIcon;

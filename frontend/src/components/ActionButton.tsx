@@ -1,78 +1,37 @@
-import { SimpleQuery } from "interfaces";
 import { CSSProperties } from "react";
 import {
   Button,
-  Popup,
   SemanticCOLORS,
   SemanticFLOATS,
   SemanticICONS,
 } from "semantic-ui-react";
-import { renderErrorMessage } from "utils/error";
 
-function ActionButton(props: {
+const ActionButton = (props: {
   onClick?: () => void;
   tooltip?: string;
   icon: SemanticICONS;
   disabled?: boolean;
   content?: string;
-  query?: SimpleQuery;
   color?: SemanticCOLORS;
   floated?: SemanticFLOATS;
   style?: CSSProperties;
-}) {
-  const btn = (
-    <Button
-      disabled={props.disabled}
-      floated={props.floated}
-      color={props.color}
-      loading={props.query?.isLoading}
-      negative={props.query?.isError}
-      circular
-      basic
-      size="tiny"
-      icon={props.icon}
-      onClick={props.onClick}
-      content={props.content}
-      style={props.style}
-    />
-  );
-
-  return props.tooltip ? (
-    <Popup
-      content={
-        props.query?.isError
-          ? renderErrorMessage(props.query!.error!)
-          : props.tooltip
-      }
-      trigger={btn}
-    />
-  ) : (
-    btn
-  );
-}
-
-const ActionButtonPlaceholder = (props: {
-  icon: SemanticICONS;
-  disabled?: boolean;
-  content?: string;
-  query?: SimpleQuery;
-  color?: SemanticCOLORS;
-  floated?: SemanticFLOATS;
-  style?: CSSProperties;
+  loading?: boolean;
+  negative?: boolean;
 }) => (
   <Button
+    disabled={props.disabled}
     floated={props.floated}
     color={props.color}
-    loading
+    loading={props.loading}
+    negative={props.negative}
     circular
     basic
     size="tiny"
     icon={props.icon}
+    onClick={props.onClick}
     content={props.content}
     style={props.style}
   />
 );
-
-ActionButton.Placeholder = ActionButtonPlaceholder;
 
 export default ActionButton;

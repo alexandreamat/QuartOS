@@ -7,7 +7,7 @@ import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { Bar } from "./components/Bar";
 import Form from "./components/Form";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { formatDateParam } from "utils/time";
@@ -69,10 +69,13 @@ export default function Movements() {
     isAmountAbs,
   };
 
+  const reference = useRef<HTMLDivElement | null>(null);
+
   const infiniteQuery = useInfiniteQuery(
     api.endpoints.readManyApiUsersMeMovementsGet,
     arg,
-    PER_PAGE
+    PER_PAGE,
+    reference
   );
 
   const [createMovement, createMovementResult] =

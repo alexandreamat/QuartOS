@@ -1,6 +1,6 @@
 import { useAccountOptions } from "features/account/hooks";
 import { Button, Dropdown, Menu, Popup } from "semantic-ui-react";
-import { ClickableIcon } from "components/ClickableIcon";
+import ClickableIcon from "components/ClickableIcon";
 import { UseStateType } from "types";
 
 export default function MenuDropdownAccount(props: {

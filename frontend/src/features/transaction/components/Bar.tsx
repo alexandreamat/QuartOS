@@ -3,38 +3,46 @@ import MenuDropdownAccount from "components/MenuDropdownAccount";
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuNumericRange from "components/MenuNumericRange";
 import { Menu } from "semantic-ui-react";
-import { UseStateType } from "types";
 import MenuCheckbox from "components/MenuCheckbox";
+import { useState } from "react";
 
-export default function Bar(props: {
-  accountIdState: UseStateType<number | undefined>;
-  searchState: UseStateType<string | undefined>;
-  dateGeState: UseStateType<Date | undefined>;
-  dateLeState: UseStateType<Date | undefined>;
-  isDescendingState: UseStateType<boolean>;
-  amountGeState: UseStateType<number | undefined>;
-  amountLeState: UseStateType<number | undefined>;
-  isAmountAbsState: UseStateType<boolean>;
-  isMultipleChoiceState: UseStateType<boolean>;
-}) {
+export type BarState = ReturnType<typeof useTransactionBarState>;
+
+export function useTransactionBarState(accountId?: number) {
+  return {
+    accountId: useState<number | undefined>(),
+    search: useState<string>(),
+    timestampGe: useState<Date>(),
+    timestampLe: useState<Date>(),
+    isDescending: useState(true),
+    amountGe: useState<number>(),
+    amountLe: useState<number>(),
+    isAmountAbs: useState(false),
+    isMultipleChoice: useState(false),
+  };
+}
+
+export default function Bar(props: { barState: BarState }) {
   return (
     <Menu secondary>
-      <MenuInputSearch searchState={props.searchState} />
-      <MenuDropdownAccount accountIdState={props.accountIdState} />
+      <MenuInputSearch searchState={props.barState.search} />
+      <MenuDropdownAccount accountIdState={props.barState.accountId} />
       <MenuDateRange
-        dateGeState={props.dateGeState}
-        dateLeState={props.dateLeState}
-        isDescendingState={props.isDescendingState}
+        dateGeState={props.barState.timestampGe}
+        dateLeState={props.barState.timestampLe}
+        isDescendingState={props.barState.isDescending}
       />
       <MenuNumericRange
         icon="dollar"
-        valueGeState={props.amountGeState}
-        valueLeState={props.amountLeState}
-        isAbsState={props.isAmountAbsState}
+        valueGeState={props.barState.amountGe}
+        valueLeState={props.barState.amountLe}
+        isAbsState={props.barState.isAmountAbs}
         signed
         decimal
       />
-      <MenuCheckbox isMultipleChoiceState={props.isMultipleChoiceState} />
+      {props.barState.isMultipleChoice && (
+        <MenuCheckbox isMultipleChoiceState={props.barState.isMultipleChoice} />
+      )}
     </Menu>
   );
 }

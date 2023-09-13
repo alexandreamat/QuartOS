@@ -17,14 +17,11 @@ export default function FormCurrencyInput(props: {
     return (
       <Form.Field>
         <label>{label && capitaliseFirstLetter(label)}</label>
-        {props.query?.isLoading ? (
-          <CurrencyLabel.Placeholder />
-        ) : (
-          <CurrencyLabel
-            currencyCode={props.currency!}
-            amount={Number(props.field.value)}
-          />
-        )}
+        <CurrencyLabel
+          currencyCode={props.currency!}
+          amount={Number(props.field.value)}
+          loading={props.query?.isLoading}
+        />
       </Form.Field>
     );
   }

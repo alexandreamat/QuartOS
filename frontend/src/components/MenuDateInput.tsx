@@ -1,7 +1,7 @@
 import { Button, Input, Menu, Popup } from "semantic-ui-react";
 import { format } from "date-fns";
 import { stringToDate } from "utils/time";
-import { ClickableIcon } from "./ClickableIcon";
+import ClickableIcon from "./ClickableIcon";
 import { UseStateType } from "types";
 import { useEffect } from "react";
 

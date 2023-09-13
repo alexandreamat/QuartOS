@@ -80,7 +80,8 @@ function InstitutionLinkRow(props: {
         <ActionButton
           tooltip="Sync"
           disabled={!props.institutionLink.is_synced}
-          query={syncLinkResult}
+          loading={syncLinkResult.isLoading}
+          negative={syncLinkResult.isError}
           icon="sync"
           onClick={async () => await handleSync(props.institutionLink)}
         />

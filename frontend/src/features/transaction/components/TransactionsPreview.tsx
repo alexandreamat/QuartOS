@@ -14,6 +14,7 @@ export default function TransactionsPreview(props: {
             key={i * 20 + j}
             transaction={transaction}
             accountId={props.accountId}
+            preview
           />
         ))
       )}

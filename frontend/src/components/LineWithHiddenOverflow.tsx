@@ -1,9 +1,18 @@
 import { CSSProperties } from "react";
+import { Placeholder } from "semantic-ui-react";
 
 export default function LineWithHiddenOverflow(props: {
   content?: string;
   style?: CSSProperties;
+  loading?: boolean;
 }) {
+  if (props.loading)
+    return (
+      <Placeholder as="p">
+        <Placeholder.Line />
+      </Placeholder>
+    );
+
   return (
     <p
       style={{
