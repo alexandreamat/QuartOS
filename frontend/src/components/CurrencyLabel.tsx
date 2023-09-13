@@ -21,7 +21,7 @@ export default function CurrencyLabel(props: {
       {props.loading ? (
         <Loader active inline size="mini" />
       ) : (
-        props.amount &&
+        props.amount !== undefined &&
         props.currencyCode && (
           <FormattedCurrency
             amount={props.amount}
