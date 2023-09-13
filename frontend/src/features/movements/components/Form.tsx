@@ -162,7 +162,7 @@ export default function Form(props: {
           floated="left"
           icon="plus"
           color="blue"
-          onCreate={() => setTransactionFormOpen(true)}
+          onClick={() => setTransactionFormOpen(true)}
           content="Create new Transaction"
         />
         <Button
