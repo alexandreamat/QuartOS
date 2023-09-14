@@ -10,14 +10,24 @@ mypy-extensions = "*"
 uvicorn = "*"
 pycountry = "*"
 black = "*"
-pydantic = {extras = ["email"], version = "*"}
 python-jose = "*"
 passlib = "*"
 emails = "*"
 python-multipart = "*"
 celery = "*"
-sqlalchemy = {extras = ["mypy"], version = "*"}
 types-jwt = "*"
+pytest = "*"
+httpx = "*"
+sqlmodel = "*"
+plaid-python = "*"
+types-requests = "*"
+types-pytz = "*"
+requests-cache = "*"
+pydantic = {extras = ["email"], version = "*"}
+pytz = "*"
+types-python-dateutil = "*"
+bpython = "*"
+vulture = "*"
 
 [dev-packages]
 
