@@ -11,16 +11,22 @@ import FlexColumn from "components/FlexColumn";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { useRef } from "react";
 
-function Row(props: { plStatement: PlStatement }) {
+function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
   const navigate = useNavigate();
 
   function handleGoToDetail() {
+    if (!props.plStatement) return;
+
     navigate(
-      `/pl-statements/${props.plStatement.start_date}/${props.plStatement.end_date}`
+      `/pl-statements/${props.plStatement.start_date}/${props.plStatement.end_date}`,
     );
   }
   return (
-    <PLCard aggregate={props.plStatement} onGoToDetail={handleGoToDetail} />
+    <PLCard
+      aggregate={props.plStatement}
+      onGoToDetail={handleGoToDetail}
+      loading={props.loading}
+    />
   );
 }
 
@@ -33,7 +39,7 @@ export default function IncomeStatement() {
       currencyCode: "EUR",
     } as GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg,
     12,
-    reference
+    reference,
   );
 
   return (
@@ -43,7 +49,7 @@ export default function IncomeStatement() {
           {aggregatesQuery.data.map((aggregate) => (
             <Row key={aggregate.start_date} plStatement={aggregate} />
           ))}
-          {aggregatesQuery.isFetching && <PLCard.Placeholder onGoToDetail />}
+          {aggregatesQuery.isFetching && <Row loading />}
         </Card.Group>
       </FlexColumn.Auto>
       {aggregatesQuery.error && <QueryErrorMessage query={aggregatesQuery} />}
