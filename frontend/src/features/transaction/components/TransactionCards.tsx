@@ -1,7 +1,6 @@
-import { ReadManyApiUsersMeTransactionsGetApiArg, api } from "app/services/api";
-import { useRef } from "react";
+import { api } from "app/services/api";
+import { useEffect, useRef, useState } from "react";
 import { BarState } from "./Bar";
-import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { TransactionCard } from "./TransactionCard";
 import { Card } from "semantic-ui-react";
@@ -11,14 +10,15 @@ import { Checkboxes } from "hooks/useCheckboxes";
 import FlexColumn from "components/FlexColumn";
 
 const PER_PAGE = 20;
+const RATE = 1;
 
-export default function TransactionCards(props: {
+function Page(props: {
+  page: number;
   barState: BarState;
   isMultipleChoice?: boolean;
   checkboxes: Checkboxes;
+  onSuccess: (loadMore: boolean) => void;
 }) {
-  const reference = useRef<HTMLDivElement | null>(null);
-
   const [search] = props.barState.search;
   const [timestampGe] = props.barState.timestampGe;
   const [timestampLe] = props.barState.timestampLe;
@@ -28,7 +28,7 @@ export default function TransactionCards(props: {
   const [isAmountAbs] = props.barState.isAmountAbs;
   const [accountId] = props.barState.accountId;
 
-  const queryArg: ReadManyApiUsersMeTransactionsGetApiArg = {
+  const query = api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
     timestampGe: timestampGe && formatDateParam(timestampGe),
     timestampLe: timestampLe && formatDateParam(timestampLe),
     search,
@@ -37,33 +37,86 @@ export default function TransactionCards(props: {
     amountLe,
     isAmountAbs,
     accountId,
-  };
+    page: props.page,
+    perPage: PER_PAGE,
+  });
 
-  const infiniteQuery = useInfiniteQuery(
-    api.endpoints.readManyApiUsersMeTransactionsGet,
-    queryArg,
-    PER_PAGE,
-    reference,
+  const { onSuccess: onLoadMore } = props;
+
+  useEffect(() => {
+    console.log(query);
+    if (query.isSuccess) onLoadMore(query.data.length >= PER_PAGE);
+  }, [query, onLoadMore]);
+
+  if (query.isLoading) return <TransactionCard loading />;
+  if (query.isError) return <QueryErrorMessage query={query} />;
+  if (query.isUninitialized) return <></>;
+
+  return (
+    <>
+      {query.data.map((t) => (
+        <TransactionCard
+          key={t.id}
+          transaction={t}
+          checked={props.checkboxes.checked.has(t.id)}
+          onCheckedChange={
+            props.isMultipleChoice
+              ? (x) => props.checkboxes.onChange(t.id, x)
+              : undefined
+          }
+        />
+      ))}
+      {query.data.length < PER_PAGE && <ExhaustedDataCard />}
+    </>
   );
+}
+
+export default function TransactionCards(props: {
+  barState: BarState;
+  isMultipleChoice?: boolean;
+  checkboxes: Checkboxes;
+}) {
+  const [pages, setPages] = useState(1);
+  const [loadMore, setLoadMore] = useState(false);
+  const reference = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const ref = reference.current;
+
+    function handleScroll(event: Event) {
+      if (!loadMore) return;
+
+      const target = event.target as HTMLDivElement;
+      const { clientHeight, scrollTop } = target;
+      const scrollBottom = target.scrollHeight - clientHeight - scrollTop;
+      if (scrollBottom <= RATE * clientHeight) {
+        setLoadMore(false);
+        setPages((p) => p + 1);
+      }
+    }
+    if (ref) ref.addEventListener("scroll", handleScroll);
+
+    return () => ref?.removeEventListener("scroll", handleScroll);
+  }, [loadMore]);
+
+  useEffect(() => {
+    setLoadMore(true);
+    setPages(1);
+  }, [props.barState]);
 
   return (
     <FlexColumn.Auto reference={reference}>
       <Card.Group style={{ margin: 0, overflow: "hidden" }}>
-        {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-        {infiniteQuery.data.map((t, i) => (
-          <TransactionCard
+        {Array.from({ length: pages }, (_, i) => (
+          <Page
             key={i}
-            transaction={t}
-            checked={props.checkboxes.checked.has(t.id)}
-            onCheckedChange={
-              props.isMultipleChoice
-                ? (x) => props.checkboxes.onChange(t.id, x)
-                : undefined
-            }
+            page={i}
+            checkboxes={props.checkboxes}
+            isMultipleChoice={props.isMultipleChoice}
+            barState={props.barState}
+            onSuccess={setLoadMore}
           />
         ))}
-        {infiniteQuery.isFetching && <TransactionCard loading />}
-        {infiniteQuery.isExhausted && <ExhaustedDataCard />}
       </Card.Group>
     </FlexColumn.Auto>
   );
