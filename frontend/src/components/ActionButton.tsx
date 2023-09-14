@@ -1,6 +1,7 @@
 import { CSSProperties } from "react";
 import {
   Button,
+  Popup,
   SemanticCOLORS,
   SemanticFLOATS,
   SemanticICONS,
@@ -18,19 +19,25 @@ const ActionButton = (props: {
   loading?: boolean;
   negative?: boolean;
 }) => (
-  <Button
-    disabled={props.disabled}
-    floated={props.floated}
-    color={props.color}
-    loading={props.loading}
-    negative={props.negative}
-    circular
-    basic
-    size="tiny"
-    icon={props.icon}
-    onClick={props.onClick}
-    content={props.content}
-    style={props.style}
+  <Popup
+    disabled={props.tooltip === undefined}
+    content={props.tooltip}
+    trigger={
+      <Button
+        disabled={props.disabled}
+        floated={props.floated}
+        color={props.color}
+        loading={props.loading}
+        negative={props.negative}
+        circular
+        basic
+        size="tiny"
+        icon={props.icon}
+        onClick={props.onClick}
+        content={props.content}
+        style={props.style}
+      />
+    }
   />
 );
 

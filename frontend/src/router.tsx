@@ -1,4 +1,3 @@
-import Dashboard from "features/dashboard";
 import Accounts from "features/account";
 import React from "react";
 import Transactions from "features/transaction";

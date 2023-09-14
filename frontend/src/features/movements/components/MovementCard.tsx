@@ -5,7 +5,6 @@ import {
   api,
 } from "app/services/api";
 import ClickableIcon from "components/ClickableIcon";
-import CreateNewButton from "components/CreateNewButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
 import FormattedTimestamp from "components/FormattedTimestamp";
@@ -179,7 +178,7 @@ export function MovementCard(props: {
                   amount={amount}
                   currencyCode={currencyCode}
                 />
-              )
+              ),
             )
           ) : (
             <CurrencyLabel loading />
