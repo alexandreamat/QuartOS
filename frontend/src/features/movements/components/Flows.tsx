@@ -30,86 +30,93 @@ function Flow(props: {
   const currencyCode = accountQueries.account?.currency_code;
 
   const children = [
-    <Popup
-      key={1}
-      disabled={!props.loading && !accountQueries.isLoading}
-      hideOnScroll
-      position="top center"
-      content={
-        props.transaction &&
-        currencyCode &&
-        `Account balance: ${props.transaction.account_balance.toLocaleString(
-          undefined,
-          {
-            style: "currency",
-            currency: currencyCode,
-          }
-        )}`
-      }
-      trigger={
-        <div>
-          <CurrencyLabel
-            amount={props.transaction?.amount}
-            currencyCode={currencyCode}
-            loading={props.loading || accountQueries.isLoading}
-          />
-        </div>
-      }
-    />,
-    <FlexRow.Auto key={2}>
+    () => (
       <Popup
+        disabled={!props.loading && !accountQueries.isLoading}
         hideOnScroll
         position="top center"
         content={
-          <FormattedTimestamp timestamp={props.transaction?.timestamp} />
+          props.transaction &&
+          currencyCode &&
+          `Account balance: ${props.transaction.account_balance.toLocaleString(
+            undefined,
+            {
+              style: "currency",
+              currency: currencyCode,
+            },
+          )}`
         }
         trigger={
           <div>
-            <LineWithHiddenOverflow
-              content={props.transaction?.name}
-              loading={props.loading}
+            <CurrencyLabel
+              amount={props.transaction?.amount}
+              currencyCode={currencyCode}
+              loading={props.loading || accountQueries.isLoading}
             />
           </div>
         }
       />
-    </FlexRow.Auto>,
-    <Popup
-      key={3}
-      disabled={!props.loading && !accountQueries.isLoading}
-      hideOnScroll
-      content={accountQueries.account?.name}
-      trigger={
-        <div>
-          <AccountIcon
-            account={accountQueries.account}
-            institution={accountQueries.institution}
-            loading={props.loading || accountQueries.isLoading}
-          />
-        </div>
-      }
-    />,
-    props.transaction && props.transaction.files.length > 0 && (
+    ),
+    () => (
+      <FlexRow.Auto>
+        <Popup
+          hideOnScroll
+          position="top center"
+          content={
+            <FormattedTimestamp timestamp={props.transaction?.timestamp} />
+          }
+          trigger={
+            <div>
+              <LineWithHiddenOverflow
+                content={props.transaction?.name}
+                loading={props.loading}
+                style={props.style}
+              />
+            </div>
+          }
+        />
+      </FlexRow.Auto>
+    ),
+    () => (
+      <Popup
+        disabled={!props.loading && !accountQueries.isLoading}
+        hideOnScroll
+        content={accountQueries.account?.name}
+        trigger={
+          <div>
+            <AccountIcon
+              account={accountQueries.account}
+              institution={accountQueries.institution}
+              loading={props.loading || accountQueries.isLoading}
+            />
+          </div>
+        }
+      />
+    ),
+    props.transaction &&
+      props.transaction.files.length > 0 &&
+      (() => (
+        <ClickableIcon
+          name="file"
+          onClick={() => setFileOpen(true)}
+          loading={props.loading}
+        />
+      )),
+    () => (
       <ClickableIcon
-        key={4}
-        name="file"
-        onClick={() => setFileOpen(true)}
+        name="ellipsis horizontal"
+        onClick={() => setFormOpen(true)}
         loading={props.loading}
       />
     ),
-    <ClickableIcon
-      key={5}
-      name="ellipsis horizontal"
-      onClick={() => setFormOpen(true)}
-      loading={props.loading}
-    />,
-    props.onRemove && (
-      <ClickableIcon
-        key={6}
-        name="remove circle"
-        onClick={props.onRemove}
-        loading={props.loading}
-      />
-    ),
+    props.onRemove &&
+      (() => (
+        <ClickableIcon
+          name="remove circle"
+          onClick={props.onRemove}
+          loading={props.loading}
+        />
+      )),
   ];
 
   return (
@@ -130,7 +137,9 @@ function Flow(props: {
           transaction={props.transaction}
         />
       )}
-      {props.reverse ? children : children.reverse()}
+      {(props.reverse ? children : children.reverse()).map(
+        (Child, i) => Child && <Child key={i} />,
+      )}
     </FlexRow>
   );
 }

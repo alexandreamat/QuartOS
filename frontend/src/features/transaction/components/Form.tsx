@@ -60,7 +60,7 @@ export default function TransactionForm(
         onUpload: (file: File) => void;
         uploadResult: SimpleQuery;
       }
-  )
+  ),
 ) {
   const isEdit = "transaction" in props;
   const hasMovement = "movementId" in props;
@@ -73,33 +73,33 @@ export default function TransactionForm(
             movementId: props.transaction.movement_id,
             transactionId: props.transaction.id,
           }
-        : skipToken
+        : skipToken,
     );
 
   const form: TransactionApiInForm = {
     amountStr: useFormField(
       isEdit ? props.transaction.amount.toFixed(2) : "",
-      "amount"
+      "amount",
     ),
     timestamp: useFormField(
       isEdit ? new Date(props.transaction.timestamp) : new Date(),
-      "date"
+      "date",
     ),
     name: useFormField(isEdit ? props.transaction.name : "", "name"),
     accountId: useFormField(
       isEdit ? props.transaction.account_id : 0,
-      "account"
+      "account",
     ),
   };
 
   const accountQuery =
     api.endpoints.readApiUsersMeAccountsAccountIdGet.useQuery(
-      form.accountId.value || skipToken
+      form.accountId.value || skipToken,
     );
 
   const movementQuery =
     api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
-      hasMovement ? props.movementId : skipToken
+      hasMovement ? props.movementId : skipToken,
     );
 
   const disableSynced = isEdit && props.transaction.is_synced;
@@ -121,7 +121,7 @@ export default function TransactionForm(
 
   const handleSubmit = async () => {
     const invalidFields = Object.values(form).filter(
-      (field) => !field.validate()
+      (field) => !field.validate(),
     );
     if (invalidFields.length > 0) return;
     const transactionIn = transactionFormToApiIn(form);
@@ -252,7 +252,7 @@ function FormCreate(props: {
 
   const handleSubmit = async (
     transaction: TransactionApiIn,
-    accountId: number
+    accountId: number,
   ) => {
     try {
       const [movement] = await createMovement({
@@ -291,7 +291,7 @@ function FormAdd(props: {
 
   const handleSubmit = async (
     transactionIn: TransactionApiIn,
-    accountId: number
+    accountId: number,
   ) => {
     try {
       const transactionOut = await createTransaction({
@@ -323,7 +323,6 @@ function FormEdit(props: {
   onClose: () => void;
   transaction: TransactionApiOut;
   movementId: number;
-  relatedTransactions?: TransactionApiOut[];
   onEdited?: () => void;
 }) {
   const [updateTransaction, updateTransactionResult] =
@@ -336,7 +335,7 @@ function FormEdit(props: {
 
   async function handleSubmit(
     transactionIn: TransactionApiIn,
-    accountId: number
+    accountId: number,
   ) {
     try {
       await updateTransaction({

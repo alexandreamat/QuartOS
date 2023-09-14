@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Card } from "semantic-ui-react";
 import { AccountApiOut } from "app/services/api";
 import EditActionButton from "components/EditActionButton";
-import LoadableQuery from "components/LoadableCell";
 import { useNavigate } from "react-router-dom";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 import CurrencyLabel from "components/CurrencyLabel";
@@ -17,7 +16,7 @@ export default function AccountCard(props: {
   const navigate = useNavigate();
 
   const institutionLinkQueries = useInstitutionLinkQueries(
-    props.account.institutionalaccount?.userinstitutionlink_id
+    props.account.institutionalaccount?.userinstitutionlink_id,
   );
 
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
@@ -46,20 +45,19 @@ export default function AccountCard(props: {
         onClose={handleCloseUploader}
       />
       <Card.Content>
-        <LoadableQuery query={institutionLinkQueries}>
-          <InstitutionLogo
-            height={36}
-            floated="right"
-            institution={institutionLinkQueries.institution!}
-          />
-        </LoadableQuery>
+        <InstitutionLogo
+          height={36}
+          floated="right"
+          institution={institutionLinkQueries.institution!}
+          loading={institutionLinkQueries.isLoading}
+        />
         <Card.Header>{props.account.name}</Card.Header>
         <Card.Meta>
           {props.account.institutionalaccount && (
             <>
               {props.account.institutionalaccount.iban?.replace(
                 /^(\w{4})(\w{4})(\w{4})(\w{4})(\w{4})(\w{4})$/,
-                "$1 $2 $3 $4 $5 $6"
+                "$1 $2 $3 $4 $5 $6",
               ) || `**** ${props.account.institutionalaccount.mask}`}
             </>
           )}

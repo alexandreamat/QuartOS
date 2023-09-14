@@ -5,12 +5,14 @@ export default function CreateNewButton(props: {
   floated?: SemanticFLOATS;
   content?: string;
   compact?: boolean;
+  loading?: boolean;
 }) {
   return (
     <Button
       floated={props.floated || "right"}
       icon
       primary
+      loading={props.loading}
       compact={props.compact}
       labelPosition="left"
       onClick={props.onCreate}
@@ -19,24 +21,3 @@ export default function CreateNewButton(props: {
     </Button>
   );
 }
-
-function CreateNewButtonPlaceholder(props: {
-  floated?: SemanticFLOATS;
-  content?: string;
-  compact?: boolean;
-}) {
-  return (
-    <Button
-      floated={props.floated || "right"}
-      icon
-      primary
-      compact={props.compact}
-      labelPosition="left"
-      disabled
-    >
-      <Icon name="plus" /> Create New
-    </Button>
-  );
-}
-
-CreateNewButton.Placeholder = CreateNewButtonPlaceholder;
