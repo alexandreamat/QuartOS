@@ -1,0 +1,29 @@
+{
+  "preset": "node",
+  "entry": [
+    "src/index.tsx"
+  ],
+  "extensions": [
+    ".js",
+    ".jsx",
+    ".ts",
+    ".tsx"
+  ],
+  "flow": false,
+  "ignorePatterns": [
+    "**/node_modules /**",
+    "**/*.tests.{js,jsx,ts,tsx}",
+    "** /*.test.{js,jsx,ts,tsx}",
+    "**/*.spec.{js,jsx,ts,tsx}",
+    "**/tests /**",
+    "**/__tests__ /**",
+    "**/*.d.ts"
+  ],
+  "ignoreUnimported": [],
+  "ignoreUnresolved": [],
+  "ignoreUnused": [],
+  "moduleDirectory": [
+    "node_modules",
+    "src"
+  ]
+}
