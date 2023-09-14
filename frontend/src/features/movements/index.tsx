@@ -28,7 +28,7 @@ export default function Movements() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [movementId, setMovementId] = useState(0);
   const [checkedMovements, setCheckedMovements] = useState(
-    new Set<MovementApiOut>()
+    new Set<MovementApiOut>(),
   );
 
   // Bar state
@@ -75,7 +75,7 @@ export default function Movements() {
     api.endpoints.readManyApiUsersMeMovementsGet,
     arg,
     PER_PAGE,
-    reference
+    reference,
   );
 
   const [createMovement, createMovementResult] =
@@ -144,7 +144,6 @@ export default function Movements() {
     }
     setIsMultipleChoice(false);
     setCheckedMovements(new Set());
-    infiniteQuery.onMutation();
   }
 
   return (

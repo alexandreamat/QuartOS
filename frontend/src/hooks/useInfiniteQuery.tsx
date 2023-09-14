@@ -25,7 +25,7 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
     >,
   params: P,
   perPage: number,
-  reference: MutableRefObject<HTMLDivElement | null>
+  reference: MutableRefObject<HTMLDivElement | null>,
 ) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const memoizedParams = useMemo(() => params, [JSON.stringify(params)]);
@@ -47,12 +47,6 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
     : skipToken;
 
   const query = endpoint.useQuery(arg as any);
-
-  const handleMutation = useCallback(() => {
-    setData([]);
-    setIsExhausted(false);
-    setPage(0);
-  }, []);
 
   const handleReset = useCallback(() => {
     setData([]);
@@ -102,7 +96,6 @@ export function useInfiniteQuery<B extends BaseQueryFn, T extends string, R, P>(
   return {
     reference,
     data,
-    onMutation: handleMutation,
     isUninitialized: query.isUninitialized,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
