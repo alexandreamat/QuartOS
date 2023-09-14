@@ -1,8 +1,14 @@
-import { SimpleQuery } from "interfaces";
+import {
+  BaseQueryFn,
+  TypedUseMutationResult,
+  TypedUseQueryHookResult,
+} from "@reduxjs/toolkit/dist/query/react";
 import { Icon, Message } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
 
-export function QueryErrorMessage(props: { query: SimpleQuery }) {
+export function QueryErrorMessage<R, A, Q extends BaseQueryFn>(props: {
+  query: TypedUseQueryHookResult<R, A, Q> | TypedUseMutationResult<R, A, Q>;
+}) {
   if (!props.query.isError) return <></>;
 
   console.error(props.query.error);

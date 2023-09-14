@@ -1,9 +1,12 @@
 import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { SimpleQuery } from "interfaces";
+import { BaseQueryFn, FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import {
+  TypedUseMutationResult,
+  TypedUseQueryHookResult,
+} from "@reduxjs/toolkit/dist/query/react";
 
 export function renderErrorMessage(
-  error: FetchBaseQueryError | SerializedError | string
+  error: FetchBaseQueryError | SerializedError | string,
 ) {
   console.error(error);
   if (typeof error === "string") return error;
@@ -39,7 +42,10 @@ export function renderErrorMessage(
   return "An error occurred. Please try again later.";
 }
 
-export function logMutationError(error: unknown, query: SimpleQuery) {
+export function logMutationError<R, A, Q extends BaseQueryFn>(
+  error: unknown,
+  query: TypedUseQueryHookResult<R, A, Q> | TypedUseMutationResult<R, A, Q>,
+) {
   console.error(error);
   console.error(query.error);
   console.error(query.originalArgs);

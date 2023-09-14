@@ -1,14 +1,15 @@
 import useFormField from "hooks/useFormField";
-import { SimpleQuery } from "interfaces";
-import { Form, InputOnChangeData, Label } from "semantic-ui-react";
+import { Form, Label } from "semantic-ui-react";
 import { capitaliseFirstLetter } from "utils/string";
 import CurrencyLabel from "./CurrencyLabel";
+import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
+import { TypedUseQueryHookResult } from "@reduxjs/toolkit/dist/query/react";
 
-export default function FormCurrencyInput(props: {
+export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
   label?: string;
   field: ReturnType<typeof useFormField<string>>;
   currency?: string;
-  query?: SimpleQuery;
+  query?: TypedUseQueryHookResult<R, A, Q>;
   readOnly?: boolean;
 }) {
   const label = props.label || props.field.label;
@@ -35,10 +36,7 @@ export default function FormCurrencyInput(props: {
       placeholder={label && "Enter " + label}
       required
       value={props.field.value}
-      onChange={(
-        e: React.ChangeEvent<HTMLInputElement>,
-        data: InputOnChangeData
-      ) => {
+      onChange={(_, data) => {
         props.field.reset();
         props.field.set(data.value as string);
       }}
