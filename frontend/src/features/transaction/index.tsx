@@ -13,7 +13,6 @@ export const PER_PAGE = 20;
 
 export default function Transactions() {
   const location = useLocation();
-  const reference = useRef<HTMLDivElement | null>(null);
   const isMultipleChoiceState = useState(false);
   const [isMultipleChoice, setIsMultipleChoice] = isMultipleChoiceState;
 
@@ -45,14 +44,11 @@ export default function Transactions() {
   return (
     <FlexColumn style={{ height: "100%" }}>
       <Bar barState={barState} isMultipleChoiceState={isMultipleChoiceState} />
-      <FlexColumn.Auto reference={reference}>
-        <TransactionCards
-          reference={reference}
-          barState={barState}
-          checkboxes={checkboxes}
-          isMultipleChoice={isMultipleChoice}
-        />
-      </FlexColumn.Auto>
+      <TransactionCards
+        barState={barState}
+        checkboxes={checkboxes}
+        isMultipleChoice={isMultipleChoice}
+      />
       {isMultipleChoice && (
         <SpanButton
           disabled={checkboxes.checked.size <= 1}

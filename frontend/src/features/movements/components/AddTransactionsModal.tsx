@@ -13,7 +13,6 @@ export default function AddTransactionsModal(props: {
   movementId?: number;
 }) {
   const barState = useTransactionBarState();
-  const reference = useRef<HTMLDivElement | null>(null);
   const checkboxes = useCheckboxes();
 
   const [addTransactions, addTransactionsResult] =
@@ -43,14 +42,11 @@ export default function AddTransactionsModal(props: {
       </Modal.Header>
       <Modal.Content>
         <FlexColumn style={{ height: "calc(80vh - 10em)" }}>
-          <FlexColumn.Auto reference={reference}>
-            <TransactionCards
-              barState={barState}
-              checkboxes={checkboxes}
-              reference={reference}
-              isMultipleChoice
-            />
-          </FlexColumn.Auto>
+          <TransactionCards
+            barState={barState}
+            checkboxes={checkboxes}
+            isMultipleChoice
+          />
         </FlexColumn>
       </Modal.Content>
       <Modal.Actions>
