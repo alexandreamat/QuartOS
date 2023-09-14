@@ -1,5 +1,5 @@
 import { ReadManyApiUsersMeTransactionsGetApiArg, api } from "app/services/api";
-import { MutableRefObject } from "react";
+import { useRef } from "react";
 import { BarState } from "./Bar";
 import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
@@ -8,15 +8,17 @@ import { Card } from "semantic-ui-react";
 import { formatDateParam } from "utils/time";
 import ExhaustedDataCard from "components/ExhaustedDataCard";
 import { Checkboxes } from "hooks/useCheckboxes";
+import FlexColumn from "components/FlexColumn";
 
 const PER_PAGE = 20;
 
 export default function TransactionCards(props: {
   barState: BarState;
   isMultipleChoice?: boolean;
-  reference: MutableRefObject<HTMLDivElement | null>;
   checkboxes: Checkboxes;
 }) {
+  const reference = useRef<HTMLDivElement | null>(null);
+
   const [search] = props.barState.search;
   const [timestampGe] = props.barState.timestampGe;
   const [timestampLe] = props.barState.timestampLe;
@@ -41,26 +43,28 @@ export default function TransactionCards(props: {
     api.endpoints.readManyApiUsersMeTransactionsGet,
     queryArg,
     PER_PAGE,
-    props.reference
+    reference,
   );
 
   return (
-    <Card.Group style={{ margin: 0, overflow: "hidden" }}>
-      {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
-      {infiniteQuery.data.map((t, i) => (
-        <TransactionCard
-          key={i}
-          transaction={t}
-          checked={props.checkboxes.checked.has(t.id)}
-          onCheckedChange={
-            props.isMultipleChoice
-              ? (x) => props.checkboxes.onChange(t.id, x)
-              : undefined
-          }
-        />
-      ))}
-      {infiniteQuery.isFetching && <TransactionCard loading />}
-      {infiniteQuery.isExhausted && <ExhaustedDataCard />}
-    </Card.Group>
+    <FlexColumn.Auto reference={reference}>
+      <Card.Group style={{ margin: 0, overflow: "hidden" }}>
+        {infiniteQuery.isError && <QueryErrorMessage query={infiniteQuery} />}
+        {infiniteQuery.data.map((t, i) => (
+          <TransactionCard
+            key={i}
+            transaction={t}
+            checked={props.checkboxes.checked.has(t.id)}
+            onCheckedChange={
+              props.isMultipleChoice
+                ? (x) => props.checkboxes.onChange(t.id, x)
+                : undefined
+            }
+          />
+        ))}
+        {infiniteQuery.isFetching && <TransactionCard loading />}
+        {infiniteQuery.isExhausted && <ExhaustedDataCard />}
+      </Card.Group>
+    </FlexColumn.Auto>
   );
 }
