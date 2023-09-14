@@ -165,13 +165,7 @@ export default function Form(props: {
           onClick={() => setTransactionFormOpen(true)}
           content="Create new Transaction"
         />
-        <Button
-          content="Done"
-          labelPosition="right"
-          icon="checkmark"
-          onClick={handleClose}
-          positive
-        />
+        <Button content="Done" onClick={handleClose} />
       </Modal.Actions>
     </Modal>
   );
