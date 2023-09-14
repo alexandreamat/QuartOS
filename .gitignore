@@ -1,5 +1,6 @@
 .vscode
 .mypy_cache
+.pytest_cache
 docker-stack.yml
 __pycache__
 app.egg-info
@@ -14,4 +15,7 @@ node_modules
 .DS_Store
 
 my-app
-.db
+*.db
+*.sqlite
+openapi.json
+.env
