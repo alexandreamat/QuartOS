@@ -1,4 +1,4 @@
-import { skipToken } from "@reduxjs/toolkit/dist/query";
+import { BaseQueryFn, skipToken } from "@reduxjs/toolkit/dist/query";
 import {
   MovementApiOut,
   TransactionApiIn,
@@ -26,12 +26,12 @@ import { logMutationError } from "utils/error";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
-import { SimpleQuery } from "interfaces";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import UploadButton from "components/UploadButton";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
+import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
 
-export default function TransactionForm(
+export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   props: {
     // Common
     title: string;
@@ -41,24 +41,24 @@ export default function TransactionForm(
     | {
         // Create tx
         onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
-        submitResult: SimpleQuery;
+        submitResult: TypedUseMutationResult<R, A, Q>;
       }
     | {
         // Add new tx to movement
         movementId: number;
         onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
-        submitResult: SimpleQuery;
+        submitResult: TypedUseMutationResult<R, A, Q>;
       }
     | {
         // Edit existing tx
         movementId: number;
         transaction: TransactionApiOut;
         onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
-        submitResult: SimpleQuery;
+        submitResult: TypedUseMutationResult<R, A, Q>;
         onDelete: () => Promise<void>;
-        deleteResult: SimpleQuery;
+        deleteResult: TypedUseMutationResult<R, A, Q>;
         onUpload: (file: File) => void;
-        uploadResult: SimpleQuery;
+        uploadResult: TypedUseMutationResult<R, A, Q>;
       }
   ),
 ) {
@@ -162,8 +162,8 @@ export default function TransactionForm(
         <Form>
           <FormDropdownInput
             field={form.accountId}
-            options={accountOptions.data || []}
-            query={accountOptions}
+            options={accountOptions.options || []}
+            query={accountOptions.query}
             readOnly={disableSynced}
           />
           <FormCurrencyInput

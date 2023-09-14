@@ -6,11 +6,11 @@ import { renderErrorMessage } from "utils/error";
 export function useAccountQueries(accountId?: number) {
   const accountQuery =
     api.endpoints.readApiUsersMeAccountsAccountIdGet.useQuery(
-      accountId || skipToken
+      accountId || skipToken,
     );
 
   const institutionLinkQueries = useInstitutionLinkQueries(
-    accountQuery.data?.institutionalaccount?.userinstitutionlink_id
+    accountQuery.data?.institutionalaccount?.userinstitutionlink_id,
   );
 
   const isLoading =
@@ -64,8 +64,9 @@ function AccountOption(props: { account: AccountApiOut }) {
 }
 
 export function useAccountOptions() {
-  const accountsQuery = api.endpoints.readManyApiUsersMeAccountsGet.useQuery();
-  const accountOptions = accountsQuery.data?.map((account) => {
+  const query = api.endpoints.readManyApiUsersMeAccountsGet.useQuery();
+
+  const options = query.data?.map((account) => {
     const option = <AccountOption account={account} />;
     return {
       key: account.id,
@@ -74,13 +75,9 @@ export function useAccountOptions() {
       text: account.name,
     };
   });
+
   return {
-    data: accountOptions,
-    isLoading: accountsQuery.isLoading,
-    isError: accountsQuery.isError,
-    isSuccess: accountsQuery.isSuccess,
-    error: accountsQuery.isError
-      ? renderErrorMessage(accountsQuery.error)
-      : undefined,
+    options,
+    query,
   };
 }

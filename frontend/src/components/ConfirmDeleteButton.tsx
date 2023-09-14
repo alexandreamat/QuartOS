@@ -1,14 +1,19 @@
 import { useState } from "react";
 import { Confirm, SemanticFLOATS } from "semantic-ui-react";
 import ActionButton from "./ActionButton";
-import { SimpleQuery } from "interfaces";
 import { renderErrorMessage } from "utils/error";
+import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
+import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
 
-export default function ConfirmDeleteButton(props: {
+export default function ConfirmDeleteButton<
+  R,
+  A,
+  Q extends BaseQueryFn,
+>(props: {
   onDelete: () => Promise<void>;
   confirmContent?: string;
   disabled?: boolean;
-  query: SimpleQuery;
+  query: TypedUseMutationResult<R, A, Q>;
   floated?: SemanticFLOATS;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);

@@ -103,8 +103,8 @@ export default function InstitutionForm(props: {
       <FormDropdownInput
         optional
         label="Transaction deserialiser"
-        options={transactionDeserialiserOptions.data || []}
-        query={transactionDeserialiserOptions}
+        options={transactionDeserialiserOptions.options || []}
+        query={transactionDeserialiserOptions.query}
         field={transactionDeserialiserId}
       />
       <FormValidationError fields={fields} />

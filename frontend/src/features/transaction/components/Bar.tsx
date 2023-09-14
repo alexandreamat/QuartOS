@@ -7,7 +7,7 @@ import MenuCheckbox from "components/MenuCheckbox";
 import { useState } from "react";
 import { UseStateType } from "types";
 
-export type BarState = ReturnType<typeof useTransactionBarState>;
+export type TransactionsBarState = ReturnType<typeof useTransactionBarState>;
 
 export function useTransactionBarState() {
   return {
@@ -23,7 +23,7 @@ export function useTransactionBarState() {
 }
 
 export default function Bar(props: {
-  barState: BarState;
+  barState: TransactionsBarState;
   isMultipleChoiceState?: UseStateType<boolean>;
 }) {
   return (

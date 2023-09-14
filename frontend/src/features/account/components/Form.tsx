@@ -1,4 +1,4 @@
-import { Button, CheckboxProps, Form, Modal } from "semantic-ui-react";
+import { Button, Form, Modal } from "semantic-ui-react";
 import { useEffect } from "react";
 import {
   AccountApiOut,
@@ -120,7 +120,7 @@ export default function AccountForm(props: {
 
     const invalidFields = formFields.reduce(
       (count, field) => count + (field.validate() ? 0 : 1),
-      0
+      0,
     );
 
     if (invalidFields > 0) return;
@@ -188,10 +188,7 @@ export default function AccountForm(props: {
           <Form.Checkbox
             label="Link to a financial institution"
             checked={isInstitutional.value}
-            onChange={(
-              event: React.FormEvent<HTMLInputElement>,
-              data: CheckboxProps
-            ) => {
+            onChange={(_, data) => {
               institutionalType.reset();
               nonInstitutionalType.reset();
               isInstitutional.reset();
@@ -204,7 +201,7 @@ export default function AccountForm(props: {
                 label="Institution"
                 field={institutionLinkId}
                 options={institutionLinkOptions.data || []}
-                query={institutionLinkOptions}
+                query={institutionLinkOptions.query}
               />
               <FormDropdownInput
                 label="Type"

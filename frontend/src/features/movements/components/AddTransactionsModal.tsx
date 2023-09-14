@@ -12,6 +12,8 @@ export default function AddTransactionsModal(props: {
   onClose: () => void;
   movementId?: number;
 }) {
+  const reference = useRef<HTMLDivElement | null>(null);
+
   const barState = useTransactionBarState();
   const checkboxes = useCheckboxes();
 
@@ -42,11 +44,14 @@ export default function AddTransactionsModal(props: {
       </Modal.Header>
       <Modal.Content>
         <FlexColumn style={{ height: "calc(80vh - 10em)" }}>
-          <TransactionCards
-            barState={barState}
-            checkboxes={checkboxes}
-            isMultipleChoice
-          />
+          <FlexColumn.Auto reference={reference}>
+            <TransactionCards
+              barState={barState}
+              checkboxes={checkboxes}
+              isMultipleChoice
+              reference={reference}
+            />
+          </FlexColumn.Auto>
         </FlexColumn>
       </Modal.Content>
       <Modal.Actions>

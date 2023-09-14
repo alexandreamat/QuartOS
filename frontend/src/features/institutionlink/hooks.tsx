@@ -6,11 +6,11 @@ import InstitutionLinkOption from "./components/InstitutionLinkOption";
 export function useInstitutionLinkQueries(institutionLinkId?: number) {
   const institutionLinkQuery =
     api.endpoints.readApiUsersMeInstitutionLinksUserinstitutionlinkIdGet.useQuery(
-      institutionLinkId || skipToken
+      institutionLinkId || skipToken,
     );
   const institutionQuery =
     api.endpoints.readApiInstitutionsInstitutionIdGet.useQuery(
-      institutionLinkQuery.data?.institution_id || skipToken
+      institutionLinkQuery.data?.institution_id || skipToken,
     );
 
   const isLoading =
@@ -56,11 +56,6 @@ export function useInstitutionLinkOptions() {
 
   return {
     data: institutionLinkOptions,
-    isLoading: institutionLinksQuery.isLoading,
-    isError: institutionLinksQuery.isError,
-    isSuccess: institutionLinksQuery.isSuccess,
-    error: institutionLinksQuery.isError
-      ? renderErrorMessage(institutionLinksQuery.error)
-      : undefined,
+    query: institutionLinksQuery,
   };
 }

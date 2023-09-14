@@ -1,15 +1,10 @@
-import {
-  GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg,
-  PlStatement,
-  api,
-} from "app/services/api";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { PlStatement, api } from "app/services/api";
 import { useNavigate } from "react-router-dom";
 import { Card } from "semantic-ui-react";
 import PLCard from "./components/PLCard";
 import FlexColumn from "components/FlexColumn";
-import { useInfiniteQuery } from "hooks/useInfiniteQuery";
 import { useRef } from "react";
+import { InfiniteScroll } from "components/InfiniteScroll";
 
 function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
   const navigate = useNavigate();
@@ -33,26 +28,24 @@ function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
 export default function IncomeStatement() {
   const reference = useRef<HTMLDivElement | null>(null);
 
-  const aggregatesQuery = useInfiniteQuery(
-    api.endpoints.getManyAggregatesApiUsersMeMovementsAggregatesGet,
-    {
-      currencyCode: "EUR",
-    } as GetManyAggregatesApiUsersMeMovementsAggregatesGetApiArg,
-    12,
-    reference,
+  const Item = ({ response }: { response: PlStatement }) => (
+    <Row key={response.start_date} plStatement={response} />
   );
 
   return (
     <FlexColumn>
-      <FlexColumn.Auto reference={aggregatesQuery.reference}>
+      <FlexColumn.Auto reference={reference}>
         <Card.Group style={{ margin: 0 }}>
-          {aggregatesQuery.data.map((aggregate) => (
-            <Row key={aggregate.start_date} plStatement={aggregate} />
-          ))}
-          {aggregatesQuery.isFetching && <Row loading />}
+          <InfiniteScroll
+            item={Item}
+            reference={reference}
+            endpoint={
+              api.endpoints.getManyAggregatesApiUsersMeMovementsAggregatesGet
+            }
+            params={{}}
+          />
         </Card.Group>
       </FlexColumn.Auto>
-      {aggregatesQuery.error && <QueryErrorMessage query={aggregatesQuery} />}
     </FlexColumn>
   );
 }

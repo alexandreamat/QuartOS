@@ -1,13 +1,18 @@
+import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
+import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
 import { useState } from "react";
 import { Button, Confirm } from "semantic-ui-react";
-import { SimpleQuery } from "interfaces";
 import { renderErrorMessage } from "utils/error";
 
-export default function ConfirmDeleteButtonModal(props: {
+export default function ConfirmDeleteButtonModal<
+  R,
+  A,
+  Q extends BaseQueryFn,
+>(props: {
   onDelete: () => Promise<void>;
   confirmContent?: string;
   disabled?: boolean;
-  query: SimpleQuery;
+  query: TypedUseMutationResult<R, A, Q>;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   return (

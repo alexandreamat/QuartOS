@@ -1,18 +1,19 @@
+import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
+import { TypedUseQueryHookResult } from "@reduxjs/toolkit/dist/query/react";
 import useFormField from "hooks/useFormField";
-import { SimpleQuery } from "interfaces";
-import {
-  DropdownItemProps,
-  DropdownOnSearchChangeData,
-  DropdownProps,
-  Form,
-} from "semantic-ui-react";
+import { DropdownItemProps, DropdownProps, Form } from "semantic-ui-react";
 import { capitaliseFirstLetter } from "utils/string";
 
-export default function FormDropdownInput<T extends number | string>(props: {
+export default function FormDropdownInput<
+  T extends number | string,
+  R,
+  A,
+  Q extends BaseQueryFn,
+>(props: {
   label?: string;
   options: DropdownItemProps[];
   field: ReturnType<typeof useFormField<T>>;
-  query?: SimpleQuery;
+  query?: TypedUseQueryHookResult<R, A, Q>;
   compact?: boolean;
   optional?: boolean;
   disabled?: boolean;
@@ -23,7 +24,7 @@ export default function FormDropdownInput<T extends number | string>(props: {
 
   if (props.readOnly) {
     const selectedOption = props.options.find(
-      (o) => o.value === props.field.value
+      (o) => o.value === props.field.value,
     );
     return (
       <Form.Field>
@@ -50,10 +51,9 @@ export default function FormDropdownInput<T extends number | string>(props: {
       loading={props.query?.isLoading}
       error={props.query?.isError || props.field.isError}
       compact={props.compact}
-      onSearchChange={(
-        event: React.SyntheticEvent<HTMLElement>,
-        data: DropdownOnSearchChangeData
-      ) => props.onSearchChange && props.onSearchChange(data.searchQuery)}
+      onSearchChange={(_, data) =>
+        props.onSearchChange && props.onSearchChange(data.searchQuery)
+      }
     />
   );
 }

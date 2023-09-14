@@ -1,12 +1,11 @@
 import { api } from "app/services/api";
 import { DropdownItemProps } from "semantic-ui-react";
-import { renderErrorMessage } from "utils/error";
 
 export function useInstitutionOptions() {
-  const institutionsQuery = api.endpoints.readManyApiInstitutionsGet.useQuery();
+  const query = api.endpoints.readManyApiInstitutionsGet.useQuery();
 
-  const institutionOptions: DropdownItemProps[] =
-    institutionsQuery.data?.map((institution) => ({
+  const options: DropdownItemProps[] =
+    query.data?.map((institution) => ({
       key: institution.id,
       value: institution.id,
       text: institution.name,
@@ -14,12 +13,7 @@ export function useInstitutionOptions() {
     })) || [];
 
   return {
-    data: institutionOptions,
-    isLoading: institutionsQuery.isLoading,
-    isSuccess: institutionsQuery.isSuccess,
-    isError: institutionsQuery.isError,
-    error: institutionsQuery.isError
-      ? renderErrorMessage(institutionsQuery.error)
-      : undefined,
+    options,
+    query,
   };
 }

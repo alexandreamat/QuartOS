@@ -110,8 +110,8 @@ export default function InstitutionLinkForm(props: {
           {(!props.institutionLink || !props.institutionLink.is_synced) && (
             <FormDropdownInput
               label="Institution"
-              options={institutionOptions.data}
-              query={institutionOptions}
+              options={institutionOptions.options}
+              query={institutionOptions.query}
               field={institutionId}
             />
           )}

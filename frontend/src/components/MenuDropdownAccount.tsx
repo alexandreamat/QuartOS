@@ -22,8 +22,10 @@ export default function MenuDropdownAccount(props: {
           search
           selection
           value={accountId}
-          options={accountOptions.data || []}
+          options={accountOptions.options || []}
           onChange={(_, data) => setAccountId(data.value as number)}
+          loading={accountOptions.query.isLoading}
+          error={accountOptions.query.isError}
         />
       </Popup>
       {accountId !== undefined && (
