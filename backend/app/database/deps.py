@@ -13,6 +13,7 @@ engine = create_engine(
     settings.SQLALCHEMY_DATABASE_URI,
     connect_args=connect_args,
     # echo="debug",
+    # echo=True,
     # query_cache_size=0,
 )
 
