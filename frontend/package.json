@@ -1,5 +1,5 @@
 {
-  "name": "money-tracker",
+  "name": "quartos",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -15,9 +15,7 @@
     "currency-codes": "^2.1.0",
     "date-fns": "^2.29.3",
     "i18n-iso-countries": "^7.6.0",
-    "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
-    "pouchdb": "^8.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-infinite-scroll-component": "^6.1.0",
@@ -62,6 +60,7 @@
     "@types/lodash": "^4.14.194",
     "@types/react-syntax-highlighter": "^15.5.7",
     "nodemon": "^3.0.1",
+    "prettier": "^3.0.3",
     "ts-node": "^10.9.1"
   }
 }
