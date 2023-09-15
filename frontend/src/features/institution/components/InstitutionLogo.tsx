@@ -2,7 +2,7 @@ import { Image, Icon, SemanticFLOATS, Placeholder } from "semantic-ui-react";
 import { InstitutionApiOut } from "app/services/api";
 
 export function InstitutionLogo(props: {
-  institution: InstitutionApiOut;
+  institution?: InstitutionApiOut;
   height?: number;
   floated?: SemanticFLOATS;
   loading?: boolean;
@@ -14,7 +14,7 @@ export function InstitutionLogo(props: {
       </Placeholder>
     );
 
-  if (props.institution.logo_base64)
+  if (props.institution?.logo_base64 !== undefined)
     return (
       <Image
         floated={props.floated}

@@ -5,6 +5,7 @@ import PLCard from "./components/PLCard";
 import FlexColumn from "components/FlexColumn";
 import { useRef } from "react";
 import { InfiniteScroll } from "components/InfiniteScroll";
+import { PaginatedItemProps } from "types";
 
 function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
   const navigate = useNavigate();
@@ -28,8 +29,8 @@ function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
 export default function IncomeStatement() {
   const reference = useRef<HTMLDivElement | null>(null);
 
-  const Item = ({ response }: { response: PlStatement }) => (
-    <Row key={response.start_date} plStatement={response} />
+  const Item = ({ response: pl, loading }: PaginatedItemProps<PlStatement>) => (
+    <Row key={pl?.start_date} plStatement={pl} loading={loading} />
   );
 
   return (

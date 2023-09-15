@@ -169,7 +169,7 @@ function StepFlows(props: {
             <Flow
               key={t.id}
               transaction={t}
-              onRemove={props.onRemove && (() => props.onRemove!(t))}
+              onRemove={() => props.onRemove && props.onRemove(t)}
               style={{
                 fontWeight:
                   t.account_id === props.selectedAccountId ? "bold" : "normal",

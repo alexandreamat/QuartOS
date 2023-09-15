@@ -48,7 +48,7 @@ export default function ConfirmDeleteButton<
         }}
         content={
           props.query.isError
-            ? renderErrorMessage(props.query.error!)
+            ? renderErrorMessage(props.query.error)
             : props.confirmContent
         }
       />

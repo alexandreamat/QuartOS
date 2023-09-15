@@ -19,7 +19,7 @@ export function QueryErrorMessage<R, A, Q extends BaseQueryFn>(props: {
       <Icon name="exclamation triangle" />
       <Message.Content>
         <Message.Header>There's been an error</Message.Header>
-        {renderErrorMessage(props.query.error!)}
+        {renderErrorMessage(props.query.error)}
       </Message.Content>
     </Message>
   );

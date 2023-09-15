@@ -1,9 +1,9 @@
 import { MutableRefObject, useEffect, useMemo, useState } from "react";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { TransactionCard } from "../features/transaction/components/TransactionCard";
 import ExhaustedDataCard from "components/ExhaustedDataCard";
 import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
 import { PaginatedQueryArg, PaginatedQueryEndpoint } from "types";
+import { PaginatedItemProps } from "types";
 
 const PER_PAGE = 20;
 const RATE = 1;
@@ -13,7 +13,7 @@ function Page<B extends BaseQueryFn, T extends string, R, P>(props: {
   params: P;
   endpoint: PaginatedQueryEndpoint<B, T, R, P>;
   onSuccess: (loadMore: boolean) => void;
-  item: (props: { response: R }) => JSX.Element;
+  item: (props: PaginatedItemProps<R>) => JSX.Element;
 }) {
   const memoizedParams = useMemo(
     () => props.params,
@@ -35,7 +35,7 @@ function Page<B extends BaseQueryFn, T extends string, R, P>(props: {
     if (query.isSuccess) onLoadMore(query.data.length >= PER_PAGE);
   }, [query, onLoadMore]);
 
-  if (query.isLoading) return <TransactionCard loading />;
+  if (query.isLoading) return <props.item loading />;
   if (query.isError) return <QueryErrorMessage query={query} />;
   if (query.isUninitialized) return <></>;
 
@@ -57,7 +57,7 @@ export function InfiniteScroll<
 >(props: {
   params: P;
   endpoint: PaginatedQueryEndpoint<B, T, R, P>;
-  item: (props: { response: any }) => JSX.Element;
+  item: (props: PaginatedItemProps<R>) => JSX.Element;
   reference: MutableRefObject<HTMLDivElement | null>;
 }) {
   const [pages, setPages] = useState(1);
@@ -87,15 +87,20 @@ export function InfiniteScroll<
     setPages(1);
   }, [props.params]);
 
+  function handleSuccess(page: number, loadMore: boolean) {
+    if (page !== pages - 1) return;
+    setLoadMore(loadMore);
+  }
+
   return (
     <>
-      {Array.from({ length: pages }, (_, i) => (
+      {Array.from({ length: pages }, (_, page) => (
         <Page
-          key={i}
-          page={i}
+          key={page}
+          page={page}
           endpoint={props.endpoint}
           params={props.params}
-          onSuccess={setLoadMore}
+          onSuccess={(loadMore) => handleSuccess(page, loadMore)}
           item={props.item}
         />
       ))}

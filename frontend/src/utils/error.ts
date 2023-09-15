@@ -1,13 +1,10 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { BaseQueryFn, FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
+import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
 import {
   TypedUseMutationResult,
   TypedUseQueryHookResult,
 } from "@reduxjs/toolkit/dist/query/react";
 
-export function renderErrorMessage(
-  error: FetchBaseQueryError | SerializedError | string,
-) {
+export function renderErrorMessage(error: any) {
   console.error(error);
   if (typeof error === "string") return error;
   if (typeof error === "object") {

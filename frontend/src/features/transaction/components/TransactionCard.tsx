@@ -32,21 +32,21 @@ export function TransactionCard(
         accountId: number;
         preview: true;
         loading?: false;
-      }
+      },
 ) {
   const accountQueries = useAccountQueries(
-    props.preview ? props.accountId : props.transaction?.account_id
+    props.preview ? props.accountId : props.transaction?.account_id,
   );
 
   const movementQuery =
     api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
       props.preview || !props.transaction
         ? skipToken
-        : props.transaction.movement_id
+        : props.transaction.movement_id,
     );
 
   const uploadTransactionFile = useUploadTransactionFile(
-    props.preview ? undefined : props.transaction
+    props.preview ? undefined : props.transaction,
   );
 
   const account = accountQueries.account;
@@ -87,7 +87,10 @@ export function TransactionCard(
             <Checkbox
               disabled={props.checkBoxDisabled}
               checked={props.checked}
-              onChange={(_, d) => props.onCheckedChange!(d.checked || false)}
+              onChange={(_, d) =>
+                props.onCheckedChange &&
+                props.onCheckedChange(d.checked || false)
+              }
             />
           )}
           <Card.Meta>
