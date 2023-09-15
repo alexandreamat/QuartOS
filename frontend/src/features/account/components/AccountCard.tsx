@@ -48,7 +48,7 @@ export default function AccountCard(props: {
         <InstitutionLogo
           height={36}
           floated="right"
-          institution={institutionLinkQueries.institution!}
+          institution={institutionLinkQueries.institution}
           loading={institutionLinkQueries.isLoading}
         />
         <Card.Header>{props.account.name}</Card.Header>

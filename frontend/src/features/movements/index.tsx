@@ -14,6 +14,7 @@ import { MovementCard } from "./components/MovementCard";
 import SpanButton from "features/transaction/components/SpanButton";
 import { logMutationError } from "utils/error";
 import { InfiniteScroll } from "components/InfiniteScroll";
+import { PaginatedItemProps } from "types";
 
 export default function Movements() {
   const location = useLocation();
@@ -123,19 +124,23 @@ export default function Movements() {
     setCheckedMovements(new Set());
   }
 
-  const Item = ({ response }: { response: MovementApiOut }) => (
+  const Item = ({
+    response: m,
+    loading,
+  }: PaginatedItemProps<MovementApiOut>) => (
     <MovementCard
-      key={response.id}
-      movement={response}
-      onOpenEditForm={() => handleOpenEditForm(response.id)}
+      key={m?.id}
+      movement={m}
+      onOpenEditForm={() => m && handleOpenEditForm(m.id)}
       selectedAccountId={accountId}
-      showFlows={response.transactions.length > 1}
-      checked={checkedMovements.has(response)}
+      showFlows={m && m.transactions.length > 1}
+      checked={m && checkedMovements.has(m)}
       onCheckedChange={
         isMultipleChoice
-          ? (value) => handleCheckedChange(response, value)
+          ? (value) => m && handleCheckedChange(m, value)
           : undefined
       }
+      loading={loading}
     />
   );
 

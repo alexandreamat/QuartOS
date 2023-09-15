@@ -10,6 +10,7 @@ import { Checkboxes } from "hooks/useCheckboxes";
 import { InfiniteScroll } from "../../../components/InfiniteScroll";
 import { MutableRefObject } from "react";
 import { Card } from "semantic-ui-react";
+import { PaginatedItemProps } from "types";
 
 export default function TransactionCards(props: {
   barState: TransactionsBarState;
@@ -37,16 +38,20 @@ export default function TransactionCards(props: {
     accountId,
   };
 
-  const Item = ({ response: t }: { response: TransactionApiOut }) => (
+  const Item = ({
+    response: t,
+    loading,
+  }: PaginatedItemProps<TransactionApiOut>) => (
     <TransactionCard
-      key={t.id}
+      key={t?.id}
       transaction={t}
-      checked={props.checkboxes.checked.has(t.id)}
+      checked={t && props.checkboxes.checked.has(t.id)}
       onCheckedChange={
-        props.isMultipleChoice
+        props.isMultipleChoice && t
           ? (x) => props.checkboxes.onChange(t.id, x)
           : undefined
       }
+      loading={loading}
     />
   );
 

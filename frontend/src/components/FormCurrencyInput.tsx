@@ -19,7 +19,7 @@ export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
       <Form.Field>
         <label>{label && capitaliseFirstLetter(label)}</label>
         <CurrencyLabel
-          currencyCode={props.currency!}
+          currencyCode={props.currency}
           amount={Number(props.field.value)}
           loading={props.query?.isLoading}
         />

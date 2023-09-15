@@ -24,3 +24,4 @@ export type PaginatedQueryEndpoint<
   UpdateDefinitions<never, T, never>
 > &
   QueryHooks<PaginatedQueryDefinition<B, T, R, P>>;
+export type PaginatedItemProps<R> = { response?: R; loading?: boolean };

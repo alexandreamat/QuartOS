@@ -19,6 +19,7 @@ export default function MenuNumericRange(props: {
 }) {
   const [valueGe, setvalueGe] = props.valueGeState;
   const [valueLe, setValueLe] = props.valueLeState;
+  const [isAbs, setIsAbs] = props.isAbsState || [];
 
   return (
     <Menu.Item fitted>
@@ -47,14 +48,12 @@ export default function MenuNumericRange(props: {
               valueState={props.valueLeState}
             />
           </Menu.Item>
-          {props.isAbsState && (
+          {setIsAbs && (
             <Menu.Item fitted>
               <Checkbox
                 label="Ignore sign"
-                checked={props.isAbsState[0]}
-                onChange={(_, data) =>
-                  props.isAbsState![1](data.checked || false)
-                }
+                checked={isAbs}
+                onChange={(_, data) => setIsAbs(data.checked || false)}
               />
             </Menu.Item>
           )}
