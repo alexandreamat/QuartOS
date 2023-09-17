@@ -1,10 +1,20 @@
 import React, { CSSProperties, ReactNode, LegacyRef } from "react";
+import { Property } from "csstype";
 
-const FlexRow = (props: { children: ReactNode; style?: CSSProperties }) => (
+const FlexRow = (props: {
+  children: ReactNode;
+  justifyContent?: Property.JustifyContent;
+  gap?: Property.Gap;
+  alignItems?: Property.AlignItems;
+  style?: CSSProperties;
+}) => (
   <div
     style={{
       display: "flex",
       width: "100%",
+      justifyContent: props.justifyContent,
+      gap: props.gap,
+      alignItems: props.alignItems,
       ...props.style,
     }}
   >

@@ -26,7 +26,7 @@ export default function Form(props: {
 
   const movementQuery =
     api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
-      movementId || skipToken
+      movementId || skipToken,
     );
 
   const [createMovements, createMovementsResult] =
@@ -101,12 +101,7 @@ export default function Form(props: {
         ) : movementQuery.isError ? (
           <QueryErrorMessage query={movementQuery} />
         ) : (
-          <FlexRow
-            style={{
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
+          <FlexRow gap="10" alignItems="center">
             <ActionButton
               disabled={!props.onGoToPrev}
               icon="arrow left"
