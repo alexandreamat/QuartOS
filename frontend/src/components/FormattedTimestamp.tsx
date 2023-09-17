@@ -8,16 +8,14 @@ export default function FormattedTimestamp(props: {
   if (props.loading)
     return (
       <Placeholder>
-        <Placeholder.Line />
+        <Placeholder.Header>
+          <Placeholder.Line style={{ width: "9em" }} />
+        </Placeholder.Header>
       </Placeholder>
     );
 
   return (
-    <p
-      style={{
-        width: "9em",
-      }}
-    >
+    <p style={{ width: "9em" }}>
       {props.timestamp && format(new Date(props.timestamp), " yyyy MMMM d")}
     </p>
   );

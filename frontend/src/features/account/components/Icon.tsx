@@ -2,21 +2,25 @@ import { AccountApiOut, InstitutionApiOut } from "app/services/api";
 import { Icon, Placeholder } from "semantic-ui-react";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import { accountTypeToIconName } from "features/account/utils";
+import { CSSProperties } from "react";
 
 export default function AccountIcon(props: {
   account?: AccountApiOut;
   institution?: InstitutionApiOut;
   loading?: boolean;
+  style?: CSSProperties;
 }) {
   if (props.loading)
     return (
-      <Placeholder style={{ width: "18em" }}>
-        <Placeholder.Header image />
+      <Placeholder>
+        <Placeholder.Header image style={{ ...props.style }} />
       </Placeholder>
     );
 
   if (props.institution)
-    return <InstitutionLogo institution={props.institution} />;
+    return (
+      <InstitutionLogo institution={props.institution} style={props.style} />
+    );
 
   if (props.account)
     return (
@@ -25,8 +29,9 @@ export default function AccountIcon(props: {
         name={accountTypeToIconName(
           props.account.institutionalaccount?.type ||
             props.account.noninstitutionalaccount?.type ||
-            "other"
+            "other",
         )}
+        style={props.style}
       />
     );
 
