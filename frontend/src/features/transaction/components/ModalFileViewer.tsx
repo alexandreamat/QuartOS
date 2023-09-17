@@ -39,7 +39,7 @@ export default function ModalFileViewer(props: {
         accountId: props.transaction.account_id,
         movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
-      }
+      },
     );
 
   const selectedFile = filesQuery.data ? filesQuery.data[fileIdx] : undefined;
@@ -53,7 +53,7 @@ export default function ModalFileViewer(props: {
             transactionId: props.transaction.id,
             fileId: selectedFile.id,
           }
-        : skipToken
+        : skipToken,
     );
 
   const [deleteFile, deleteFileResult] =
@@ -80,7 +80,7 @@ export default function ModalFileViewer(props: {
   return (
     <Modal onClose={props.onClose} open size="large">
       <Modal.Content>
-        <FlexRow style={{ alignItems: "center", gap: 10 }}>
+        <FlexRow alignItems="center" gap="10">
           <ActionButton
             disabled={fileIdx <= 0}
             icon="arrow left"

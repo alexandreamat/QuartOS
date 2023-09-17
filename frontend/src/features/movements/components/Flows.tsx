@@ -120,9 +120,7 @@ function Flow(props: {
   ];
 
   return (
-    <FlexRow
-      style={{ alignItems: "center", gap: flowGap, padding: flowPadding }}
-    >
+    <FlexRow gap={flowGap} alignItems="center" style={{ padding: flowPadding }}>
       {fileOpen && props.transaction && (
         <ModalFileViewer
           transaction={props.transaction}

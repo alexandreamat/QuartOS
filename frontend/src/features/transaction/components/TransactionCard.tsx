@@ -71,7 +71,7 @@ export function TransactionCard(
       onDragOver={(e: DragEvent) => e.preventDefault()}
     >
       <Card.Content>
-        <FlexRow style={{ gap: 5, height: "2.2em" }}>
+        <FlexRow gap="5" style={{ height: "2.2em" }}>
           {!props.preview && props.onCheckedChange && (
             <Checkbox
               disabled={props.checkBoxDisabled}
@@ -163,26 +163,28 @@ export function TransactionCard(
         </FlexRow>
       </Card.Content>
       <Card.Content extra>
-        <Header as="h5" floated="right">
+        <FlexRow justifyContent="right" gap="1ch" alignItems="baseline">
+          <div style={{ color: "black", fontWeight: "bold" }}>Total:</div>
           <Popup
             disabled={props.preview}
             position="left center"
             content={
-              !props.preview && (
+              !props.preview &&
+              props.transaction &&
+              account && (
                 <p>
-                  Account balance:
-                  {account && (
-                    <FormattedCurrency
-                      amount={props.transaction?.account_balance || 0}
-                      currencyCode={account.currency_code}
-                    />
-                  )}
+                  {`Account balance: ${props.transaction.account_balance.toLocaleString(
+                    undefined,
+                    {
+                      style: "currency",
+                      currency: account.currency_code,
+                    },
+                  )}`}
                 </p>
               )
             }
             trigger={
               <div>
-                Total:
                 <CurrencyLabel
                   amount={props.transaction?.amount}
                   currencyCode={account?.currency_code}
@@ -191,7 +193,7 @@ export function TransactionCard(
               </div>
             }
           />
-        </Header>
+        </FlexRow>
       </Card.Content>
     </Card>
   );

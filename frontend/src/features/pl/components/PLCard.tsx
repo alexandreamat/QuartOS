@@ -23,7 +23,7 @@ export default function PLCard(props: {
     <Card fluid color="teal">
       <Card.Content>
         <Card.Header>
-          <FlexRow style={{ justifyContent: "space-between" }}>
+          <FlexRow justifyContent="space-between">
             {props.loading ? (
               <Placeholder style={{ width: "100%" }}>
                 <Placeholder.Line />
@@ -94,7 +94,7 @@ export default function PLCard(props: {
         </Step.Group>
       </Card.Content>
       <Card.Content extra>
-        <FlexRow style={{ justifyContent: "right" }}>
+        <FlexRow justifyContent="right">
           <Header as="h5">
             Net Income:
             <CurrencyLabel

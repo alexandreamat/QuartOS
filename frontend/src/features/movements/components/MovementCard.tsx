@@ -63,7 +63,7 @@ export function MovementCard(props: {
   return (
     <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
       <Card.Content>
-        <FlexRow style={{ alignItems: "center", gap: "1em" }}>
+        <FlexRow alignItems="center" gap="1em">
           {/* Checkbox */}
           {!props.loading && props.onCheckedChange && (
             <Checkbox
