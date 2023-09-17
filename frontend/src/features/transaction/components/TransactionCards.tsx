@@ -43,7 +43,6 @@ export default function TransactionCards(props: {
     loading,
   }: PaginatedItemProps<TransactionApiOut>) => (
     <TransactionCard
-      key={t?.id}
       transaction={t}
       checked={t && props.checkboxes.checked.has(t.id)}
       onCheckedChange={

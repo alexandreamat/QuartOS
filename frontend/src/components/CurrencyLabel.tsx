@@ -1,4 +1,4 @@
-import { Label, Loader } from "semantic-ui-react";
+import { Label } from "semantic-ui-react";
 import { FormattedCurrency } from "./FormattedCurrency";
 
 export default function CurrencyLabel(props: {
@@ -18,16 +18,11 @@ export default function CurrencyLabel(props: {
           : "grey"
       }
     >
-      {props.loading ? (
-        <Loader active inline size="mini" />
-      ) : (
-        props.amount !== undefined &&
-        props.currencyCode && (
-          <FormattedCurrency
-            amount={props.amount}
-            currencyCode={props.currencyCode}
-          />
-        )
+      {!props.loading && props.amount !== undefined && props.currencyCode && (
+        <FormattedCurrency
+          amount={props.amount}
+          currencyCode={props.currencyCode}
+        />
       )}
     </Label>
   );

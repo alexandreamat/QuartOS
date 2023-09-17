@@ -1,15 +1,17 @@
 import { Image, Icon, SemanticFLOATS, Placeholder } from "semantic-ui-react";
 import { InstitutionApiOut } from "app/services/api";
+import { CSSProperties } from "react";
 
 export function InstitutionLogo(props: {
   institution?: InstitutionApiOut;
   height?: number;
   floated?: SemanticFLOATS;
   loading?: boolean;
+  style?: CSSProperties;
 }) {
   if (props.loading)
     return (
-      <Placeholder image>
+      <Placeholder image style={props.style}>
         <Placeholder.Header />
       </Placeholder>
     );
@@ -18,11 +20,10 @@ export function InstitutionLogo(props: {
     return (
       <Image
         floated={props.floated}
-        inline
-        style={{ margin: 0, height: props.height ? props.height : 24 }}
+        style={{ width: "auto", ...props.style }}
         src={`data:image/png;base64,${props.institution.logo_base64}`}
       />
     );
 
-  return <Icon size="large" name="university" />;
+  return <Icon size="large" name="university" style={props.style} />;
 }

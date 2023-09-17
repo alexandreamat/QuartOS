@@ -52,17 +52,6 @@ export function TransactionCard(
   const account = accountQueries.account;
   const movement = movementQuery.data;
 
-  const currencyLabel = (
-    <div>
-      Total:
-      <CurrencyLabel
-        amount={props.transaction?.amount}
-        currencyCode={account?.currency_code}
-        loading={accountQueries.isLoading || props.loading}
-      />
-    </div>
-  );
-
   async function handleFileDrop(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     const file = event.dataTransfer?.files[0];
@@ -82,7 +71,7 @@ export function TransactionCard(
       onDragOver={(e: DragEvent) => e.preventDefault()}
     >
       <Card.Content>
-        <FlexRow style={{ gap: 5 }}>
+        <FlexRow style={{ gap: 5, height: "2.2em" }}>
           {!props.preview && props.onCheckedChange && (
             <Checkbox
               disabled={props.checkBoxDisabled}
@@ -103,6 +92,7 @@ export function TransactionCard(
             account={account}
             institution={accountQueries.institution}
             loading={props.loading || accountQueries.isLoading}
+            style={{ maxHeight: "80%" }}
           />
           <LineWithHiddenOverflow
             content={account?.name}
@@ -149,8 +139,9 @@ export function TransactionCard(
                 icon="arrows alternate horizontal"
                 content={movement?.transactions.length.toFixed(0)}
                 onClick={() => setMovementOpen(true)}
-                loading={props.loading || movementQuery.isLoading}
+                loading={movementQuery.isLoading}
                 negative={movementQuery.isError}
+                disabled={props.loading}
               />
 
               {/* See more button and form */}
@@ -165,7 +156,7 @@ export function TransactionCard(
               <ActionButton
                 icon="ellipsis horizontal"
                 onClick={() => setFormOpen(true)}
-                loading={props.loading}
+                disabled={props.loading}
               />
             </>
           )}
@@ -173,12 +164,11 @@ export function TransactionCard(
       </Card.Content>
       <Card.Content extra>
         <Header as="h5" floated="right">
-          {props.preview ? (
-            currencyLabel
-          ) : (
-            <Popup
-              position="left center"
-              content={
+          <Popup
+            disabled={props.preview}
+            position="left center"
+            content={
+              !props.preview && (
                 <p>
                   Account balance:
                   {account && (
@@ -188,10 +178,19 @@ export function TransactionCard(
                     />
                   )}
                 </p>
-              }
-              trigger={currencyLabel}
-            />
-          )}
+              )
+            }
+            trigger={
+              <div>
+                Total:
+                <CurrencyLabel
+                  amount={props.transaction?.amount}
+                  currencyCode={account?.currency_code}
+                  loading={accountQueries.isLoading || props.loading}
+                />
+              </div>
+            }
+          />
         </Header>
       </Card.Content>
     </Card>

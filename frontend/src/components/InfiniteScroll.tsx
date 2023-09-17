@@ -35,14 +35,13 @@ function Page<B extends BaseQueryFn, T extends string, R, P>(props: {
     if (query.isSuccess) onLoadMore(query.data.length >= PER_PAGE);
   }, [query, onLoadMore]);
 
-  if (query.isLoading) return <props.item loading />;
+  if (query.isLoading || query.isUninitialized) return <props.item loading />;
   if (query.isError) return <QueryErrorMessage query={query} />;
-  if (query.isUninitialized) return <></>;
 
   return (
     <>
-      {query.data.map((response) => (
-        <props.item response={response} />
+      {query.data.map((response, i) => (
+        <props.item key={i} response={response} />
       ))}
       {query.data.length < PER_PAGE && <ExhaustedDataCard />}
     </>
