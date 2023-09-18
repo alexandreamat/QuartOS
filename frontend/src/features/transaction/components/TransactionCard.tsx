@@ -71,7 +71,7 @@ export function TransactionCard(
       onDragOver={(e: DragEvent) => e.preventDefault()}
     >
       <Card.Content>
-        <FlexRow gap="5" style={{ height: "2.2em" }}>
+        <FlexRow gap="1ch" alignItems="baseline" style={{ height: "2.2em" }}>
           {!props.preview && props.onCheckedChange && (
             <Checkbox
               disabled={props.checkBoxDisabled}
@@ -86,13 +86,18 @@ export function TransactionCard(
             <FormattedTimestamp
               timestamp={props.transaction?.timestamp}
               loading={props.loading}
+              style={{ width: "9em" }}
             />
           </Card.Meta>
           <AccountIcon
             account={account}
             institution={accountQueries.institution}
             loading={props.loading || accountQueries.isLoading}
-            style={{ maxHeight: "80%" }}
+            style={{
+              height: "90%",
+              width: "2.2em",
+              alignSelf: "center",
+            }}
           />
           <LineWithHiddenOverflow
             content={account?.name}

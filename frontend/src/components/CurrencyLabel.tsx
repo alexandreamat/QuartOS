@@ -15,15 +15,18 @@ export default function CurrencyLabel(props: {
           ? "green"
           : props.amount && props.amount < 0
           ? "orange"
-          : "grey"
+          : undefined
       }
     >
-      {!props.loading && props.amount !== undefined && props.currencyCode && (
-        <FormattedCurrency
-          amount={props.amount}
-          currencyCode={props.currencyCode}
-        />
-      )}
+      {props.loading
+        ? "..."
+        : props.amount !== undefined &&
+          props.currencyCode && (
+            <FormattedCurrency
+              amount={props.amount}
+              currencyCode={props.currencyCode}
+            />
+          )}
     </Label>
   );
 }

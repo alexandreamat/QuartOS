@@ -101,7 +101,7 @@ export default function Form(props: {
         ) : movementQuery.isError ? (
           <QueryErrorMessage query={movementQuery} />
         ) : (
-          <FlexRow gap="10" alignItems="center">
+          <FlexRow gap="10px" alignItems="center">
             <ActionButton
               disabled={!props.onGoToPrev}
               icon="arrow left"

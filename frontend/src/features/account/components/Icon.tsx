@@ -13,7 +13,7 @@ export default function AccountIcon(props: {
   if (props.loading)
     return (
       <Placeholder>
-        <Placeholder.Header image style={{ ...props.style }} />
+        <Placeholder.Header image />
       </Placeholder>
     );
 

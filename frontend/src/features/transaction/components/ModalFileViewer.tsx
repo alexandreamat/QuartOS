@@ -80,7 +80,7 @@ export default function ModalFileViewer(props: {
   return (
     <Modal onClose={props.onClose} open size="large">
       <Modal.Content>
-        <FlexRow alignItems="center" gap="10">
+        <FlexRow alignItems="center" gap="10px">
           <ActionButton
             disabled={fileIdx <= 0}
             icon="arrow left"

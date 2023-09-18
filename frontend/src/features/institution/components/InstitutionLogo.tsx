@@ -18,11 +18,20 @@ export function InstitutionLogo(props: {
 
   if (props.institution?.logo_base64 !== undefined)
     return (
-      <Image
-        floated={props.floated}
-        style={{ width: "auto", ...props.style }}
-        src={`data:image/png;base64,${props.institution.logo_base64}`}
-      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          ...props.style,
+        }}
+      >
+        <Image
+          floated={props.floated}
+          style={{ width: "auto", height: "100%" }}
+          src={`data:image/png;base64,${props.institution.logo_base64}`}
+        />
+      </div>
     );
 
   return <Icon size="large" name="university" style={props.style} />;
