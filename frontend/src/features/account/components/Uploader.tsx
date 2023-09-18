@@ -5,9 +5,9 @@ import {
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import TransactionsPreview from "features/transaction/components/TransactionsPreview";
 import {
   Button,
+  Card,
   Dimmer,
   Icon,
   Loader,
@@ -16,16 +16,49 @@ import {
 } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import UploadSegment from "components/UploadSegment";
+import { useCheckboxes } from "hooks/useCheckboxes";
+import { TransactionCard } from "features/transaction/components/TransactionCard";
+import { useEffect, useMemo, useState } from "react";
 
 export default function Uploader(props: {
   open: boolean;
   account: AccountApiOut;
   onClose: () => void;
 }) {
+  const checkboxes = useCheckboxes();
+  const [showDupsWarn, setShowDupsWarn] = useState(false);
+
+  const lastTransactionQuery =
+    api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
+      accountId: props.account.id,
+      perPage: 1,
+      page: 0,
+    });
+
   const [upload, uploadResult] =
     api.endpoints.previewApiUsersMeAccountsPreviewPost.useMutation();
 
+  const transactionsIn = useMemo(
+    () =>
+      uploadResult.isSuccess
+        ? [...uploadResult.data].sort(
+            (a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+          )
+        : undefined,
+    [uploadResult],
+  );
+
+  const lastTransaction = useMemo(
+    () =>
+      lastTransactionQuery.isSuccess && lastTransactionQuery.data.length
+        ? lastTransactionQuery.data[0]
+        : undefined,
+    [lastTransactionQuery],
+  );
+
   const handleClose = () => {
+    setShowDupsWarn(false);
     uploadResult.reset();
     props.onClose();
   };
@@ -45,15 +78,33 @@ export default function Uploader(props: {
     }
   };
 
+  useEffect(() => {
+    if (!transactionsIn || !lastTransaction) return;
+
+    transactionsIn.forEach((transactionIn, i) => {
+      if (transactionIn.timestamp <= lastTransaction.timestamp) {
+        setShowDupsWarn(true);
+        checkboxes.onChange(i, false);
+      } else {
+        checkboxes.onChange(i, true);
+      }
+    });
+  }, [transactionsIn, lastTransaction]);
+
   const [createMovements, createMovementsResult] =
     api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   const handleCreateTransactions = async () => {
+    if (!uploadResult.data) return;
+
+    const transactions = uploadResult.data.filter((_, i) =>
+      checkboxes.checked.has(i),
+    );
     try {
       await createMovements({
         accountId: props.account.id,
         bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
-          transactions: uploadResult.data!,
+          transactions,
           transaction_ids: [],
         },
       }).unwrap();
@@ -68,51 +119,70 @@ export default function Uploader(props: {
     <Modal open={props.open} onClose={props.onClose}>
       <Modal.Header>Upload Transactions File</Modal.Header>
       <Modal.Content>
-        <div style={{ height: "70vh" }}>
-          <FlexColumn>
-            {props.account.is_synced && (
-              <Message warning icon>
-                <Icon name="exclamation triangle" />
-                <Message.Content>
-                  <Message.Header>Synced Account</Message.Header>
-                  You are about to upload transactions for an account that is
-                  synced with your institution. This is only advised to upload
-                  transactions that cannot be synced automatically.
-                </Message.Content>
-              </Message>
+        <FlexColumn style={{ height: "calc(80vh - 10em)" }}>
+          {props.account.is_synced && (
+            <Message warning icon>
+              <Icon name="exclamation triangle" />
+              <Message.Content>
+                <Message.Header>Synced Account</Message.Header>
+                You are about to upload transactions for an account that is
+                synced with your institution. This is only advised to upload
+                transactions that cannot be synced automatically.
+              </Message.Content>
+            </Message>
+          )}
+          {showDupsWarn && (
+            <Message warning icon>
+              <Icon name="exclamation triangle" />
+              <Message.Content>
+                <Message.Header>Duplicate Entries Warning</Message.Header>
+                The transactions sheet you have uploaded might overlap with
+                existing transactions previously updated.
+              </Message.Content>
+            </Message>
+          )}
+          {uploadResult.isUninitialized && (
+            <UploadSegment onUpload={handleFileUpload} />
+          )}
+          {uploadResult.isLoading && (
+            <Dimmer active>
+              <Loader active />
+            </Dimmer>
+          )}
+          {createMovementsResult.isLoading && (
+            <Dimmer active>
+              <Loader active />
+            </Dimmer>
+          )}
+          <QueryErrorMessage query={uploadResult} />
+          <QueryErrorMessage query={createMovementsResult} />
+          <FlexColumn.Auto>
+            {transactionsIn && (
+              <Card.Group style={{ margin: 0 }}>
+                {transactionsIn.map((t, i) => (
+                  <TransactionCard
+                    key={i}
+                    transaction={t}
+                    accountId={props.account.id}
+                    checked={checkboxes.checked.has(i)}
+                    onCheckedChange={(x) => {
+                      checkboxes.onChange(i, x);
+                    }}
+                    preview
+                  />
+                ))}
+              </Card.Group>
             )}
-            {uploadResult.isUninitialized && (
-              <UploadSegment onUpload={handleFileUpload} />
-            )}
-            {uploadResult.isLoading && (
-              <Dimmer active>
-                <Loader active />
-              </Dimmer>
-            )}
-            {createMovementsResult.isLoading && (
-              <Dimmer active>
-                <Loader active />
-              </Dimmer>
-            )}
-            <QueryErrorMessage query={uploadResult} />
-            <QueryErrorMessage query={createMovementsResult} />
-            <FlexColumn.Auto>
-              {uploadResult.isSuccess && (
-                <TransactionsPreview
-                  transactionPages={[uploadResult.data]}
-                  accountId={props.account.id}
-                />
-              )}
-            </FlexColumn.Auto>
-          </FlexColumn>
-        </div>
+          </FlexColumn.Auto>
+        </FlexColumn>
       </Modal.Content>
       <Modal.Actions>
         <Button onClick={handleClose}>Cancel</Button>
         <Button
-          disabled={!uploadResult.isSuccess}
-          content="Confirm"
-          type="submit"
+          disabled={!uploadResult.isSuccess || checkboxes.checked.size < 1}
+          content={`Upload ${checkboxes.checked.size} ${
+            checkboxes.checked.size === 1 ? "transaction" : "transactions"
+          }`}
           labelPosition="right"
           icon="checkmark"
           onClick={handleCreateTransactions}

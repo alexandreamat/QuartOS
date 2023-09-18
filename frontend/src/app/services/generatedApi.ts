@@ -454,8 +454,8 @@ const injectedRtkApi = api
             start_date: queryArg.startDate,
             end_date: queryArg.endDate,
             search: queryArg.search,
-            amount_ge: queryArg.amountGe,
-            amount_le: queryArg.amountLe,
+            transaction_amount_ge: queryArg.transactionAmountGe,
+            transaction_amount_le: queryArg.transactionAmountLe,
             is_amount_abs: queryArg.isAmountAbs,
             transactionsGe: queryArg.transactionsGe,
             transactionsLe: queryArg.transactionsLe,
@@ -987,8 +987,8 @@ export type ReadManyApiUsersMeMovementsGetApiArg = {
   startDate?: string;
   endDate?: string;
   search?: string;
-  amountGe?: number;
-  amountLe?: number;
+  transactionAmountGe?: number;
+  transactionAmountLe?: number;
   isAmountAbs?: boolean;
   transactionsGe?: number;
   transactionsLe?: number;

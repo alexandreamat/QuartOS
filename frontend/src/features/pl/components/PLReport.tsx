@@ -24,7 +24,7 @@ export default function PLReport() {
             startDate: startDate,
             endDate: endDate,
           }
-        : skipToken
+        : skipToken,
     );
 
   function handleClickIncome() {

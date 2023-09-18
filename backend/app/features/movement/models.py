@@ -100,8 +100,8 @@ class Movement(__MovementBase, Base, table=True):
         end_date: date | None = None,
         search: str | None = None,
         is_descending: bool = True,
-        amount_ge: Decimal | None = None,
-        amount_le: Decimal | None = None,
+        transaction_amount_ge: Decimal | None = None,
+        transaction_amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
         transactionsGe: int | None = None,
         transactionsLe: int | None = None,
@@ -115,16 +115,22 @@ class Movement(__MovementBase, Base, table=True):
             statement = statement.where(cls.id == movement_id)
         if search:
             statement = filter_query_by_search(search, statement, col(cls.name))
-        if amount_ge:
+        if transaction_amount_ge:
             if is_amount_abs:
-                statement = statement.where(func.abs(Transaction.amount) >= amount_ge)
+                statement = statement.where(
+                    func.abs(Transaction.amount) >= transaction_amount_ge
+                )
             else:
-                statement = statement.where(col(Transaction.amount) >= amount_ge)
-        if amount_le:
+                statement = statement.where(
+                    col(Transaction.amount) >= transaction_amount_ge
+                )
+        if transaction_amount_le:
             if is_amount_abs:
-                statement = statement.where(func.abs(Transaction.amount) <= amount_le)
+                statement = statement.where(
+                    func.abs(Transaction.amount) <= transaction_amount_le
+                )
             else:
-                statement = statement.where(Transaction.amount <= amount_le)
+                statement = statement.where(Transaction.amount <= transaction_amount_le)
         if transactionsGe or transactionsLe:
             transaction_counts = (
                 select(
@@ -179,7 +185,19 @@ class Movement(__MovementBase, Base, table=True):
         is_descending: bool,
         sort_by: MovementField,
         currency_code: CurrencyCode,
+        amount_gt: Decimal | None = None,
+        amount_lt: Decimal | None = None,
     ) -> Iterable["Movement"]:
+        if amount_gt is not None:
+            movements = [
+                m for m in movements if m.get_amount(currency_code) > amount_gt
+            ]
+
+        if amount_lt is not None:
+            movements = [
+                m for m in movements if m.get_amount(currency_code) < amount_lt
+            ]
+
         if sort_by is MovementField.AMOUNT:
             movements = sorted(
                 movements,

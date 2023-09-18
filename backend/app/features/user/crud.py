@@ -170,11 +170,13 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         end_date: date | None = None,
         search: str | None = None,
         is_descending: bool = True,
-        amount_ge: Decimal | None = None,
-        amount_le: Decimal | None = None,
+        transaction_amount_ge: Decimal | None = None,
+        transaction_amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
         transactionsGe: int | None = None,
         transactionsLe: int | None = None,
+        amount_gt: Decimal | None = None,
+        amount_lt: Decimal | None = None,
         sort_by: MovementField = MovementField.TIMESTAMP,
     ) -> Iterable[MovementApiOut]:
         statement = User.select_movements(
@@ -187,8 +189,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             end_date=end_date,
             search=search,
             is_descending=is_descending,
-            amount_ge=amount_ge,
-            amount_le=amount_le,
+            transaction_amount_ge=transaction_amount_ge,
+            transaction_amount_le=transaction_amount_le,
             is_amount_abs=is_amount_abs,
             transactionsGe=transactionsGe,
             transactionsLe=transactionsLe,
@@ -198,7 +200,12 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_out = cls.read(db, user_id)
         currency_code = user_out.default_currency_code
         movements = Movement.filter_movements(
-            movements, is_descending, sort_by, currency_code
+            movements,
+            is_descending,
+            sort_by,
+            currency_code,
+            amount_gt=amount_gt,
+            amount_lt=amount_lt,
         )
         for movement in movements:
             yield MovementApiOut.from_orm(

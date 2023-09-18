@@ -41,8 +41,8 @@ def read_many(
     start_date: date | None = None,
     end_date: date | None = None,
     search: str | None = None,
-    amount_ge: Decimal | None = None,
-    amount_le: Decimal | None = None,
+    transaction_amount_ge: Decimal | None = None,
+    transaction_amount_le: Decimal | None = None,
     is_amount_abs: bool = False,
     transactionsGe: int | None = None,
     transactionsLe: int | None = None,
@@ -63,8 +63,8 @@ def read_many(
         transactionsGe=transactionsGe,
         transactionsLe=transactionsLe,
         sort_by=sort_by,
-        amount_ge=amount_ge,
-        amount_le=amount_le,
+        transaction_amount_ge=transaction_amount_ge,
+        transaction_amount_le=transaction_amount_le,
         is_amount_abs=is_amount_abs,
     )
 

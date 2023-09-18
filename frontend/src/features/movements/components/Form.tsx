@@ -84,7 +84,7 @@ export default function Form(props: {
         <TransactionForm.Create
           open={transactionFormOpen}
           onClose={() => setTransactionFormOpen(false)}
-          onCreated={(m) => setMovementId(m.id)}
+          onSuccess={(m) => setMovementId(m.id)}
         />
       )}
       <Modal.Header>
@@ -118,7 +118,7 @@ export default function Form(props: {
                 }
                 showFlows
                 editable
-                loading={movementQuery.isLoading}
+                loading={movementQuery.isFetching}
                 movement={movementQuery.data}
               />
             </FlexRow.Auto>
