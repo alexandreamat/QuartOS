@@ -37,8 +37,8 @@ export default function Movements() {
   const [isDescending] = barState.isDescendingState;
   const [transactionsGe] = barState.transactionsGeState;
   const [transactionsLe] = barState.transactionsLeState;
-  const [amountGe] = barState.amountGeState;
-  const [amountLe] = barState.amountLeState;
+  const [transactionAmountGe] = barState.amountGeState;
+  const [transactionAmountLe] = barState.amountLeState;
   const [isAmountAbs] = barState.isAmountAbsState;
   const [isMultipleChoice, setIsMultipleChoice] =
     barState.isMultipleChoiceState;
@@ -51,8 +51,8 @@ export default function Movements() {
     accountId,
     transactionsGe,
     transactionsLe,
-    amountGe,
-    amountLe,
+    transactionAmountGe,
+    transactionAmountLe,
     isAmountAbs,
   };
 

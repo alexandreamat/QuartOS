@@ -23,15 +23,18 @@ export function TransactionCard(
         checked?: boolean;
         onCheckedChange?: (x: boolean) => void;
         checkBoxDisabled?: boolean;
-        preview?: false;
         loading?: boolean;
+        preview?: false;
       }
     | {
         // from preview
+        checked: boolean;
+        onCheckedChange: (x: boolean) => void;
         transaction?: TransactionApiIn;
+        checkBoxDisabled?: false;
         accountId: number;
-        preview: true;
         loading?: false;
+        preview: true;
       },
 ) {
   const accountQueries = useAccountQueries(
@@ -72,7 +75,7 @@ export function TransactionCard(
     >
       <Card.Content>
         <FlexRow gap="1ch" alignItems="baseline" style={{ height: "2.2em" }}>
-          {!props.preview && props.onCheckedChange && (
+          {props.onCheckedChange && (
             <Checkbox
               disabled={props.checkBoxDisabled}
               checked={props.checked}

@@ -245,7 +245,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
 function FormCreate(props: {
   open: boolean;
   onClose: () => void;
-  onCreated: (x: MovementApiOut) => void;
+  onSuccess: (x: MovementApiOut) => void;
 }) {
   const [createMovement, createMovementResult] =
     api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
@@ -262,7 +262,7 @@ function FormCreate(props: {
           transaction_ids: [],
         },
       }).unwrap();
-      props.onCreated(movement);
+      props.onSuccess(movement);
     } catch (error) {
       logMutationError(error, createMovementResult);
       throw error;

@@ -41,7 +41,7 @@ function Page<B extends BaseQueryFn, T extends string, R, P>(props: {
   return (
     <>
       {query.data.map((response, i) => (
-        <props.item key={i} response={response} />
+        <props.item key={i} response={response} loading={query.isFetching} />
       ))}
       {query.data.length < PER_PAGE && <ExhaustedDataCard />}
     </>

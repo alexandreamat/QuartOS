@@ -11,14 +11,7 @@ import FormattedTimestamp from "components/FormattedTimestamp";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import MutateActionButton from "components/MutateActionButton";
 import { useEffect, useState } from "react";
-import {
-  Button,
-  Card,
-  Checkbox,
-  Header,
-  Input,
-  Placeholder,
-} from "semantic-ui-react";
+import { Button, Card, Checkbox, Header, Input } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { Flows } from "./Flows";
 
@@ -149,13 +142,17 @@ export function MovementCard(props: {
         )}
       </Card.Content>
       <Card.Content extra>
-        <FlexRow justifyContent="right" gap="1ch" alignItems="baseline">
+        <FlexRow gap="1ch" alignItems="baseline">
           {"explanationRate" in props && props.explanationRate && (
-            <Header sub floated="left">
-              {props.explanationRate.toFixed(0)}%
+            <Header sub floated="left" style={{ marginRight: "auto" }}>
+              {props.explanationRate.toFixed(0)}% of cumulative total
             </Header>
           )}
-          <div style={{ color: "black", fontWeight: "bold" }}>Total:</div>
+          <div
+            style={{ color: "black", fontWeight: "bold", marginLeft: "auto" }}
+          >
+            Total:
+          </div>
           {props.movement ? (
             Object.entries(props.movement.amounts).map(
               ([currencyCode, amount], i) => (

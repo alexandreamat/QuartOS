@@ -45,7 +45,7 @@ function InstitutionLinkRow(props: {
 
   const institutionQuery =
     api.endpoints.readApiInstitutionsInstitutionIdGet.useQuery(
-      props.institutionLink.institution_id
+      props.institutionLink.institution_id,
     );
 
   return (
@@ -53,7 +53,10 @@ function InstitutionLinkRow(props: {
       <Table.Cell collapsing>
         <LoadableLine isLoading={institutionQuery.isLoading}>
           {institutionQuery.data && (
-            <InstitutionLogo institution={institutionQuery.data} />
+            <InstitutionLogo
+              institution={institutionQuery.data}
+              style={{ width: "2em" }}
+            />
           )}
         </LoadableLine>
       </Table.Cell>
@@ -94,7 +97,7 @@ function InstitutionLinkRow(props: {
           content="Add"
           onClick={() =>
             navigate(
-              `/accounts?isFormOpen=true&institutionLinkId=${props.institutionLink.id}`
+              `/accounts?isFormOpen=true&institutionLinkId=${props.institutionLink.id}`,
             )
           }
         />
