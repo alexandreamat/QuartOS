@@ -22,9 +22,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
 
     @classmethod
     def create(  # type: ignore[override]
-        cls,
-        db: Session,
-        transactions: Sequence[TransactionApiIn | int],
+        cls, db: Session, transactions: Sequence[TransactionApiIn | int], **kwargs: Any
     ) -> MovementApiOut:
         movement = Movement.create(db, Movement(name=""))
         for transaction in transactions:
@@ -32,7 +30,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
                 transaction_in = transaction
                 if not movement.name:
                     movement.name = transaction_in.name
-                cls.create_transaction(db, movement, transaction_in)
+                cls.create_transaction(db, movement.id, transaction_in, **kwargs)
             else:
                 transaction_id = transaction
                 cls.add_transaction(db, movement, transaction_id)
@@ -63,7 +61,11 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
 
     @classmethod
     def add_transaction(
-        cls, db: Session, movement: Movement, transaction_id: int
+        cls,
+        db: Session,
+        movement: Movement,
+        transaction_id: int,
+        currency_code: CurrencyCode = CurrencyCode("USD"),
     ) -> MovementApiOut:
         transaction_out = CRUDTransaction.read(db, transaction_id)
         old_movement_id = transaction_out.movement_id
@@ -83,7 +85,9 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         old_movement = Movement.read(db, old_movement_id)
         if not old_movement.transactions:
             cls.delete(db, old_movement_id)
-        return MovementApiOut.from_orm(movement)
+        return MovementApiOut.from_orm(
+            movement, {"amount": movement.get_amount(currency_code)}
+        )
 
     @classmethod
     def add_transactions(
@@ -101,14 +105,14 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def create_transaction(
         cls,
         db: Session,
-        movement: Movement,
+        movement_id: int,
         transaction_in: TransactionApiIn,
         **kwargs: Any,
     ) -> TransactionApiOut:
         transaction_out = CRUDTransaction.create(
             db,
             transaction_in,
-            movement_id=movement.id,
+            movement_id=movement_id,
             **kwargs,
         )
         return transaction_out

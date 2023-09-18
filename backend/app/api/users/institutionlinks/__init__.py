@@ -148,7 +148,7 @@ def update(
 
 
 @router.delete("/{userinstitutionlink_id}")
-def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
+def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> int:
     CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
     return CRUDUserInstitutionLink.delete(db, userinstitutionlink_id)
 

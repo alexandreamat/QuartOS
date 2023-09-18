@@ -56,8 +56,8 @@ def update(
 
 
 @router.delete("/{id}")
-def delete(db: DBSession, me: CurrentSuperuser, id: int) -> None:
+def delete(db: DBSession, me: CurrentSuperuser, id: int) -> int:
     """
     Delete a deserialiser.
     """
-    CRUDTransactionDeserialiser.delete(db, id=id)
+    return CRUDTransactionDeserialiser.delete(db, id=id)

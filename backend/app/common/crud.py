@@ -45,8 +45,9 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         return out_obj
 
     @classmethod
-    def delete(cls, db: Session, id: int) -> None:
+    def delete(cls, db: Session, id: int) -> int:
         cls.db_model.delete(db, id)
+        return id
 
 
 DBSyncableModelType = TypeVar("DBSyncableModelType", bound=SyncableBase)

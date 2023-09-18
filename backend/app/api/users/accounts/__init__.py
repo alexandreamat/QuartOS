@@ -18,7 +18,6 @@ from app.features.transaction import (
 )
 
 from . import movements
-from . import transactions
 
 router = APIRouter()
 
@@ -66,7 +65,7 @@ def read(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
 
 
 @router.put("/{account_id}/update-balance")
-def update_balances(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
+def update_balance(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
     CRUDUser.read_account(db, me.id, None, account_id)
     return CRUDAccount.update_balance(db, account_id)
 
@@ -96,18 +95,12 @@ def delete(
     db: DBSession,
     me: CurrentUser,
     account_id: int,
-) -> None:
+) -> int:
     account_out = CRUDUser.read_account(db, me.id, None, account_id)
     if account_out.is_synced:
         raise SyncedEntity()
     return CRUDAccount.delete(db, account_id)
 
-
-router.include_router(
-    transactions.router,
-    prefix="/{account_id}/transactions",
-    tags=["transactions"],
-)
 
 router.include_router(
     movements.router, prefix="/{account_id}/movements", tags=["movements"]

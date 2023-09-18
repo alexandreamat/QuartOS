@@ -107,9 +107,9 @@ def delete(
     db: DBSession,
     me: CurrentUser,
     movement_id: int,
-) -> None:
+) -> int:
     CRUDUser.read_movement(db, me.id, None, None, movement_id)
-    CRUDMovement.delete(db, movement_id)
+    return CRUDMovement.delete(db, movement_id)
 
 
 router.include_router(aggregates.router, prefix="/aggregates")

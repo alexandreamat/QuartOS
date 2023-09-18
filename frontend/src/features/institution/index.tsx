@@ -20,7 +20,7 @@ const InstitutionsTable = (props: {
   const [deleteInstitution, deleteInstitutionResult] =
     api.endpoints.deleteApiInstitutionsInstitutionIdDelete.useMutation();
   const [syncInstitution, syncInstitutionResult] =
-    api.endpoints.syncApiInstitutionsInstitutionIdSyncPost.useMutation();
+    api.endpoints.syncApiInstitutionsInstitutionIdSyncPut.useMutation();
 
   const handleDelete = async (institution: InstitutionApiOut) => {
     try {

@@ -73,6 +73,6 @@ def delete(
     movement_id: int,
     transaction_id: int,
     file_id: int,
-) -> None:
+) -> int:
     CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
-    CRUDFile.delete(db, file_id)
+    return CRUDFile.delete(db, file_id)
