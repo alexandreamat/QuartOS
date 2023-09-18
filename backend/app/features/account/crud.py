@@ -238,12 +238,13 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     @classmethod
     def delete_transaction(
         cls, db: Session, movement_id: int, account_id: int, transaction_id: int
-    ) -> None:
+    ) -> int:
         transaction_out = cls.read_transaction(
             db, account_id, movement_id, transaction_id
         )
         CRUDMovement.delete_transaction(db, movement_id, transaction_id)
         Account.update_balance(db, account_id, transaction_out.timestamp)
+        return transaction_id
 
     @classmethod
     def read_transaction(

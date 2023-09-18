@@ -15,7 +15,7 @@ from . import files
 router = APIRouter()
 
 
-@router.post("/", tags=["transactions"])
+@router.post("/")
 def create(
     db: DBSession,
     me: CurrentUser,
@@ -65,7 +65,7 @@ def delete(
     account_id: int,
     movement_id: int,
     transaction_id: int,
-) -> None:
+) -> int:
     CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
     if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)

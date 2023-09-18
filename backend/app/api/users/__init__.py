@@ -94,10 +94,10 @@ def read_many(
 
 
 @router.delete("/{user_id}")
-def delete(db: DBSession, me: CurrentSuperuser, user_id: int) -> None:
+def delete(db: DBSession, me: CurrentSuperuser, user_id: int) -> int:
     if me.id == user_id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)
-    CRUDUser.delete(db, user_id)
+    return CRUDUser.delete(db, user_id)
 
 
 router.include_router(

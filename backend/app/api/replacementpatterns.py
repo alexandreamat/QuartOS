@@ -44,5 +44,5 @@ def update(
 
 
 @router.delete("/{id}")
-def delete(db: DBSession, me: CurrentSuperuser, id: int) -> None:
-    CRUDReplacementPattern.delete(db, id)
+def delete(db: DBSession, me: CurrentSuperuser, id: int) -> int:
+    return CRUDReplacementPattern.delete(db, id)

@@ -30,7 +30,7 @@ router = APIRouter()
 
 
 @router.get("/{start_date}/{end_date}")
-def read(
+def read_many(
     db: DBSession,
     me: CurrentSuperuser,
     userinstitutionlink_id: int,

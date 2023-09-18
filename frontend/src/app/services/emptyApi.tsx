@@ -10,6 +10,11 @@ export const emptySplitApi = createApi({
       if (token) headers.set("authorization", `Bearer ${token}`);
       return headers;
     },
+    // async fetchFn(input, init) {
+    //   const response = await fetch(input, init);
+    //   await new Promise((resolve) => setTimeout(resolve, 1000));
+    //   return response;
+    // },
   }),
   endpoints: () => ({}),
 });
