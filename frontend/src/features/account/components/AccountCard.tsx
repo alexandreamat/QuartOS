@@ -46,10 +46,10 @@ export default function AccountCard(props: {
       />
       <Card.Content>
         <InstitutionLogo
-          height={36}
           floated="right"
           institution={institutionLinkQueries.institution}
           loading={institutionLinkQueries.isLoading}
+          style={{ width: "3em" }}
         />
         <Card.Header>{props.account.name}</Card.Header>
         <Card.Meta>
