@@ -63,8 +63,7 @@ export function MovementCard(props: {
   return (
     <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
       <Card.Content>
-        <FlexRow alignItems="center" gap="1em">
-          {/* Checkbox */}
+        <FlexRow alignItems="center" gap="1ch">
           {!props.loading && props.onCheckedChange && (
             <Checkbox
               checked={props.checked}
@@ -73,31 +72,17 @@ export function MovementCard(props: {
               }
             />
           )}
-
-          {/* Timestamp */}
-          {props.loading ? (
-            <Placeholder fluid>
-              <Placeholder.Header>
-                <Placeholder.Line style={{ width: "10em" }} />
-              </Placeholder.Header>
-            </Placeholder>
-          ) : (
-            <Card.Meta>
-              <FormattedTimestamp
-                timestamp={props.movement?.earliest_timestamp}
-              />
-            </Card.Meta>
-          )}
+          <Card.Meta>
+            <FormattedTimestamp
+              timestamp={props.movement?.earliest_timestamp}
+              loading={props.loading}
+              style={{ width: "9em" }}
+            />
+          </Card.Meta>
 
           {/* Name */}
           <FlexRow.Auto>
-            {props.loading ? (
-              <Placeholder fluid>
-                <Placeholder.Header>
-                  <Placeholder.Line style={{ width: "100%" }} />
-                </Placeholder.Header>
-              </Placeholder>
-            ) : isEditMode ? (
+            {isEditMode ? (
               <Input
                 style={{ width: "100%" }}
                 value={name}
@@ -105,7 +90,10 @@ export function MovementCard(props: {
               />
             ) : (
               <Header as="h5">
-                <LineWithHiddenOverflow content={props.movement?.name} />
+                <LineWithHiddenOverflow
+                  content={props.movement?.name}
+                  loading={props.loading}
+                />
               </Header>
             )}
           </FlexRow.Auto>
@@ -143,16 +131,14 @@ export function MovementCard(props: {
               )
             ))}
 
-          {/* "See more" button */}
           {props.onOpenEditForm && (
             <MutateActionButton
               onOpenEditForm={props.onOpenEditForm}
-              loading={props.loading}
+              disabled={props.loading}
             />
           )}
         </FlexRow>
 
-        {/* Flows */}
         {props.showFlows && (
           <Flows
             onRemove={props.onRemoveTransaction}
@@ -163,13 +149,13 @@ export function MovementCard(props: {
         )}
       </Card.Content>
       <Card.Content extra>
-        {"explanationRate" in props && props.explanationRate && (
-          <Header sub floated="left">
-            {props.explanationRate.toFixed(0)}%
-          </Header>
-        )}
-        <Header as="h5" floated="right">
-          Total:
+        <FlexRow justifyContent="right" gap="1ch" alignItems="baseline">
+          {"explanationRate" in props && props.explanationRate && (
+            <Header sub floated="left">
+              {props.explanationRate.toFixed(0)}%
+            </Header>
+          )}
+          <div style={{ color: "black", fontWeight: "bold" }}>Total:</div>
           {props.movement ? (
             Object.entries(props.movement.amounts).map(
               ([currencyCode, amount], i) => (
@@ -183,7 +169,7 @@ export function MovementCard(props: {
           ) : (
             <CurrencyLabel loading />
           )}
-        </Header>
+        </FlexRow>
       </Card.Content>
     </Card>
   );

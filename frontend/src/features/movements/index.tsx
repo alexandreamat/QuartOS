@@ -124,7 +124,7 @@ export default function Movements() {
     setCheckedMovements(new Set());
   }
 
-  const Item = ({
+  const CardGenerator = ({
     response: m,
     loading,
   }: PaginatedItemProps<MovementApiOut>) => (
@@ -166,7 +166,7 @@ export default function Movements() {
       <FlexColumn.Auto reference={reference}>
         <Card.Group style={{ margin: 0 }}>
           <InfiniteScroll
-            item={Item}
+            itemRenderer={CardGenerator}
             endpoint={api.endpoints.readManyApiUsersMeMovementsGet}
             params={arg}
             reference={reference}

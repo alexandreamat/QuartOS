@@ -5,7 +5,7 @@ import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
 import { Popup, Step } from "semantic-ui-react";
 import ClickableIcon from "components/ClickableIcon";
-import { CSSProperties, useState } from "react";
+import React, { CSSProperties, useState } from "react";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import ModalFileViewer from "features/transaction/components/ModalFileViewer";
 import FlexRow from "components/FlexRow";
@@ -30,93 +30,83 @@ function Flow(props: {
   const currencyCode = accountQueries.account?.currency_code;
 
   const children = [
-    () => (
+    <Popup
+      disabled={!props.loading && !accountQueries.isLoading}
+      hideOnScroll
+      position="top center"
+      content={
+        props.transaction &&
+        currencyCode &&
+        `Account balance: ${props.transaction.account_balance.toLocaleString(
+          undefined,
+          {
+            style: "currency",
+            currency: currencyCode,
+          },
+        )}`
+      }
+      trigger={
+        <div>
+          <CurrencyLabel
+            amount={props.transaction?.amount}
+            currencyCode={currencyCode}
+            loading={props.loading || accountQueries.isLoading}
+          />
+        </div>
+      }
+    />,
+    <FlexRow.Auto>
       <Popup
-        disabled={!props.loading && !accountQueries.isLoading}
         hideOnScroll
         position="top center"
         content={
-          props.transaction &&
-          currencyCode &&
-          `Account balance: ${props.transaction.account_balance.toLocaleString(
-            undefined,
-            {
-              style: "currency",
-              currency: currencyCode,
-            },
-          )}`
+          <FormattedTimestamp timestamp={props.transaction?.timestamp} />
         }
         trigger={
           <div>
-            <CurrencyLabel
-              amount={props.transaction?.amount}
-              currencyCode={currencyCode}
-              loading={props.loading || accountQueries.isLoading}
+            <LineWithHiddenOverflow
+              content={props.transaction?.name}
+              loading={props.loading}
+              style={props.style}
             />
           </div>
         }
       />
-    ),
-    () => (
-      <FlexRow.Auto>
-        <Popup
-          hideOnScroll
-          position="top center"
-          content={
-            <FormattedTimestamp timestamp={props.transaction?.timestamp} />
-          }
-          trigger={
-            <div>
-              <LineWithHiddenOverflow
-                content={props.transaction?.name}
-                loading={props.loading}
-                style={props.style}
-              />
-            </div>
-          }
-        />
-      </FlexRow.Auto>
-    ),
-    () => (
-      <Popup
-        disabled={!props.loading && !accountQueries.isLoading}
-        hideOnScroll
-        content={accountQueries.account?.name}
-        trigger={
-          <div>
-            <AccountIcon
-              account={accountQueries.account}
-              institution={accountQueries.institution}
-              loading={props.loading || accountQueries.isLoading}
-            />
-          </div>
-        }
-      />
-    ),
-    props.transaction &&
-      props.transaction.files.length > 0 &&
-      (() => (
-        <ClickableIcon
-          name="file"
-          onClick={() => setFileOpen(true)}
-          loading={props.loading}
-        />
-      )),
-    () => (
+    </FlexRow.Auto>,
+    <Popup
+      disabled={!props.loading && !accountQueries.isLoading}
+      hideOnScroll
+      content={accountQueries.account?.name}
+      trigger={
+        <div>
+          <AccountIcon
+            account={accountQueries.account}
+            institution={accountQueries.institution}
+            loading={props.loading || accountQueries.isLoading}
+            style={{ width: "2em" }}
+          />
+        </div>
+      }
+    />,
+    props.transaction && props.transaction.files.length > 0 && (
       <ClickableIcon
-        name="ellipsis horizontal"
-        onClick={() => setFormOpen(true)}
+        name="file"
+        onClick={() => setFileOpen(true)}
         loading={props.loading}
       />
     ),
-    props.onRemove &&
-      (() => (
-        <ClickableIcon
-          name="remove circle"
-          onClick={props.onRemove}
-          loading={props.loading}
-        />
-      )),
+    <ClickableIcon
+      name="ellipsis horizontal"
+      onClick={() => setFormOpen(true)}
+      loading={props.loading}
+    />,
+    props.onRemove && (
+      <ClickableIcon
+        name="remove circle"
+        onClick={props.onRemove}
+        loading={props.loading}
+      />
+    ),
   ];
 
   return (
@@ -135,8 +125,8 @@ function Flow(props: {
           transaction={props.transaction}
         />
       )}
-      {(props.reverse ? children : children.reverse()).map(
-        (Child, i) => Child && <Child key={i} />,
+      {(props.reverse ? children.reverse() : children).map(
+        (child, i) => child && React.cloneElement(child, { key: i }),
       )}
     </FlexRow>
   );
@@ -195,6 +185,7 @@ export function Flows(props: {
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
         filterPredicate={(t) => t.amount < 0}
+        reverse
       />
       <StepFlows
         loading={props.loading}
@@ -202,7 +193,6 @@ export function Flows(props: {
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
         filterPredicate={(t) => t.amount >= 0}
-        reverse
       />
     </Step.Group>
   );

@@ -56,7 +56,7 @@ export function InfiniteScroll<
 >(props: {
   params: P;
   endpoint: PaginatedQueryEndpoint<B, T, R, P>;
-  item: (props: PaginatedItemProps<R>) => JSX.Element;
+  itemRenderer: (props: PaginatedItemProps<R>) => JSX.Element;
   reference: MutableRefObject<HTMLDivElement | null>;
 }) {
   const [pages, setPages] = useState(1);
@@ -100,7 +100,7 @@ export function InfiniteScroll<
           endpoint={props.endpoint}
           params={props.params}
           onSuccess={(loadMore) => handleSuccess(page, loadMore)}
-          item={props.item}
+          item={props.itemRenderer}
         />
       ))}
     </>

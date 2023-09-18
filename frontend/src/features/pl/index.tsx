@@ -29,7 +29,10 @@ function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
 export default function IncomeStatement() {
   const reference = useRef<HTMLDivElement | null>(null);
 
-  const Item = ({ response: pl, loading }: PaginatedItemProps<PlStatement>) => (
+  const CardRenderer = ({
+    response: pl,
+    loading,
+  }: PaginatedItemProps<PlStatement>) => (
     <Row key={pl?.start_date} plStatement={pl} loading={loading} />
   );
 
@@ -38,7 +41,7 @@ export default function IncomeStatement() {
       <FlexColumn.Auto reference={reference}>
         <Card.Group style={{ margin: 0 }}>
           <InfiniteScroll
-            item={Item}
+            itemRenderer={CardRenderer}
             reference={reference}
             endpoint={
               api.endpoints.getManyAggregatesApiUsersMeMovementsAggregatesGet

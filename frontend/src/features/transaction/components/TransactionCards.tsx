@@ -38,7 +38,7 @@ export default function TransactionCards(props: {
     accountId,
   };
 
-  const Item = ({
+  const CardRenderer = ({
     response: t,
     loading,
   }: PaginatedItemProps<TransactionApiOut>) => (
@@ -60,7 +60,7 @@ export default function TransactionCards(props: {
         reference={props.reference}
         endpoint={api.endpoints.readManyApiUsersMeTransactionsGet}
         params={params}
-        item={Item}
+        itemRenderer={CardRenderer}
       />
     </Card.Group>
   );

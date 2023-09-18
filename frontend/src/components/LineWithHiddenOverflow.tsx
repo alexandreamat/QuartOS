@@ -9,7 +9,9 @@ export default function LineWithHiddenOverflow(props: {
   if (props.loading)
     return (
       <Placeholder style={{ margin: 0 }}>
-        <Placeholder.Line style={{ ...props.style }} />
+        <Placeholder.Header>
+          <Placeholder.Line style={{ ...props.style }} />
+        </Placeholder.Header>
       </Placeholder>
     );
 
