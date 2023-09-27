@@ -13,12 +13,6 @@ export function useInstitutionLinkQueries(institutionLinkId?: number) {
       institutionLinkQuery.data?.institution_id || skipToken,
     );
 
-  const isLoading =
-    institutionLinkQuery.isLoading || institutionQuery.isLoading;
-  const isSuccess =
-    institutionLinkQuery.isSuccess && institutionQuery.isSuccess;
-  const isError = institutionLinkQuery.isError || institutionQuery.isError;
-
   const error = [
     institutionLinkQuery.isError
       ? renderErrorMessage(institutionLinkQuery.error)
@@ -31,12 +25,14 @@ export function useInstitutionLinkQueries(institutionLinkId?: number) {
     .join(" ");
 
   return {
-    isLoading,
-    isSuccess,
-    isError,
+    isLoading: institutionLinkQuery.isLoading || institutionQuery.isLoading,
+    isSuccess: institutionLinkQuery.isSuccess && institutionQuery.isSuccess,
+    isError: institutionLinkQuery.isError || institutionQuery.isError,
     error,
     institutionLink: institutionLinkQuery.data,
     institution: institutionQuery.data,
+    isUninitiaized:
+      institutionLinkQuery.isUninitialized && institutionQuery.isUninitialized,
   };
 }
 

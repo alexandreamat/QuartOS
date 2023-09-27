@@ -132,7 +132,7 @@ export default function Movements() {
       key={m?.id}
       movement={m}
       onOpenEditForm={() => m && handleOpenEditForm(m.id)}
-      selectedAccountId={accountId}
+      accountId={accountId}
       showFlows={m && m.transactions.length > 1}
       checked={m && checkedMovements.has(m)}
       onCheckedChange={
@@ -150,6 +150,7 @@ export default function Movements() {
         open={isFormOpen}
         onClose={handleCloseForm}
         movementId={movementId}
+        accountId={accountId}
         // onGoToPrev={
         //   movementIdx !== NOT_FOUND && movementIdx > 0
         //     ? () => handleGoToRelativeMovement(-1)

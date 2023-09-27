@@ -16,7 +16,7 @@ export default function Profile() {
   const email = useFormField(me.data?.email || "");
   const password = useFormField("");
   const defaultCurrencyCode = useFormField(
-    me.data?.default_currency_code || ""
+    me.data?.default_currency_code || "",
   );
 
   const fields = [fullName, email, password, defaultCurrencyCode];
@@ -66,7 +66,7 @@ export default function Profile() {
             field={email}
           />
           <FormCurrencyCodeDropdown
-            readOnly={!editMode}
+            disabled={!editMode}
             currencyCode={defaultCurrencyCode}
             label="Default currency"
           />

@@ -21,6 +21,7 @@ function Flow(props: {
   loading?: boolean;
   style?: CSSProperties;
   reverse?: boolean;
+  isInForm?: boolean;
 }) {
   const [formOpen, setFormOpen] = useState(false);
   const [fileOpen, setFileOpen] = useState(false);
@@ -31,7 +32,7 @@ function Flow(props: {
 
   const children = [
     <Popup
-      disabled={!props.loading && !accountQueries.isLoading}
+      disabled={props.loading || accountQueries.isLoading}
       hideOnScroll
       position="top center"
       content={
@@ -74,7 +75,7 @@ function Flow(props: {
       />
     </FlexRow.Auto>,
     <Popup
-      disabled={!props.loading && !accountQueries.isLoading}
+      disabled={props.loading || accountQueries.isLoading}
       hideOnScroll
       content={accountQueries.account?.name}
       trigger={
@@ -88,19 +89,23 @@ function Flow(props: {
         </div>
       }
     />,
-    props.transaction && props.transaction.files.length > 0 && (
+    props.isInForm &&
+      props.transaction &&
+      props.transaction.files.length > 0 && (
+        <ClickableIcon
+          name="file"
+          onClick={() => setFileOpen(true)}
+          loading={props.loading}
+        />
+      ),
+    props.isInForm && (
       <ClickableIcon
-        name="file"
-        onClick={() => setFileOpen(true)}
+        name="ellipsis horizontal"
+        onClick={() => setFormOpen(true)}
         loading={props.loading}
       />
     ),
-    <ClickableIcon
-      name="ellipsis horizontal"
-      onClick={() => setFormOpen(true)}
-      loading={props.loading}
-    />,
-    props.onRemove && (
+    props.isInForm && props.onRemove && (
       <ClickableIcon
         name="remove circle"
         onClick={props.onRemove}
@@ -139,6 +144,7 @@ function StepFlows(props: {
   loading?: boolean;
   filterPredicate: (t: TransactionApiOut) => boolean;
   reverse?: boolean;
+  isInForm?: boolean;
 }) {
   const flows = props.transactions?.filter(props.filterPredicate);
 
@@ -157,12 +163,13 @@ function StepFlows(props: {
             <Flow
               key={t.id}
               transaction={t}
-              onRemove={() => props.onRemove && props.onRemove(t)}
+              onRemove={props.onRemove && (() => props.onRemove!(t))}
               style={{
                 fontWeight:
                   t.account_id === props.selectedAccountId ? "bold" : "normal",
               }}
               reverse={props.reverse}
+              isInForm={props.isInForm}
             />
           ))
         )}
@@ -176,6 +183,7 @@ export function Flows(props: {
   selectedAccountId?: number;
   transactions?: TransactionApiOut[];
   loading?: boolean;
+  isInForm?: boolean;
 }) {
   return (
     <Step.Group fluid widths={2}>
@@ -185,6 +193,7 @@ export function Flows(props: {
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
         filterPredicate={(t) => t.amount < 0}
+        isInForm={props.isInForm}
         reverse
       />
       <StepFlows
@@ -193,6 +202,7 @@ export function Flows(props: {
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
         filterPredicate={(t) => t.amount >= 0}
+        isInForm={props.isInForm}
       />
     </Step.Group>
   );

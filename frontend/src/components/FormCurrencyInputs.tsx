@@ -1,11 +1,12 @@
 import useFormField from "hooks/useFormField";
-import { Form, InputOnChangeData } from "semantic-ui-react";
+import { Form } from "semantic-ui-react";
 import FormCurrencyCodeDropdown from "./FormCurrencyCodeDropdown";
 
 export default function FormCurrencyInputs(props: {
   label: string;
   amount: ReturnType<typeof useFormField<string>>;
   currencyCode: ReturnType<typeof useFormField<string>>;
+  disabled?: boolean;
 }) {
   return (
     <Form.Group widths="equal">
@@ -20,10 +21,7 @@ export default function FormCurrencyInputs(props: {
         placeholder={"Enter " + props.label}
         required
         value={props.amount.value}
-        onChange={(
-          e: React.ChangeEvent<HTMLInputElement>,
-          data: InputOnChangeData
-        ) => {
+        onChange={(_, data) => {
           props.amount.reset();
           props.amount.set(data.value as string);
         }}

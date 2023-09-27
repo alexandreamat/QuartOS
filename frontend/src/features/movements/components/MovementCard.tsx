@@ -21,9 +21,9 @@ export function MovementCard(props: {
   onOpenEditForm?: () => void;
   onRemoveTransaction?: (x: TransactionApiOut) => void;
   explanationRate?: number;
-  selectedAccountId?: number;
+  accountId?: number;
   showFlows?: boolean;
-  editable?: boolean;
+  isInForm?: boolean;
   onCheckedChange?: (x: boolean) => void;
   checked?: boolean;
 }) {
@@ -116,7 +116,7 @@ export function MovementCard(props: {
                 />
               </>
             ) : (
-              props.editable && (
+              props.isInForm && (
                 <ClickableIcon
                   name="pencil"
                   onClick={() => setIsEditMode(true)}
@@ -135,9 +135,10 @@ export function MovementCard(props: {
         {props.showFlows && (
           <Flows
             onRemove={props.onRemoveTransaction}
-            selectedAccountId={props.selectedAccountId}
+            selectedAccountId={props.accountId}
             loading={props.loading}
             transactions={props.movement?.transactions}
+            isInForm={props.isInForm}
           />
         )}
       </Card.Content>
@@ -160,6 +161,7 @@ export function MovementCard(props: {
                   key={i}
                   amount={amount}
                   currencyCode={currencyCode}
+                  loading={props.loading}
                 />
               ),
             )

@@ -15,14 +15,8 @@ function Page<B extends BaseQueryFn, T extends string, R, P>(props: {
   onSuccess: (loadMore: boolean) => void;
   item: (props: PaginatedItemProps<R>) => JSX.Element;
 }) {
-  const memoizedParams = useMemo(
-    () => props.params,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(props.params)],
-  );
-
   const arg: PaginatedQueryArg<P> = {
-    ...memoizedParams,
+    ...props.params,
     page: props.page,
     perPage: PER_PAGE,
   };
@@ -59,6 +53,12 @@ export function InfiniteScroll<
   itemRenderer: (props: PaginatedItemProps<R>) => JSX.Element;
   reference: MutableRefObject<HTMLDivElement | null>;
 }) {
+  const memoizedParams = useMemo(
+    () => props.params,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(props.params)],
+  );
+
   const [pages, setPages] = useState(1);
   const [loadMore, setLoadMore] = useState(false);
 
@@ -84,7 +84,7 @@ export function InfiniteScroll<
   useEffect(() => {
     setLoadMore(true);
     setPages(1);
-  }, [props.params]);
+  }, [memoizedParams]);
 
   function handleSuccess(page: number, loadMore: boolean) {
     if (page !== pages - 1) return;
@@ -98,7 +98,7 @@ export function InfiniteScroll<
           key={page}
           page={page}
           endpoint={props.endpoint}
-          params={props.params}
+          params={memoizedParams}
           onSuccess={(loadMore) => handleSuccess(page, loadMore)}
           item={props.itemRenderer}
         />

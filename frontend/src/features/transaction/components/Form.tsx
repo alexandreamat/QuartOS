@@ -42,6 +42,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
         // Create tx
         onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
         submitResult: TypedUseMutationResult<R, A, Q>;
+        accountId?: number;
       }
     | {
         // Add new tx to movement
@@ -87,7 +88,11 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     ),
     name: useFormField(isEdit ? props.transaction.name : "", "name"),
     accountId: useFormField(
-      isEdit ? props.transaction.account_id : 0,
+      isEdit
+        ? props.transaction.account_id
+        : "accountId" in props
+        ? props.accountId
+        : 0,
       "account",
     ),
   };
@@ -236,6 +241,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
           icon="checkmark"
           onClick={handleSubmit}
           positive
+          loading={props.submitResult.isLoading}
         />
       </Modal.Actions>
     </Modal>
@@ -246,6 +252,7 @@ function FormCreate(props: {
   open: boolean;
   onClose: () => void;
   onSuccess: (x: MovementApiOut) => void;
+  accountId?: number;
 }) {
   const [createMovement, createMovementResult] =
     api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
@@ -276,6 +283,7 @@ function FormCreate(props: {
       onClose={props.onClose}
       onSubmit={handleSubmit}
       submitResult={createMovementResult}
+      accountId={props.accountId}
     />
   );
 }

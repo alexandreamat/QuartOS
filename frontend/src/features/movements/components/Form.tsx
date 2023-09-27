@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
-import { Button, Header, Modal, Segment } from "semantic-ui-react";
-import { TransactionApiOut, api } from "app/services/api";
-import { logMutationError } from "utils/error";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
+import { TransactionApiOut, api } from "app/services/api";
+import ActionButton from "components/ActionButton";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import CreateNewButton from "components/CreateNewButton";
-import TransactionForm from "features/transaction/components/Form";
-import { MovementCard } from "./MovementCard";
-import ActionButton from "components/ActionButton";
 import FlexRow from "components/FlexRow";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import TransactionForm from "features/transaction/components/Form";
+import React, { useEffect, useState } from "react";
+import { Button, Header, Modal, Segment } from "semantic-ui-react";
+import { logMutationError } from "utils/error";
 import AddTransactionsModal from "./AddTransactionsModal";
+import { MovementCard } from "./MovementCard";
 
 export default function Form(props: {
   open: boolean;
@@ -18,6 +18,7 @@ export default function Form(props: {
   movementId?: number;
   onGoToPrev?: () => void;
   onGoToNext?: () => void;
+  accountId?: number;
 }) {
   const [transactionFormOpen, setTransactionFormOpen] = useState(false);
   const [transactionsModalOpen, setTransactionsModalOpen] = useState(false);
@@ -82,6 +83,7 @@ export default function Form(props: {
         />
       ) : (
         <TransactionForm.Create
+          accountId={props.accountId}
           open={transactionFormOpen}
           onClose={() => setTransactionFormOpen(false)}
           onSuccess={(m) => setMovementId(m.id)}
@@ -117,7 +119,7 @@ export default function Form(props: {
                     : undefined
                 }
                 showFlows
-                editable
+                isInForm
                 loading={movementQuery.isFetching}
                 movement={movementQuery.data}
               />

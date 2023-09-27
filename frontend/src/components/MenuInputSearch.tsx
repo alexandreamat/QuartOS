@@ -10,7 +10,7 @@ export default function MenuInputSearch(props: {
       <Input
         icon="search"
         placeholder="Search..."
-        value={search}
+        value={search || ""}
         onChange={(_, data) =>
           setSearch(data.value.length ? data.value : undefined)
         }

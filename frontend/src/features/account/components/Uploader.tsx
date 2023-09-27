@@ -35,6 +35,14 @@ export default function Uploader(props: {
       page: 0,
     });
 
+  const firstTransactionQuery =
+    api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
+      accountId: props.account.id,
+      perPage: 1,
+      page: 0,
+      isDescending: false,
+    });
+
   const [upload, uploadResult] =
     api.endpoints.previewApiUsersMeAccountsPreviewPost.useMutation();
 
@@ -55,6 +63,14 @@ export default function Uploader(props: {
         ? lastTransactionQuery.data[0]
         : undefined,
     [lastTransactionQuery],
+  );
+
+  const firstTransaction = useMemo(
+    () =>
+      firstTransactionQuery.isSuccess && firstTransactionQuery.data.length
+        ? firstTransactionQuery.data[0]
+        : undefined,
+    [firstTransactionQuery],
   );
 
   const handleClose = () => {
@@ -79,17 +95,20 @@ export default function Uploader(props: {
   };
 
   useEffect(() => {
-    if (!transactionsIn || !lastTransaction) return;
+    if (!transactionsIn || !lastTransaction || !firstTransaction) return;
 
     transactionsIn.forEach((transactionIn, i) => {
-      if (transactionIn.timestamp <= lastTransaction.timestamp) {
+      if (
+        transactionIn.timestamp >= firstTransaction.timestamp &&
+        transactionIn.timestamp <= lastTransaction.timestamp
+      ) {
         setShowDupsWarn(true);
         checkboxes.onChange(i, false);
       } else {
         checkboxes.onChange(i, true);
       }
     });
-  }, [transactionsIn, lastTransaction]);
+  }, [transactionsIn, lastTransaction, firstTransaction]);
 
   const [createMovements, createMovementsResult] =
     api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
