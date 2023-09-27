@@ -3,7 +3,12 @@ from typing import TYPE_CHECKING, Any
 from sqlmodel import Field, Relationship, SQLModel
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import SyncedMixin, SyncableBase, SyncedBase
+from app.common.models import (
+    PlaidInMixin,
+    SyncableBase,
+    PlaidOutMixin,
+    SyncableApiOutMixin,
+)
 from app.features.account import Account
 from app.features.transaction import Transaction
 from app.features.movement import Movement
@@ -26,17 +31,16 @@ class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
     ...
 
 
-class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableBase):
+class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableApiOutMixin):
     institution_id: int
     user_id: int
-    is_synced: bool
 
 
-class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, SyncedMixin):
+class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, PlaidInMixin):
     ...
 
 
-class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, SyncedBase):
+class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, PlaidOutMixin):
     institution_id: int
     user_id: int
 
@@ -49,7 +53,7 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
 
     user: "User" = Relationship(back_populates="institution_links")
     institution: "Institution" = Relationship(back_populates="user_links")
-    institutionalaccounts: list[Account.InstitutionalAccount] = Relationship(
+    accounts: list[Account] = Relationship(
         back_populates="userinstitutionlink",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
@@ -98,7 +102,3 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
             statement = statement.where(cls.id == userinstitutionlink_id)
 
         return statement
-
-    @property
-    def is_synced(self) -> bool:
-        return self.access_token != None

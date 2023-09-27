@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from plaid.model.account_base import AccountBase
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
+from plaid.model.account_type import AccountType
 from plaid.model.auth_get_request import AuthGetRequest
 from plaid.model.auth_get_response import AuthGetResponse
 from plaid.model.auth_get_numbers import AuthGetNumbers
@@ -10,7 +11,7 @@ from plaid.model.numbers_international import NumbersInternational
 
 from app.common.plaid import client
 
-from .models import AccountPlaidIn
+from .models import AccountPlaidIn, CreditPlaidIn, DepositoryPlaidIn, LoanPlaidIn
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
@@ -26,16 +27,20 @@ def __fetch_auth_numbers(access_token: str) -> dict[str, tuple[str, str]]:
 
 def fetch_accounts(
     user_institution_link: "UserInstitutionLinkPlaidOut",
-) -> list[AccountPlaidIn]:
+) -> Iterable[AccountPlaidIn]:
     request = AccountsGetRequest(access_token=user_institution_link.access_token)
-    response: AccountsGetResponse = client.accounts_get(request)
-    accounts: list[AccountBase] = response.accounts
+    response = client.accounts_get(request)
+    assert isinstance(response, AccountsGetResponse)
+    accounts = response.accounts
 
     numbers = __fetch_auth_numbers(user_institution_link.access_token)
 
-    return [
-        AccountPlaidIn(
-            institutionalaccount=AccountPlaidIn.InstitutionalAccount(
+    for account in accounts:
+        assert isinstance(account, AccountBase)
+        type = account.type
+        assert isinstance(type, AccountType)
+        if type == "depository":
+            yield DepositoryPlaidIn(
                 plaid_id=account.account_id,
                 plaid_metadata=account.to_str(),
                 mask=account.mask,
@@ -43,10 +48,30 @@ def fetch_accounts(
                 userinstitutionlink_id=user_institution_link.id,
                 bic=numbers[account.account_id][0],
                 iban=numbers[account.account_id][1],
-            ),
-            name=account.name,
-            currency_code=account.balances.iso_currency_code,
-            initial_balance=0,
-        )
-        for account in accounts
-    ]
+                name=account.name,
+                currency_code=account.balances.iso_currency_code,
+                initial_balance=0,
+            )
+        elif type == "credit":
+            yield CreditPlaidIn(
+                plaid_id=account.account_id,
+                plaid_metadata=account.to_str(),
+                mask=account.mask,
+                type=account.type.value,
+                userinstitutionlink_id=user_institution_link.id,
+                name=account.name,
+                currency_code=account.balances.iso_currency_code,
+                initial_balance=0,
+                # number=account.number,
+            )
+        elif type == "loan":
+            yield LoanPlaidIn(
+                plaid_id=account.account_id,
+                plaid_metadata=account.to_str(),
+                mask=account.mask,
+                type=account.type.value,
+                userinstitutionlink_id=user_institution_link.id,
+                name=account.name,
+                currency_code=account.balances.iso_currency_code,
+                initial_balance=0,
+            )

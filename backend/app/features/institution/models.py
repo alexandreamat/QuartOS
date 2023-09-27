@@ -5,7 +5,12 @@ from pydantic import HttpUrl, validator, constr
 from sqlmodel import Relationship, SQLModel, Field
 import pycountry
 
-from app.common.models import SyncedMixin, SyncableBase, SyncedBase
+from app.common.models import (
+    PlaidInMixin,
+    SyncableBase,
+    PlaidOutMixin,
+    SyncableApiOutMixin,
+)
 from app.features.transactiondeserialiser import TransactionDeserialiser
 from app.features.replacementpattern import ReplacementPattern
 
@@ -26,7 +31,7 @@ class __InstitutionBase(SQLModel):
         return value
 
 
-class InstitutionApiOut(__InstitutionBase, SyncableBase):
+class InstitutionApiOut(__InstitutionBase, SyncableApiOutMixin):
     logo_base64: str | None
     is_synced: bool
     transactiondeserialiser_id: int | None
@@ -46,11 +51,11 @@ class InstitutionApiIn(__InstitutionBase):
     url: HttpUrl
 
 
-class InstitutionPlaidOut(__InstitutionBase, SyncedBase):
+class InstitutionPlaidOut(__InstitutionBase, PlaidOutMixin):
     logo: bytes | None
 
 
-class InstitutionPlaidIn(__InstitutionBase, SyncedMixin):
+class InstitutionPlaidIn(__InstitutionBase, PlaidInMixin):
     logo: bytes | None
 
 
@@ -69,7 +74,3 @@ class Institution(__InstitutionBase, SyncableBase, table=True):
         back_populates="institutions"
     )
     replacementpattern: ReplacementPattern | None = Relationship()
-
-    @property
-    def is_synced(self) -> bool:
-        return self.plaid_id is not None

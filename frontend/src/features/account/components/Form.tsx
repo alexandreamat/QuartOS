@@ -3,13 +3,11 @@ import { useEffect } from "react";
 import {
   AccountApiOut,
   AccountApiIn,
-  InstitutionalAccountType,
-  NonInstitutionalAccountType,
   api,
+  AccountType,
 } from "app/services/api";
 import useFormField from "hooks/useFormField";
 import FormTextInput from "components/FormTextInput";
-import FormCurrencyInputs from "components/FormCurrencyInputs";
 import FormDropdownInput from "components/FormDropdownInput";
 import { useLocation } from "react-router-dom";
 import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
@@ -18,6 +16,7 @@ import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { FormValidationError } from "components/FormValidationError";
 import { logMutationError } from "utils/error";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
+import FormCurrencyCodeDropdown from "components/FormCurrencyCodeDropdown";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
@@ -27,9 +26,10 @@ export default function AccountForm(props: {
   const isInstitutional = useFormField(false);
   const mask = useFormField("");
   const name = useFormField("");
+  const bic = useFormField("");
+  const iban = useFormField("");
   const currencyCode = useFormField("");
-  const institutionalType = useFormField("");
-  const nonInstitutionalType = useFormField("");
+  const type = useFormField<AccountType | undefined>(undefined);
   const institutionLinkId = useFormField(0);
   const initialBalanceStr = useFormField("");
 
@@ -47,11 +47,11 @@ export default function AccountForm(props: {
   }, [institutionLinkIdParam]);
 
   const fields = [
-    mask,
+    bic,
+    iban,
     name,
     currencyCode,
-    institutionalType,
-    nonInstitutionalType,
+    type,
     initialBalanceStr,
     institutionLinkId,
     isInstitutional,
@@ -69,16 +69,20 @@ export default function AccountForm(props: {
     name.set(props.account.name);
     currencyCode.set(props.account.currency_code);
     initialBalanceStr.set(props.account.initial_balance.toFixed(2));
-    if (props.account.institutionalaccount) {
-      const institutionalAccount = props.account.institutionalaccount;
-      institutionLinkId.set(institutionalAccount.userinstitutionlink_id);
-      institutionalType.set(institutionalAccount.type);
-      mask.set(institutionalAccount.mask);
+    type.set(props.account.type);
+    if (
+      props.account.type === "depository" ||
+      props.account.type === "loan" ||
+      props.account.type === "credit"
+    ) {
       isInstitutional.set(true);
-    }
-    if (props.account.noninstitutionalaccount) {
-      const nonInstitutionalAccount = props.account.noninstitutionalaccount;
-      nonInstitutionalType.set(nonInstitutionalAccount.type);
+      institutionLinkId.set(props.account.userinstitutionlink_id);
+      if (props.account.type === "depository") {
+        bic.set(props.account.bic);
+        iban.set(props.account.iban);
+      }
+    } else {
+      isInstitutional.set(false);
     }
   }, [props.account]);
 
@@ -88,34 +92,34 @@ export default function AccountForm(props: {
   };
 
   const institutionalTypeOptions = [
-    "investment",
+    // "investment",
     "credit",
     "depository",
     "loan",
-    "brokerage",
-    "other",
+    // "brokerage",
+    // "other",
   ].map((type, index) => ({
     key: index,
     value: type,
     text: capitaliseFirstLetter(type),
   }));
 
-  const nonInstitutionalTypeOptions = [
-    "personal ledger",
-    "cash",
-    "property",
-  ].map((type, index) => ({
-    key: index,
-    value: type,
-    text: capitaliseFirstLetter(type),
-  }));
+  const nonInstitutionalTypeOptions: {
+    key: number;
+    value: AccountType;
+    text: string;
+  }[] = [
+    { key: 1, value: "personal_ledger", text: "Personal Ledger" },
+    { key: 1, value: "cash", text: "Cash" },
+    { key: 1, value: "property", text: "Property" },
+  ];
 
   async function handleSubmit() {
     const formFields = [
       ...requiredFields,
       ...(isInstitutional.value
-        ? [institutionalType, institutionLinkId, mask]
-        : [nonInstitutionalType]),
+        ? [type, institutionLinkId, mask, bic, iban]
+        : [type]),
     ];
 
     const invalidFields = formFields.reduce(
@@ -129,23 +133,15 @@ export default function AccountForm(props: {
       name: name.value!,
       currency_code: currencyCode.value!,
       initial_balance: Number(initialBalanceStr.value!),
-      institutionalaccount: isInstitutional.value
-        ? {
-            mask: mask.value!,
-            type: institutionalType.value! as InstitutionalAccountType,
-          }
-        : undefined,
-      noninstitutionalaccount: !isInstitutional.value
-        ? {
-            type: nonInstitutionalType.value! as NonInstitutionalAccountType,
-          }
-        : undefined,
+      type: type.value!,
+      bic: bic.value!,
+      iban: iban.value!,
     };
     if (props.account) {
       try {
         await updateAccount({
           accountId: props.account.id,
-          accountApiIn: account,
+          body: account,
           userinstitutionlinkId: institutionLinkId.value!,
         }).unwrap();
       } catch (error) {
@@ -156,7 +152,7 @@ export default function AccountForm(props: {
       try {
         await createAccount({
           userinstitutionlinkId: institutionLinkId.value!,
-          accountApiIn: account,
+          body: account,
         }).unwrap();
       } catch (error) {
         logMutationError(error, createAccountResult);
@@ -184,13 +180,17 @@ export default function AccountForm(props: {
       </Modal.Header>
       <Modal.Content>
         <Form>
-          <FormTextInput label="Account Name" field={name} />
+          <FormTextInput
+            readOnly={props.account?.is_synced}
+            label="Account Name"
+            field={name}
+          />
           <Form.Checkbox
+            disabled={props.account?.is_synced}
             label="Link to a financial institution"
             checked={isInstitutional.value}
             onChange={(_, data) => {
-              institutionalType.reset();
-              nonInstitutionalType.reset();
+              type.reset();
               isInstitutional.reset();
               isInstitutional.set(data.checked);
             }}
@@ -198,32 +198,56 @@ export default function AccountForm(props: {
           {isInstitutional.value ? (
             <>
               <FormDropdownInput
+                readOnly={props.account?.is_synced}
                 label="Institution"
                 field={institutionLinkId}
                 options={institutionLinkOptions.data || []}
                 query={institutionLinkOptions.query}
               />
               <FormDropdownInput
+                readOnly={props.account?.is_synced}
                 label="Type"
-                field={institutionalType}
+                field={type}
                 options={institutionalTypeOptions}
               />
-              <FormTextInput label="Account Number" field={mask} />
+              <FormTextInput
+                label="Account Number"
+                field={mask}
+                readOnly={props.account?.is_synced}
+              />
             </>
           ) : (
             <>
               <FormDropdownInput
                 label="Type"
-                field={nonInstitutionalType}
+                field={type}
                 options={nonInstitutionalTypeOptions}
               />
             </>
           )}
-          <FormCurrencyInputs
-            label="Current Balance"
-            amount={initialBalanceStr}
-            currencyCode={currencyCode}
-          />
+          <Form.Group widths="equal">
+            <FormCurrencyCodeDropdown
+              label="Currency"
+              disabled={props.account?.is_synced}
+              currencyCode={currencyCode}
+            />
+            <Form.Input
+              type="number"
+              input={{
+                inputMode: "decimal",
+                step: "0.01",
+              }}
+              label="Initial Amount"
+              placeholder={"Enter initial amount"}
+              required
+              value={initialBalanceStr.value}
+              onChange={(_, data) => {
+                initialBalanceStr.reset();
+                initialBalanceStr.set(data.value as string);
+              }}
+              error={initialBalanceStr.isError}
+            />
+          </Form.Group>
           <FormValidationError fields={requiredFields} />
           <QueryErrorMessage query={createAccountResult} />
           <QueryErrorMessage query={updateAccountResult} />

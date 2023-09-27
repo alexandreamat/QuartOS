@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { Loader, Icon, Menu, Card, Divider, Header } from "semantic-ui-react";
 import Form from "./components/Form";
-import {
-  AccountApiOut,
-  InstitutionalAccountType,
-  NonInstitutionalAccountType,
-  api,
-} from "app/services/api";
+import { AccountApiOut, AccountType, api } from "app/services/api";
 import { useLocation } from "react-router-dom";
 import { capitaliseFirstLetter } from "utils/string";
 import { accountTypeToIconName } from "./utils";
@@ -50,14 +45,15 @@ export default function Accounts() {
 
   const accounts = accountsQuery.data;
 
-  const groupedAccounts = accounts.reduce((acc, account) => {
-    const type = account.institutionalaccount
-      ? account.institutionalaccount.type
-      : account.noninstitutionalaccount!.type;
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(account);
-    return acc;
-  }, {} as Record<InstitutionalAccountType | NonInstitutionalAccountType, AccountApiOut[]>);
+  const groupedAccounts = accounts.reduce(
+    (result, account) => {
+      const type = account.type;
+      if (!result[type]) result[type] = [];
+      result[type].push(account);
+      return result;
+    },
+    {} as Record<AccountType, AccountApiOut[]>,
+  );
 
   return (
     <FlexColumn>
@@ -72,20 +68,12 @@ export default function Accounts() {
           <div key={type}>
             <Divider horizontal section>
               <Header as="h4">
-                <Icon
-                  name={accountTypeToIconName(
-                    type as
-                      | InstitutionalAccountType
-                      | NonInstitutionalAccountType
-                  )}
-                />
+                <Icon name={accountTypeToIconName(type as AccountType)} />
                 {capitaliseFirstLetter(type)}
               </Header>
             </Divider>
             <Card.Group style={{ margin: 0 }}>
-              {groupedAccounts[
-                type as InstitutionalAccountType | NonInstitutionalAccountType
-              ].map((account) => (
+              {groupedAccounts[type as AccountType].map((account) => (
                 <AccountCard
                   key={account.id}
                   account={account}

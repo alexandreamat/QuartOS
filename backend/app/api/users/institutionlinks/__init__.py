@@ -98,9 +98,7 @@ def resync(
         institution_id=institution_out.id,
     )
     for account_in in fetch_accounts(userinstitutionlink_out):
-        account_out = CRUDSyncableAccount.read_by_plaid_id(
-            db, account_in.institutionalaccount.plaid_id
-        )
+        account_out = CRUDSyncableAccount.read_by_plaid_id(db, account_in.plaid_id)
         print(account_out)
         account_out = CRUDSyncableAccount.update(db, account_out.id, account_in)
     return userinstitutionlink_out

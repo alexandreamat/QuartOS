@@ -1,12 +1,12 @@
 from typing import Iterable
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 
 from app.database.deps import DBSession
 
 from app.features.user import CurrentUser, CRUDUser
 from app.features.account import CRUDAccount
-from app.features.movement import CRUDMovement, MovementApiOut
+from app.features.movement import MovementApiOut
 from app.features.transaction import TransactionApiIn
 
 from . import transactions

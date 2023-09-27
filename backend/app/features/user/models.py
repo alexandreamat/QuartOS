@@ -37,17 +37,14 @@ class User(__UserBase, Base, table=True):
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
-    noninstitutionalaccounts: list[Account.NonInstitutionalAccount] = Relationship(
+    accounts: list[Account] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
-        db_user = db.exec(select(cls).where(cls.email == email)).first()
-        if not db_user:
-            raise NoResultFound
-        return db_user
+        return db.exec(select(cls).where(cls.email == email)).one()
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> "User":
@@ -85,10 +82,7 @@ class User(__UserBase, Base, table=True):
             )
 
         statement = statement.outerjoin(UserInstitutionLink).where(
-            or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
-            )
+            or_(Account.user_id == user_id, UserInstitutionLink.user_id == user_id)
         )
 
         return statement
@@ -110,10 +104,7 @@ class User(__UserBase, Base, table=True):
             )
 
         statement = statement.outerjoin(UserInstitutionLink).where(
-            or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
-            )
+            or_(Account.user_id == user_id, UserInstitutionLink.user_id == user_id)
         )
         return statement
 
@@ -137,9 +128,6 @@ class User(__UserBase, Base, table=True):
             )
 
         statement = statement.outerjoin(UserInstitutionLink).where(
-            or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
-            )
+            or_(Account.user_id == user_id, UserInstitutionLink.user_id == user_id)
         )
         return statement

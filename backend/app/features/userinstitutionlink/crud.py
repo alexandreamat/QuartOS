@@ -4,7 +4,7 @@ from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.features.replacementpattern import ReplacementPatternApiOut
-from app.features.account import AccountPlaidOut
+from app.features.account import AccountPlaidOut, CRUDSyncableAccount
 from app.features.transaction import TransactionPlaidOut
 
 from .models import (
@@ -41,14 +41,14 @@ class CRUDSyncableUserInstitutionLink(
     @classmethod
     def read_syncable_accounts(cls, db: Session, id: int) -> Iterable[AccountPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
-        for ia in uil.institutionalaccounts:
-            if not ia.plaid_id:
+        for account in uil.accounts:
+            if not account.plaid_id:
                 continue
-            yield AccountPlaidOut.from_orm(ia.account)
+            yield CRUDSyncableAccount.from_orm(account)
 
     @classmethod
     def read_transactions(cls, db: Session, id: int) -> Iterable[TransactionPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
-        for ia in uil.institutionalaccounts:
-            for t in ia.account.transactions:
+        for account in uil.accounts:
+            for t in account.transactions:
                 yield TransactionPlaidOut.from_orm(t)

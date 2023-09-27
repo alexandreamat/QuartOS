@@ -2,7 +2,7 @@ from typing import Generic, Type, TypeVar, Iterable, Any
 
 from sqlmodel import Session, SQLModel
 
-from .models import Base, SyncableBase, SyncedBase, SyncedMixin
+from .models import Base, SyncableBase, PlaidOutMixin, PlaidInMixin
 
 ModelType = TypeVar("ModelType", bound=Base)
 InModelType = TypeVar("InModelType", bound=SQLModel)
@@ -51,8 +51,8 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
 
 
 DBSyncableModelType = TypeVar("DBSyncableModelType", bound=SyncableBase)
-PlaidInModel = TypeVar("PlaidInModel", bound=SyncedMixin)
-PlaidOutModel = TypeVar("PlaidOutModel", bound=SyncedBase)
+PlaidInModel = TypeVar("PlaidInModel", bound=PlaidInMixin)
+PlaidOutModel = TypeVar("PlaidOutModel", bound=PlaidOutMixin)
 
 
 class CRUDSyncedBase(
@@ -61,10 +61,6 @@ class CRUDSyncedBase(
 ):
     db_model: Type[DBSyncableModelType]
     out_model: Type[PlaidOutModel]
-
-    @classmethod
-    def is_synced(cls, db: Session, id: int) -> bool:
-        return cls.db_model.read(db, id).is_synced
 
     @classmethod
     def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModel:

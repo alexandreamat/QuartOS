@@ -4,19 +4,17 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 from sqlmodel import Session
-from sqlalchemy.exc import NoResultFound
 
 from app.utils import get_password_hash
 from app.common.crud import CRUDBase
 from app.common.models import CurrencyCode
-from app.common.exceptions import ObjectNotFoundError
 
 from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
     UserInstitutionLink,
 )
 from app.features.transaction import TransactionApiOut, Transaction
-from app.features.account import AccountApiOut, Account
+from app.features.account import AccountApiOut, Account, CRUDAccount
 from app.features.movement import (
     MovementApiOut,
     MovementApiIn,
@@ -142,7 +140,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     ) -> AccountApiOut:
         statement = User.select_accounts(user_id, userinstitutionlink_id, account_id)
         account = Account.read_one_from_query(db, statement, account_id)
-        return AccountApiOut.from_orm(account)
+        return CRUDAccount.from_orm(account)
 
     @classmethod
     def read_accounts(
@@ -154,8 +152,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         statement = User.select_accounts(user_id, userinstitutionlink_id, None)
         accounts = db.exec(statement).all()
 
-        for a in accounts:
-            yield AccountApiOut.from_orm(a)
+        for account in accounts:
+            yield CRUDAccount.from_orm(account)
 
     @classmethod
     def read_movements(
