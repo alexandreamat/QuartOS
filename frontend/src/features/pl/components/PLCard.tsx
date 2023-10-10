@@ -4,6 +4,7 @@ import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
 import { addDays, format } from "date-fns";
 import { Card, Header, Label, Placeholder, Step } from "semantic-ui-react";
+import { stringToDate } from "utils/time";
 
 export default function PLCard(props: {
   aggregate?: PlStatement;
@@ -13,8 +14,8 @@ export default function PLCard(props: {
   onClickExpenses?: () => void;
   loading?: boolean;
 }) {
-  const startDate = props.aggregate && new Date(props.aggregate.start_date);
-  const endDate = props.aggregate && new Date(props.aggregate.end_date);
+  const startDate = props.aggregate && stringToDate(props.aggregate.start_date);
+  const endDate = props.aggregate && stringToDate(props.aggregate.end_date);
   const today = new Date();
   const isOngoing =
     startDate && endDate && startDate <= today && today <= endDate;
@@ -29,8 +30,7 @@ export default function PLCard(props: {
                 <Placeholder.Line />
               </Placeholder>
             ) : (
-              props.aggregate &&
-              format(new Date(props.aggregate.start_date), "MMMM yyyy")
+              startDate && format(startDate, "MMMM yyyy")
             )}
             {props.onGoToDetail && (
               <ActionButton

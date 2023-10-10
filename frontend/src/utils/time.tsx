@@ -8,12 +8,8 @@ export function dateToString(date: Date) {
 }
 
 export function stringToDate(dateStr: string) {
-  const [year, month, day] = dateStr.split("-");
-  const updatedDatetime = new Date(0);
-  updatedDatetime.setFullYear(Number(year));
-  updatedDatetime.setMonth(Number(month) - 1);
-  updatedDatetime.setDate(Number(day));
-  return updatedDatetime;
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }
 export function timeToString(date: Date) {
   const hours = String(date.getHours()).padStart(2, "0");

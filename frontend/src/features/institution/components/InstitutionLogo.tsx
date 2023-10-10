@@ -10,8 +10,8 @@ export function InstitutionLogo(props: {
 }) {
   if (props.loading)
     return (
-      <Placeholder image style={props.style}>
-        <Placeholder.Header />
+      <Placeholder style={props.style} className="right floated image">
+        <Placeholder.Image square />
       </Placeholder>
     );
 
@@ -25,5 +25,12 @@ export function InstitutionLogo(props: {
       />
     );
 
-  return <Icon size="large" name="university" style={props.style} />;
+  return (
+    <Icon
+      className="right floated image"
+      size="large"
+      name="university"
+      style={props.style}
+    />
+  );
 }

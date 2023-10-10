@@ -3,7 +3,6 @@ import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
-import { FormattedCurrency } from "components/FormattedCurrency";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import AccountIcon from "features/account/components/Icon";

@@ -12,8 +12,8 @@ export default function AccountIcon(props: {
 }) {
   if (props.loading)
     return (
-      <Placeholder>
-        <Placeholder.Header image />
+      <Placeholder style={props.style}>
+        <Placeholder.Image square />
       </Placeholder>
     );
 
