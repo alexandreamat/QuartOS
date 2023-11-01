@@ -30,10 +30,9 @@ jobs:
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v2
-        working-directory: frontend
         with:
           name: build-artifacts
-          path: build
+          path: frontend/build
 
   deploy:
     runs-on: ubuntu-latest
