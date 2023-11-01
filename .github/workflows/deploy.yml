@@ -44,6 +44,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Delete everything
+        run: |
+          git checkout -B gh-pages main
+          rm -rf *
+
       - name: Download Build Artifacts
         uses: actions/download-artifact@v2
         with:
@@ -51,9 +56,6 @@ jobs:
 
       - name: Deploy to GitHub Pages
         run: |
-          git checkout -B gh-pages main
-          rm -rf *
-          mv -f ${{ runner.workspace }}/build/* .
           git add -A
           git commit -m "Deploy to GitHub Pages"
           git push
