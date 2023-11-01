@@ -51,7 +51,7 @@ jobs:
 
       - name: Deploy to GitHub Pages
         run: |
-          git checkout gh-pages
+          git checkout -B gh-pages main
           rm -rf *
           mv -f ${{ runner.workspace }}/build/* .
           git add -A
