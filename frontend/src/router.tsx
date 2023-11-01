@@ -23,7 +23,7 @@ export interface RouteI {
 export default [
   // {
   //   path: "/",
-  //   label: "Dashboard",
+  //   label: "Account",
   //   icon: "home",
   //   component: Dashboard,
   //   requires_superuser: false,

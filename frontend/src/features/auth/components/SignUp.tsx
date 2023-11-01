@@ -70,7 +70,7 @@ export function SignUp() {
             />
             <FormTextInput
               icon="lock"
-              field={fields.password}
+              field={fields.passwordConfirmation}
               label="Confirm password"
               type="password"
             />

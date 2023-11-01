@@ -1,9 +1,8 @@
 import { Button, Input, Menu, Popup } from "semantic-ui-react";
 import { format } from "date-fns";
-import { stringToDate } from "utils/time";
 import ClickableIcon from "./ClickableIcon";
 import { UseStateType } from "types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function MenuDateInput(props: {
   label: string;
@@ -11,7 +10,24 @@ function MenuDateInput(props: {
   error?: boolean;
 }) {
   const [date, setDate] = props.dateState;
-  const dateStr = date ? format(date, "yyyy-MM-dd") : "";
+
+  const [dateStr, setDateStr] = useState("");
+
+  useEffect(() => {
+    const newDateStr = date ? format(date, "yyyy-MM-dd") : "";
+    if (newDateStr === dateStr) return;
+    setDateStr(newDateStr);
+  }, [date]);
+
+  useEffect(() => {
+    const [year, month, day] = dateStr.split("-").map(Number);
+    if (year < 1900) return;
+    const newDate = new Date(year, month - 1, day);
+    if (isNaN(newDate.getTime())) return;
+    if (newDate === date) return;
+    setDate(newDate);
+  }, [dateStr, setDate]);
+
   return (
     <Menu.Item fitted>
       <Input
@@ -24,11 +40,7 @@ function MenuDateInput(props: {
         input={{ style: { flex: 1 } }}
         type="date"
         value={dateStr}
-        onChange={(_, data) => {
-          const newDate = stringToDate(data.value);
-          if (isNaN(newDate.getTime())) return;
-          setDate(newDate);
-        }}
+        onChange={(_, data) => setDateStr(data.value)}
       />
     </Menu.Item>
   );
