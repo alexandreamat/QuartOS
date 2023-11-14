@@ -38,7 +38,7 @@ def get_current_user(
     db: DBSession, token: str = Depends(reusable_oauth2)
 ) -> UserApiOut:
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[ALGORITHM])
         token_data = TokenPayload(**payload)
     except (jwt.JWTError, ValidationError):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)

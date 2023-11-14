@@ -22,7 +22,7 @@ from datetime import date
 from fastapi import HTTPException, status
 
 
-API_KEY = os.environ["API_KEY"]
+OPEN_EXCHANGE_RATES_ID = os.environ["OPEN_EXCHANGE_RATES_ID"]
 BASE_URL = "https://openexchangerates.org/api"
 
 requests_cache.install_cache("exchange_rates_cache", expire_after=None)
@@ -32,7 +32,9 @@ def get_exchange_rate(from_currency: str, to_currency: str, date: date) -> Decim
     if from_currency == to_currency:
         return Decimal(1)
 
-    api_url = f"{BASE_URL}/historical/{date.isoformat()}.json?app_id={API_KEY}"
+    api_url = (
+        f"{BASE_URL}/historical/{date.isoformat()}.json?app_id={OPEN_EXCHANGE_RATES_ID}"
+    )
 
     with requests_cache.CachedSession() as session:
         response = session.get(api_url)
