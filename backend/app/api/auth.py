@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -25,7 +25,6 @@ from app import utils
 from app.settings import settings
 from app.utils import (
     generate_password_reset_token,
-    send_reset_password_email,
     verify_password_reset_token,
 )
 from app.database.deps import DBSession
@@ -52,21 +51,6 @@ def login(db: DBSession, form_data: OAuth2PasswordRequestForm = Depends()) -> To
             str(user.id), expires_delta=access_token_expires
         ),
         token_type="bearer",
-    )
-
-
-@router.post("/recover-password/{email}")
-def recover(email: str, db: DBSession) -> None:
-    """
-    Password Recovery
-    """
-    try:
-        user = CRUDUser.read_by_email(db, email=email)
-    except NoResultFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    password_reset_token = generate_password_reset_token(email=email)
-    send_reset_password_email(
-        email_to=user.email, email=email, token=password_reset_token
     )
 
 

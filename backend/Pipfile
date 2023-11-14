@@ -28,6 +28,8 @@ pytz = "*"
 types-python-dateutil = "*"
 bpython = "*"
 vulture = "*"
+alembic = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
