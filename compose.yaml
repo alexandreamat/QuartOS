@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    env_file:
+      - ./db/.env
+    volumes:
+      - ./db/var/lib/postgresql/data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - ./pgadmin/.env
+    volumes:
+      - ./pgadmin/pgadmin4/servers.json:/pgadmin4/servers.json
+      - ./pgadmin/var/lib/pgadmin:/var/lib/pgadmin
+    ports:
+      - 8080:80
+
+  backend:
+    build: ./backend
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    ports:
+      - 80:80
