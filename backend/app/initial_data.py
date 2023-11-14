@@ -25,8 +25,9 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     logger.info("Creating initial data")
-    with Session(engine) as db:
-        init_db(db)
+    with Session(engine) as session:
+        init_db(session)
+        session.commit()
     logger.info("Initial data created")
 
 
