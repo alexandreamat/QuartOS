@@ -14,26 +14,29 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import secrets
-from typing import Any, Dict, Optional
 
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr, HttpUrl, validator
+from pydantic import BaseSettings, EmailStr, Field
 
 
 class Settings(BaseSettings):
     API_STR: str = "/api"
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    JWT_SECRET_KEY: str = secrets.token_urlsafe(32)
 
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
     PROJECT_NAME: str = "QuartOS"
 
-    SQLALCHEMY_DATABASE_URI: str
+    POSTGRES_PASSWORD: str = Field(default=...)
+
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        return f"postgresql://postgres:{self.POSTGRES_PASSWORD}@db"
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
-    FIRST_SUPERUSER: EmailStr
-    FIRST_SUPERUSER_PASSWORD: str
-    FIRST_SUPERUSER_FULL_NAME: str
+    FIRST_SUPERUSER: EmailStr = Field(default=...)
+    FIRST_SUPERUSER_PASSWORD: str = Field(default=...)
+    FIRST_SUPERUSER_FULL_NAME: str = Field(default=...)
 
     class Config:
         case_sensitive = True

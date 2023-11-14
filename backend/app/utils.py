@@ -37,14 +37,14 @@ def generate_password_reset_token(email: str) -> str:
     exp = expires.timestamp()
     encoded_jwt: str = jwt.encode(
         {"exp": exp, "nbf": now, "sub": email},
-        settings.SECRET_KEY,
+        settings.JWT_SECRET_KEY,
         algorithm="HS256",
     )
     return encoded_jwt
 
 
 def verify_password_reset_token(token: str) -> str:
-    decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+    decoded_token = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=["HS256"])
     email: str = decoded_token["email"]
     return email
 
@@ -57,7 +57,9 @@ def create_access_token(subject: str, expires_delta: timedelta | None = None) ->
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
     to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt: str = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt: str = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM
+    )
     return encoded_jwt
 
 

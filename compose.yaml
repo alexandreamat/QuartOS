@@ -2,8 +2,8 @@ services:
   db:
     image: postgres
     restart: always
-    env_file:
-      - ./db/.env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./db/var/lib/postgresql/data:/var/lib/postgresql/data
 
@@ -27,6 +27,8 @@ services:
       - db
     env_file:
       - ./backend/.env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - ./backend:/app
     ports:
