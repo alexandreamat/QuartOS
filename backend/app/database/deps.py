@@ -23,17 +23,13 @@ from sqlmodel import create_engine, Session
 from app.settings import settings
 
 
-connect_args = {"check_same_thread": False}
 engine = create_engine(
     settings.SQLALCHEMY_DATABASE_URI,
-    connect_args=connect_args,
+    pool_pre_ping=True,
     # echo="debug",
     # echo=True,
     # query_cache_size=0,
 )
-
-# Enforce foreign keys integrity at the database level
-event.listen(engine, "connect", lambda c, _: c.execute("pragma foreign_keys=ON"))
 
 # Avoid double echo
 logging.getLogger("sqlalchemy.engine").propagate = False
