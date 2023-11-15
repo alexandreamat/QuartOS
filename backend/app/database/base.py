@@ -13,36 +13,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Generator, Annotated
-import logging
+# 1. Import base model
+from app.common.models import Base
 
-from sqlalchemy import event
-from fastapi import Depends
-from sqlmodel import create_engine, Session
+# 2. Import inheritors of the base model
+from app.features.replacementpattern import ReplacementPattern
+from app.features.transactiondeserialiser import TransactionDeserialiser
+from app.features.user import User
+from app.features.institution import Institution
+from app.features.userinstitutionlink import UserInstitutionLink
+from app.features.account import Account
+from app.features.movement import Movement
+from app.features.transaction import Transaction
 
-from app.settings import settings
-
-
-engine = create_engine(
-    settings.DATABASE_URL,
-    pool_pre_ping=True,
-    # echo="debug",
-    # echo=True,
-    # query_cache_size=0,
-)
-
-# Avoid double echo
-logging.getLogger("sqlalchemy.engine").propagate = False
-
-
-def get_db() -> Generator[Session, None, None]:
-    with Session(engine) as session:
-        try:
-            yield session
-            session.commit()
-        except Exception:
-            session.rollback()
-            raise
-
-
-DBSession = Annotated[Session, Depends(get_db)]
+# 3. Import this file from Alembic
