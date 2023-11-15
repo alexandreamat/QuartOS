@@ -15,7 +15,7 @@
 
 import secrets
 
-from pydantic import BaseSettings, EmailStr, Field
+from pydantic import BaseSettings, EmailStr, Field, PostgresDsn
 
 
 class Settings(BaseSettings):
@@ -27,11 +27,7 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str = "QuartOS"
 
-    POSTGRES_PASSWORD: str = Field(default=...)
-
-    @property
-    def SQLALCHEMY_DATABASE_URI(self) -> str:
-        return f"postgresql://postgres:{self.POSTGRES_PASSWORD}@db"
+    DATABASE_URL: PostgresDsn = Field(default=...)
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
     FIRST_SUPERUSER: EmailStr = Field(default=...)
