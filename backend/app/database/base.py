@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Alexandre Amat
+# Copyright (C) 2023 Alexandre Amat
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -13,22 +13,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlmodel import Session
-from sqlalchemy.exc import NoResultFound
+# 1. Import base model
+from app.common.models import Base
 
-from app.settings import settings
-from app.features.user import CRUDUser, UserApiIn
+# 2. Import inheritors of the base model
+from app.features.replacementpattern import ReplacementPattern
+from app.features.transactiondeserialiser import TransactionDeserialiser
+from app.features.user import User
+from app.features.institution import Institution
+from app.features.userinstitutionlink import UserInstitutionLink
+from app.features.account import Account
+from app.features.movement import Movement
+from app.features.transaction import Transaction
 
-
-def init_db(db: Session) -> None:
-    try:
-        CRUDUser.read_by_email(db, email=settings.FIRST_SUPERUSER)
-    except NoResultFound:
-        user_in = UserApiIn(
-            email=settings.FIRST_SUPERUSER,
-            password=settings.FIRST_SUPERUSER_PASSWORD,
-            full_name=settings.FIRST_SUPERUSER_FULL_NAME,
-            is_superuser=True,
-            default_currency_code="USD",
-        )
-        CRUDUser.create(db, obj_in=user_in)
+# 3. Import this file from Alembic

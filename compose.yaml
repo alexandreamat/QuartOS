@@ -28,7 +28,7 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
     volumes:
       - ./backend:/app
     ports:
