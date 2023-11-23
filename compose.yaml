@@ -7,21 +7,15 @@ services:
     volumes:
       - ./db/var/lib/postgresql/data:/var/lib/postgresql/data
 
-  pgadmin:
-    image: dpage/pgadmin4
+  adminer:
+    image: adminer
     restart: always
-    depends_on:
-      - db
-    env_file:
-      - ./pgadmin/.env
-    volumes:
-      - ./pgadmin/pgadmin4/servers.json:/pgadmin4/servers.json
-      - ./pgadmin/var/lib/pgadmin:/var/lib/pgadmin
     ports:
-      - 8080:80
+      - 8080:8080
 
   backend:
     build: ./backend
+    image: alexandreamat/quartos:latest
     restart: always
     depends_on:
       - db
@@ -29,7 +23,5 @@ services:
       - ./backend/.env
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
-    volumes:
-      - ./backend:/app
     ports:
       - 80:80
