@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -19,6 +19,7 @@ from sqlmodel import Field, Relationship, SQLModel
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import (
+    ApiInMixin,
     PlaidInMixin,
     SyncableBase,
     PlaidOutMixin,
@@ -27,6 +28,7 @@ from app.common.models import (
 from app.features.account import Account
 from app.features.transaction import Transaction
 from app.features.movement import Movement
+from app.features.accountacces.models import AccountAccess
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -42,7 +44,7 @@ class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
     cursor: str | None
 
 
-class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
+class UserInstitutionLinkApiIn(__UserInstitutionLinkBase, ApiInMixin):
     ...
 
 
@@ -78,6 +80,35 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
         cls, userinstitutionlink_id: int | None
     ) -> SelectOfScalar["UserInstitutionLink"]:
         statement = cls.select()
+
+        statement = statement.outerjoin(cls)
+        if userinstitutionlink_id:
+            statement = statement.where(cls.id == userinstitutionlink_id)
+
+        return statement
+
+    @classmethod
+    def select_accounts(
+        cls, userinstitutionlink_id: int | None, account_id: int | None
+    ) -> SelectOfScalar[Account]:
+        statement = Account.select_accounts(account_id)
+
+        statement = statement.outerjoin(cls)
+        if userinstitutionlink_id:
+            statement = statement.where(cls.id == userinstitutionlink_id)
+
+        return statement
+
+    @classmethod
+    def select_account_accesses(
+        cls,
+        userinstitutionlink_id: int | None,
+        account_id: int | None,
+        accountaccess_id: int | None,
+    ) -> SelectOfScalar[AccountAccess]:
+        statement = Account.select_account_accesses(account_id, accountaccess_id)
+
+        statement = statement.outerjoin(cls)
         if userinstitutionlink_id:
             statement = statement.where(cls.id == userinstitutionlink_id)
 
@@ -88,12 +119,15 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
         cls,
         userinstitutionlink_id: int | None,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
-        statement = Account.select_movements(account_id, movement_id, **kwargs)
+        statement = Account.select_movements(
+            account_id, accountaccess_id, movement_id, **kwargs
+        )
 
-        statement = statement.join(cls)
+        statement = statement.outerjoin(cls)
         if userinstitutionlink_id:
             statement = statement.where(cls.id == userinstitutionlink_id)
 
@@ -104,15 +138,16 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
         cls,
         userinstitutionlink_id: int | None,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         transaction_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
         statement = Account.select_transactions(
-            account_id, movement_id, transaction_id, **kwargs
+            account_id, accountaccess_id, movement_id, transaction_id, **kwargs
         )
 
-        statement = statement.join(cls)
+        statement = statement.outerjoin(cls)
         if userinstitutionlink_id:
             statement = statement.where(cls.id == userinstitutionlink_id)
 

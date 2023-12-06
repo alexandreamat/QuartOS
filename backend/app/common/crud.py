@@ -1,27 +1,34 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Generic, Type, TypeVar, Iterable, Any
 
-from sqlmodel import Session, SQLModel
+from sqlmodel import Session
 
-from .models import Base, SyncableBase, PlaidOutMixin, PlaidInMixin
+from .models import (
+    Base,
+    SyncableBase,
+    PlaidOutMixin,
+    PlaidInMixin,
+    ApiOutMixin,
+    ApiInMixin,
+)
 
 ModelType = TypeVar("ModelType", bound=Base)
-InModelType = TypeVar("InModelType", bound=SQLModel)
-OutModelType = TypeVar("OutModelType", bound=Base)
+InModelType = TypeVar("InModelType", bound=ApiInMixin)
+OutModelType = TypeVar("OutModelType", bound=ApiOutMixin)
 
 
 class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
@@ -65,18 +72,18 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         return id
 
 
-DBSyncableModelType = TypeVar("DBSyncableModelType", bound=SyncableBase)
-PlaidInModel = TypeVar("PlaidInModel", bound=PlaidInMixin)
-PlaidOutModel = TypeVar("PlaidOutModel", bound=PlaidOutMixin)
+SyncableModelType = TypeVar("SyncableModelType", bound=SyncableBase)
+PlaidInModelType = TypeVar("PlaidInModelType", bound=PlaidInMixin)
+PlaidOutModelType = TypeVar("PlaidOutModelType", bound=PlaidOutMixin)
 
 
 class CRUDSyncedBase(
-    Generic[DBSyncableModelType, PlaidOutModel, PlaidInModel],
-    CRUDBase[DBSyncableModelType, PlaidOutModel, PlaidInModel],
+    Generic[SyncableModelType, PlaidOutModelType, PlaidInModelType],
+    CRUDBase[SyncableModelType, PlaidOutModelType, PlaidInModelType],
 ):
-    db_model: Type[DBSyncableModelType]
-    out_model: Type[PlaidOutModel]
+    db_model: Type[SyncableModelType]
+    out_model: Type[PlaidOutModelType]
 
     @classmethod
-    def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModel:
+    def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModelType:
         return cls.out_model.from_orm(cls.db_model.read_by_plaid_id(db, id))

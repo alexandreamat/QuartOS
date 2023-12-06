@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -37,7 +37,9 @@ async def create(
     transaction_id: int,
     file: Annotated[UploadFile, _File(...)],
 ) -> FileApiOut:
-    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
+    CRUDUser.read_transaction(
+        db, me.id, None, account_id, None, movement_id, transaction_id
+    )
     data = await file.read()
     file_in = FileApiIn(filename=file.filename, data=data, name=file.filename)
     return CRUDFile.create(db, file_in, transaction_id=transaction_id)
@@ -51,7 +53,9 @@ def read_many(
     movement_id: int,
     transaction_id: int,
 ) -> Iterable[FileApiOut]:
-    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
+    CRUDUser.read_transaction(
+        db, me.id, None, account_id, None, movement_id, transaction_id
+    )
     return CRUDTransaction.read_files(db, transaction_id)
 
 
@@ -70,7 +74,9 @@ def read(
     transaction_id: int,
     file_id: int,
 ) -> Response:
-    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
+    CRUDUser.read_transaction(
+        db, me.id, None, account_id, None, movement_id, transaction_id
+    )
     file_out = CRUDFile.read(db, file_id)
     headers = {"Content-Disposition": f"attachment; filename={file_out.name}"}
     mime_type, _ = mimetypes.guess_type(file_out.name)
@@ -89,5 +95,7 @@ def delete(
     transaction_id: int,
     file_id: int,
 ) -> int:
-    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
+    CRUDUser.read_transaction(
+        db, me.id, None, account_id, None, movement_id, transaction_id
+    )
     return CRUDFile.delete(db, file_id)

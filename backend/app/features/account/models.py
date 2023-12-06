@@ -1,47 +1,43 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Literal, TYPE_CHECKING, Any, Optional
+from typing import Literal, TYPE_CHECKING, Any, Iterable
 from decimal import Decimal
-from datetime import date, timedelta
+from datetime import date
 
-from sqlmodel import Field, SQLModel, Relationship, Session
+from sqlmodel import SQLModel, Relationship, Session
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import (
-    Base,
-    CurrencyCode,
-    PlaidInMixin,
     SyncableBase,
-    PlaidInMixin,
-    SyncableBase,
-    PlaidOutMixin,
+    ApiInMixin,
     SyncableApiOutMixin,
+    PlaidInMixin,
+    PlaidOutMixin,
+    CurrencyCode,
 )
 
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser import TransactionDeserialiser
 from app.features.movement import Movement
+from app.features.accountacces import AccountAccess
 
 
 if TYPE_CHECKING:
-    from app.features.institution import Institution
     from app.features.user import User
     from app.features.userinstitutionlink import UserInstitutionLink
-
-# Bases
 
 
 class __AccountBase(SQLModel):
@@ -51,33 +47,26 @@ class __AccountBase(SQLModel):
     type: str
 
 
-class __AccountOut(Base):
+class __AccountOut(SQLModel):
     balance: Decimal
     is_synced: bool
 
 
-class __AccountApiOut(__AccountOut, SyncableApiOutMixin):
-    ...
-
-
-class __AccountPlaidOut(__AccountOut, PlaidOutMixin):
-    ...
-
-
-# Institutional Account
-
-
-class __InstitutionalAccountOut(__AccountBase):
+class __InstitutionalAccountOut(__AccountOut):
     userinstitutionlink_id: int
 
 
-class DepositoryApiIn(__AccountBase):
+class __NonInstitutionalAccountOut(__AccountOut):
+    user_id: int
+
+
+class __Depository(__AccountBase):
     type: Literal["depository"]
     bic: str | None
     iban: str | None
 
 
-class LoanApiIn(__AccountBase):
+class __Loan(__AccountBase):
     type: Literal["loan"]
     # number: str
     # term: timedelta
@@ -85,46 +74,43 @@ class LoanApiIn(__AccountBase):
     # origination_principal_amount: Decimal
 
 
-class CreditApiIn(__AccountBase):
+class __Credit(__AccountBase):
     type: Literal["credit"]
 
 
-# Non institutional accounts
-
-
-class __NonInstitutionalAccountOut(__AccountBase):
-    user_id: int
-
-
-class CashApiIn(__AccountBase):
+class __Cash(__AccountBase):
     type: Literal["cash"]
 
 
-class PersonalLedgerApiIn(__AccountBase):
+class __PersonalLedger(__AccountBase):
     type: Literal["personal_ledger"]
 
 
-class PropertyApiIn(__AccountBase):
+class __Property(__AccountBase, ApiInMixin):
     type: Literal["property"]
     # address: str
 
 
 # fmt: off
-class DepositoryApiOut(DepositoryApiIn, __InstitutionalAccountOut, __AccountApiOut): ...
-class DepositoryPlaidIn(DepositoryApiIn, PlaidInMixin): ...
-class DepositoryPlaidOut(DepositoryApiIn, __InstitutionalAccountOut, __AccountPlaidOut): ...
-
-class LoanApiOut(LoanApiIn, __InstitutionalAccountOut, __AccountApiOut): ...
-class LoanPlaidIn(LoanApiIn, PlaidInMixin): ...
-class LoanPlaidOut(LoanApiIn, __InstitutionalAccountOut, __AccountPlaidOut): ...
-
-class CreditApiOut(CreditApiIn, __InstitutionalAccountOut, __AccountApiOut): ...
-class CreditPlaidIn(CreditApiIn, PlaidInMixin): ...
-class CreditPlaidOut(CreditApiIn, __InstitutionalAccountOut, __AccountPlaidOut): ...
-
-class CashApiOut(CashApiIn, __NonInstitutionalAccountOut, __AccountApiOut): ...
-class PersonalLedgerApiOut(PersonalLedgerApiIn, __NonInstitutionalAccountOut, __AccountApiOut): ...
-class PropertyApiOut(PropertyApiIn, __NonInstitutionalAccountOut, __AccountApiOut): ...
+class DepositoryApiIn(__Depository, ApiInMixin): ...
+class DepositoryApiOut(__Depository, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class DepositoryPlaidIn(__Depository, PlaidInMixin): ...
+class DepositoryPlaidOut(__Depository, __InstitutionalAccountOut, PlaidOutMixin): ...
+class LoanApiIn(__Loan, ApiInMixin): ...
+class LoanApiOut(__Loan, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class LoanPlaidIn(__Loan, PlaidInMixin): ...
+class LoanPlaidOut(__Loan, __InstitutionalAccountOut, PlaidOutMixin): ...
+class CreditApiIn(__Credit, ApiInMixin): ...
+class CreditApiOut(__Credit, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class CreditPlaidIn(__Credit, PlaidInMixin): ...
+class CreditPlaidOut(__Credit, __InstitutionalAccountOut, PlaidOutMixin): ...
+class CashApiIn(__Cash, ApiInMixin): ...
+class CashApiOut(__Cash, __NonInstitutionalAccountOut, SyncableApiOutMixin): ...
+class PersonalLedgerApiIn(__PersonalLedger, ApiInMixin): ...
+class PersonalLedgerApiOut(__PersonalLedger, __NonInstitutionalAccountOut, SyncableApiOutMixin): ...
+class PropertyApiIn(__Property): ...
+class PropertyApiOut(__Property, __NonInstitutionalAccountOut, SyncableApiOutMixin): ...
+# fmt: on
 
 AccountApiIn = (
     DepositoryApiIn
@@ -144,7 +130,6 @@ AccountApiOut = (
 )
 AccountPlaidIn = DepositoryPlaidIn | LoanPlaidIn | CreditPlaidIn
 AccountPlaidOut = DepositoryPlaidOut | LoanPlaidOut | CreditPlaidOut
-# fmt: on
 
 # DB Model
 
@@ -154,12 +139,6 @@ class Account(
     __AccountBase,
     table=True,
 ):
-    # Institutional
-    userinstitutionlink_id: int | None = Field(foreign_key="userinstitutionlink.id")
-    userinstitutionlink: Optional["UserInstitutionLink"] = Relationship(
-        back_populates="accounts"
-    )
-
     # Depository
     bic: str | None
     iban: str | None
@@ -170,14 +149,12 @@ class Account(
     # origination_date: date | None
     # origination_principal_amount: Decimal | None
 
-    # NonInstitutional
-    user_id: int | None = Field(foreign_key="user.id")
-    user: Optional["User"] = Relationship(back_populates="accounts")
-
     transactions: list[Transaction] = Relationship(
         back_populates="account",
         sa_relationship_kwargs={"cascade": "all, delete", "lazy": "dynamic"},
     )
+
+    accesses: list["AccountAccess"] = Relationship(back_populates="account")
 
     @classmethod
     def update_balance(
@@ -217,18 +194,34 @@ class Account(
     @classmethod
     def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
         statement = cls.select()
+
         if account_id:
             statement = statement.where(cls.id == account_id)
+
+        return statement
+
+    @classmethod
+    def select_account_accesses(
+        cls, account_id: int | None, accountaccess_id: int | None
+    ) -> SelectOfScalar[AccountAccess]:
+        statement = AccountAccess.select_account_accesses(accountaccess_id)
+
+        if account_id:
+            statement = statement.where(cls.id == account_id)
+
         return statement
 
     @classmethod
     def select_movements(
         cls,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
-        statement = Movement.select_movements(movement_id, **kwargs)
+        statement = AccountAccess.select_movements(
+            accountaccess_id, movement_id, **kwargs
+        )
         statement = statement.join(Transaction)
 
         statement = statement.join(cls)
@@ -241,11 +234,14 @@ class Account(
     def select_transactions(
         cls,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         transaction_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
-        statement = Movement.select_transactions(movement_id, transaction_id, **kwargs)
+        statement = AccountAccess.select_transactions(
+            accountaccess_id, movement_id, transaction_id, **kwargs
+        )
 
         statement = statement.join(cls)
         if account_id:
@@ -254,9 +250,22 @@ class Account(
         return statement
 
     @property
+    def users(self) -> Iterable[User]:
+        for a in self.accesses:
+            yield a.user
+
+    @property
+    def userinstitutionlinks(self) -> Iterable[UserInstitutionLink]:
+        for a in self.accesses:
+            if a.userinstitutionlink:
+                yield a.userinstitutionlink
+
+    @property
     def transactiondeserialiser(self) -> TransactionDeserialiser | None:
-        if uil := self.userinstitutionlink:
-            return uil.institution.transactiondeserialiser
+        if uils := self.userinstitutionlinks:
+            for uil in uils:
+                # return first transaction deserialiser
+                return uil.institution.transactiondeserialiser
         return None
 
     @property

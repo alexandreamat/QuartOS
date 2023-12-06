@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -29,8 +29,8 @@ class CRUDFile(CRUDBase[File, FileApiOut, FileApiIn]):
     out_model = FileApiOut
 
     @classmethod
-    def create(cls, db: Session, file_in: FileApiIn, **kwargs: Any) -> FileApiOut:
-        file = File.from_schema(file_in, uploaded=datetime.now(timezone.utc), **kwargs)
+    def create(cls, db: Session, obj_in: FileApiIn, **kwargs: Any) -> FileApiOut:
+        file = File.from_schema(obj_in, uploaded=datetime.now(timezone.utc), **kwargs)
         file = File.create(db, file)
         return FileApiOut.from_orm(file)
 
