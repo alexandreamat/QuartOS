@@ -121,11 +121,17 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_id: int | None,
         userinstitutionlink_id: int | None,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         transaction_id: int,
     ) -> TransactionApiOut:
         statement = User.select_transactions(
-            user_id, userinstitutionlink_id, account_id, movement_id, transaction_id
+            user_id,
+            userinstitutionlink_id,
+            account_id,
+            accountaccess_id,
+            movement_id,
+            transaction_id,
         )
         transaction = Transaction.read_one_from_query(db, statement, transaction_id)
         return TransactionApiOut.from_orm(transaction)
@@ -162,6 +168,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_id: int,
         userinstitutionlink_id: int | None = None,
         account_id: int | None = None,
+        accountaccess_id: int | None = None,
         page: int = 0,
         per_page: int | None = None,
         start_date: date | None = None,
@@ -171,8 +178,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         transaction_amount_ge: Decimal | None = None,
         transaction_amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
-        transactionsGe: int | None = None,
-        transactionsLe: int | None = None,
+        transactions_ge: int | None = None,
+        transactions_le: int | None = None,
         amount_gt: Decimal | None = None,
         amount_lt: Decimal | None = None,
         sort_by: MovementField = MovementField.TIMESTAMP,
@@ -181,6 +188,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             user_id=user_id,
             userinstitutionlink_id=userinstitutionlink_id,
             account_id=account_id,
+            accountaccess_id=accountaccess_id,
+            movement_id=None,
             page=page,
             per_page=per_page,
             start_date=start_date,
@@ -190,8 +199,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             transaction_amount_ge=transaction_amount_ge,
             transaction_amount_le=transaction_amount_le,
             is_amount_abs=is_amount_abs,
-            transactionsGe=transactionsGe,
-            transactionsLe=transactionsLe,
+            transactions_ge=transactions_ge,
+            transactions_le=transactions_le,
             sort_by=sort_by,
         )
         movements: Iterable[Movement] = db.exec(statement).all()
@@ -218,12 +227,18 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_id: int,
         userinstitutionlink_id: int | None,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int,
         **kwargs: Any,
     ) -> MovementApiOut:
         user_out = cls.read(db, user_id)
         statement = User.select_movements(
-            user_id, userinstitutionlink_id, account_id, movement_id, **kwargs
+            user_id,
+            userinstitutionlink_id,
+            account_id,
+            accountaccess_id,
+            movement_id,
+            **kwargs,
         )
         movement = Movement.read_one_from_query(db, statement, movement_id)
         return MovementApiOut.from_orm(
@@ -241,6 +256,10 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     ) -> PLStatement:
         statement = User.select_movements(
             user_id=user_id,
+            userinstitutionlink_id=None,
+            account_id=None,
+            accountaccess_id=None,
+            movement_id=None,
             start_date=start_date,
             end_date=end_date,
         )

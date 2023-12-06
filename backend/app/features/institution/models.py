@@ -10,6 +10,7 @@ from app.common.models import (
     SyncableBase,
     PlaidOutMixin,
     SyncableApiOutMixin,
+    ApiInMixin,
 )
 from app.features.transactiondeserialiser import TransactionDeserialiser
 from app.features.replacementpattern import ReplacementPattern
@@ -47,7 +48,7 @@ class InstitutionApiOut(__InstitutionBase, SyncableApiOutMixin):
         return m
 
 
-class InstitutionApiIn(__InstitutionBase):
+class InstitutionApiIn(__InstitutionBase, ApiInMixin):
     url: HttpUrl
 
 

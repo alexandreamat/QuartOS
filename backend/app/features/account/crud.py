@@ -77,9 +77,9 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
     @classmethod
     def update(
-        cls, db: Session, id: int, account_in: AccountApiIn, **kwargs: Any
+        cls, db: Session, id: int, obj_in: AccountApiIn, **kwargs: Any
     ) -> AccountApiOut:
-        account = cls.db_model.update(db, id, **account_in.dict(), **kwargs)
+        account = cls.db_model.update(db, id, **obj_in.dict(), **kwargs)
         cls.update_balance(db, id)
         return cls.from_orm(account)
 
@@ -124,7 +124,9 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
                 db, [transaction_in], account_id=account_id, account_balance=Decimal(0)
             )
         for transaction_id in transaction_ids:
-            transaction_out = cls.read_transaction(db, account_id, None, transaction_id)
+            transaction_out = cls.read_transaction(
+                db, account_id, None, None, transaction_id
+            )
             if min_timestamp:
                 min_timestamp = min(transaction_out.timestamp, min_timestamp)
             else:
@@ -173,7 +175,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         transaction_in: TransactionApiIn,
         new_movement_id: int,
     ) -> TransactionApiOut:
-        cls.read_transaction(db, account_id, movement_id, transaction_id)
+        cls.read_transaction(db, account_id, None, movement_id, transaction_id)
         transaction_out = CRUDMovement.update_transaction(
             db,
             movement_id,
@@ -191,7 +193,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         cls, db: Session, movement_id: int, account_id: int, transaction_id: int
     ) -> int:
         transaction_out = cls.read_transaction(
-            db, account_id, movement_id, transaction_id
+            db, account_id, None, movement_id, transaction_id
         )
         CRUDMovement.delete_transaction(db, movement_id, transaction_id)
         Account.update_balance(db, account_id, transaction_out.timestamp)
@@ -202,10 +204,13 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         cls,
         db: Session,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         transaction_id: int,
     ) -> TransactionApiOut:
-        statement = Account.select_transactions(account_id, movement_id, transaction_id)
+        statement = Account.select_transactions(
+            account_id, accountaccess_id, movement_id, transaction_id
+        )
         transaction = Transaction.read_one_from_query(db, statement, transaction_id)
         return TransactionApiOut.from_orm(transaction)
 
@@ -250,9 +255,9 @@ class CRUDSyncableAccount(
 
     @classmethod
     def update(
-        cls, db: Session, id: int, account_in: AccountPlaidIn, **kwargs: Any
+        cls, db: Session, id: int, obj_in: AccountPlaidIn, **kwargs: Any
     ) -> AccountPlaidOut:
-        account = cls.db_model.update(db, id, **account_in.dict(), **kwargs)
+        account = cls.db_model.update(db, id, **obj_in.dict(), **kwargs)
         account = Account.update_balance(db, id)
         return cls.from_orm(account)
 

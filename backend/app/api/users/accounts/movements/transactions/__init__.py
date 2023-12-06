@@ -23,8 +23,7 @@ def create(
     movement_id: int,
     transaction_in: TransactionApiIn,
 ) -> TransactionApiOut:
-    CRUDUser.read_movement(db, me.id, None, None, movement_id)
-    CRUDUser.read_account(db, me.id, None, account_id)
+    CRUDUser.read_movement(db, me.id, None, account_id, None, movement_id)
     return CRUDAccount.create_transaction(db, account_id, movement_id, transaction_in)
 
 
@@ -37,7 +36,7 @@ def read(
     transaction_id: int,
 ) -> TransactionApiOut:
     transaction = CRUDUser.read_transaction(
-        db, me.id, None, account_id, movement_id, transaction_id
+        db, me.id, None, account_id, None, movement_id, transaction_id
     )
     return transaction
 
@@ -52,7 +51,9 @@ def update(
     transaction_in: TransactionApiIn,
     new_movement_id: int,
 ) -> TransactionApiOut:
-    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
+    CRUDUser.read_transaction(
+        db, me.id, None, account_id, None, movement_id, transaction_id
+    )
     return CRUDAccount.update_transaction(
         db, account_id, movement_id, transaction_id, transaction_in, new_movement_id
     )
@@ -67,7 +68,7 @@ def delete(
     transaction_id: int,
 ) -> int:
     transaction_out = CRUDUser.read_transaction(
-        db, me.id, None, account_id, movement_id, transaction_id
+        db, me.id, None, account_id, None, movement_id, transaction_id
     )
     if transaction_out.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)

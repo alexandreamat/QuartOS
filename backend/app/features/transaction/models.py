@@ -12,6 +12,7 @@ from app.common.models import (
     SyncableBase,
     PlaidOutMixin,
     SyncableApiOutMixin,
+    ApiInMixin,
 )
 from app.common.utils import filter_query_by_search
 
@@ -39,7 +40,7 @@ class TransactionApiOut(__TransactionOut, SyncableApiOutMixin):
     ...
 
 
-class TransactionApiIn(__TransactionBase):
+class TransactionApiIn(__TransactionBase, ApiInMixin):
     ...
 
 

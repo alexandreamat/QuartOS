@@ -74,11 +74,15 @@ class Base(SQLModel):
         db.delete(cls.read(db, id))
 
 
+class ApiInMixin(SQLModel):
+    ...
+
+
 class ApiOutMixin(SQLModel):
     id: int
 
 
-class PlaidInMixin(SQLModel):
+class PlaidInMixin(ApiInMixin):
     plaid_id: str
     plaid_metadata: str
 
