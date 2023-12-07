@@ -13,4 +13,4 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-export const BASE_URL = "https://quartos-api.alexamat.com";
+export const BASE_URL = "https://quartos.alexamat.com/api";
