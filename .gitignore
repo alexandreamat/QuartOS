@@ -19,4 +19,4 @@ openapi.json
 .env
 
 db/var/lib/postgresql/data
-pgadmin/var/lib/pgadmin
+build
