@@ -92,10 +92,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     );
 
   const form: TransactionApiInForm = {
-    amountStr: useFormField(
-      isEdit ? props.transaction.amount.toFixed(2) : "",
-      "amount",
-    ),
+    amountStr: useFormField(isEdit ? props.transaction.amount : "", "amount"),
     timestamp: useFormField(
       isEdit ? new Date(props.transaction.timestamp) : new Date(),
       "date",

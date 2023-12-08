@@ -20,8 +20,7 @@ from datetime import date
 
 from sqlmodel import Field, Relationship, SQLModel, Session
 from sqlmodel.sql.expression import SelectOfScalar
-from pydantic import root_validator, validator
-import pycountry
+from pydantic import WithJsonSchema
 
 from app.common.models import (
     Base,
