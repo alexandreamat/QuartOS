@@ -87,7 +87,7 @@ export default function PLCard(props: {
             <Step.Title>Income</Step.Title>
             <Step.Content>
               <CurrencyLabel
-                amount={props.aggregate?.income}
+                amount={Number(props.aggregate?.income)}
                 currencyCode={props.aggregate?.currency_code}
                 loading={props.loading}
               />
@@ -100,7 +100,7 @@ export default function PLCard(props: {
             <Step.Title>Expenses</Step.Title>
             <Step.Content>
               <CurrencyLabel
-                amount={props.aggregate?.expenses}
+                amount={Number(props.aggregate?.expenses)}
                 currencyCode={props.aggregate?.currency_code}
                 loading={props.loading}
               />
@@ -115,7 +115,8 @@ export default function PLCard(props: {
             <CurrencyLabel
               amount={
                 props.aggregate &&
-                props.aggregate.expenses + props.aggregate.income
+                Number(props.aggregate.expenses) +
+                  Number(props.aggregate.income)
               }
               currencyCode={props.aggregate?.currency_code}
               loading={props.loading}

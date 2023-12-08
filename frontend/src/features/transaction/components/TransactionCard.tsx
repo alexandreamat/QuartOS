@@ -185,20 +185,19 @@ export function TransactionCard(
               props.transaction &&
               account && (
                 <p>
-                  {`Account balance: ${props.transaction.account_balance.toLocaleString(
-                    undefined,
-                    {
-                      style: "currency",
-                      currency: account.currency_code,
-                    },
-                  )}`}
+                  {`Account balance: ${Number(
+                    props.transaction.account_balance,
+                  ).toLocaleString(undefined, {
+                    style: "currency",
+                    currency: account.currency_code,
+                  })}`}
                 </p>
               )
             }
             trigger={
               <div>
                 <CurrencyLabel
-                  amount={props.transaction?.amount}
+                  amount={Number(props.transaction?.amount)}
                   currencyCode={account?.currency_code}
                   loading={accountQueries.isLoading || props.loading}
                 />

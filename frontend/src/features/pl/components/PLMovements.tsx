@@ -43,15 +43,15 @@ export default function PLMovements(props: {
   const movements = movementsQuery.data;
 
   const totalAmount = props.showIncome
-    ? props.aggregate.income
-    : props.aggregate.expenses;
+    ? Number(props.aggregate.income)
+    : Number(props.aggregate.expenses);
 
   let cumulativeAmount = 0;
 
   return (
     <Card.Group style={{ margin: 0 }}>
       {movements.map((movement) => {
-        cumulativeAmount += movement.amount;
+        cumulativeAmount += Number(movement.amount);
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         return (
           <MovementCard
