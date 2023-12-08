@@ -25,9 +25,9 @@ export default function PLMovements(props: {
 }) {
   const movementsEndpoint = props.showIncome
     ? api.endpoints
-        .readIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGet
+        .readIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGet
     : api.endpoints
-        .readExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGet;
+        .readExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGet;
 
   const movementsQuery = movementsEndpoint.useQuery({
     startDate: props.aggregate.start_date,

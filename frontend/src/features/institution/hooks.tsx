@@ -17,7 +17,7 @@ import { api } from "app/services/api";
 import { DropdownItemProps } from "semantic-ui-react";
 
 export function useInstitutionOptions() {
-  const query = api.endpoints.readManyApiInstitutionsGet.useQuery();
+  const query = api.endpoints.readManyInstitutionsGet.useQuery();
 
   const options: DropdownItemProps[] =
     query.data?.map((institution) => ({

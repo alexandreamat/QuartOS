@@ -27,45 +27,45 @@ function cacheList<T extends string, R extends { id: number }[]>(
 const enhancedApi = generatedApi.enhanceEndpoints({
   endpoints: {
     // MOVEMENTS CRUD
-    createApiUsersMeMovementsPost: {
+    createUsersMeMovementsPost: {
       invalidatesTags: (result, error, arg) => [
         "users",
         { type: "movements", id: ALL },
       ],
     },
-    createManyApiUsersMeAccountsAccountIdMovementsPost: {
+    createManyUsersMeAccountsAccountIdMovementsPost: {
       invalidatesTags: (result, error, { accountId }) => [
         "users",
         { type: "accounts", id: accountId },
         ...cacheList("movements", result),
       ],
     },
-    readApiUsersMeMovementsMovementIdGet: {
+    readUsersMeMovementsMovementIdGet: {
       providesTags: (result, error, movementId) => [
         "users",
         { type: "movements", id: movementId },
       ],
     },
-    readManyApiUsersMeMovementsGet: {
+    readManyUsersMeMovementsGet: {
       providesTags: (result, error, arg) => [
         "users",
         ...cacheList("movements", result),
       ],
     },
-    updateApiUsersMeMovementsMovementIdPut: {
+    updateUsersMeMovementsMovementIdPut: {
       invalidatesTags: (result, error, { movementId }) => [
         "users",
         { type: "movements", id: movementId },
       ],
     },
-    addTransactionsApiUsersMeMovementsMovementIdTransactionsPut: {
+    addTransactionsUsersMeMovementsMovementIdTransactionsPut: {
       invalidatesTags: (result, error, { movementId }) => [
         "users",
         { type: "movements", id: movementId },
         ...cacheList("transactions", result?.transactions),
       ],
     },
-    deleteApiUsersMeMovementsMovementIdDelete: {
+    deleteUsersMeMovementsMovementIdDelete: {
       invalidatesTags: (result, error, arg) => [
         "users",
         { type: "movements", id: ALL },
@@ -73,7 +73,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
     },
 
     // TRANSACTIONS CRUD
-    createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost: {
+    createUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost: {
       invalidatesTags: (result, error, { accountId, movementId }) => [
         "users",
         { type: "accounts", id: accountId },
@@ -81,13 +81,13 @@ const enhancedApi = generatedApi.enhanceEndpoints({
         { type: "transactions", id: ALL },
       ],
     },
-    readManyApiUsersMeTransactionsGet: {
+    readManyUsersMeTransactionsGet: {
       providesTags: (result, error, arg) => [
         "users",
         ...cacheList("transactions", result),
       ],
     },
-    readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGet:
+    readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGet:
       {
         providesTags: (
           result,
@@ -100,7 +100,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           { type: "transactions", id: transactionId },
         ],
       },
-    updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut:
+    updateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut:
       {
         invalidatesTags: (
           result,
@@ -113,7 +113,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           { type: "transactions", id: transactionId },
         ],
       },
-    deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete:
+    deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete:
       {
         invalidatesTags: (result, error, { accountId, movementId }) => [
           "users",
@@ -124,7 +124,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       },
 
     // FILES CRUD
-    createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
+    createUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
       {
         invalidatesTags: (
           result,
@@ -138,7 +138,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           { type: "files", id: ALL },
         ],
       },
-    readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet:
+    readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet:
       {
         query: ({ accountId, movementId, transactionId, fileId }) => ({
           url: `/api/users/me/accounts/${accountId}/movements/${movementId}/transactions/${transactionId}/files/${fileId}`,
@@ -156,7 +156,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           { type: "files", id: fileId },
         ],
       },
-    readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet:
+    readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet:
       {
         providesTags: (
           result,
@@ -170,7 +170,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           ...cacheList("files", result),
         ],
       },
-    deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete:
+    deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete:
       {
         invalidatesTags: (
           result,

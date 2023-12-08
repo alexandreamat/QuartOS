@@ -19,8 +19,8 @@ export default function InstitutionLinkOption(props: {
   institutionLink: UserInstitutionLinkApiOut;
 }) {
   const { data: institution } =
-    api.endpoints.readApiInstitutionsInstitutionIdGet.useQuery(
-      props.institutionLink.institution_id
+    api.endpoints.readInstitutionsInstitutionIdGet.useQuery(
+      props.institutionLink.institution_id,
     );
 
   return <>{institution?.name}</>;

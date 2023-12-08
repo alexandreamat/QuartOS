@@ -20,11 +20,11 @@ import InstitutionLinkOption from "./components/InstitutionLinkOption";
 
 export function useInstitutionLinkQueries(institutionLinkId?: number) {
   const institutionLinkQuery =
-    api.endpoints.readApiUsersMeInstitutionLinksUserinstitutionlinkIdGet.useQuery(
+    api.endpoints.readUsersMeInstitutionLinksUserinstitutionlinkIdGet.useQuery(
       institutionLinkId || skipToken,
     );
   const institutionQuery =
-    api.endpoints.readApiInstitutionsInstitutionIdGet.useQuery(
+    api.endpoints.readInstitutionsInstitutionIdGet.useQuery(
       institutionLinkQuery.data?.institution_id || skipToken,
     );
 
@@ -57,7 +57,7 @@ export function useInstitutionLinkQueries(institutionLinkId?: number) {
 
 export function useInstitutionLinkOptions() {
   const institutionLinksQuery =
-    api.endpoints.readManyApiUsersMeInstitutionLinksGet.useQuery();
+    api.endpoints.readManyUsersMeInstitutionLinksGet.useQuery();
 
   const institutionLinkOptions = institutionLinksQuery.data?.map((link) => {
     const content = <InstitutionLinkOption institutionLink={link} />;

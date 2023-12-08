@@ -53,9 +53,9 @@ export default function TransactionDeserialiserForm(props: {
   ];
 
   const [createTransactionDeserialiser, createTransactionDeserialiserResult] =
-    api.endpoints.createApiTransactionDeserialisersPost.useMutation();
+    api.endpoints.createTransactionDeserialisersPost.useMutation();
   const [updateTransactionDeserialiser, updateTransactionDeserialiserResult] =
-    api.endpoints.updateApiTransactionDeserialisersIdPut.useMutation();
+    api.endpoints.updateTransactionDeserialisersIdPut.useMutation();
 
   useEffect(() => {
     if (!props.transactionDeserialiser) return;

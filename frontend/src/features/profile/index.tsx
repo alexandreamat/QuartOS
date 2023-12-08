@@ -22,9 +22,9 @@ import { logMutationError, renderErrorMessage } from "utils/error";
 import FormCurrencyCodeDropdown from "components/FormCurrencyCodeDropdown";
 
 export default function Profile() {
-  const me = api.endpoints.readMeApiUsersMeGet.useQuery();
+  const me = api.endpoints.readMeUsersMeGet.useQuery();
   const [updateMe, updateMeResult] =
-    api.endpoints.updateMeApiUsersMePut.useMutation();
+    api.endpoints.updateMeUsersMePut.useMutation();
   const [editMode, setEditMode] = useState(false);
 
   const fullName = useFormField(me.data?.full_name || "");

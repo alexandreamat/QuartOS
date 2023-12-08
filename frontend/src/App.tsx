@@ -162,7 +162,7 @@ function AuthenticatedApp() {
   }, []);
 
   const throttledUpdate = throttle(updateMedia, 200);
-  const meQuery = api.endpoints.readMeApiUsersMeGet.useQuery();
+  const meQuery = api.endpoints.readMeUsersMeGet.useQuery();
 
   useEffect(() => {
     if (meQuery.data) {
