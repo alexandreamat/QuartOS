@@ -13,14 +13,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING, Any
 import base64
 
-from pydantic import HttpUrl, validator, constr
+from pydantic import HttpUrl
+from pydantic_extra_types.color import Color
 from sqlmodel import Relationship, SQLModel, Field
-import pycountry
 
-from app.common.models import SyncedMixin, SyncableBase, SyncedBase
+from app.common.models import (
+    SyncedMixin,
+    SyncableBase,
+    SyncedBase,
+    CountryCode,
+    SyncableBase,
+)
 from app.features.transactiondeserialiser import TransactionDeserialiser
 from app.features.replacementpattern import ReplacementPattern
 
@@ -30,15 +36,9 @@ if TYPE_CHECKING:
 
 class __InstitutionBase(SQLModel):
     name: str
-    country_code: str
+    country_code: CountryCode
     url: HttpUrl | None
-    colour: Annotated[str, constr(regex=r"^#[0-9a-fA-F]{6}$")] | None
-
-    @validator("country_code")
-    def country_code_must_exist(cls, value: str) -> str:
-        if value not in [country.alpha_2 for country in pycountry.countries]:
-            raise ValueError("Invalid country code")
-        return value
+    colour: Color | None
 
 
 class InstitutionApiOut(__InstitutionBase, SyncableBase):
@@ -70,6 +70,8 @@ class InstitutionPlaidIn(__InstitutionBase, SyncedMixin):
 
 
 class Institution(__InstitutionBase, SyncableBase, table=True):
+    url: str | None
+    colour: str | None
     logo: bytes | None
     transactiondeserialiser_id: int | None = Field(
         foreign_key="transactiondeserialiser.id"
