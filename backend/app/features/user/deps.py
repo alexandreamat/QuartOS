@@ -31,7 +31,7 @@ from app.features.auth.models import TokenPayload
 
 from .models import UserApiOut
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl=f"{settings.API_STR}/auth/login")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 def get_current_user(
