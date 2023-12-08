@@ -26,6 +26,8 @@ vulture = "~=2.10"
 alembic = "~=1.13.1"
 psycopg2-binary = "~=2.9"
 pydantic = {extras = ["email"], version = "*"}
+pydantic-extra-types = "~=2.4"
+pydantic-settings = "~=2.1"
 
 [dev-packages]
 httpx = "~=0.26"

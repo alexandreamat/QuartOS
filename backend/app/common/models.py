@@ -13,10 +13,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TypeVar, Type, Any, Generator, Callable
+from typing import TypeVar, Type, Any, Annotated
 import re
 
 import pycountry
+from pydantic import AfterValidator
 from sqlmodel import Session, SQLModel, Field, select
 from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.exc import NoResultFound
@@ -110,41 +111,35 @@ class SyncedBase(SyncableBase):
     plaid_metadata: str
 
 
-class CurrencyCode(str):
-    @classmethod
-    def __get_validators__(
-        cls,
-    ) -> Generator[Callable[[Any], str], None, None]:
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v: Any) -> str:
-        if not isinstance(v, str):
-            raise TypeError("string required")
-        if v not in [currency.alpha_3 for currency in pycountry.currencies]:
-            raise ValueError("Invalid currency code")
-        return v
+def validate_currency_code(v: str) -> str:
+    if v not in [currency.alpha_3 for currency in pycountry.currencies]:
+        raise ValueError("Invalid currency code")
+    return v
 
 
-class CodeSnippet(str):
-    @classmethod
-    def __get_validators__(
-        cls,
-    ) -> Generator[Callable[[Any], str], None, None]:
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v: str) -> str:
-        exec(f"def deserialize_field(row): return {v}")
-        return v
+CurrencyCode = Annotated[str, AfterValidator(validate_currency_code)]
 
 
-class RegexPattern(str):
-    @classmethod
-    def __get_validators__(cls) -> Generator[Callable[[Any], str], None, None]:
-        yield cls.validate
+def validate_code_snippet(v: str) -> str:
+    exec(f"def deserialize_field(row): return {v}")
+    return v
 
-    @classmethod
-    def validate(cls, v: str) -> str:
-        re.compile(v)
-        return v
+
+CodeSnippet = Annotated[str, AfterValidator(validate_code_snippet)]
+
+
+def validate_regex_pattern(v: str) -> str:
+    re.compile(v)
+    return v
+
+
+RegexPattern = Annotated[str, AfterValidator(validate_regex_pattern)]
+
+
+def validate_country_code(v: str) -> str:
+    if v not in [country.alpha_2 for country in pycountry.countries]:
+        raise ValueError("Invalid country code")
+    return v
+
+
+CountryCode = Annotated[str, AfterValidator(validate_country_code)]
