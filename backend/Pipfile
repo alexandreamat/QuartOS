@@ -19,13 +19,16 @@ plaid-python = "*"
 types-requests = "*"
 types-pytz = "*"
 requests-cache = "*"
-pydantic = {extras = ["email"], version = "*"}
 pytz = "*"
 types-python-dateutil = "*"
 bpython = "*"
 vulture = "*"
 alembic = "*"
 psycopg2-binary = "*"
+pydantic-settings = "*"
+email-validator = "*"
+pydantic = {extras = ["email"], version = "*"}
+pydantic-extra-types = "*"
 
 [dev-packages]
 httpx = "*"
