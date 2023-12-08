@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -55,7 +55,7 @@ export default function AccountForm(props: {
   const institutionLinkOptions = useInstitutionLinkOptions();
 
   const [deleteAccount, deleteAccountResult] =
-    api.endpoints.deleteApiUsersMeAccountsAccountIdDelete.useMutation();
+    api.endpoints.deleteUsersMeAccountsAccountIdDelete.useMutation();
 
   useEffect(() => {
     institutionLinkId.set(Number(institutionLinkIdParam));
@@ -75,15 +75,15 @@ export default function AccountForm(props: {
   const requiredFields = [name, currencyCode, initialBalanceStr];
 
   const [createAccount, createAccountResult] =
-    api.endpoints.createApiUsersMeAccountsPost.useMutation();
+    api.endpoints.createUsersMeAccountsPost.useMutation();
   const [updateAccount, updateAccountResult] =
-    api.endpoints.updateApiUsersMeAccountsAccountIdPut.useMutation();
+    api.endpoints.updateUsersMeAccountsAccountIdPut.useMutation();
 
   useEffect(() => {
     if (!props.account) return;
     name.set(props.account.name);
     currencyCode.set(props.account.currency_code);
-    initialBalanceStr.set(props.account.initial_balance.toFixed(2));
+    initialBalanceStr.set(props.account.initial_balance);
     type.set(props.account.type);
     if (
       props.account.type === "depository" ||

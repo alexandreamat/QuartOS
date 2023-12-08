@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -53,18 +53,17 @@ function Flow(props: {
       content={
         props.transaction &&
         currencyCode &&
-        `Account balance: ${props.transaction.account_balance.toLocaleString(
-          undefined,
-          {
-            style: "currency",
-            currency: currencyCode,
-          },
-        )}`
+        `Account balance: ${Number(
+          props.transaction.account_balance,
+        ).toLocaleString(undefined, {
+          style: "currency",
+          currency: currencyCode,
+        })}`
       }
       trigger={
         <div>
           <CurrencyLabel
-            amount={props.transaction?.amount}
+            amount={Number(props.transaction?.amount)}
             currencyCode={currencyCode}
             loading={props.loading || accountQueries.isLoading}
           />
@@ -207,7 +206,7 @@ export function Flows(props: {
         onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
-        filterPredicate={(t) => t.amount < 0}
+        filterPredicate={(t) => Number(t.amount) < 0}
         isInForm={props.isInForm}
         reverse
       />
@@ -216,7 +215,7 @@ export function Flows(props: {
         onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
-        filterPredicate={(t) => t.amount >= 0}
+        filterPredicate={(t) => Number(t.amount) >= 0}
         isInForm={props.isInForm}
       />
     </Step.Group>

@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -25,9 +25,9 @@ export default function PLMovements(props: {
 }) {
   const movementsEndpoint = props.showIncome
     ? api.endpoints
-        .readIncomeApiUsersMeMovementsAggregatesStartDateEndDateIncomeGet
+        .readIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGet
     : api.endpoints
-        .readExpensesApiUsersMeMovementsAggregatesStartDateEndDateExpensesGet;
+        .readExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGet;
 
   const movementsQuery = movementsEndpoint.useQuery({
     startDate: props.aggregate.start_date,
@@ -43,15 +43,15 @@ export default function PLMovements(props: {
   const movements = movementsQuery.data;
 
   const totalAmount = props.showIncome
-    ? props.aggregate.income
-    : props.aggregate.expenses;
+    ? Number(props.aggregate.income)
+    : Number(props.aggregate.expenses);
 
   let cumulativeAmount = 0;
 
   return (
     <Card.Group style={{ margin: 0 }}>
       {movements.map((movement) => {
-        cumulativeAmount += movement.amount;
+        cumulativeAmount += Number(movement.amount);
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         return (
           <MovementCard

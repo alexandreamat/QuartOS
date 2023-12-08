@@ -1,21 +1,21 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
   AccountApiOut,
-  BodyPreviewApiUsersMeAccountsPreviewPost,
+  BodyPreviewUsersMeAccountsPreviewPost,
   api,
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
@@ -44,14 +44,14 @@ export default function Uploader(props: {
   const [showDupsWarn, setShowDupsWarn] = useState(false);
 
   const lastTransactionQuery =
-    api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
+    api.endpoints.readManyUsersMeTransactionsGet.useQuery({
       accountId: props.account.id,
       perPage: 1,
       page: 0,
     });
 
   const firstTransactionQuery =
-    api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
+    api.endpoints.readManyUsersMeTransactionsGet.useQuery({
       accountId: props.account.id,
       perPage: 1,
       page: 0,
@@ -59,7 +59,7 @@ export default function Uploader(props: {
     });
 
   const [upload, uploadResult] =
-    api.endpoints.previewApiUsersMeAccountsPreviewPost.useMutation();
+    api.endpoints.previewUsersMeAccountsPreviewPost.useMutation();
 
   const transactionsIn = useMemo(
     () =>
@@ -100,8 +100,8 @@ export default function Uploader(props: {
     try {
       await upload({
         accountId: props.account.id,
-        bodyPreviewApiUsersMeAccountsPreviewPost:
-          formData as unknown as BodyPreviewApiUsersMeAccountsPreviewPost,
+        bodyPreviewUsersMeAccountsPreviewPost:
+          formData as unknown as BodyPreviewUsersMeAccountsPreviewPost,
       }).unwrap();
     } catch (error) {
       logMutationError(error, uploadResult);
@@ -126,7 +126,7 @@ export default function Uploader(props: {
   }, [transactionsIn, lastTransaction, firstTransaction]);
 
   const [createMovements, createMovementsResult] =
-    api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
+    api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   const handleCreateTransactions = async () => {
     if (!uploadResult.data) return;
@@ -137,7 +137,7 @@ export default function Uploader(props: {
     try {
       await createMovements({
         accountId: props.account.id,
-        bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+        bodyCreateManyUsersMeAccountsAccountIdMovementsPost: {
           transactions,
           transaction_ids: [],
         },

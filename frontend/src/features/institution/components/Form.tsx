@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -49,16 +49,18 @@ export default function InstitutionForm(props: {
   const fields = [name, countryCode, url, transactionDeserialiserId];
 
   const [createInstitution, createInstitutionResult] =
-    api.endpoints.createApiInstitutionsPost.useMutation();
+    api.endpoints.createInstitutionsPost.useMutation();
   const [updateInstitution, updateInstitutionResult] =
-    api.endpoints.updateApiInstitutionsInstitutionIdPut.useMutation();
+    api.endpoints.updateInstitutionsInstitutionIdPut.useMutation();
 
   useEffect(() => {
     if (!props.institution) return;
     name.set(props.institution.name);
     countryCode.set(props.institution.country_code);
     url.set(props.institution.url || "");
-    transactionDeserialiserId.set(props.institution.transactiondeserialiser_id);
+    transactionDeserialiserId.set(
+      props.institution.transactiondeserialiser_id || undefined,
+    );
   }, [props.institution]);
 
   const handleClose = () => {

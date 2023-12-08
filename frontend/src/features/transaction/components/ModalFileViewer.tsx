@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -49,7 +49,7 @@ export default function ModalFileViewer(props: {
   const [fileIdx, setFileIdx] = useState(0);
 
   const filesQuery =
-    api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+    api.endpoints.readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
       {
         accountId: props.transaction.account_id,
         movementId: props.transaction.movement_id,
@@ -60,7 +60,7 @@ export default function ModalFileViewer(props: {
   const selectedFile = filesQuery.data ? filesQuery.data[fileIdx] : undefined;
 
   const fileQuery =
-    api.endpoints.readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet.useQuery(
+    api.endpoints.readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet.useQuery(
       selectedFile
         ? {
             accountId: props.transaction.account_id,
@@ -72,7 +72,7 @@ export default function ModalFileViewer(props: {
     );
 
   const [deleteFile, deleteFileResult] =
-    api.endpoints.deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete.useMutation();
+    api.endpoints.deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete.useMutation();
 
   async function handleDeleteFile() {
     if (!selectedFile || !filesQuery.data) return;

@@ -1,22 +1,22 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
   generatedApi,
-  ReadApiUsersMeAccountsAccountIdGetApiResponse,
-  CreateApiUsersMeAccountsPostApiArg,
+  ReadUsersMeAccountsAccountIdGetApiResponse,
+  CreateUsersMeAccountsPostApiArg,
 } from "./generatedApi";
 
 const ALL = "*";
@@ -31,45 +31,45 @@ function cacheList<T extends string, R extends { id: number }[]>(
 const enhancedApi = generatedApi.enhanceEndpoints({
   endpoints: {
     // MOVEMENTS CRUD
-    createApiUsersMeMovementsPost: {
+    createUsersMeMovementsPost: {
       invalidatesTags: (result, error, arg) => [
         "users",
         { type: "movements", id: ALL },
       ],
     },
-    createManyApiUsersMeAccountsAccountIdMovementsPost: {
+    createManyUsersMeAccountsAccountIdMovementsPost: {
       invalidatesTags: (result, error, { accountId }) => [
         "users",
         { type: "accounts", id: accountId },
         ...cacheList("movements", result),
       ],
     },
-    readApiUsersMeMovementsMovementIdGet: {
+    readUsersMeMovementsMovementIdGet: {
       providesTags: (result, error, movementId) => [
         "users",
         { type: "movements", id: movementId },
       ],
     },
-    readManyApiUsersMeMovementsGet: {
+    readManyUsersMeMovementsGet: {
       providesTags: (result, error, arg) => [
         "users",
         ...cacheList("movements", result),
       ],
     },
-    updateApiUsersMeMovementsMovementIdPut: {
+    updateUsersMeMovementsMovementIdPut: {
       invalidatesTags: (result, error, { movementId }) => [
         "users",
         { type: "movements", id: movementId },
       ],
     },
-    addTransactionsApiUsersMeMovementsMovementIdTransactionsPut: {
+    addTransactionsUsersMeMovementsMovementIdTransactionsPut: {
       invalidatesTags: (result, error, { movementId }) => [
         "users",
         { type: "movements", id: movementId },
         ...cacheList("transactions", result?.transactions),
       ],
     },
-    deleteApiUsersMeMovementsMovementIdDelete: {
+    deleteUsersMeMovementsMovementIdDelete: {
       invalidatesTags: (result, error, arg) => [
         "users",
         { type: "movements", id: ALL },
@@ -77,7 +77,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
     },
 
     // TRANSACTIONS CRUD
-    createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost: {
+    createUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost: {
       invalidatesTags: (result, error, { accountId, movementId }) => [
         "users",
         { type: "accounts", id: accountId },
@@ -85,13 +85,13 @@ const enhancedApi = generatedApi.enhanceEndpoints({
         { type: "transactions", id: ALL },
       ],
     },
-    readManyApiUsersMeTransactionsGet: {
+    readManyUsersMeTransactionsGet: {
       providesTags: (result, error, arg) => [
         "users",
         ...cacheList("transactions", result),
       ],
     },
-    readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGet:
+    readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGet:
       {
         providesTags: (
           result,
@@ -104,7 +104,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           { type: "transactions", id: transactionId },
         ],
       },
-    updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut:
+    updateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut:
       {
         invalidatesTags: (
           result,
@@ -117,7 +117,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           { type: "transactions", id: transactionId },
         ],
       },
-    deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete:
+    deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete:
       {
         invalidatesTags: (result, error, { accountId, movementId }) => [
           "users",
@@ -128,7 +128,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       },
 
     // FILES CRUD
-    createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
+    createUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
       {
         invalidatesTags: (
           result,
@@ -142,7 +142,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           { type: "files", id: ALL },
         ],
       },
-    readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet:
+    readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet:
       {
         query: ({ accountId, movementId, transactionId, fileId }) => ({
           url: `/api/users/me/accounts/${accountId}/movements/${movementId}/transactions/${transactionId}/files/${fileId}`,
@@ -160,7 +160,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           { type: "files", id: fileId },
         ],
       },
-    readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet:
+    readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet:
       {
         providesTags: (
           result,
@@ -174,7 +174,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
           ...cacheList("files", result),
         ],
       },
-    deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete:
+    deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete:
       {
         invalidatesTags: (
           result,
@@ -192,7 +192,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
 });
 
 export * from "./generatedApi";
-export type AccountApiOut = ReadApiUsersMeAccountsAccountIdGetApiResponse;
-export type AccountApiIn = CreateApiUsersMeAccountsPostApiArg["body"];
+export type AccountApiOut = ReadUsersMeAccountsAccountIdGetApiResponse;
+export type AccountApiIn = CreateUsersMeAccountsPostApiArg["body"];
 export type AccountType = AccountApiIn["type"];
 export { enhancedApi as api };

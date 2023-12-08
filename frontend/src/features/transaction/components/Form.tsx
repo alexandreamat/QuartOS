@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -82,7 +82,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   const hasMovement = "movementId" in props;
 
   const filesQuery =
-    api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+    api.endpoints.readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
       isEdit
         ? {
             accountId: props.transaction.account_id,
@@ -93,10 +93,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     );
 
   const form: TransactionApiInForm = {
-    amountStr: useFormField(
-      isEdit ? props.transaction.amount.toFixed(2) : "",
-      "amount",
-    ),
+    amountStr: useFormField(isEdit ? props.transaction.amount : "", "amount"),
     timestamp: useFormField(
       isEdit ? new Date(props.transaction.timestamp) : new Date(),
       "date",
@@ -112,13 +109,12 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     ),
   };
 
-  const accountQuery =
-    api.endpoints.readApiUsersMeAccountsAccountIdGet.useQuery(
-      form.accountId.value || skipToken,
-    );
+  const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
+    form.accountId.value || skipToken,
+  );
 
   const movementQuery =
-    api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
+    api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
       hasMovement ? props.movementId : skipToken,
     );
 
@@ -270,7 +266,7 @@ function FormCreate(props: {
   accountId?: number;
 }) {
   const [createMovement, createMovementResult] =
-    api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
+    api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   const handleSubmit = async (
     transaction: TransactionApiIn,
@@ -279,7 +275,7 @@ function FormCreate(props: {
     try {
       const [movement] = await createMovement({
         accountId: accountId,
-        bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+        bodyCreateManyUsersMeAccountsAccountIdMovementsPost: {
           transactions: [transaction],
           transaction_ids: [],
         },
@@ -310,7 +306,7 @@ function FormAdd(props: {
   onAdded?: (x: TransactionApiOut) => void;
 }) {
   const [createTransaction, createTransactionResult] =
-    api.endpoints.createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost.useMutation();
+    api.endpoints.createUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost.useMutation();
 
   const handleSubmit = async (
     transactionIn: TransactionApiIn,
@@ -320,7 +316,7 @@ function FormAdd(props: {
       const transactionOut = await createTransaction({
         accountId: accountId,
         movementId: props.movementId,
-        transactionApiIn: transactionIn,
+        transactionApiInInput: transactionIn,
       }).unwrap();
       props.onAdded && props.onAdded(transactionOut);
     } catch (error) {
@@ -349,10 +345,10 @@ function FormEdit(props: {
   onEdited?: () => void;
 }) {
   const [updateTransaction, updateTransactionResult] =
-    api.endpoints.updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
+    api.endpoints.updateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
 
   const [deleteTransaction, deleteTransactionResult] =
-    api.endpoints.deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
+    api.endpoints.deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
 
   const uploadTransactionFile = useUploadTransactionFile(props.transaction);
 
@@ -365,7 +361,7 @@ function FormEdit(props: {
         accountId: accountId,
         movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
-        transactionApiIn: transactionIn,
+        transactionApiInInput: transactionIn,
         newMovementId: props.transaction.movement_id,
       }).unwrap();
       props.onEdited && props.onEdited();

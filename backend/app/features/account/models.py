@@ -13,12 +13,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Literal, TYPE_CHECKING, Any, Iterable
+from typing import Literal, TYPE_CHECKING, Any, Iterable, Annotated, TypeVar
 from decimal import Decimal
 from datetime import date
 
 from sqlmodel import SQLModel, Relationship, Session
 from sqlmodel.sql.expression import SelectOfScalar
+from pydantic import WithJsonSchema
 
 from app.common.models import (
     SyncableBase,
@@ -61,13 +62,19 @@ class __NonInstitutionalAccountOut(__AccountOut):
 
 
 class __Depository(__AccountBase):
-    type: Literal["depository"]
-    bic: str | None
-    iban: str | None
+    type: Annotated[
+        Literal["depository"],
+        WithJsonSchema({"enum": ["depository"], "type": "string"}),
+    ]
+    bic: str
+    iban: str
 
 
 class __Loan(__AccountBase):
-    type: Literal["loan"]
+    type: Annotated[
+        Literal["loan"],
+        WithJsonSchema({"enum": ["loan"], "type": "string"}),
+    ]
     # number: str
     # term: timedelta
     # origination_date: date
@@ -75,19 +82,31 @@ class __Loan(__AccountBase):
 
 
 class __Credit(__AccountBase):
-    type: Literal["credit"]
+    type: Annotated[
+        Literal["credit"],
+        WithJsonSchema({"enum": ["credit"], "type": "string"}),
+    ]
 
 
 class __Cash(__AccountBase):
-    type: Literal["cash"]
+    type: Annotated[
+        Literal["cash"],
+        WithJsonSchema({"enum": ["cash"], "type": "string"}),
+    ]
 
 
 class __PersonalLedger(__AccountBase):
-    type: Literal["personal_ledger"]
+    type: Annotated[
+        Literal["personal_ledger"],
+        WithJsonSchema({"enum": ["personal_ledger"], "type": "string"}),
+    ]
 
 
 class __Property(__AccountBase, ApiInMixin):
-    type: Literal["property"]
+    type: Annotated[
+        Literal["property"],
+        WithJsonSchema({"enum": ["property"], "type": "string"}),
+    ]
     # address: str
 
 

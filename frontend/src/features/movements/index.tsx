@@ -1,21 +1,21 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
   MovementApiOut,
-  ReadManyApiUsersMeMovementsGetApiArg,
+  ReadManyUsersMeMovementsGetApiArg,
   api,
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
@@ -58,7 +58,7 @@ export default function Movements() {
   const [isMultipleChoice, setIsMultipleChoice] =
     barState.isMultipleChoiceState;
 
-  const arg: ReadManyApiUsersMeMovementsGetApiArg = {
+  const arg: ReadManyUsersMeMovementsGetApiArg = {
     search: search,
     isDescending,
     startDate: startDate && formatDateParam(startDate),
@@ -74,7 +74,7 @@ export default function Movements() {
   const reference = useRef<HTMLDivElement | null>(null);
 
   const [createMovement, createMovementResult] =
-    api.endpoints.createApiUsersMeMovementsPost.useMutation();
+    api.endpoints.createUsersMeMovementsPost.useMutation();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -183,7 +183,7 @@ export default function Movements() {
         <Card.Group style={{ margin: 0 }}>
           <InfiniteScroll
             itemRenderer={CardGenerator}
-            endpoint={api.endpoints.readManyApiUsersMeMovementsGet}
+            endpoint={api.endpoints.readManyUsersMeMovementsGet}
             params={arg}
             reference={reference}
           />

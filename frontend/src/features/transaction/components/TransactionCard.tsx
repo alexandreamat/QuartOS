@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -56,7 +56,7 @@ export function TransactionCard(
   );
 
   const movementQuery =
-    api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
+    api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
       props.preview || !props.transaction
         ? skipToken
         : props.transaction.movement_id,
@@ -195,20 +195,19 @@ export function TransactionCard(
               props.transaction &&
               account && (
                 <p>
-                  {`Account balance: ${props.transaction.account_balance.toLocaleString(
-                    undefined,
-                    {
-                      style: "currency",
-                      currency: account.currency_code,
-                    },
-                  )}`}
+                  {`Account balance: ${Number(
+                    props.transaction.account_balance,
+                  ).toLocaleString(undefined, {
+                    style: "currency",
+                    currency: account.currency_code,
+                  })}`}
                 </p>
               )
             }
             trigger={
               <div>
                 <CurrencyLabel
-                  amount={props.transaction?.amount}
+                  amount={Number(props.transaction?.amount)}
                   currencyCode={account?.currency_code}
                   loading={accountQueries.isLoading || props.loading}
                 />

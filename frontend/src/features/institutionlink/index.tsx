@@ -1,15 +1,15 @@
 // Copyright (C) 2023 Alexandre Amat
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -35,7 +35,7 @@ function InstitutionLinkRow(props: {
   const navigate = useNavigate();
 
   const [syncLink, syncLinkResult] =
-    api.endpoints.syncApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidSyncPost.useMutation();
+    api.endpoints.syncUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidSyncPost.useMutation();
 
   const handleSync = async (userInstitutionLink: UserInstitutionLinkApiOut) => {
     try {
@@ -59,7 +59,7 @@ function InstitutionLinkRow(props: {
   };
 
   const institutionQuery =
-    api.endpoints.readApiInstitutionsInstitutionIdGet.useQuery(
+    api.endpoints.readInstitutionsInstitutionIdGet.useQuery(
       props.institutionLink.institution_id,
     );
 
@@ -156,7 +156,7 @@ export default function InstitutionsLinks() {
   >(undefined);
 
   const institutionsLinksQuery =
-    api.endpoints.readManyApiUsersMeInstitutionLinksGet.useQuery();
+    api.endpoints.readManyUsersMeInstitutionLinksGet.useQuery();
 
   const handleOpenCreateForm = () => {
     setSelectedInstitutionLink(undefined);

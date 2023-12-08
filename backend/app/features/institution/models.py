@@ -39,7 +39,7 @@ class __InstitutionBase(SQLModel):
     name: str
     country_code: CountryCode
     url: HttpUrl | None
-    colour: Color | None
+    colour: Color | None = None
 
 
 class InstitutionApiOut(__InstitutionBase, SyncableApiOutMixin):
