@@ -19,7 +19,6 @@ from pydantic import BaseSettings, EmailStr, Field, PostgresDsn
 
 
 class Settings(BaseSettings):
-    API_STR: str = "/api"
     JWT_SECRET_KEY: str = secrets.token_urlsafe(32)
 
     # 60 minutes * 24 hours * 8 days = 8 days
