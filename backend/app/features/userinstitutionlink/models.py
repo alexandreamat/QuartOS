@@ -70,7 +70,7 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
 
     user: "User" = Relationship(back_populates="institution_links")
     institution: "Institution" = Relationship(back_populates="user_links")
-    accounts: list[Account] = Relationship(
+    account_accesses: list[AccountAccess] = Relationship(
         back_populates="userinstitutionlink",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
