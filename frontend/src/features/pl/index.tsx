@@ -59,7 +59,7 @@ export default function IncomeStatement() {
             itemRenderer={CardRenderer}
             reference={reference}
             endpoint={
-              api.endpoints.getManyAggregatesApiUsersMeMovementsAggregatesGet
+              api.endpoints.getManyAggregatesUsersMeMovementsAggregatesGet
             }
             params={{}}
           />

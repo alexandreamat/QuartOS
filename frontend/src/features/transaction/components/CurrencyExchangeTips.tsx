@@ -22,24 +22,23 @@ function CurrencyExchangeTip(props: {
   relatedTransaction: TransactionApiOut;
   currencyCode: string;
 }) {
-  const accountQuery =
-    api.endpoints.readApiUsersMeAccountsAccountIdGet.useQuery(
-      props.relatedTransaction.account_id
-    );
+  const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
+    props.relatedTransaction.account_id,
+  );
 
   const amount = props.relatedTransaction.amount;
   const fromCurrency = accountQuery.data?.currency_code;
   const toCurrency = props.currencyCode;
 
   const exchangeRateQuery =
-    api.endpoints.readExchangeRateApiExchangerateGet.useQuery(
+    api.endpoints.readExchangeRateExchangerateGet.useQuery(
       fromCurrency !== toCurrency && fromCurrency !== undefined
         ? {
             fromCurrency,
             toCurrency,
             date: props.relatedTransaction.timestamp.split("T")[0],
           }
-        : skipToken
+        : skipToken,
     );
 
   if (!fromCurrency) return <Label />;

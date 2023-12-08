@@ -55,8 +55,8 @@ function Flow(props: {
         `Account balance: ${props.transaction.account_balance.toLocaleString(
           undefined,
           {
-            style: "currency",
-            currency: currencyCode,
+          style: "currency",
+          currency: currencyCode,
           },
         )}`
       }

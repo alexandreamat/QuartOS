@@ -46,7 +46,7 @@ export function MovementCard(props: {
   const [isEditMode, setIsEditMode] = useState(false);
 
   const [updateMovement, updateMovementResult] =
-    api.endpoints.updateApiUsersMeMovementsMovementIdPut.useMutation();
+    api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
 
   async function updateName() {
     if (!props.movement) return;
@@ -82,7 +82,7 @@ export function MovementCard(props: {
           )}
           <Card.Meta>
             <FormattedTimestamp
-              timestamp={props.movement?.earliest_timestamp}
+              timestamp={props.movement?.earliest_timestamp || undefined}
               loading={props.loading}
               style={{ width: "9em" }}
             />

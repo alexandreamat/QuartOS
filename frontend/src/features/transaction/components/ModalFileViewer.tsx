@@ -49,7 +49,7 @@ export default function ModalFileViewer(props: {
   const [fileIdx, setFileIdx] = useState(0);
 
   const filesQuery =
-    api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+    api.endpoints.readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
       {
         accountId: props.transaction.account_id,
         movementId: props.transaction.movement_id,
@@ -60,7 +60,7 @@ export default function ModalFileViewer(props: {
   const selectedFile = filesQuery.data ? filesQuery.data[fileIdx] : undefined;
 
   const fileQuery =
-    api.endpoints.readApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet.useQuery(
+    api.endpoints.readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet.useQuery(
       selectedFile
         ? {
             accountId: props.transaction.account_id,
@@ -72,7 +72,7 @@ export default function ModalFileViewer(props: {
     );
 
   const [deleteFile, deleteFileResult] =
-    api.endpoints.deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete.useMutation();
+    api.endpoints.deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete.useMutation();
 
   async function handleDeleteFile() {
     if (!selectedFile || !filesQuery.data) return;

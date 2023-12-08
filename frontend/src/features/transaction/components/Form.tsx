@@ -81,7 +81,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   const hasMovement = "movementId" in props;
 
   const filesQuery =
-    api.endpoints.readManyApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+    api.endpoints.readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
       isEdit
         ? {
             accountId: props.transaction.account_id,
@@ -107,13 +107,12 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     ),
   };
 
-  const accountQuery =
-    api.endpoints.readApiUsersMeAccountsAccountIdGet.useQuery(
-      form.accountId.value || skipToken,
-    );
+  const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
+    form.accountId.value || skipToken,
+  );
 
   const movementQuery =
-    api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
+    api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
       hasMovement ? props.movementId : skipToken,
     );
 
@@ -263,7 +262,7 @@ function FormCreate(props: {
   onSuccess: (x: MovementApiOut) => void;
 }) {
   const [createMovement, createMovementResult] =
-    api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
+    api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   const handleSubmit = async (
     transaction: TransactionApiIn,
@@ -272,7 +271,7 @@ function FormCreate(props: {
     try {
       const [movement] = await createMovement({
         accountId: accountId,
-        bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+        bodyCreateManyUsersMeAccountsAccountIdMovementsPost: {
           transactions: [transaction],
           transaction_ids: [],
         },
@@ -302,7 +301,7 @@ function FormAdd(props: {
   onAdded?: (x: TransactionApiOut) => void;
 }) {
   const [createTransaction, createTransactionResult] =
-    api.endpoints.createApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost.useMutation();
+    api.endpoints.createUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost.useMutation();
 
   const handleSubmit = async (
     transactionIn: TransactionApiIn,
@@ -341,10 +340,10 @@ function FormEdit(props: {
   onEdited?: () => void;
 }) {
   const [updateTransaction, updateTransactionResult] =
-    api.endpoints.updateApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
+    api.endpoints.updateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
 
   const [deleteTransaction, deleteTransactionResult] =
-    api.endpoints.deleteApiUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
+    api.endpoints.deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
 
   const uploadTransactionFile = useUploadTransactionFile(props.transaction);
 

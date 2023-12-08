@@ -33,7 +33,7 @@ export default function AddTransactionsModal(props: {
   const checkboxes = useCheckboxes();
 
   const [addTransactions, addTransactionsResult] =
-    api.endpoints.addTransactionsApiUsersMeMovementsMovementIdTransactionsPut.useMutation();
+    api.endpoints.addTransactionsUsersMeMovementsMovementIdTransactionsPut.useMutation();
 
   async function handleSubmit() {
     if (props.movementId) {

@@ -49,16 +49,18 @@ export default function InstitutionForm(props: {
   const fields = [name, countryCode, url, transactionDeserialiserId];
 
   const [createInstitution, createInstitutionResult] =
-    api.endpoints.createApiInstitutionsPost.useMutation();
+    api.endpoints.createInstitutionsPost.useMutation();
   const [updateInstitution, updateInstitutionResult] =
-    api.endpoints.updateApiInstitutionsInstitutionIdPut.useMutation();
+    api.endpoints.updateInstitutionsInstitutionIdPut.useMutation();
 
   useEffect(() => {
     if (!props.institution) return;
     name.set(props.institution.name);
     countryCode.set(props.institution.country_code);
     url.set(props.institution.url || "");
-    transactionDeserialiserId.set(props.institution.transactiondeserialiser_id);
+    transactionDeserialiserId.set(
+      props.institution.transactiondeserialiser_id || undefined,
+    );
   }, [props.institution]);
 
   const handleClose = () => {
