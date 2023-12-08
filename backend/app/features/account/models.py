@@ -235,12 +235,12 @@ class Account(
         return statement
 
     @property
-    def users(self) -> Iterable[User]:
+    def users(self) -> Iterable["User"]:
         for a in self.accesses:
             yield a.user
 
     @property
-    def userinstitutionlinks(self) -> Iterable[UserInstitutionLink]:
+    def userinstitutionlinks(self) -> Iterable["UserInstitutionLink"]:
         for a in self.accesses:
             if a.userinstitutionlink:
                 yield a.userinstitutionlink

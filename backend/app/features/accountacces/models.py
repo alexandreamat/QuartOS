@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Literal, TYPE_CHECKING, Any
+from typing import Literal, TYPE_CHECKING, Any, Optional
 
 from sqlmodel import SQLModel, Field, Relationship
 from sqlmodel.sql.expression import SelectOfScalar
@@ -52,16 +52,16 @@ class AccountAccess(Base, __AccountAccessBase, table=True):
 
     # Institutional
     userinstitutionlink_id: int | None = Field(foreign_key="userinstitutionlink.id")
-    userinstitutionlink: "UserInstitutionLink | None" = Relationship(
-        back_populates="accounts"
+    userinstitutionlink: Optional["UserInstitutionLink"] = Relationship(
+        back_populates="account_accesses"
     )
 
     # NonInstitutional
     user_id: int | None = Field(foreign_key="user.id")
-    _user: "User | None" = Relationship(back_populates="accounts")
+    _user: Optional["User"] = Relationship(back_populates="account_accesses")
 
     @property
-    def user(self) -> User:
+    def user(self) -> "User":
         if self.userinstitutionlink:
             return self.userinstitutionlink.user
         return self.user

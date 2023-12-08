@@ -2,7 +2,6 @@ from typing import Any
 from pydantic import EmailStr
 
 
-from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, select, or_
 from sqlmodel.sql.expression import SelectOfScalar
 
@@ -38,14 +37,14 @@ class User(__UserBase, Base, table=True):
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
-    accounts: list[Account] = Relationship(
-        back_populates="user",
+    account_accesses: list[AccountAccess] = Relationship(
+        back_populates="_user",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
-        return db.exec(select(cls).where(cls.email == email)).one()
+        return cls.read_one_from_query(db, cls.select().where(cls.email == email))
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> "User":
