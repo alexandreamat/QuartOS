@@ -23,11 +23,9 @@ from app.api import router
 
 initial_data.main()
 
-app = FastAPI(
-    title=settings.PROJECT_NAME, openapi_url=f"{settings.API_STR}/openapi.json"
-)
+app = FastAPI(title=settings.PROJECT_NAME, openapi_url="/openapi.json")
 
-app.include_router(router, prefix=settings.API_STR)
+app.include_router(router)
 
 with open("openapi.json", "w") as file:
     json.dump(app.openapi(), file, indent=2)
