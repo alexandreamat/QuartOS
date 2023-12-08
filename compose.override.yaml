@@ -1,0 +1,6 @@
+services:
+  backend:
+    restart: no
+    volumes:
+      - ./backend:/app
+    command: ["uvicorn", "app.main:app", "--reload", "--port", "8080"]
