@@ -14,12 +14,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import logging
 
 from fastapi import FastAPI
 
 from app import initial_data
 from app.settings import settings
 from app.api import router
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s %(asctime)s - %(pathname)s:%(lineno)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    force=True,
+)
+
+logger = logging.getLogger(__name__)
 
 initial_data.main()
 
