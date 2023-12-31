@@ -1,4 +1,4 @@
-from typing import TypeVar, Type, Any, Generator, Callable
+from typing import TypeVar, Type, Any, Generator, Callable, Iterable
 import re
 
 import pycountry
@@ -53,7 +53,7 @@ class Base(SQLModel):
         db: Session,
         offset: int,
         limit: int,
-    ) -> list[BaseType]:
+    ) -> Iterable[BaseType]:
         statement = cls.select()
         if offset:
             statement = statement.offset(offset)

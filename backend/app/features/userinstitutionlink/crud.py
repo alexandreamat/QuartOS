@@ -41,14 +41,14 @@ class CRUDSyncableUserInstitutionLink(
     @classmethod
     def read_syncable_accounts(cls, db: Session, id: int) -> Iterable[AccountPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
-        for account in uil.accounts:
-            if not account.plaid_id:
+        for account_access in uil.account_accesses:
+            if not account_access.account.plaid_id:
                 continue
-            yield CRUDSyncableAccount.from_orm(account)
+            yield CRUDSyncableAccount.from_orm(account_access.account)
 
     @classmethod
     def read_transactions(cls, db: Session, id: int) -> Iterable[TransactionPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
-        for account in uil.accounts:
-            for t in account.transactions:
+        for account_access in uil.account_accesses:
+            for t in account_access.account.transactions:
                 yield TransactionPlaidOut.from_orm(t)

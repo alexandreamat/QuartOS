@@ -1070,12 +1070,12 @@ export type ReadManyApiUsersMeAccountsGetApiResponse =
 export type ReadManyApiUsersMeAccountsGetApiArg = void;
 export type CreateApiUsersMeAccountsPostApiResponse =
   /** status 200 Successful Response */
-    | DepositoryApiOut
-    | LoanApiOut
-    | CreditApiOut
-    | CashApiOut
-    | PersonalLedgerApiOut
-    | PropertyApiOut;
+  | DepositoryApiOut
+  | LoanApiOut
+  | CreditApiOut
+  | CashApiOut
+  | PersonalLedgerApiOut
+  | PropertyApiOut;
 export type CreateApiUsersMeAccountsPostApiArg = {
   userinstitutionlinkId?: number;
   body:
@@ -1094,21 +1094,21 @@ export type PreviewApiUsersMeAccountsPreviewPostApiArg = {
 };
 export type ReadApiUsersMeAccountsAccountIdGetApiResponse =
   /** status 200 Successful Response */
-    | DepositoryApiOut
-    | LoanApiOut
-    | CreditApiOut
-    | CashApiOut
-    | PersonalLedgerApiOut
-    | PropertyApiOut;
+  | DepositoryApiOut
+  | LoanApiOut
+  | CreditApiOut
+  | CashApiOut
+  | PersonalLedgerApiOut
+  | PropertyApiOut;
 export type ReadApiUsersMeAccountsAccountIdGetApiArg = number;
 export type UpdateApiUsersMeAccountsAccountIdPutApiResponse =
   /** status 200 Successful Response */
-    | DepositoryApiOut
-    | LoanApiOut
-    | CreditApiOut
-    | CashApiOut
-    | PersonalLedgerApiOut
-    | PropertyApiOut;
+  | DepositoryApiOut
+  | LoanApiOut
+  | CreditApiOut
+  | CashApiOut
+  | PersonalLedgerApiOut
+  | PropertyApiOut;
 export type UpdateApiUsersMeAccountsAccountIdPutApiArg = {
   accountId: number;
   userinstitutionlinkId: number;
@@ -1125,12 +1125,12 @@ export type DeleteApiUsersMeAccountsAccountIdDeleteApiResponse =
 export type DeleteApiUsersMeAccountsAccountIdDeleteApiArg = number;
 export type UpdateBalanceApiUsersMeAccountsAccountIdUpdateBalancePutApiResponse =
   /** status 200 Successful Response */
-    | DepositoryApiOut
-    | LoanApiOut
-    | CreditApiOut
-    | CashApiOut
-    | PersonalLedgerApiOut
-    | PropertyApiOut;
+  | DepositoryApiOut
+  | LoanApiOut
+  | CreditApiOut
+  | CashApiOut
+  | PersonalLedgerApiOut
+  | PropertyApiOut;
 export type UpdateBalanceApiUsersMeAccountsAccountIdUpdateBalancePutApiArg =
   number;
 export type CreateManyApiUsersMeAccountsAccountIdMovementsPostApiResponse =

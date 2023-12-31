@@ -6,7 +6,6 @@ __all__ = [
     "MovementApiIn",
     "MovementApiOut",
     "CRUDMovement",
-    "MovementNotFound",
     "MovementField",
     "PLStatement",
 ]

@@ -14,6 +14,8 @@ from app.features.transaction import Transaction
 from app.features.movement import Movement
 from app.features.accountacces.models import AccountAccess
 
+logger = logging.getLogger(__name__)
+
 
 class __UserBase(SQLModel):
     email: EmailStr
@@ -118,14 +120,25 @@ class User(__UserBase, Base, table=True):
         movement_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
-        statement = UserInstitutionLink.select_movements(
-            userinstitutionlink_id, account_id, accountaccess_id, movement_id, **kwargs
-        )
+        statement = Movement.select_movements(movement_id, **kwargs)
 
+        statement = statement.join(Transaction)
+        statement = statement.join(Account)
+        statement = statement.join(AccountAccess)
+        statement = statement.outerjoin(UserInstitutionLink)
         statement = statement.outerjoin(
             cls,
             or_(cls.id == UserInstitutionLink.user_id, cls.id == AccountAccess.user_id),
         )
+
+        if accountaccess_id:
+            statement = statement.where(AccountAccess.id == accountaccess_id)
+        if account_id:
+            statement = statement.where(Account.id == account_id)
+        if userinstitutionlink_id:
+            statement = statement.where(
+                UserInstitutionLink.id == userinstitutionlink_id
+            )
         if user_id:
             statement = statement.where(cls.id == user_id)
 
@@ -142,18 +155,33 @@ class User(__UserBase, Base, table=True):
         transaction_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
-        statement = UserInstitutionLink.select_transactions(
-            account_id,
-            accountaccess_id,
-            movement_id,
-            transaction_id,
-            **kwargs,
-        )
+        # SELECT FROM
+        statement = Transaction.select_transactions(transaction_id, **kwargs)
 
+        # JOIN
+        statement = statement.join(Movement)
+        statement = statement.join(Account)
+        statement = statement.join(AccountAccess)
+        statement = statement.outerjoin(UserInstitutionLink)
         statement = statement.outerjoin(
             cls,
-            or_(cls.id == UserInstitutionLink.user_id, cls.id == AccountAccess.user_id),
+            or_(
+                cls.id == UserInstitutionLink.user_id,
+                cls.id == AccountAccess.user_id,
+            ),
         )
+
+        # WHERE
+        if movement_id:
+            statement = statement.where(Movement.id == movement_id)
+        if accountaccess_id:
+            statement = statement.where(AccountAccess.id == accountaccess_id)
+        if account_id:
+            statement = statement.where(Account.id == account_id)
+        if userinstitutionlink_id:
+            statement = statement.where(
+                UserInstitutionLink.id == userinstitutionlink_id
+            )
         if user_id:
             statement = statement.where(cls.id == user_id)
 

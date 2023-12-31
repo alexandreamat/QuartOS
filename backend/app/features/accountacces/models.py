@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 from typing import Literal, TYPE_CHECKING, Any, Optional
 
 from sqlmodel import SQLModel, Field, Relationship
@@ -29,10 +31,12 @@ if TYPE_CHECKING:
     from app.features.user import User
     from app.features.account import Account
 
+logger = logging.getLogger(__name__)
+
 
 class __AccountAccessBase(SQLModel):
     account_id: int
-    type: bool
+    is_institutional: bool
 
 
 class InstitutionalAccountAccess(__AccountAccessBase):
@@ -82,7 +86,9 @@ class AccountAccess(Base, __AccountAccessBase, table=True):
         cls, accountaccess_id: int | None, movement_id: int | None, **kwargs: Any
     ) -> SelectOfScalar[Movement]:
         statement = Movement.select_movements(movement_id, **kwargs)
+        statement = statement.join(Transaction)
 
+        statement = statement.join(cls)
         if accountaccess_id:
             statement = statement.where(cls.id == accountaccess_id)
 
@@ -98,6 +104,7 @@ class AccountAccess(Base, __AccountAccessBase, table=True):
     ) -> SelectOfScalar[Transaction]:
         statement = Movement.select_transactions(movement_id, transaction_id, **kwargs)
 
+        statement = statement.join(cls)
         if accountaccess_id:
             statement = statement.where(cls.id == accountaccess_id)
 

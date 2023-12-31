@@ -18,7 +18,6 @@ from plaid.model.transactions_get_response import TransactionsGetResponse
 from app.common.plaid import client
 
 from app.features.replacementpattern import ReplacementPatternApiOut
-from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
 from app.features.account import CRUDAccount
 from app.features.transaction import (
     CRUDSyncableTransaction,
@@ -53,7 +52,7 @@ def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str,
 
 def __fetch_transaction_changes(
     db: Session,
-    user_institution_link: "UserInstitutionLinkPlaidOut",
+    user_institution_link: UserInstitutionLinkPlaidOut,
     replacement_pattern: ReplacementPatternApiOut | None,
 ) -> __TransactionsSyncResult:
     options = TransactionsSyncRequestOptions(

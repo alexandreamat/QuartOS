@@ -2,19 +2,18 @@ import os
 
 import plaid
 from plaid.api.plaid_api import PlaidApi
-from plaid.model.products import Products
-from plaid.model.link_token_create_request import LinkTokenCreateRequest
-from plaid.model.link_token_create_response import LinkTokenCreateResponse
-from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.country_code import CountryCode
 from plaid.model.item_public_token_exchange_request import (
     ItemPublicTokenExchangeRequest,
 )
 from plaid.model.item_public_token_exchange_response import (
     ItemPublicTokenExchangeResponse,
 )
+from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_update import LinkTokenCreateRequestUpdate
-from plaid.model.country_code import CountryCode
-
+from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.link_token_create_response import LinkTokenCreateResponse
+from plaid.model.products import Products
 
 PLAID_CLIENT_ID = os.environ["PLAID_CLIENT_ID"]
 PLAID_SECRET = os.environ["PLAID_SECRET"]
@@ -22,13 +21,15 @@ PLAID_ENV = os.environ["PLAID_ENV"]
 PLAID_PRODUCTS = os.environ["PLAID_PRODUCTS"].split(",")
 PLAID_COUNTRY_CODES = os.environ["PLAID_COUNTRY_CODES"].split(",")
 
-match (PLAID_ENV):
+match PLAID_ENV:
     case "sandbox":
         host = plaid.Environment.Sandbox
     case "development":
         host = plaid.Environment.Development
     case "production":
         host = plaid.Environment.Production
+    case _:
+        exit()
 
 configuration = plaid.Configuration(
     host=host,

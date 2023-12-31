@@ -108,7 +108,13 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         **kwargs: Any,
     ) -> Iterable[TransactionApiOut]:
         statement = User.select_transactions(
-            user_id, userinstitutionlink_id, account_id, movement_id, None, **kwargs
+            user_id,
+            userinstitutionlink_id,
+            account_id,
+            None,
+            movement_id,
+            None,
+            **kwargs,
         )
 
         for t in db.exec(statement).all():

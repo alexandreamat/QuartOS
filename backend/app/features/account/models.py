@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     from app.features.user import User
     from app.features.userinstitutionlink import UserInstitutionLink
 
+logger = logging.getLogger()
+
 
 class __AccountBase(SQLModel):
     currency_code: CurrencyCode
@@ -178,7 +180,7 @@ class Account(
 
     @classmethod
     def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
-        statement = cls.select()
+        statement = cls.select().join(AccountAccess)
 
         if account_id:
             statement = statement.where(cls.id == account_id)
@@ -207,8 +209,6 @@ class Account(
         statement = AccountAccess.select_movements(
             accountaccess_id, movement_id, **kwargs
         )
-        statement = statement.join(Transaction)
-
         statement = statement.join(cls)
         if account_id:
             statement = statement.where(cls.id == account_id)
