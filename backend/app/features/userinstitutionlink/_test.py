@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -99,7 +99,7 @@ def test_create(
         "/api/institution-links/",
         json=UserInstitutionLinkApiIn(
             institution_id=user_institution_links_write[0].institution_id,
-        ).dict(),
+        ).model_dump(),
     )
     assert response.status_code == 200
     data = response.json()
@@ -108,7 +108,7 @@ def test_create(
 
     response = user_client.post(
         "/api/institution-links/",
-        json=UserInstitutionLinkApiIn(institution_id=123).dict(),
+        json=UserInstitutionLinkApiIn(institution_id=123).model_dump(),
     )
     assert response.status_code == 404
 
@@ -154,7 +154,7 @@ def test_update(
         f"/api/institution-links/{user_institution_links_read[0].id}",
         json=UserInstitutionLinkApiIn(
             institution_id=user_institution_links_read[0].institution_id,
-        ).dict(),
+        ).model_dump(),
     )
     assert response.status_code == 200
     data = response.json()
@@ -163,7 +163,7 @@ def test_update(
         f"/api/institution-links/{user_institution_links_read[0].id}",
         json=UserInstitutionLinkApiIn(
             institution_id=99,
-        ).dict(),
+        ).model_dump(),
     )
     assert response.status_code == 404
     user_institution_links_db.rollback()
@@ -172,7 +172,7 @@ def test_update(
         f"/api/institution-links/{user_institution_links_read[-1].id}",
         json=UserInstitutionLinkApiIn(
             institution_id=user_institution_links_read[-1].institution_id,
-        ).dict(),
+        ).model_dump(),
     )
     assert response.status_code == 403
 

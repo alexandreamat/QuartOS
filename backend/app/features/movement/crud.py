@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -19,7 +19,6 @@ from sqlmodel import Session
 
 from app.common.crud import CRUDBase
 from app.common.models import CurrencyCode
-
 from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
@@ -27,7 +26,6 @@ from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
 )
-
 from .models import Movement, MovementApiIn, MovementApiOut
 
 
@@ -70,8 +68,8 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         cls, db: Session, id: int, currency_code: CurrencyCode = CurrencyCode("USD")
     ) -> MovementApiOut:
         movement = Movement.read(db, id)
-        return cls.out_model.from_orm(
-            movement, {"amount": movement.get_amount(currency_code)}
+        return cls.out_model.model_validate(
+            movement.model_dump, update={"amount": movement.get_amount(currency_code)}
         )
 
     @classmethod
@@ -100,8 +98,8 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         old_movement = Movement.read(db, old_movement_id)
         if not old_movement.transactions:
             cls.delete(db, old_movement_id)
-        return MovementApiOut.from_orm(
-            movement, {"amount": movement.get_amount(currency_code)}
+        return MovementApiOut.model_validate(
+            movement.model_dump, update={"amount": movement.get_amount(currency_code)}
         )
 
     @classmethod
@@ -137,7 +135,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         cls, db: Session, movement_id: int
     ) -> Iterable[TransactionApiOut]:
         for t in Movement.read(db, movement_id).transactions:
-            yield TransactionApiOut.from_orm(t)
+            yield TransactionApiOut.model_validate(t)
 
     @classmethod
     def update_transaction(
@@ -155,7 +153,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         )
         if not movement.transactions:
             cls.delete(db, movement.id)
-        return TransactionApiOut.from_orm(transaction_out)
+        return TransactionApiOut.model_validate(transaction_out)
 
     @classmethod
     def delete_transaction(cls, db: Session, id: int, transaction_id: int) -> None:

@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -42,7 +42,7 @@ class CRUDUserInstitutionLink(
         cls, db: Session, id: int
     ) -> ReplacementPatternApiOut | None:
         rp = UserInstitutionLink.read(db, id).institution.replacementpattern
-        return ReplacementPatternApiOut.from_orm(rp) if rp else None
+        return ReplacementPatternApiOut.model_validate(rp) if rp else None
 
 
 class CRUDSyncableUserInstitutionLink(
@@ -56,14 +56,14 @@ class CRUDSyncableUserInstitutionLink(
     @classmethod
     def read_syncable_accounts(cls, db: Session, id: int) -> Iterable[AccountPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
-        for account in uil.accounts:
-            if not account.plaid_id:
+        for account_access in uil.account_accesses:
+            if not account_access.account.plaid_id:
                 continue
-            yield CRUDSyncableAccount.from_orm(account)
+            yield CRUDSyncableAccount.model_validate(account_access.account)
 
     @classmethod
     def read_transactions(cls, db: Session, id: int) -> Iterable[TransactionPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
-        for account in uil.accounts:
-            for t in account.transactions:
-                yield TransactionPlaidOut.from_orm(t)
+        for account_access in uil.account_accesses:
+            for t in account_access.account.transactions:
+                yield TransactionPlaidOut.model_validate(t)

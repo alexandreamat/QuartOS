@@ -1292,7 +1292,7 @@ export type UserInstitutionLinkPlaidOut = {
   plaid_id: string;
   plaid_metadata: string;
   access_token: string;
-  cursor: string | null;
+  cursor?: string | null;
   institution_id: number;
   user_id: number;
 };

@@ -73,12 +73,12 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     def create(cls, db: Session, obj_in: AccountApiIn, **kwargs: Any) -> AccountApiOut:
         account = cls.db_model.from_schema(obj_in, **kwargs)
         account = cls.db_model.create(db, account)
-        return cls.from_orm(account)
+        return cls.model_validate(account)
 
     @classmethod
     def read(cls, db: Session, id: int) -> AccountApiOut:
         account = cls.db_model.read(db, id)
-        return cls.from_orm(account)
+        return cls.model_validate(account)
 
     @classmethod
     def read_many(
@@ -88,19 +88,19 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         limit: int,
     ) -> Iterable[AccountApiOut]:
         for account in cls.db_model.read_many(db, offset, limit):
-            yield cls.from_orm(account)
+            yield cls.model_validate(account)
 
     @classmethod
     def update(
         cls, db: Session, id: int, obj_in: AccountApiIn, **kwargs: Any
     ) -> AccountApiOut:
-        account = cls.db_model.update(db, id, **obj_in.dict(), **kwargs)
+        account = cls.db_model.update(db, id, **obj_in.model_dump(), **kwargs)
         cls.update_balance(db, id)
-        return cls.from_orm(account)
+        return cls.model_validate(account)
 
     @classmethod
-    def from_orm(cls, account: Account) -> AccountApiOut:
-        return cls.OUT_MODELS[account.type].from_orm(account)
+    def model_validate(cls, account: Account) -> AccountApiOut:
+        return cls.OUT_MODELS[account.type].model_validate(account)
 
     @classmethod
     def read_transaction_deserialiser(
@@ -109,7 +109,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         deserialiser = Account.read(db, id).transactiondeserialiser
         if not deserialiser:
             raise ObjectNotFoundError(str(TransactionDeserialiser.__tablename__), 0)
-        return TransactionDeserialiserApiOut.from_orm(deserialiser)
+        return TransactionDeserialiserApiOut.model_validate(deserialiser)
 
     @classmethod
     def update_balance(
@@ -119,7 +119,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         timestamp: date | None = None,
     ) -> AccountApiOut:
         account = Account.update_balance(db, id, timestamp)
-        return cls.from_orm(account)
+        return cls.model_validate(account)
 
     @classmethod
     def create_many_movements(
@@ -227,7 +227,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
             account_id, accountaccess_id, movement_id, transaction_id
         )
         transaction = Transaction.read_one_from_query(db, statement, transaction_id)
-        return TransactionApiOut.from_orm(transaction)
+        return TransactionApiOut.model_validate(transaction)
 
 
 class CRUDSyncableAccount(
@@ -251,12 +251,12 @@ class CRUDSyncableAccount(
     ) -> AccountPlaidOut:
         account = cls.db_model.from_schema(obj_in, **kwargs)
         account = cls.db_model.create(db, account)
-        return cls.from_orm(account)
+        return cls.model_validate(account)
 
     @classmethod
     def read(cls, db: Session, id: int) -> AccountPlaidOut:
         account = cls.db_model.read(db, id)
-        return cls.from_orm(account)
+        return cls.model_validate(account)
 
     @classmethod
     def read_many(
@@ -266,21 +266,21 @@ class CRUDSyncableAccount(
         limit: int,
     ) -> Iterable[AccountPlaidOut]:
         for account in cls.db_model.read_many(db, offset, limit):
-            yield cls.OUT_MODELS[account.type].from_orm(account)
+            yield cls.OUT_MODELS[account.type].model_validate(account)
 
     @classmethod
     def update(
         cls, db: Session, id: int, obj_in: AccountPlaidIn, **kwargs: Any
     ) -> AccountPlaidOut:
-        account = cls.db_model.update(db, id, **obj_in.dict(), **kwargs)
+        account = cls.db_model.update(db, id, **obj_in.model_dump(), **kwargs)
         account = Account.update_balance(db, id)
-        return cls.from_orm(account)
+        return cls.model_validate(account)
 
     @classmethod
     def read_by_plaid_id(cls, db: Session, id: str) -> AccountPlaidOut:
         account_out = cls.db_model.read_by_plaid_id(db, id)
-        return cls.from_orm(account_out)
+        return cls.model_validate(account_out)
 
     @classmethod
-    def from_orm(cls, account: Account) -> AccountPlaidOut:
-        return cls.OUT_MODELS[account.type].from_orm(account)
+    def model_validate(cls, account: Account) -> AccountPlaidOut:
+        return cls.OUT_MODELS[account.type].model_validate(account)

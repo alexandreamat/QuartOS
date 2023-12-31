@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,7 +33,6 @@ from plaid.model.transactions_get_response import TransactionsGetResponse
 from app.common.plaid import client
 
 from app.features.replacementpattern import ReplacementPatternApiOut
-from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
 from app.features.account import CRUDAccount
 from app.features.transaction import (
     CRUDSyncableTransaction,
@@ -68,7 +67,7 @@ def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str,
 
 def __fetch_transaction_changes(
     db: Session,
-    user_institution_link: "UserInstitutionLinkPlaidOut",
+    user_institution_link: UserInstitutionLinkPlaidOut,
     replacement_pattern: ReplacementPatternApiOut | None,
 ) -> __TransactionsSyncResult:
     options = TransactionsSyncRequestOptions(
@@ -189,7 +188,7 @@ def sync_transactions(
             )
         user_institution_link_out.cursor = sync_result.new_cursor
         user_institution_link_new = UserInstitutionLinkPlaidIn(
-            **user_institution_link_out.dict()
+            **user_institution_link_out.model_dump()
         )
         CRUDSyncableUserInstitutionLink.update(
             db, user_institution_link_out.id, user_institution_link_new

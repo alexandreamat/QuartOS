@@ -23,6 +23,7 @@ from app.features.user import User
 from app.features.institution import Institution
 from app.features.userinstitutionlink import UserInstitutionLink
 from app.features.account import Account
+from app.features.accountacces import AccountAccess
 from app.features.movement import Movement
 from app.features.transaction import Transaction
 

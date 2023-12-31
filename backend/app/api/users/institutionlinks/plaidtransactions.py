@@ -1,15 +1,15 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -142,9 +142,9 @@ def resync(
                 f"{transaction_in.plaid_id} not found: {transaction_in.timestamp} - {transaction_in.name} {transaction_in.amount}"
             )
             continue
-        transaction_out_dict = transaction_out.dict()
+        transaction_out_dict = transaction_out.model_dump()
         if dry_run:
-            for k, v in transaction_in.dict().items():
+            for k, v in transaction_in.model_dump().items():
                 if k == "plaid_metadata":
                     continue
                 if transaction_out_dict[k] == v:

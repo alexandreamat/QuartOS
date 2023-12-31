@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from typing import TYPE_CHECKING, Any
 
 from sqlmodel import Field, Relationship, SQLModel
@@ -34,6 +35,8 @@ if TYPE_CHECKING:
     from app.features.institution import Institution
     from app.features.user import User
 
+logger = logging.getLogger(__name__)
+
 
 class __UserInstitutionLinkBase(SQLModel):
     ...
@@ -41,7 +44,7 @@ class __UserInstitutionLinkBase(SQLModel):
 
 class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
     access_token: str
-    cursor: str | None
+    cursor: str | None = None
 
 
 class UserInstitutionLinkApiIn(__UserInstitutionLinkBase, ApiInMixin):
@@ -81,7 +84,6 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
     ) -> SelectOfScalar["UserInstitutionLink"]:
         statement = cls.select()
 
-        statement = statement.outerjoin(cls)
         if userinstitutionlink_id:
             statement = statement.where(cls.id == userinstitutionlink_id)
 

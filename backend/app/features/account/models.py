@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 from typing import Literal, TYPE_CHECKING, Any, Iterable, Annotated, TypeVar
 from decimal import Decimal
 from datetime import date
@@ -39,6 +41,8 @@ from app.features.accountacces import AccountAccess
 if TYPE_CHECKING:
     from app.features.user import User
     from app.features.userinstitutionlink import UserInstitutionLink
+
+logger = logging.getLogger()
 
 
 class __AccountBase(SQLModel):
@@ -212,7 +216,7 @@ class Account(
 
     @classmethod
     def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
-        statement = cls.select()
+        statement = cls.select().join(AccountAccess)
 
         if account_id:
             statement = statement.where(cls.id == account_id)
@@ -241,8 +245,6 @@ class Account(
         statement = AccountAccess.select_movements(
             accountaccess_id, movement_id, **kwargs
         )
-        statement = statement.join(Transaction)
-
         statement = statement.join(cls)
         if account_id:
             statement = statement.where(cls.id == account_id)

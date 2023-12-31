@@ -20,7 +20,7 @@ from decimal import Decimal
 from datetime import date
 from typing import Iterable, Any
 
-from sqlmodel import SQLModel, Relationship, col, func, select
+from sqlmodel import SQLModel, Relationship, col, func, select, desc, asc
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import ApiInMixin, ApiOutMixin, Base, CurrencyCode
@@ -100,7 +100,7 @@ class Movement(__MovementBase, Base, table=True):
         statement = Transaction.select_transactions(transaction_id, **kwargs)
 
         statement = statement.join(cls)
-        if movement_id is not None:
+        if movement_id:
             statement = statement.where(cls.id == movement_id)
 
         return statement
@@ -154,7 +154,7 @@ class Movement(__MovementBase, Base, table=True):
                         func.count(Transaction.id).label("transaction_count"),
                     ]
                 )
-                .group_by(Transaction.movement_id)
+                .group_by(col(Transaction.movement_id))
                 .subquery()
             )
             statement = statement.join(
@@ -170,15 +170,14 @@ class Movement(__MovementBase, Base, table=True):
                 )
 
         # GROUP BY
-        statement = statement.group_by(Movement.id)
+        statement = statement.group_by(col(Movement.id))
 
         # ORDER BY
         if sort_by is MovementField.TIMESTAMP:
-            if is_descending:
-                order_clauses = Transaction.get_timestamp_desc_clauses()
-            else:
-                order_clauses = Transaction.get_timestamp_asc_clauses()
-            statement = statement.order_by(*order_clauses)
+            # avoid SQL GROUP BY ambiguity by ordering by aggregates
+            order_clauses = func.min(Transaction.timestamp), col(Movement.id)
+            order = desc if is_descending else asc
+            statement = statement.order_by(*(order(c) for c in order_clauses))
 
         # HAVING
         if start_date:
