@@ -1,26 +1,26 @@
 # Copyright (C) 2023 Alexandre Amat
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Iterable
 
-from sqlalchemy.exc import NoResultFound
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.exc import NoResultFound
 
-from app.database.deps import DBSession
 from app.common.plaid import create_link_token, exchange_public_token
-
+from app.database.deps import DBSession
+from app.features.account import CRUDSyncableAccount, fetch_accounts
 from app.features.institution import CRUDSyncableInstitution, fetch_institution
 from app.features.user import CRUDUser, CurrentUser
 from app.features.userinstitutionlink import (
@@ -31,8 +31,6 @@ from app.features.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
     fetch_user_institution_link,
 )
-from app.features.account import CRUDSyncableAccount, fetch_accounts
-
 from . import plaidtransactions
 
 router = APIRouter()
@@ -114,7 +112,6 @@ def resync(
     )
     for account_in in fetch_accounts(userinstitutionlink_out):
         account_out = CRUDSyncableAccount.read_by_plaid_id(db, account_in.plaid_id)
-        print(account_out)
         account_out = CRUDSyncableAccount.update(db, account_out.id, account_in)
     return userinstitutionlink_out
 
