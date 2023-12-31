@@ -37,26 +37,26 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
     ) -> OutModelType:
         db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
         db_obj_out = cls.db_model.create(db, db_obj_in)
-        api_out_obj: OutModelType = cls.out_model.from_orm(db_obj_out)
+        api_out_obj: OutModelType = cls.out_model.model_validate(db_obj_out)
         return api_out_obj
 
     @classmethod
     def read(cls, db: Session, id: int) -> OutModelType:
         db_obj = cls.db_model.read(db, id)
-        api_out_obj: OutModelType = cls.out_model.from_orm(db_obj)
+        api_out_obj: OutModelType = cls.out_model.model_validate(db_obj)
         return api_out_obj
 
     @classmethod
     def read_many(cls, db: Session, offset: int, limit: int) -> Iterable[OutModelType]:
         for s in cls.db_model.read_many(db, offset, limit):
-            yield cls.out_model.from_orm(s)
+            yield cls.out_model.model_validate(s)
 
     @classmethod
     def update(
         cls, db: Session, id: int, obj_in: InModelType, **kwargs: Any
     ) -> OutModelType:
-        obj = cls.db_model.update(db, id, **obj_in.dict(), **kwargs)
-        out_obj: OutModelType = cls.out_model.from_orm(obj)
+        obj = cls.db_model.update(db, id, **obj_in.model_dump(), **kwargs)
+        out_obj: OutModelType = cls.out_model.model_validate(obj)
         return out_obj
 
     @classmethod
@@ -78,9 +78,5 @@ class CRUDSyncedBase(
     out_model: Type[PlaidOutModel]
 
     @classmethod
-    def is_synced(cls, db: Session, id: int) -> bool:
-        return cls.db_model.read(db, id).is_synced
-
-    @classmethod
     def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModel:
-        return cls.out_model.from_orm(cls.db_model.read_by_plaid_id(db, id))
+        return cls.out_model.model_validate(cls.db_model.read_by_plaid_id(db, id))

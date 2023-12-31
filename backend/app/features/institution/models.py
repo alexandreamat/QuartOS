@@ -18,7 +18,7 @@ import base64
 
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
-from sqlmodel import Relationship, SQLModel, Field
+from sqlmodel import Column, Relationship, SQLModel, Field, null
 
 from app.common.models import (
     SyncedMixin,
@@ -29,6 +29,7 @@ from app.common.models import (
 )
 from app.features.transactiondeserialiser import TransactionDeserialiser
 from app.features.replacementpattern import ReplacementPattern
+from app.common.models import UrlType, ColorType
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLink
@@ -47,15 +48,6 @@ class InstitutionApiOut(__InstitutionBase, SyncableBase):
     transactiondeserialiser_id: int | None
     replacementpattern_id: int | None
 
-    @classmethod
-    def from_orm(
-        cls, obj: Any, update: dict[str, Any] | None = None
-    ) -> "InstitutionApiOut":
-        m = super().from_orm(obj, update)
-        if obj.logo:
-            m.logo_base64 = base64.b64encode(obj.logo).decode()
-        return m
-
 
 class InstitutionApiIn(__InstitutionBase):
     url: HttpUrl
@@ -70,8 +62,8 @@ class InstitutionPlaidIn(__InstitutionBase, SyncedMixin):
 
 
 class Institution(__InstitutionBase, SyncableBase, table=True):
-    url: str | None
-    colour: str | None
+    url: HttpUrl | None = Field(sa_type=UrlType)
+    colour: Color | None = Field(sa_type=ColorType)
     logo: bytes | None
     transactiondeserialiser_id: int | None = Field(
         foreign_key="transactiondeserialiser.id"
@@ -90,3 +82,6 @@ class Institution(__InstitutionBase, SyncableBase, table=True):
     @property
     def is_synced(self) -> bool:
         return self.plaid_id is not None
+
+    def logo_base64(self) -> str | None:
+        return base64.b64encode(self.logo).decode() if self.logo else None

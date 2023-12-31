@@ -142,9 +142,9 @@ def resync(
                 f"{transaction_in.plaid_id} not found: {transaction_in.timestamp} - {transaction_in.name} {transaction_in.amount}"
             )
             continue
-        transaction_out_dict = transaction_out.dict()
+        transaction_out_dict = transaction_out.model_dump()
         if dry_run:
-            for k, v in transaction_in.dict().items():
+            for k, v in transaction_in.model_dump().items():
                 if k == "plaid_metadata":
                     continue
                 if transaction_out_dict[k] == v:

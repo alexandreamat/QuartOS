@@ -42,7 +42,7 @@ class CRUDUserInstitutionLink(
         cls, db: Session, id: int
     ) -> ReplacementPatternApiOut | None:
         rp = UserInstitutionLink.read(db, id).institution.replacementpattern
-        return ReplacementPatternApiOut.from_orm(rp) if rp else None
+        return ReplacementPatternApiOut.model_validate(rp) if rp else None
 
 
 class CRUDSyncableUserInstitutionLink(
@@ -59,11 +59,11 @@ class CRUDSyncableUserInstitutionLink(
         for ia in uil.institutionalaccounts:
             if not ia.plaid_id:
                 continue
-            yield AccountPlaidOut.from_orm(ia.account)
+            yield AccountPlaidOut.model_validate(ia.account)
 
     @classmethod
     def read_transactions(cls, db: Session, id: int) -> Iterable[TransactionPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
         for ia in uil.institutionalaccounts:
             for t in ia.account.transactions:
-                yield TransactionPlaidOut.from_orm(t)
+                yield TransactionPlaidOut.model_validate(t)

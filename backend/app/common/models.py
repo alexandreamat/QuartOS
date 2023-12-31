@@ -13,14 +13,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TypeVar, Type, Any, Annotated
 import re
+from typing import Iterable, TypeVar, Type, Any, Annotated
 
 import pycountry
-from pydantic import AfterValidator
-from sqlmodel import Session, SQLModel, Field, select
-from sqlmodel.sql.expression import SelectOfScalar
+from pydantic import AfterValidator, HttpUrl
+from pydantic_extra_types.color import Color
+from sqlalchemy import types
 from sqlalchemy.exc import NoResultFound
+from sqlmodel import Session, SQLModel, Field, String, select
+from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.exceptions import ObjectNotFoundError
 
@@ -38,7 +40,7 @@ class Base(SQLModel):
 
     @classmethod
     def from_schema(cls: Type[BaseType], obj_in: SchemaType, **kwargs: Any) -> BaseType:
-        return cls(**obj_in.dict(), **kwargs)
+        return cls(**obj_in.model_dump(), **kwargs)
 
     @classmethod
     def create(cls: Type[BaseType], db: Session, obj: BaseType) -> BaseType:
@@ -69,7 +71,7 @@ class Base(SQLModel):
         db: Session,
         offset: int,
         limit: int,
-    ) -> list[BaseType]:
+    ) -> Iterable[BaseType]:
         statement = cls.select()
         if offset:
             statement = statement.offset(offset)
@@ -143,3 +145,23 @@ def validate_country_code(v: str) -> str:
 
 
 CountryCode = Annotated[str, AfterValidator(validate_country_code)]
+
+
+class UrlType(types.TypeDecorator[HttpUrl]):
+    impl = String
+
+    def process_bind_param(self, value: HttpUrl | None, dialect: Any) -> str | None:
+        return str(value) if value else None
+
+    def process_result_value(self, value: str | None, dialect: Any) -> HttpUrl | None:
+        return HttpUrl(value) if value else None
+
+
+class ColorType(types.TypeDecorator[Color]):
+    impl = String
+
+    def process_bind_param(self, value: Color | None, dialect: Any) -> str | None:
+        return value.as_hex() if value else None
+
+    def process_result_value(self, value: str | None, dialect: Any) -> Color | None:
+        return Color(value) if value else None

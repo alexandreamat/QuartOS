@@ -78,7 +78,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         deserialiser = Account.read(db, id).transactiondeserialiser
         if not deserialiser:
             raise ObjectNotFoundError(str(TransactionDeserialiser.__tablename__), 0)
-        return TransactionDeserialiserApiOut.from_orm(deserialiser)
+        return TransactionDeserialiserApiOut.model_validate(deserialiser)
 
     @classmethod
     def is_synced(cls, db: Session, id: int) -> bool:
@@ -168,7 +168,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         timestamp: date | None = None,
     ) -> AccountApiOut:
         account_out = Account.update_balance(db, id, timestamp)
-        return AccountApiOut.from_orm(account_out)
+        return AccountApiOut.model_validate(account_out)
 
     @classmethod
     def create_many_movements(
@@ -271,7 +271,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     ) -> TransactionApiOut:
         statement = Account.select_transactions(account_id, movement_id, transaction_id)
         transaction = Transaction.read_one_from_query(db, statement, transaction_id)
-        return TransactionApiOut.from_orm(transaction)
+        return TransactionApiOut.model_validate(transaction)
 
 
 class CRUDSyncableAccount:
@@ -289,7 +289,7 @@ class CRUDSyncableAccount:
     def read_by_plaid_id(cls, db: Session, id: str) -> AccountPlaidOut:
         institutionalaccount = Account.InstitutionalAccount.read_by_plaid_id(db, id)
         account = institutionalaccount.account
-        return AccountPlaidOut.from_orm(account)
+        return AccountPlaidOut.model_validate(account)
 
     @classmethod
     def create(
@@ -299,11 +299,11 @@ class CRUDSyncableAccount:
             db, account_in.institutionalaccount, **kwargs
         )
         account = Account(
-            **account_in.dict(exclude={"institutionalaccount"}),
+            **account_in.model_dump(exclude={"institutionalaccount"}),
             institutionalaccount_id=institutionalaccount_out.id
         )
         account = Account.create(db, account)
-        return AccountPlaidOut.from_orm(account)
+        return AccountPlaidOut.model_validate(account)
 
     @classmethod
     def update(
@@ -320,8 +320,8 @@ class CRUDSyncableAccount:
         account = Account.update(
             db,
             account_id,
-            **account_in.dict(exclude={"institutionalaccount"}),
+            **account_in.model_dump(exclude={"institutionalaccount"}),
             institutionalaccount_id=institutionalaccount_out.id
         )
         account = Account.update_balance(db, account_id)
-        return AccountPlaidOut.from_orm(account)
+        return AccountPlaidOut.model_validate(account)

@@ -91,7 +91,7 @@ def test_signup(client: TestClient, db: Session) -> None:
         full_name="Test User",
         is_superuser=False,
     )
-    response = client.post("api/users/signup", json=user.dict())
+    response = client.post("api/users/signup", json=user.model_dump())
     assert response.status_code == 200
     data = response.json()
     assert data["id"]
