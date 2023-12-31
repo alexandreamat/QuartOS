@@ -41,7 +41,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
     @classmethod
     def read_files(cls, db: Session, transaction_id: int) -> Iterable[FileApiOut]:
         for f in Transaction.read(db, transaction_id).files:
-            yield FileApiOut.from_orm(f)
+            yield FileApiOut.model_validate(f)
 
 
 class CRUDSyncableTransaction(

@@ -140,13 +140,8 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
                 statement = statement.where(Transaction.amount <= amount_le)
 
         # ORDER BY
-        statement = statement.order_by(
-            *(
-                cls.get_timestamp_desc_clauses()
-                if is_descending
-                else cls.get_timestamp_asc_clauses()
-            )
-        )
+        order = desc if is_descending else asc
+        statement = statement.order_by(order(cls.timestamp), order(cls.id))
 
         # OFFSET and LIMIT
         if per_page:
