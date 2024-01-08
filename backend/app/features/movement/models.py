@@ -5,10 +5,10 @@ from decimal import Decimal
 from datetime import date
 from typing import Iterable, Any
 
-from sqlmodel import SQLModel, Relationship, col, func, select
+from sqlmodel import SQLModel, Relationship, col, func, select, desc, asc
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import Base, CurrencyCode
+from app.common.models import ApiInMixin, ApiOutMixin, Base, CurrencyCode
 from app.common.utils import filter_query_by_search
 from app.features.exchangerate.client import get_exchange_rate
 from app.features.transaction import Transaction, TransactionApiOut
@@ -31,7 +31,7 @@ class MovementField(str, Enum):
     AMOUNT = "amount"
 
 
-class MovementApiOut(__MovementBase, Base):
+class MovementApiOut(__MovementBase, ApiOutMixin):
     earliest_timestamp: date | None
     latest_timestamp: date | None
     transactions: list[TransactionApiOut]
@@ -39,7 +39,7 @@ class MovementApiOut(__MovementBase, Base):
     amount: Decimal
 
 
-class MovementApiIn(__MovementBase):
+class MovementApiIn(__MovementBase, ApiInMixin):
     ...
 
 
@@ -85,7 +85,7 @@ class Movement(__MovementBase, Base, table=True):
         statement = Transaction.select_transactions(transaction_id, **kwargs)
 
         statement = statement.join(cls)
-        if movement_id is not None:
+        if movement_id:
             statement = statement.where(cls.id == movement_id)
 
         return statement
@@ -103,8 +103,8 @@ class Movement(__MovementBase, Base, table=True):
         transaction_amount_ge: Decimal | None = None,
         transaction_amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
-        transactionsGe: int | None = None,
-        transactionsLe: int | None = None,
+        transactions_ge: int | None = None,
+        transactions_le: int | None = None,
         sort_by: MovementField = MovementField.TIMESTAMP,
     ) -> SelectOfScalar["Movement"]:
         # SELECT
@@ -131,7 +131,7 @@ class Movement(__MovementBase, Base, table=True):
                 )
             else:
                 statement = statement.where(Transaction.amount <= transaction_amount_le)
-        if transactionsGe or transactionsLe:
+        if transactions_ge or transactions_le:
             transaction_counts = (
                 select(
                     [
@@ -139,31 +139,30 @@ class Movement(__MovementBase, Base, table=True):
                         func.count(Transaction.id).label("transaction_count"),
                     ]
                 )
-                .group_by(Transaction.movement_id)
+                .group_by(col(Transaction.movement_id))
                 .subquery()
             )
             statement = statement.join(
                 transaction_counts, transaction_counts.c.movement_id == cls.id
             )
-            if transactionsGe:
+            if transactions_ge:
                 statement = statement.where(
-                    transaction_counts.c.transaction_count >= transactionsGe
+                    transaction_counts.c.transaction_count >= transactions_ge
                 )
-            if transactionsLe:
+            if transactions_le:
                 statement = statement.where(
-                    transaction_counts.c.transaction_count <= transactionsLe
+                    transaction_counts.c.transaction_count <= transactions_le
                 )
 
         # GROUP BY
-        statement = statement.group_by(Movement.id)
+        statement = statement.group_by(col(Movement.id))
 
         # ORDER BY
         if sort_by is MovementField.TIMESTAMP:
-            if is_descending:
-                order_clauses = Transaction.get_timestamp_desc_clauses()
-            else:
-                order_clauses = Transaction.get_timestamp_asc_clauses()
-            statement = statement.order_by(*order_clauses)
+            # avoid SQL GROUP BY ambiguity by ordering by aggregates
+            order_clauses = func.min(Transaction.timestamp), col(Movement.id)
+            order = desc if is_descending else asc
+            statement = statement.order_by(*(order(c) for c in order_clauses))
 
         # HAVING
         if start_date:

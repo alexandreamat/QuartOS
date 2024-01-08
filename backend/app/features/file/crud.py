@@ -14,8 +14,8 @@ class CRUDFile(CRUDBase[File, FileApiOut, FileApiIn]):
     out_model = FileApiOut
 
     @classmethod
-    def create(cls, db: Session, file_in: FileApiIn, **kwargs: Any) -> FileApiOut:
-        file = File.from_schema(file_in, uploaded=datetime.now(timezone.utc), **kwargs)
+    def create(cls, db: Session, obj_in: FileApiIn, **kwargs: Any) -> FileApiOut:
+        file = File.from_schema(obj_in, uploaded=datetime.now(timezone.utc), **kwargs)
         file = File.create(db, file)
         return FileApiOut.from_orm(file)
 

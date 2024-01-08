@@ -1,4 +1,8 @@
-import { generatedApi } from "./generatedApi";
+import {
+  generatedApi,
+  ReadApiUsersMeAccountsAccountIdGetApiResponse,
+  CreateApiUsersMeAccountsPostApiArg,
+} from "./generatedApi";
 
 const ALL = "*";
 
@@ -173,5 +177,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
 });
 
 export * from "./generatedApi";
-
+export type AccountApiOut = ReadApiUsersMeAccountsAccountIdGetApiResponse;
+export type AccountApiIn = CreateApiUsersMeAccountsPostApiArg["body"];
+export type AccountType = AccountApiIn["type"];
 export { enhancedApi as api };

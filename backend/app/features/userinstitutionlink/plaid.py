@@ -1,31 +1,28 @@
 from typing import TYPE_CHECKING, Iterable
 from datetime import date
-
-from sqlmodel import Session
-from pydantic import BaseModel
+from typing import TYPE_CHECKING, Iterable
 
 from plaid.model.item import Item
 from plaid.model.item_get_request import ItemGetRequest
 from plaid.model.item_get_response import ItemGetResponse
 from plaid.model.transaction import Transaction
-from plaid.model.transactions_sync_request import TransactionsSyncRequest
-from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
-from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 from plaid.model.transactions_get_response import TransactionsGetResponse
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
+from plaid.model.transactions_sync_response import TransactionsSyncResponse
+from pydantic import BaseModel
+from sqlmodel import Session
 
 from app.common.plaid import client
-
-from app.features.replacementpattern import ReplacementPatternApiOut
-from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
 from app.features.account import CRUDAccount
+from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
     create_transaction_plaid_in,
 )
-
 from .crud import CRUDSyncableUserInstitutionLink
 from .models import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
 
@@ -44,7 +41,7 @@ class __TransactionsSyncResult(BaseModel):
 
 def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str, int]:
     return {
-        account.institutionalaccount.plaid_id: account.id
+        account.plaid_id: account.id
         for account in CRUDSyncableUserInstitutionLink.read_syncable_accounts(
             db, userinstitutionlink_id
         )
@@ -53,7 +50,7 @@ def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str,
 
 def __fetch_transaction_changes(
     db: Session,
-    user_institution_link: "UserInstitutionLinkPlaidOut",
+    user_institution_link: UserInstitutionLinkPlaidOut,
     replacement_pattern: ReplacementPatternApiOut | None,
 ) -> __TransactionsSyncResult:
     options = TransactionsSyncRequestOptions(
@@ -170,7 +167,10 @@ def sync_transactions(
         for plaid_id in sync_result.removed:
             transaction_out = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)
             CRUDAccount.delete_transaction(
-                db, transaction_out.movement_id, account_id, transaction_out.id
+                db,
+                transaction_out.movement_id,
+                transaction_out.account_id,
+                transaction_out.id,
             )
         user_institution_link_out.cursor = sync_result.new_cursor
         user_institution_link_new = UserInstitutionLinkPlaidIn(

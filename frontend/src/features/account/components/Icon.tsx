@@ -26,11 +26,7 @@ export default function AccountIcon(props: {
     return (
       <Icon
         color="grey"
-        name={accountTypeToIconName(
-          props.account.institutionalaccount?.type ||
-            props.account.noninstitutionalaccount?.type ||
-            "other",
-        )}
+        name={accountTypeToIconName(props.account.type)}
         style={props.style}
       />
     );

@@ -6,15 +6,19 @@ from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, or_, and_, f
 from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
 
-from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
+from app.common.models import (
+    CurrencyCode,
+    PlaidInMixin,
+    SyncableBase,
+    PlaidOutMixin,
+    SyncableApiOutMixin,
+    ApiInMixin,
+)
 from app.common.utils import filter_query_by_search
 
 from app.features.file import File, FileApiOut
 
 if TYPE_CHECKING:
-    from app.features.institution import Institution
-    from app.features.user import User
-    from app.features.userinstitutionlink import UserInstitutionLink
     from app.features.account import Account
     from app.features.movement import Movement
 
@@ -25,23 +29,26 @@ class __TransactionBase(SQLModel):
     name: str
 
 
-class TransactionApiOut(__TransactionBase, Base):
+class __TransactionOut(__TransactionBase):
     account_balance: Decimal
     account_id: int
     movement_id: int
     files: list[FileApiOut]
-    is_synced: bool
 
 
-class TransactionApiIn(__TransactionBase):
+class TransactionApiOut(__TransactionOut, SyncableApiOutMixin):
     ...
 
 
-class TransactionPlaidIn(TransactionApiIn, SyncedMixin):
+class TransactionApiIn(__TransactionBase, ApiInMixin):
     ...
 
 
-class TransactionPlaidOut(TransactionApiOut, SyncedBase):
+class TransactionPlaidIn(TransactionApiIn, PlaidInMixin):
+    ...
+
+
+class TransactionPlaidOut(__TransactionOut, PlaidOutMixin):
     ...
 
 
@@ -60,22 +67,6 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
     @property
     def currency_code(self) -> CurrencyCode:
         return self.account.currency_code
-
-    @property
-    def user(self) -> "User":
-        return self.account.user
-
-    @property
-    def institution(self) -> "Institution | None":
-        return self.account.institution
-
-    @property
-    def userinstitutionlink(self) -> "UserInstitutionLink | None":
-        return self.account.userinstitutionlink
-
-    @property
-    def is_synced(self) -> bool:
-        return self.plaid_id != None
 
     @classmethod
     def get_timestamp_desc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
@@ -125,13 +116,8 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
                 statement = statement.where(Transaction.amount <= amount_le)
 
         # ORDER BY
-        statement = statement.order_by(
-            *(
-                cls.get_timestamp_desc_clauses()
-                if is_descending
-                else cls.get_timestamp_asc_clauses()
-            )
-        )
+        order = desc if is_descending else asc
+        statement = statement.order_by(order(cls.timestamp), order(cls.id))
 
         # OFFSET and LIMIT
         if per_page:

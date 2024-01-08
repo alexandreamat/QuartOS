@@ -1,6 +1,7 @@
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { AccountApiOut, api } from "app/services/api";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
+import { DropdownItemProps } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
 
 export function useAccountQueries(accountId?: number) {
@@ -10,24 +11,10 @@ export function useAccountQueries(accountId?: number) {
     );
 
   const institutionLinkQueries = useInstitutionLinkQueries(
-    accountQuery.data?.institutionalaccount?.userinstitutionlink_id,
+    accountQuery.data && "userinstitutionlink_id" in accountQuery.data
+      ? accountQuery.data.userinstitutionlink_id
+      : undefined,
   );
-
-  const isLoading =
-    accountQuery.isLoading ||
-    (accountQuery.isSuccess &&
-      Boolean(accountQuery.data.institutionalaccount) &&
-      institutionLinkQueries.isLoading);
-  const isSuccess =
-    (accountQuery.isSuccess &&
-      Boolean(accountQuery.data.institutionalaccount) &&
-      institutionLinkQueries.isSuccess) ||
-    accountQuery.isSuccess;
-  const isError =
-    accountQuery.isError ||
-    (accountQuery.isSuccess &&
-      Boolean(accountQuery.data.institutionalaccount) &&
-      institutionLinkQueries.isError);
 
   const error = [
     accountQuery.isError ? renderErrorMessage(accountQuery.error) : undefined,
@@ -37,9 +24,12 @@ export function useAccountQueries(accountId?: number) {
     .join("\n");
 
   return {
-    isLoading,
-    isSuccess,
-    isError,
+    isLoading: accountQuery.isLoading || institutionLinkQueries.isLoading,
+    isSuccess:
+      accountQuery.isSuccess &&
+      (institutionLinkQueries.isUninitiaized ||
+        institutionLinkQueries.isSuccess),
+    isError: accountQuery.isError || institutionLinkQueries.isError,
     error,
     account: accountQuery.data,
     institutionLink: institutionLinkQueries.institutionLink,
@@ -47,34 +37,26 @@ export function useAccountQueries(accountId?: number) {
   };
 }
 
-function AccountOption(props: { account: AccountApiOut }) {
+function AccountOptionContent(props: { account: AccountApiOut }) {
   const accountQueries = useAccountQueries(props.account.id);
-  if (accountQueries.account?.institutionalaccount)
-    return (
-      <p>
-        {accountQueries.institution?.name} / ···{" "}
-        {accountQueries.account.institutionalaccount.mask}
-      </p>
-    );
-
-  if (accountQueries.account?.noninstitutionalaccount)
-    return <p>{accountQueries.account.name}</p>;
-
-  return <p></p>;
+  return (
+    <p className="description">
+      {"userinstitutionlink_id" in props.account &&
+        accountQueries.institution?.name}
+    </p>
+  );
 }
 
 export function useAccountOptions() {
   const query = api.endpoints.readManyApiUsersMeAccountsGet.useQuery();
 
-  const options = query.data?.map((account) => {
-    const option = <AccountOption account={account} />;
-    return {
+  const options: DropdownItemProps[] =
+    query.data?.map((account) => ({
       key: account.id,
       value: account.id,
-      content: option,
       text: account.name,
-    };
-  });
+      description: <AccountOptionContent account={account} />,
+    })) || [];
 
   return {
     options,

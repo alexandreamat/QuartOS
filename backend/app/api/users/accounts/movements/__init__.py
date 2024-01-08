@@ -1,12 +1,12 @@
 from typing import Iterable
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 
 from app.database.deps import DBSession
 
 from app.features.user import CurrentUser, CRUDUser
 from app.features.account import CRUDAccount
-from app.features.movement import CRUDMovement, MovementApiOut
+from app.features.movement import MovementApiOut
 from app.features.transaction import TransactionApiIn
 
 from . import transactions
@@ -24,7 +24,9 @@ def create_many(
 ) -> Iterable[MovementApiOut]:
     CRUDUser.read_account(db, me.id, None, account_id)
     for transaction_id in transaction_ids:
-        CRUDUser.read_transaction(db, me.id, None, account_id, None, transaction_id)
+        CRUDUser.read_transaction(
+            db, me.id, None, account_id, None, None, transaction_id
+        )
     yield from CRUDAccount.create_many_movements(
         db, account_id, transactions, transaction_ids
     )

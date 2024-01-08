@@ -2,17 +2,19 @@ from typing import Any
 from pydantic import EmailStr
 
 
-from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, select, or_
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import Base, CurrencyCode
+from app.common.models import ApiInMixin, ApiOutMixin, Base, CurrencyCode
 from app.utils import verify_password
 
 from app.features.userinstitutionlink import UserInstitutionLink
 from app.features.account import Account
 from app.features.transaction import Transaction
 from app.features.movement import Movement
+from app.features.accountacces.models import AccountAccess
+
+logger = logging.getLogger(__name__)
 
 
 class __UserBase(SQLModel):
@@ -22,11 +24,11 @@ class __UserBase(SQLModel):
     default_currency_code: CurrencyCode
 
 
-class UserApiOut(__UserBase, Base):
+class UserApiOut(__UserBase, ApiOutMixin):
     ...
 
 
-class UserApiIn(__UserBase):
+class UserApiIn(__UserBase, ApiInMixin):
     password: str
 
 
@@ -37,17 +39,14 @@ class User(__UserBase, Base, table=True):
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
-    noninstitutionalaccounts: list[Account.NonInstitutionalAccount] = Relationship(
-        back_populates="user",
+    account_accesses: list[AccountAccess] = Relationship(
+        back_populates="_user",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
-        db_user = db.exec(select(cls).where(cls.email == email)).first()
-        if not db_user:
-            raise NoResultFound
-        return db_user
+        return cls.read_one_from_query(db, cls.select().where(cls.email == email))
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> "User":
@@ -77,44 +76,72 @@ class User(__UserBase, Base, table=True):
         userinstitutionlink_id: int | None,
         account_id: int | None,
     ) -> SelectOfScalar[Account]:
-        statement = Account.select_accounts(account_id)
-
-        if userinstitutionlink_id:
-            statement = statement.where(
-                UserInstitutionLink.id == userinstitutionlink_id
-            )
-
-        statement = statement.outerjoin(UserInstitutionLink).where(
-            or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
-            )
+        statement = UserInstitutionLink.select_accounts(
+            userinstitutionlink_id, account_id
         )
+
+        statement = statement.outerjoin(
+            cls,
+            or_(cls.id == UserInstitutionLink.user_id, cls.id == AccountAccess.user_id),
+        )
+        if user_id:
+            statement = statement.where(cls.id == user_id)
+
+        return statement
+
+    @classmethod
+    def select_account_accesses(
+        cls,
+        user_id: int | None,
+        userinstitutionlink_id: int | None,
+        account_id: int | None,
+        accountaccess_id: int | None,
+    ) -> SelectOfScalar[AccountAccess]:
+        statement = UserInstitutionLink.select_account_accesses(
+            userinstitutionlink_id, account_id, accountaccess_id
+        )
+
+        statement = statement.outerjoin(
+            cls,
+            or_(cls.id == UserInstitutionLink.user_id, cls.id == AccountAccess.user_id),
+        )
+        if user_id:
+            statement = statement.where(cls.id == user_id)
 
         return statement
 
     @classmethod
     def select_movements(
         cls,
-        user_id: int | None = None,
-        userinstitutionlink_id: int | None = None,
-        account_id: int | None = None,
-        movement_id: int | None = None,
+        user_id: int | None,
+        userinstitutionlink_id: int | None,
+        account_id: int | None,
+        accountaccess_id: int | None,
+        movement_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
-        statement = Account.select_movements(account_id, movement_id, **kwargs)
+        statement = Movement.select_movements(movement_id, **kwargs)
 
+        statement = statement.join(Transaction)
+        statement = statement.join(Account)
+        statement = statement.join(AccountAccess)
+        statement = statement.outerjoin(UserInstitutionLink)
+        statement = statement.outerjoin(
+            cls,
+            or_(cls.id == UserInstitutionLink.user_id, cls.id == AccountAccess.user_id),
+        )
+
+        if accountaccess_id:
+            statement = statement.where(AccountAccess.id == accountaccess_id)
+        if account_id:
+            statement = statement.where(Account.id == account_id)
         if userinstitutionlink_id:
             statement = statement.where(
                 UserInstitutionLink.id == userinstitutionlink_id
             )
+        if user_id:
+            statement = statement.where(cls.id == user_id)
 
-        statement = statement.outerjoin(UserInstitutionLink).where(
-            or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
-            )
-        )
         return statement
 
     @classmethod
@@ -123,23 +150,39 @@ class User(__UserBase, Base, table=True):
         user_id: int | None,
         userinstitutionlink_id: int | None,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         transaction_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
-        statement = Account.select_transactions(
-            account_id, movement_id, transaction_id, **kwargs
+        # SELECT FROM
+        statement = Transaction.select_transactions(transaction_id, **kwargs)
+
+        # JOIN
+        statement = statement.join(Movement)
+        statement = statement.join(Account)
+        statement = statement.join(AccountAccess)
+        statement = statement.outerjoin(UserInstitutionLink)
+        statement = statement.outerjoin(
+            cls,
+            or_(
+                cls.id == UserInstitutionLink.user_id,
+                cls.id == AccountAccess.user_id,
+            ),
         )
 
-        if userinstitutionlink_id is not None:
+        # WHERE
+        if movement_id:
+            statement = statement.where(Movement.id == movement_id)
+        if accountaccess_id:
+            statement = statement.where(AccountAccess.id == accountaccess_id)
+        if account_id:
+            statement = statement.where(Account.id == account_id)
+        if userinstitutionlink_id:
             statement = statement.where(
                 UserInstitutionLink.id == userinstitutionlink_id
             )
+        if user_id:
+            statement = statement.where(cls.id == user_id)
 
-        statement = statement.outerjoin(UserInstitutionLink).where(
-            or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
-            )
-        )
         return statement

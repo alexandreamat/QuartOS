@@ -52,7 +52,7 @@ def create(
     account_in: AccountApiIn,
     userinstitutionlink_id: int | None = None,
 ) -> AccountApiOut:
-    if account_in.institutionalaccount and userinstitutionlink_id:
+    if userinstitutionlink_id:
         CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
     return CRUDAccount.create(
         db, account_in, userinstitutionlink_id=userinstitutionlink_id, user_id=me.id
@@ -78,7 +78,7 @@ def update(
     account_in: AccountApiIn,
     userinstitutionlink_id: int | None,
 ) -> AccountApiOut:
-    if CRUDAccount.is_synced(db, account_id):
+    if CRUDAccount.read(db, account_id).is_synced:
         raise SyncedEntity()
     CRUDUser.read_account(db, me.id, None, account_id)
     return CRUDAccount.update(

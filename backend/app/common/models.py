@@ -1,4 +1,4 @@
-from typing import TypeVar, Type, Any, Generator, Callable
+from typing import TypeVar, Type, Any, Generator, Callable, Iterable
 import re
 
 import pycountry
@@ -53,7 +53,7 @@ class Base(SQLModel):
         db: Session,
         offset: int,
         limit: int,
-    ) -> list[BaseType]:
+    ) -> Iterable[BaseType]:
         statement = cls.select()
         if offset:
             statement = statement.offset(offset)
@@ -74,9 +74,27 @@ class Base(SQLModel):
         db.delete(cls.read(db, id))
 
 
-class SyncedMixin(SQLModel):
+class ApiInMixin(SQLModel):
+    ...
+
+
+class ApiOutMixin(SQLModel):
+    id: int
+
+
+class PlaidInMixin(ApiInMixin):
     plaid_id: str
     plaid_metadata: str
+
+
+class PlaidOutMixin(PlaidInMixin, ApiOutMixin):
+    ...
+
+
+class SyncableApiOutMixin(ApiOutMixin):
+    plaid_id: str | None
+    plaid_metadata: str | None
+    is_synced: bool
 
 
 class SyncableBase(Base):
@@ -89,10 +107,9 @@ class SyncableBase(Base):
     ) -> SyncableBaseType:
         return db.exec(select(cls).where(cls.plaid_id == plaid_id)).one()
 
-
-class SyncedBase(SyncableBase):
-    plaid_id: str = Field(unique=True)
-    plaid_metadata: str
+    @property
+    def is_synced(self) -> bool:
+        return self.plaid_id is not None
 
 
 class CurrencyCode(str):

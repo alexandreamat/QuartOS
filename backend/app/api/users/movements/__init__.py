@@ -26,7 +26,7 @@ def create(
     transaction_ids: list[int],
 ) -> MovementApiOut:
     for transaction_id in transaction_ids:
-        CRUDUser.read_transaction(db, me.id, None, None, None, transaction_id)
+        CRUDUser.read_transaction(db, me.id, None, None, None, None, transaction_id)
     return CRUDMovement.create(db, transaction_ids)
 
 
@@ -44,8 +44,8 @@ def read_many(
     transaction_amount_ge: Decimal | None = None,
     transaction_amount_le: Decimal | None = None,
     is_amount_abs: bool = False,
-    transactionsGe: int | None = None,
-    transactionsLe: int | None = None,
+    transactions_ge: int | None = None,
+    transactions_le: int | None = None,
     is_descending: bool = True,
     sort_by: MovementField = MovementField.TIMESTAMP,
 ) -> Iterable[MovementApiOut]:
@@ -60,8 +60,8 @@ def read_many(
         end_date=end_date,
         search=search,
         is_descending=is_descending,
-        transactionsGe=transactionsGe,
-        transactionsLe=transactionsLe,
+        transactions_ge=transactions_ge,
+        transactions_le=transactions_le,
         sort_by=sort_by,
         transaction_amount_ge=transaction_amount_ge,
         transaction_amount_le=transaction_amount_le,
@@ -75,7 +75,7 @@ def read(
     me: CurrentUser,
     movement_id: int,
 ) -> MovementApiOut:
-    return CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    return CRUDUser.read_movement(db, me.id, None, None, None, movement_id)
 
 
 @router.put("/{movement_id}")
@@ -85,7 +85,7 @@ def update(
     movement_id: int,
     movement_in: MovementApiIn,
 ) -> MovementApiOut:
-    CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    CRUDUser.read_movement(db, me.id, None, None, None, movement_id)
     return CRUDUser.update_movement(db, me.id, movement_id, movement_in)
 
 
@@ -96,9 +96,9 @@ def add_transactions(
     movement_id: int,
     transaction_ids: list[int],
 ) -> MovementApiOut:
-    CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    CRUDUser.read_movement(db, me.id, None, None, None, movement_id)
     for transaction_id in transaction_ids:
-        CRUDUser.read_transaction(db, me.id, None, None, None, transaction_id)
+        CRUDUser.read_transaction(db, me.id, None, None, None, None, transaction_id)
     return CRUDMovement.add_transactions(db, movement_id, transaction_ids)
 
 
@@ -108,7 +108,7 @@ def delete(
     me: CurrentUser,
     movement_id: int,
 ) -> int:
-    CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    CRUDUser.read_movement(db, me.id, None, None, None, movement_id)
     return CRUDMovement.delete(db, movement_id)
 
 

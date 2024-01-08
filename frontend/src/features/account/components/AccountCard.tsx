@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Card } from "semantic-ui-react";
 import { AccountApiOut } from "app/services/api";
-import EditActionButton from "components/EditActionButton";
 import { useNavigate } from "react-router-dom";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 import CurrencyLabel from "components/CurrencyLabel";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import ActionButton from "components/ActionButton";
 import Uploader from "./Uploader";
+import MutateActionButton from "components/MutateActionButton";
 
 export default function AccountCard(props: {
   account: AccountApiOut;
@@ -16,7 +16,9 @@ export default function AccountCard(props: {
   const navigate = useNavigate();
 
   const institutionLinkQueries = useInstitutionLinkQueries(
-    props.account.institutionalaccount?.userinstitutionlink_id,
+    "userinstitutionlink_id" in props.account
+      ? props.account.userinstitutionlink_id
+      : undefined,
   );
 
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
@@ -53,23 +55,16 @@ export default function AccountCard(props: {
         />
         <Card.Header>{props.account.name}</Card.Header>
         <Card.Meta>
-          {props.account.institutionalaccount && (
-            <>
-              {props.account.institutionalaccount.iban?.replace(
-                /^(\w{4})(\w{4})(\w{4})(\w{4})(\w{4})(\w{4})$/,
-                "$1 $2 $3 $4 $5 $6",
-              ) || `**** ${props.account.institutionalaccount.mask}`}
-            </>
-          )}
+          {props.account.type === "depository" &&
+            props.account.iban?.replace(
+              /^(\w{4})(\w{4})(\w{4})(\w{4})(\w{4})(\w{4})$/,
+              "$1 $2 $3 $4 $5 $6",
+            )}
         </Card.Meta>
         <Card.Meta>{institutionLinkQueries.institution?.name}</Card.Meta>
       </Card.Content>
       <Card.Content extra textAlign="right">
-        <EditActionButton
-          floated="left"
-          disabled={props.account.is_synced !== false}
-          onOpenEditForm={props.onEdit}
-        />
+        <MutateActionButton floated="left" onOpenEditForm={props.onEdit} />
         <ActionButton
           icon="exchange"
           tooltip="See transactions"
@@ -83,7 +78,7 @@ export default function AccountCard(props: {
           onClick={handleGoToMovements}
         />
 
-        {props.account.institutionalaccount && (
+        {props.account.type === "depository" && (
           <ActionButton
             floated="left"
             icon="upload"

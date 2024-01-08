@@ -1,198 +1,147 @@
-from typing import TYPE_CHECKING, Any
+from typing import Literal, TYPE_CHECKING, Any, Iterable
 from decimal import Decimal
-from enum import Enum
 from datetime import date
 
-from sqlmodel import Field, Relationship, SQLModel, Session
+from sqlmodel import SQLModel, Relationship, Session
 from sqlmodel.sql.expression import SelectOfScalar
-from pydantic import root_validator, validator
-import pycountry
 
 from app.common.models import (
-    Base,
-    CurrencyCode,
-    SyncedMixin,
     SyncableBase,
-    SyncedBase,
-    BaseType,
+    ApiInMixin,
+    SyncableApiOutMixin,
+    PlaidInMixin,
+    PlaidOutMixin,
+    CurrencyCode,
 )
 
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser import TransactionDeserialiser
 from app.features.movement import Movement
+from app.features.accountacces import AccountAccess
+
 
 if TYPE_CHECKING:
-    from app.features.institution import Institution
     from app.features.user import User
     from app.features.userinstitutionlink import UserInstitutionLink
 
+logger = logging.getLogger()
 
-class _AccountBase(SQLModel):
-    class InstitutionalAccount(SQLModel):
-        class InstitutionalAccountType(str, Enum):
-            INVESTMENT = "investment"
-            CREDIT = "credit"
-            DEPOSITORY = "depository"
-            LOAN = "loan"
-            BROKERAGE = "brokerage"
-            OTHER = "other"
 
-        type: InstitutionalAccountType
-        mask: str
-        bic: str | None
-        iban: str | None
-
-    class NonInstitutionalAccount(SQLModel):
-        class NonInstitutionalAccountType(str, Enum):
-            PERSONAL_LEDGER = "personal ledger"
-            CASH = "cash"
-            PROPERTY = "property"
-
-        type: NonInstitutionalAccountType
-
+class __AccountBase(SQLModel):
     currency_code: CurrencyCode
     initial_balance: Decimal
     name: str
-
-    @root_validator()
-    def only_one_type_allowed(
-        cls,
-        values: dict[str, Any],
-    ) -> dict[str, Any]:
-        institutionalaccount = values.get("institutionalaccount")
-        noninstitutionalaccount = values.get("noninstitutionalaccount")
-        if bool(institutionalaccount) is bool(noninstitutionalaccount):
-            raise ValueError("One and only one account must be defined")
-        return values
+    type: str
 
 
-class AccountApiIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount):
-        ...
-
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount):
-        ...
-
-    institutionalaccount: InstitutionalAccount | None
-    noninstitutionalaccount: NonInstitutionalAccount | None
-
-
-class AccountApiOut(_AccountBase, Base):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, Base):
-        userinstitutionlink_id: int
-
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, Base):
-        user_id: int
-
-    institutionalaccount: InstitutionalAccount | None
-    noninstitutionalaccount: NonInstitutionalAccount | None
-    is_synced: bool
+class __AccountOut(SQLModel):
     balance: Decimal
+    is_synced: bool
 
 
-class AccountPlaidIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncedMixin):
-        ...
-
-    institutionalaccount: InstitutionalAccount
+class __InstitutionalAccountOut(__AccountOut):
+    userinstitutionlink_id: int
 
 
-class AccountPlaidOut(_AccountBase, Base):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncedBase):
-        ...
-
-    institutionalaccount: InstitutionalAccount
+class __NonInstitutionalAccountOut(__AccountOut):
+    user_id: int
 
 
-class Account(_AccountBase, Base, table=True):
-    class InstitutionalAccount(
-        _AccountBase.InstitutionalAccount, SyncableBase, table=True
-    ):
-        userinstitutionlink_id: int = Field(foreign_key="userinstitutionlink.id")
+class __Depository(__AccountBase):
+    type: Literal["depository"]
+    bic: str | None
+    iban: str | None
 
-        userinstitutionlink: "UserInstitutionLink" = Relationship(
-            back_populates="institutionalaccounts"
-        )
-        account: "Account" = Relationship(
-            back_populates="institutionalaccount",
-            sa_relationship_kwargs={"uselist": False},
-        )
 
-        @property
-        def user(self) -> "User":
-            return self.userinstitutionlink.user
+class __Loan(__AccountBase):
+    type: Literal["loan"]
+    # number: str
+    # term: timedelta
+    # origination_date: date
+    # origination_principal_amount: Decimal
 
-        @property
-        def institution(self) -> "Institution":
-            return self.userinstitutionlink.institution
 
-        @property
-        def transactiondeserialiser(self) -> TransactionDeserialiser | None:
-            return self.userinstitutionlink.institution.transactiondeserialiser
+class __Credit(__AccountBase):
+    type: Literal["credit"]
 
-        @property
-        def is_synced(self) -> bool:
-            return True if self.plaid_id else False
 
-    class NonInstitutionalAccount(
-        _AccountBase.NonInstitutionalAccount, Base, table=True
-    ):
-        user_id: int = Field(foreign_key="user.id")
-        user: "User" = Relationship(back_populates="noninstitutionalaccounts")
-        account: "Account" = Relationship(
-            back_populates="noninstitutionalaccount",
-            sa_relationship_kwargs={"uselist": False},
-        )
+class __Cash(__AccountBase):
+    type: Literal["cash"]
 
-    institutionalaccount_id: int | None = Field(foreign_key="institutionalaccount.id")
-    noninstitutionalaccount_id: int | None = Field(
-        foreign_key="noninstitutionalaccount.id"
-    )
 
-    institutionalaccount: InstitutionalAccount | None = Relationship(
-        back_populates="account",
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
-    )
-    noninstitutionalaccount: NonInstitutionalAccount | None = Relationship(
-        back_populates="account",
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
-    )
+class __PersonalLedger(__AccountBase):
+    type: Literal["personal_ledger"]
+
+
+class __Property(__AccountBase, ApiInMixin):
+    type: Literal["property"]
+    # address: str
+
+
+# fmt: off
+class DepositoryApiIn(__Depository, ApiInMixin): ...
+class DepositoryApiOut(__Depository, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class DepositoryPlaidIn(__Depository, PlaidInMixin): ...
+class DepositoryPlaidOut(__Depository, __InstitutionalAccountOut, PlaidOutMixin): ...
+class LoanApiIn(__Loan, ApiInMixin): ...
+class LoanApiOut(__Loan, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class LoanPlaidIn(__Loan, PlaidInMixin): ...
+class LoanPlaidOut(__Loan, __InstitutionalAccountOut, PlaidOutMixin): ...
+class CreditApiIn(__Credit, ApiInMixin): ...
+class CreditApiOut(__Credit, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class CreditPlaidIn(__Credit, PlaidInMixin): ...
+class CreditPlaidOut(__Credit, __InstitutionalAccountOut, PlaidOutMixin): ...
+class CashApiIn(__Cash, ApiInMixin): ...
+class CashApiOut(__Cash, __NonInstitutionalAccountOut, SyncableApiOutMixin): ...
+class PersonalLedgerApiIn(__PersonalLedger, ApiInMixin): ...
+class PersonalLedgerApiOut(__PersonalLedger, __NonInstitutionalAccountOut, SyncableApiOutMixin): ...
+class PropertyApiIn(__Property): ...
+class PropertyApiOut(__Property, __NonInstitutionalAccountOut, SyncableApiOutMixin): ...
+# fmt: on
+
+AccountApiIn = (
+    DepositoryApiIn
+    | LoanApiIn
+    | CreditApiIn
+    | CashApiIn
+    | PersonalLedgerApiIn
+    | PropertyApiIn
+)
+AccountApiOut = (
+    DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut
+)
+AccountPlaidIn = DepositoryPlaidIn | LoanPlaidIn | CreditPlaidIn
+AccountPlaidOut = DepositoryPlaidOut | LoanPlaidOut | CreditPlaidOut
+
+# DB Model
+
+
+class Account(
+    SyncableBase,
+    __AccountBase,
+    table=True,
+):
+    # Depository
+    bic: str | None
+    iban: str | None
+
+    # Loan
+    # number: str | None
+    # term: timedelta | None
+    # origination_date: date | None
+    # origination_principal_amount: Decimal | None
 
     transactions: list[Transaction] = Relationship(
         back_populates="account",
-        sa_relationship_kwargs={
-            "cascade": "all, delete",
-            "lazy": "dynamic",
-        },
+        sa_relationship_kwargs={"cascade": "all, delete", "lazy": "dynamic"},
     )
 
-    @classmethod
-    def from_schema(  # type: ignore[override]
-        cls,
-        obj_in: AccountApiIn,
-        user_id: int | None = None,
-        userinstitutionlink_id: int | None = None,
-    ) -> "Account":
-        obj_in_dict = obj_in.dict(
-            exclude={"institutionalaccount", "noninstitutionalaccount"}
-        )
-        if obj_in.institutionalaccount:
-            return Account(
-                **obj_in_dict,
-                institutionalaccount=Account.InstitutionalAccount(
-                    userinstitutionlink_id=userinstitutionlink_id,
-                    **obj_in.institutionalaccount.dict(),
-                ),
-            )
-        if obj_in.noninstitutionalaccount:
-            return Account(
-                **obj_in_dict,
-                noninstitutionalaccount=Account.NonInstitutionalAccount(
-                    user_id=user_id,
-                    **obj_in.noninstitutionalaccount.dict(),
-                ),
-            )
-        raise ValueError
+    accesses: list["AccountAccess"] = Relationship(back_populates="account")
 
     @classmethod
     def update_balance(
@@ -230,90 +179,83 @@ class Account(_AccountBase, Base, table=True):
         return cls.read(db, id)
 
     @classmethod
-    def join_subclasses(
-        cls, statement: SelectOfScalar[BaseType]
-    ) -> SelectOfScalar[BaseType]:
-        # fmt: off
-        return ( 
-            statement
-            .outerjoin(cls.NonInstitutionalAccount)
-            .outerjoin(cls.InstitutionalAccount)
-        )
-        # fmt: on
+    def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
+        statement = cls.select().join(AccountAccess)
 
-    @classmethod
-    def select_children(
-        cls, account_id: int | None, statement: SelectOfScalar[BaseType]
-    ) -> SelectOfScalar[BaseType]:
-        statement = statement.join(cls)
-        statement = cls.join_subclasses(statement)
-        if account_id is not None:
+        if account_id:
             statement = statement.where(cls.id == account_id)
+
         return statement
 
     @classmethod
-    def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
-        statement = cls.select()
-        statement = cls.join_subclasses(statement)
+    def select_account_accesses(
+        cls, account_id: int | None, accountaccess_id: int | None
+    ) -> SelectOfScalar[AccountAccess]:
+        statement = AccountAccess.select_account_accesses(accountaccess_id)
+
         if account_id:
             statement = statement.where(cls.id == account_id)
+
         return statement
 
     @classmethod
     def select_movements(
         cls,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Movement]:
-        statement = Movement.select_movements(movement_id, **kwargs)
-        statement = statement.join(Transaction)
-        statement = cls.select_children(account_id, statement)
+        statement = AccountAccess.select_movements(
+            accountaccess_id, movement_id, **kwargs
+        )
+        statement = statement.join(cls)
+        if account_id:
+            statement = statement.where(cls.id == account_id)
+
         return statement
 
     @classmethod
     def select_transactions(
         cls,
         account_id: int | None,
+        accountaccess_id: int | None,
         movement_id: int | None,
         transaction_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
-        statement = Movement.select_transactions(movement_id, transaction_id, **kwargs)
-        statement = cls.select_children(account_id, statement)
+        statement = AccountAccess.select_transactions(
+            accountaccess_id, movement_id, transaction_id, **kwargs
+        )
+
+        statement = statement.join(cls)
+        if account_id:
+            statement = statement.where(cls.id == account_id)
+
         return statement
 
     @property
-    def user(self) -> "User":
-        if self.institutionalaccount:
-            return self.institutionalaccount.userinstitutionlink.user
-        if self.noninstitutionalaccount:
-            return self.noninstitutionalaccount.user
-        raise ValueError
+    def users(self) -> Iterable["User"]:
+        for a in self.accesses:
+            yield a.user
+
+    @property
+    def userinstitutionlinks(self) -> Iterable["UserInstitutionLink"]:
+        for a in self.accesses:
+            if a.userinstitutionlink:
+                yield a.userinstitutionlink
 
     @property
     def transactiondeserialiser(self) -> TransactionDeserialiser | None:
-        if self.institutionalaccount:
-            return self.institutionalaccount.transactiondeserialiser
-        return None
-
-    @property
-    def institution(self) -> "Institution | None":
-        if self.institutionalaccount:
-            return self.institutionalaccount.institution
-        return None
-
-    @property
-    def userinstitutionlink(self) -> "UserInstitutionLink | None":
-        if self.institutionalaccount:
-            return self.institutionalaccount.userinstitutionlink
+        if uils := self.userinstitutionlinks:
+            for uil in uils:
+                # return first transaction deserialiser
+                return uil.institution.transactiondeserialiser
         return None
 
     @property
     def is_synced(self) -> bool:
-        if self.institutionalaccount:
-            return self.institutionalaccount.is_synced
-        return False
+        return self.plaid_id is not None
 
     @property
     def balance(self) -> Decimal:

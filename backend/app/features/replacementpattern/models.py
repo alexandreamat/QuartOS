@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel
-from app.common.models import Base, RegexPattern
+from app.common.models import Base, RegexPattern, ApiOutMixin, ApiInMixin
 
 
 class __ReplacementPatternBase(SQLModel):
@@ -7,11 +7,11 @@ class __ReplacementPatternBase(SQLModel):
     replacement: str
 
 
-class ReplacementPatternApiIn(__ReplacementPatternBase):
+class ReplacementPatternApiIn(__ReplacementPatternBase, ApiInMixin):
     ...
 
 
-class ReplacementPatternApiOut(__ReplacementPatternBase, Base):
+class ReplacementPatternApiOut(__ReplacementPatternBase, ApiOutMixin):
     ...
 
 
