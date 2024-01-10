@@ -15,7 +15,7 @@
 
 import {
   AccountApiOut,
-  BodyPreviewApiUsersMeAccountsPreviewPost,
+  BodyPreviewUsersMeAccountsPreviewPost,
   api,
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
@@ -44,14 +44,14 @@ export default function Uploader(props: {
   const [showDupsWarn, setShowDupsWarn] = useState(false);
 
   const lastTransactionQuery =
-    api.endpoints.readManyApiUsersMeTransactionsGet.useQuery({
+    api.endpoints.readManyUsersMeTransactionsGet.useQuery({
       accountId: props.account.id,
       perPage: 1,
       page: 0,
     });
 
   const [upload, uploadResult] =
-    api.endpoints.previewApiUsersMeAccountsPreviewPost.useMutation();
+    api.endpoints.previewUsersMeAccountsPreviewPost.useMutation();
 
   const transactionsIn = useMemo(
     () =>
@@ -84,8 +84,8 @@ export default function Uploader(props: {
     try {
       await upload({
         accountId: props.account.id,
-        bodyPreviewApiUsersMeAccountsPreviewPost:
-          formData as unknown as BodyPreviewApiUsersMeAccountsPreviewPost,
+        bodyPreviewUsersMeAccountsPreviewPost:
+          formData as unknown as BodyPreviewUsersMeAccountsPreviewPost,
       }).unwrap();
     } catch (error) {
       logMutationError(error, uploadResult);
@@ -107,7 +107,7 @@ export default function Uploader(props: {
   }, [transactionsIn, lastTransaction]);
 
   const [createMovements, createMovementsResult] =
-    api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
+    api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   const handleCreateTransactions = async () => {
     if (!uploadResult.data) return;
@@ -118,7 +118,7 @@ export default function Uploader(props: {
     try {
       await createMovements({
         accountId: props.account.id,
-        bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+        bodyCreateManyUsersMeAccountsAccountIdMovementsPost: {
           transactions,
           transaction_ids: [],
         },

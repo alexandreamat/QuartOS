@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
-  ReadManyApiUsersMeTransactionsGetApiArg,
+  ReadManyUsersMeTransactionsGetApiArg,
   TransactionApiOut,
   api,
 } from "app/services/api";
@@ -42,7 +42,7 @@ export default function TransactionCards(props: {
   const [isAmountAbs] = props.barState.isAmountAbs;
   const [accountId] = props.barState.accountId;
 
-  const params: ReadManyApiUsersMeTransactionsGetApiArg = {
+  const params: ReadManyUsersMeTransactionsGetApiArg = {
     timestampGe: timestampGe && formatDateParam(timestampGe),
     timestampLe: timestampLe && formatDateParam(timestampLe),
     search,
@@ -73,7 +73,7 @@ export default function TransactionCards(props: {
     <Card.Group style={{ margin: 0, overflow: "hidden" }}>
       <InfiniteScroll
         reference={props.reference}
-        endpoint={api.endpoints.readManyApiUsersMeTransactionsGet}
+        endpoint={api.endpoints.readManyUsersMeTransactionsGet}
         params={params}
         itemRenderer={CardRenderer}
       />

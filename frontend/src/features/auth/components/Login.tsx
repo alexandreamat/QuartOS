@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { BodyLoginApiAuthLoginPost, api } from "app/services/api";
+import { BodyLoginAuthLoginPost, api } from "app/services/api";
 import { RootState, useAppDispatch } from "app/store";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import React, { useState } from "react";
@@ -37,11 +37,10 @@ export default function Login() {
   const [username, setusername] = useState("");
   const [password, setPassword] = useState("");
   const isAuthenticated = useSelector(
-    (state: RootState) => state.auth.current_user
+    (state: RootState) => state.auth.current_user,
   );
 
-  const [login, loginResult] =
-    api.endpoints.loginApiAuthLoginPost.useMutation();
+  const [login, loginResult] = api.endpoints.loginAuthLoginPost.useMutation();
 
   const handleSumit = async () => {
     const formData = new FormData();
@@ -49,7 +48,7 @@ export default function Login() {
     formData.append("password", password);
     try {
       const token = await login(
-        formData as unknown as BodyLoginApiAuthLoginPost
+        formData as unknown as BodyLoginAuthLoginPost,
       ).unwrap();
       dispatch(setCredentials(token.access_token));
     } catch (error) {

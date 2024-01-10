@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from plaid.model.account_base import AccountBase
 from plaid.model.accounts_get_request import AccountsGetRequest
@@ -41,27 +41,31 @@ def __fetch_auth_numbers(access_token: str) -> dict[str, tuple[str, str]]:
 
 def fetch_accounts(
     user_institution_link: "UserInstitutionLinkPlaidOut",
-) -> list[AccountPlaidIn]:
+) -> Iterable[AccountPlaidIn]:
     request = AccountsGetRequest(access_token=user_institution_link.access_token)
     response: AccountsGetResponse = client.accounts_get(request)
     accounts: list[AccountBase] = response.accounts
 
     numbers = __fetch_auth_numbers(user_institution_link.access_token)
 
-    return [
-        AccountPlaidIn(
+    for account in accounts:
+        try:
+            bic = numbers[account.account_id][0]
+            iban = numbers[account.account_id][1]
+        except:
+            bic = None
+            iban = None
+        yield AccountPlaidIn(
             institutionalaccount=AccountPlaidIn.InstitutionalAccount(
                 plaid_id=account.account_id,
                 plaid_metadata=account.to_str(),
                 mask=account.mask,
                 type=account.type.value,
                 userinstitutionlink_id=user_institution_link.id,
-                bic=numbers[account.account_id][0],
-                iban=numbers[account.account_id][1],
+                bic=bic,
+                iban=iban,
             ),
             name=account.name,
             currency_code=account.balances.iso_currency_code,
             initial_balance=0,
         )
-        for account in accounts
-    ]

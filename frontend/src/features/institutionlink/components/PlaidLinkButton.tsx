@@ -15,8 +15,14 @@
 
 import { UserInstitutionLinkApiOut, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import React from "react";
-import { PlaidLinkOnSuccessMetadata, usePlaidLink } from "react-plaid-link";
+import React, { useCallback } from "react";
+import {
+  PlaidLinkOnEvent,
+  PlaidLinkOnEventMetadata,
+  PlaidLinkOnSuccessMetadata,
+  PlaidLinkStableEvent,
+  usePlaidLink,
+} from "react-plaid-link";
 import { Button, Header, Icon, Segment } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 
@@ -25,13 +31,13 @@ export default function PlaidLinkButton(props: {
   institutionLink?: UserInstitutionLinkApiOut;
 }) {
   const linkTokenQuery =
-    api.endpoints.getLinkTokenApiUsersMeInstitutionLinksLinkTokenGet.useQuery(
-      props.institutionLink?.id || 0
+    api.endpoints.getLinkTokenUsersMeInstitutionLinksLinkTokenGet.useQuery(
+      props.institutionLink?.id || 0,
     );
 
   async function handleOnSuccess(
     publicToken: string,
-    metadata: PlaidLinkOnSuccessMetadata
+    metadata: PlaidLinkOnSuccessMetadata,
   ) {
     if (!metadata.institution) {
       console.error("Same-Day micro-deposit verifications are not supported!");
@@ -51,13 +57,24 @@ export default function PlaidLinkButton(props: {
     props.onSuccess();
   }
 
+  const handleEvent = useCallback<PlaidLinkOnEvent>(
+    (
+      eventName: PlaidLinkStableEvent | string,
+      metadata: PlaidLinkOnEventMetadata,
+    ) => {
+      console.log(eventName, metadata);
+    },
+    [],
+  );
+
   const plaidLink = usePlaidLink({
     token: linkTokenQuery.data || null,
     onSuccess: handleOnSuccess,
+    onEvent: handleEvent,
   });
 
   const [setPublicToken, setPublicTokenResult] =
-    api.endpoints.setPublicTokenApiUsersMeInstitutionLinksPublicTokenPost.useMutation();
+    api.endpoints.setPublicTokenUsersMeInstitutionLinksPublicTokenPost.useMutation();
 
   return (
     <Segment placeholder>

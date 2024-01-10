@@ -14,8 +14,9 @@ node_modules
 # misc
 .DS_Store
 
-my-app
-*.db
 *.sqlite
 openapi.json
 .env
+
+db/var/lib/postgresql/data
+build

@@ -46,7 +46,7 @@ export default function Transactions() {
   }, [location, setAccountId]);
 
   const [createMovement, createMovementResult] =
-    api.endpoints.createApiUsersMeMovementsPost.useMutation();
+    api.endpoints.createUsersMeMovementsPost.useMutation();
 
   async function handleMergeTransactions() {
     try {
