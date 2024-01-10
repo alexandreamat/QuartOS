@@ -28,6 +28,7 @@ bpython = "~=0.24"
 vulture = "~=2.10"
 alembic = "~=1.13.1"
 psycopg2-binary = "~=2.9"
+pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]
 
