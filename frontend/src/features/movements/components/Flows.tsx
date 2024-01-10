@@ -165,14 +165,16 @@ function StepFlows(props: {
     <Step style={{ padding: stepPadding }}>
       <Step.Content style={{ width: "100%" }}>
         {props.loading ? (
-          <Flow loading onRemove={() => {}} reverse={props.reverse} />
+          <Flow loading reverse={props.reverse} />
         ) : (
           hasFlows &&
           flows.map((t) => (
             <Flow
               key={t.id}
               transaction={t}
-              onRemove={() => props.onRemove && props.onRemove(t)}
+              onRemove={
+                props.onRemove && (() => props.onRemove && props.onRemove(t))
+              }
               style={{
                 fontWeight:
                   t.account_id === props.selectedAccountId ? "bold" : "normal",

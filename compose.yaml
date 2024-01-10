@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - ./db/var/lib/postgresql/data:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  backend:
+    build: ./backend
+    image: alexandreamat/quartos:latest
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
+    ports:
+      - 8000:80

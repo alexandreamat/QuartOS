@@ -33,9 +33,9 @@ const InstitutionsTable = (props: {
   data: InstitutionApiOut[];
 }) => {
   const [deleteInstitution, deleteInstitutionResult] =
-    api.endpoints.deleteApiInstitutionsInstitutionIdDelete.useMutation();
+    api.endpoints.deleteInstitutionsInstitutionIdDelete.useMutation();
   const [syncInstitution, syncInstitutionResult] =
-    api.endpoints.syncApiInstitutionsInstitutionIdSyncPut.useMutation();
+    api.endpoints.syncInstitutionsInstitutionIdSyncPut.useMutation();
 
   const handleDelete = async (institution: InstitutionApiOut) => {
     try {
@@ -121,7 +121,7 @@ export default function Institutions() {
     InstitutionApiOut | undefined
   >(undefined);
 
-  const institutionsQuery = api.endpoints.readManyApiInstitutionsGet.useQuery();
+  const institutionsQuery = api.endpoints.readManyInstitutionsGet.useQuery();
 
   const handleOpenCreateForm = () => {
     setSelectedInstitution(undefined);

@@ -57,7 +57,7 @@ export function TransactionCard(
   );
 
   const movementQuery =
-    api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
+    api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
       props.preview || !props.transaction
         ? skipToken
         : props.transaction.movement_id,

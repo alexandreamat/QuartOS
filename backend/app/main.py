@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import logging
 
 from fastapi import FastAPI
 
@@ -21,13 +22,20 @@ from app import initial_data
 from app.settings import settings
 from app.api import router
 
-initial_data.main()
-
-app = FastAPI(
-    title=settings.PROJECT_NAME, openapi_url=f"{settings.API_STR}/openapi.json"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s %(asctime)s - %(pathname)s:%(lineno)s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    force=True,
 )
 
-app.include_router(router, prefix=settings.API_STR)
+logger = logging.getLogger(__name__)
+
+initial_data.main()
+
+app = FastAPI(title=settings.PROJECT_NAME, openapi_url="/openapi.json")
+
+app.include_router(router)
 
 with open("openapi.json", "w") as file:
     json.dump(app.openapi(), file, indent=2)

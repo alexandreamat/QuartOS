@@ -15,7 +15,7 @@
 
 import {
   MovementApiOut,
-  ReadManyApiUsersMeMovementsGetApiArg,
+  ReadManyUsersMeMovementsGetApiArg,
   api,
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
@@ -58,7 +58,7 @@ export default function Movements() {
   const [isMultipleChoice, setIsMultipleChoice] =
     barState.isMultipleChoiceState;
 
-  const arg: ReadManyApiUsersMeMovementsGetApiArg = {
+  const arg: ReadManyUsersMeMovementsGetApiArg = {
     search: search,
     isDescending,
     startDate: startDate && formatDateParam(startDate),
@@ -74,7 +74,7 @@ export default function Movements() {
   const reference = useRef<HTMLDivElement | null>(null);
 
   const [createMovement, createMovementResult] =
-    api.endpoints.createApiUsersMeMovementsPost.useMutation();
+    api.endpoints.createUsersMeMovementsPost.useMutation();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -182,7 +182,7 @@ export default function Movements() {
         <Card.Group style={{ margin: 0 }}>
           <InfiniteScroll
             itemRenderer={CardGenerator}
-            endpoint={api.endpoints.readManyApiUsersMeMovementsGet}
+            endpoint={api.endpoints.readManyUsersMeMovementsGet}
             params={arg}
             reference={reference}
           />

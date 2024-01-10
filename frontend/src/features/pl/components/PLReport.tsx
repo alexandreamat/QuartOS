@@ -33,7 +33,7 @@ export default function PLReport() {
   const [movementId, setMovementId] = useState(0);
 
   const aggregateQuery =
-    api.endpoints.getAggregateApiUsersMeMovementsAggregatesStartDateEndDateGet.useQuery(
+    api.endpoints.getAggregateUsersMeMovementsAggregatesStartDateEndDateGet.useQuery(
       startDate && endDate
         ? {
             startDate: startDate,

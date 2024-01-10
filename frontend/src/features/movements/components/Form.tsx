@@ -40,15 +40,15 @@ export default function Form(props: {
   const [movementId, setMovementId] = useState(props.movementId || 0);
 
   const movementQuery =
-    api.endpoints.readApiUsersMeMovementsMovementIdGet.useQuery(
+    api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
       movementId || skipToken,
     );
 
   const [createMovements, createMovementsResult] =
-    api.endpoints.createManyApiUsersMeAccountsAccountIdMovementsPost.useMutation();
+    api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   const [deleteMovement, deleteMovementResult] =
-    api.endpoints.deleteApiUsersMeMovementsMovementIdDelete.useMutation();
+    api.endpoints.deleteUsersMeMovementsMovementIdDelete.useMutation();
 
   useEffect(() => {
     if (props.movementId) setMovementId(props.movementId);
@@ -64,7 +64,7 @@ export default function Form(props: {
     try {
       await createMovements({
         accountId: transaction.account_id,
-        bodyCreateManyApiUsersMeAccountsAccountIdMovementsPost: {
+        bodyCreateManyUsersMeAccountsAccountIdMovementsPost: {
           transactions: [],
           transaction_ids: [transaction.id],
         },

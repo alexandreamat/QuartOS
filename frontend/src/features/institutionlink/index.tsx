@@ -35,7 +35,7 @@ function InstitutionLinkRow(props: {
   const navigate = useNavigate();
 
   const [syncLink, syncLinkResult] =
-    api.endpoints.syncApiUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidSyncPost.useMutation();
+    api.endpoints.syncUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidSyncPost.useMutation();
 
   const handleSync = async (userInstitutionLink: UserInstitutionLinkApiOut) => {
     try {
@@ -59,7 +59,7 @@ function InstitutionLinkRow(props: {
   };
 
   const institutionQuery =
-    api.endpoints.readApiInstitutionsInstitutionIdGet.useQuery(
+    api.endpoints.readInstitutionsInstitutionIdGet.useQuery(
       props.institutionLink.institution_id,
     );
 
@@ -156,7 +156,7 @@ export default function InstitutionsLinks() {
   >(undefined);
 
   const institutionsLinksQuery =
-    api.endpoints.readManyApiUsersMeInstitutionLinksGet.useQuery();
+    api.endpoints.readManyUsersMeInstitutionLinksGet.useQuery();
 
   const handleOpenCreateForm = () => {
     setSelectedInstitutionLink(undefined);

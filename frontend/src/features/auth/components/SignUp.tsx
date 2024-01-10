@@ -36,7 +36,7 @@ export function SignUp() {
   };
 
   const [signUp, signUpResult] =
-    api.endpoints.signupApiUsersSignupPost.useMutation();
+    api.endpoints.signupUsersSignupPost.useMutation();
 
   const handleSubmit = async (_: React.MouseEvent) => {
     const invalidFields = Object.values(fields).filter((f) => !f.validate());
@@ -85,7 +85,7 @@ export function SignUp() {
             />
             <FormTextInput
               icon="lock"
-              field={fields.password}
+              field={fields.passwordConfirmation}
               label="Confirm password"
               type="password"
             />

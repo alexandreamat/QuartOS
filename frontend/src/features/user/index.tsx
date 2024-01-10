@@ -26,12 +26,12 @@ import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 export default function Users() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserApiOut | undefined>(
-    undefined
+    undefined,
   );
 
-  const usersQuery = api.endpoints.readManyApiUsersGet.useQuery({});
+  const usersQuery = api.endpoints.readManyUsersGet.useQuery({});
   const [deleteUser, deleteUserResult] =
-    api.endpoints.deleteApiUsersUserIdDelete.useMutation();
+    api.endpoints.deleteUsersUserIdDelete.useMutation();
 
   const handleCreate = () => {
     setSelectedUser(undefined);

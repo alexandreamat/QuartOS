@@ -28,7 +28,5 @@ router = APIRouter()
 def read_exchange_rate(from_currency: str, to_currency: str, date: date) -> Decimal:
     try:
         return get_exchange_rate(from_currency, to_currency, date)
-    except requests.HTTPError as exc:
-        raise HTTPException(status_code=exc.response.status_code)
-    except KeyError:
+    except requests.HTTPError:
         raise HTTPException(status.HTTP_400_BAD_REQUEST)

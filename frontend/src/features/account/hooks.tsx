@@ -19,10 +19,9 @@ import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
 import { renderErrorMessage } from "utils/error";
 
 export function useAccountQueries(accountId?: number) {
-  const accountQuery =
-    api.endpoints.readApiUsersMeAccountsAccountIdGet.useQuery(
-      accountId || skipToken,
-    );
+  const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
+    accountId || skipToken,
+  );
 
   const institutionLinkQueries = useInstitutionLinkQueries(
     accountQuery.data?.institutionalaccount?.userinstitutionlink_id,
@@ -79,7 +78,7 @@ function AccountOption(props: { account: AccountApiOut }) {
 }
 
 export function useAccountOptions() {
-  const query = api.endpoints.readManyApiUsersMeAccountsGet.useQuery();
+  const query = api.endpoints.readManyUsersMeAccountsGet.useQuery();
 
   const options = query.data?.map((account) => {
     const option = <AccountOption account={account} />;

@@ -34,7 +34,7 @@ export default function TopBar(props: { onToggleSidebar: () => void }) {
     navigate("/profile");
   };
 
-  const me = api.endpoints.readMeApiUsersMeGet.useQuery();
+  const me = api.endpoints.readMeUsersMeGet.useQuery();
 
   return (
     <Menu color="teal" inverted style={{ borderRadius: 0 }}>

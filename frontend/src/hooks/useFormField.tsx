@@ -18,7 +18,7 @@ import { useState } from "react";
 const useFormField = <T,>(
   initialValue?: T,
   label?: string,
-  optional?: boolean
+  optional?: boolean,
 ) => {
   const [value, setValue] = useState(initialValue);
   const [isError, setIsError] = useState(false);
@@ -41,7 +41,7 @@ const useFormField = <T,>(
         break;
     }
     setIsError(!isValid);
-    if (!isValid) console.error(`Value of type ${typeof value} is invalid`);
+    if (!isValid) console.error(`Value ${value} (${typeof value}) is invalid`);
     return isValid;
   };
 
