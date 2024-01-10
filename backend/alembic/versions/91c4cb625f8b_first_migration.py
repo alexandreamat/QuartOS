@@ -1,8 +1,8 @@
 """first migration
 
-Revision ID: e2ba381d9c36
+Revision ID: 91c4cb625f8b
 Revises: 
-Create Date: 2023-11-14 16:33:23.868440
+Create Date: 2024-01-10 10:14:08.699668
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e2ba381d9c36'
+revision: str = '91c4cb625f8b'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -69,6 +69,13 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('plaid_id')
     )
+    op.create_table('noninstitutionalaccount',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('type', sa.Enum('PERSONAL_LEDGER', 'CASH', 'PROPERTY', name='noninstitutionalaccounttype'), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('userinstitutionlink',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('plaid_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
@@ -82,22 +89,29 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('plaid_id')
     )
-    op.create_table('account',
-    sa.Column('currency_code', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('initial_balance', sa.Numeric(), nullable=False),
-    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-    sa.Column('type', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    op.create_table('institutionalaccount',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('plaid_id', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('plaid_metadata', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('userinstitutionlink_id', sa.Integer(), nullable=True),
+    sa.Column('type', sa.Enum('INVESTMENT', 'CREDIT', 'DEPOSITORY', 'LOAN', 'BROKERAGE', 'OTHER', name='institutionalaccounttype'), nullable=False),
+    sa.Column('mask', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('bic', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('iban', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+    sa.Column('userinstitutionlink_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['userinstitutionlink_id'], ['userinstitutionlink.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('plaid_id')
+    )
+    op.create_table('account',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('currency_code', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('initial_balance', sa.Numeric(), nullable=False),
+    sa.Column('name', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('institutionalaccount_id', sa.Integer(), nullable=True),
+    sa.Column('noninstitutionalaccount_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['institutionalaccount_id'], ['institutionalaccount.id'], ),
+    sa.ForeignKeyConstraint(['noninstitutionalaccount_id'], ['noninstitutionalaccount.id'], ),
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('transaction',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -131,7 +145,9 @@ def downgrade() -> None:
     op.drop_table('file')
     op.drop_table('transaction')
     op.drop_table('account')
+    op.drop_table('institutionalaccount')
     op.drop_table('userinstitutionlink')
+    op.drop_table('noninstitutionalaccount')
     op.drop_table('institution')
     op.drop_table('user')
     op.drop_table('transactiondeserialiser')
