@@ -15,13 +15,6 @@
 
 name: Deploy to VPS
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - "frontend/**"
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
