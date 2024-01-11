@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from typing import TYPE_CHECKING, Iterable
 
 from plaid.model.account_base import AccountBase
@@ -30,6 +31,8 @@ from .models import AccountPlaidIn
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
 
+logger = logging.getLogger(__name__)
+
 
 def __fetch_auth_numbers(access_token: str) -> dict[str, tuple[str, str]]:
     request = AuthGetRequest(access_token=access_token)
@@ -44,6 +47,7 @@ def fetch_accounts(
 ) -> Iterable[AccountPlaidIn]:
     request = AccountsGetRequest(access_token=user_institution_link.access_token)
     response: AccountsGetResponse = client.accounts_get(request)
+    logger.info(response.to_str())
     accounts: list[AccountBase] = response.accounts
 
     numbers = __fetch_auth_numbers(user_institution_link.access_token)
@@ -59,7 +63,7 @@ def fetch_accounts(
             institutionalaccount=AccountPlaidIn.InstitutionalAccount(
                 plaid_id=account.account_id,
                 plaid_metadata=account.to_str(),
-                mask=account.mask,
+                mask=account.mask or "",
                 type=account.type.value,
                 userinstitutionlink_id=user_institution_link.id,
                 bic=bic,

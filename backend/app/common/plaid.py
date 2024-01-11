@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import logging
 
 import plaid
 from plaid.api.plaid_api import PlaidApi
@@ -30,6 +31,7 @@ from plaid.model.item_public_token_exchange_response import (
 from plaid.model.link_token_create_request_update import LinkTokenCreateRequestUpdate
 from plaid.model.country_code import CountryCode
 
+logger = logging.getLogger(__name__)
 
 PLAID_CLIENT_ID = os.environ["PLAID_CLIENT_ID"]
 PLAID_SECRET = os.environ["PLAID_SECRET"]
@@ -90,5 +92,6 @@ def exchange_public_token(public_token: str) -> str:
     response: ItemPublicTokenExchangeResponse = client.item_public_token_exchange(
         request
     )
+    logger.info(response.to_str())  # FIXME: remove this, contains sensitive info
     access_token: str = response.access_token
     return access_token
