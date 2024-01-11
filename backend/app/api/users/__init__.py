@@ -42,6 +42,7 @@ def signup(db: DBSession, user_in: UserApiIn) -> UserApiOut:
     Create new user without the need to be logged in.
     """
     user_in.is_superuser = False
+    raise HTTPException(status.HTTP_418_IM_A_TEAPOT)
     try:
         user_out = CRUDUser.create(db, obj_in=user_in)
     except IntegrityError:
