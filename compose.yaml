@@ -30,9 +30,6 @@ services:
       context: .
       dockerfile: nginx/Dockerfile
     image: alexandreamat/quartos-nginx:latest
-    environment:
-      - BACKEND_HOST=backend
-      - BACKEND_PORT=8000
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
     ports:
