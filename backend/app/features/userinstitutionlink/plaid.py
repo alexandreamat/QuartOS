@@ -13,8 +13,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from typing import TYPE_CHECKING, Iterable
 from datetime import date
+import sqlalchemy
 
 from sqlmodel import Session
 from pydantic import BaseModel
@@ -47,6 +49,8 @@ from .models import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
 if TYPE_CHECKING:
     from app.features.institution import InstitutionPlaidOut
     from app.features.user import UserApiOut
+
+logger = logging.getLogger(__name__)
 
 
 class __TransactionsSyncResult(BaseModel):
@@ -169,7 +173,10 @@ def sync_transactions(
             db, user_institution_link_out, replacement_pattern_out
         )
         for account_id, transaction_in in sync_result.added:
-            CRUDAccount.create_movement_plaid(db, account_id, transaction_in)
+            try:
+                CRUDAccount.create_movement_plaid(db, account_id, transaction_in)
+            except sqlalchemy.exc.IntegrityError:
+                logger.warning("Repeated transaction: %s", str(transaction_in))
         for account_id, transaction_in in sync_result.modified:
             transaction_out = CRUDSyncableTransaction.read_by_plaid_id(
                 db, transaction_in.plaid_id
