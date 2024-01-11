@@ -23,6 +23,9 @@ on:
 
 jobs:
   cd:
+    runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
       - uses: ./.github/workflows/build-frontend.yaml
       - uses: ./.github/workflows/deploy-frontend.yaml
