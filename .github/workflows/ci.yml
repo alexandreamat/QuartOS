@@ -19,12 +19,10 @@ on:
   pull_request:
     branches:
       - main
+
   workflow_dispatch:
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - uses: ./.github/workflows/build-frontend.yaml
+  build-frontend:
+    name: Build Front-end
+    uses: ./.github/workflows/build-frontend.yml
