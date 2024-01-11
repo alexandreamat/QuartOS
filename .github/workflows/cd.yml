@@ -31,3 +31,4 @@ jobs:
     name: Deploy Front-end
     needs: [build-frontend]
     uses: ./.github/workflows/deploy-frontend.yml
+    secrets: inherit
