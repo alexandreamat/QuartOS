@@ -1,4 +1,5 @@
 services:
+
   db:
     image: postgres
     restart: always
@@ -15,7 +16,7 @@ services:
 
   backend:
     build: ./backend
-    image: alexandreamat/quartos:latest
+    image: alexandreamat/quartos-backend:latest
     restart: always
     depends_on:
       - db
@@ -23,5 +24,16 @@ services:
       - ./backend/.env
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    image: alexandreamat/quartos-nginx:latest
+    environment:
+      - BACKEND_HOST=backend
+      - BACKEND_PORT=8000
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
     ports:
-      - 8000:80
+      - 80:80
