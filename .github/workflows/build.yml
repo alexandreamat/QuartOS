@@ -37,7 +37,6 @@ jobs:
         run: echo "dir=$(npm config get cache)" >> ${GITHUB_OUTPUT}
 
       - uses: actions/cache@v3
-        id: npm-cache
         with:
           path: ${{ steps.npm-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -48,7 +47,16 @@ jobs:
         run: npm install
         working-directory: frontend
 
+      - uses: actions/cache@v3
+        id: npm-build-cache
+        with:
+          path: frontend/build
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/src/**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Build Frontend
+        if: steps.npm-build-cache.outputs.cache-hit != 'true'
         run: npm run build
         working-directory: frontend
         env:
