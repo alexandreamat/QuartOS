@@ -33,18 +33,21 @@ jobs:
           path: build
 
       - name: Cleanup VPS deployment directory
-        env:
-          PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-        run: |
-          echo "$PRIVATE_KEY" > ~/.ssh/id_rsa
-          ssh ${{ vars.VPS_USERNAME }}@${{ vars.VPS_HOST }} "rm -rf /var/www/quartos/*"
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          script: rm -rf /var/www/quartos/*
 
-      - name: Deploy to VPS
-        env:
-          PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-        run: |
-          echo "$PRIVATE_KEY" > ~/.ssh/id_rsa
-          scp -r ./build/* ${{ vars.VPS_USERNAME }}@${{ vars.VPS_HOST }}:/var/www/quartos/
+      - name: copy file via ssh password
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.VPS_HOST }}
+          username: ${{ vars.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          source: ./build/*
+          target: /var/www/quartos/
 
       - name: Cleanup local build artifacts
         run: |
