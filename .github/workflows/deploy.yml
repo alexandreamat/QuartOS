@@ -51,6 +51,8 @@ jobs:
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/quartos-nginx:latest
           context: nginx
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/quartos-nginx:latest
+          cache-to: type=inline
 
       - name: Build and push back-end
         uses: docker/build-push-action@v4
