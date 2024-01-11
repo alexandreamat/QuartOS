@@ -15,6 +15,9 @@
 
 name: Build Frontend
 
+on:
+  workflow_call:
+
 jobs:
   build:
     runs-on: ubuntu-latest
