@@ -26,6 +26,8 @@ services:
       - ./backend/.env
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
+    volumes:
+      - ./backend/exchange_rates_cache.sqlite:/app/exchange_rates_cache.sqlite
     
   nginx:
     build:
