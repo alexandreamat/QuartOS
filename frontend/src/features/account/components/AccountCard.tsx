@@ -54,11 +54,9 @@ export default function AccountCard(props: {
 
   return (
     <Card color="teal">
-      <Uploader
-        open={isUploaderOpen}
-        account={props.account}
-        onClose={handleCloseUploader}
-      />
+      {isUploaderOpen && (
+        <Uploader account={props.account} onClose={handleCloseUploader} />
+      )}
       <Card.Content>
         <InstitutionLogo
           floated="right"
