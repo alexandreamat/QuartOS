@@ -34,12 +34,7 @@ export default function PLReport() {
 
   const aggregateQuery =
     api.endpoints.getAggregateUsersMeMovementsAggregatesStartDateEndDateGet.useQuery(
-      startDate && endDate
-        ? {
-            startDate: startDate,
-            endDate: endDate,
-          }
-        : skipToken,
+      startDate && endDate ? { startDate, endDate } : skipToken,
     );
 
   function handleClickIncome() {
