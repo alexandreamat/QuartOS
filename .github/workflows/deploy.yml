@@ -61,8 +61,8 @@ jobs:
           push: true
           tags: ${{ vars.DOCKERHUB_USERNAME }}/quartos-backend:latest
           context: backend
-          cache-from: type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/quartos-backend:latest
-          cache-to: type=inline
+          cache-from: type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/quartos-backend:buildcache
+          cache-to: type=registry,ref=${{ vars.DOCKERHUB_USERNAME }}/quartos-backend:buildcache,mode=max
 
       - name: copy file via ssh password
         uses: appleboy/scp-action@v0.1.7
