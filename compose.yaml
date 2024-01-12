@@ -36,7 +36,6 @@ services:
     image: alexandreamat/quartos-nginx:latest
     depends_on:
       - backend
-      - portainer
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
     ports:
