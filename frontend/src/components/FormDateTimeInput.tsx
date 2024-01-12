@@ -46,7 +46,7 @@ export default function FormDateTimeInput(props: {
       placeholder={label && "Enter " + label}
       value={dateStr}
       iconPosition="left"
-      onChange={(e: React.SyntheticEvent<HTMLElement>, data: any) => {
+      onChange={(e, data) => {
         const newDate = stringToDate(data.value);
         if (isNaN(newDate.getTime())) return;
         props.field.set(newDate);
