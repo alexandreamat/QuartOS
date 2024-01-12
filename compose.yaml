@@ -11,6 +11,8 @@ services:
   adminer:
     image: adminer
     restart: always
+    depends_on:
+      - db
     ports:
       - 8080:8080
 
@@ -30,6 +32,8 @@ services:
       context: .
       dockerfile: nginx/Dockerfile
     image: alexandreamat/quartos-nginx:latest
+    depends_on:
+      - backend
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
     ports:
