@@ -23,7 +23,7 @@ import { SemanticICONS } from "semantic-ui-react";
 import TransactionDeserialisers from "features/transactiondeserialiser";
 import Movements from "features/movements";
 import PL from "features/pl";
-import plDetail from "features/pl/components/PLReport";
+import plReport from "features/pl/components/PLReport";
 
 export interface RouteI {
   path: string;
@@ -84,7 +84,7 @@ export default [
         path: "/:startDate/:endDate",
         label: "P&L Statement Detail",
         icon: "file alternate",
-        component: plDetail,
+        component: plReport,
         requires_superuser: false,
       },
     ],
