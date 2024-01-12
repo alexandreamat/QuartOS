@@ -50,7 +50,7 @@ async def add_process_time_header(
     response = await call_next(request)
     process_time = time.time() - start_time
     logger.debug(
-        "Called %s %s: %s (%.0f s).",
+        "Called %s %s: %s (%.2f s).",
         request.method,
         request.url.path,
         response.status_code,
