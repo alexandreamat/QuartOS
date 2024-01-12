@@ -25,7 +25,7 @@ from app.settings import settings
 from app.api import router
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(levelname)s %(asctime)s - %(pathname)s:%(lineno)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     force=True,
@@ -45,9 +45,16 @@ async def add_process_time_header(
     request: Request, call_next: Callable[[Request], Any]
 ) -> Any:
     start_time = time.time()
+    logger.debug("Calling %s %s...", request.method, request.url.path)
     response = await call_next(request)
     process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
+    logger.debug(
+        "Called %s %s: %s (%.0f s).",
+        request.method,
+        request.url.path,
+        response.status_code,
+        process_time,
+    )
     return response
 
 
