@@ -12,9 +12,9 @@ COPY Pipfile Pipfile.lock /app/
 
 RUN pipenv install --deploy --ignore-pipfile
 
-RUN apt-get remove -y gcc libc-dev && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get remove -y gcc libc-dev && \
+#     apt-get autoremove -y && \
+#     rm -rf /var/lib/apt/lists/*
 
 COPY . /app
 
