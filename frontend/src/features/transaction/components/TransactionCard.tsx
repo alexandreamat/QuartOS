@@ -56,19 +56,11 @@ export function TransactionCard(
     props.preview ? props.accountId : props.transaction?.account_id,
   );
 
-  const movementQuery =
-    api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
-      props.preview || !props.transaction
-        ? skipToken
-        : props.transaction.movement_id,
-    );
-
   const uploadTransactionFile = useUploadTransactionFile(
     props.preview ? undefined : props.transaction,
   );
 
   const account = accountQueries.account;
-  const movement = movementQuery.data;
 
   async function handleFileDrop(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
@@ -160,10 +152,7 @@ export function TransactionCard(
               <ActionButton
                 tooltip="See Movement"
                 icon="arrows alternate horizontal"
-                content={movement?.transactions.length.toFixed(0)}
                 onClick={() => setMovementOpen(true)}
-                loading={movementQuery.isLoading}
-                negative={movementQuery.isError}
                 disabled={props.loading}
               />
 
