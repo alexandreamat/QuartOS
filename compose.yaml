@@ -27,6 +27,14 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
 
+  portainer:
+    image: portainer/portainer
+    restart: always
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    
   nginx:
     build:
       context: .
@@ -34,6 +42,7 @@ services:
     image: alexandreamat/quartos-nginx:latest
     depends_on:
       - backend
+      - portainer
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
     ports:
