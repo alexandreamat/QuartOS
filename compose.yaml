@@ -26,14 +26,6 @@ services:
       - ./backend/.env
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
-
-  portainer:
-    image: portainer/portainer
-    restart: always
-    ports:
-      - 9000:9000
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     
   nginx:
     build:
