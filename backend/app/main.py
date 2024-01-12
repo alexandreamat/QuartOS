@@ -25,13 +25,14 @@ from app.settings import settings
 from app.api import router
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(levelname)s %(asctime)s - %(pathname)s:%(lineno)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     force=True,
 )
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 initial_data.main()
 
