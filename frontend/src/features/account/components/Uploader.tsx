@@ -36,7 +36,6 @@ import { TransactionCard } from "features/transaction/components/TransactionCard
 import { useEffect, useMemo, useState } from "react";
 
 export default function Uploader(props: {
-  open: boolean;
   account: AccountApiOut;
   onClose: () => void;
 }) {
@@ -131,7 +130,7 @@ export default function Uploader(props: {
   };
 
   return (
-    <Modal open={props.open} onClose={props.onClose}>
+    <Modal open onClose={props.onClose}>
       <Modal.Header>Upload Transactions File</Modal.Header>
       <Modal.Content>
         <FlexColumn style={{ height: "calc(80vh - 10em)" }}>
