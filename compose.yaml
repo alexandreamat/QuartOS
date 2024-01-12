@@ -27,7 +27,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
     volumes:
-      - ./backend/exchange_rates_cache.sqlite:/app/exchange_rates_cache.sqlite
+      - ./backend/http_cache.sqlite:/app/http_cache.sqlite
     
   nginx:
     build:
