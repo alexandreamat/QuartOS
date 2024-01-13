@@ -36,6 +36,8 @@ export default function Login() {
 
   const [username, setusername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const isAuthenticated = useSelector(
     (state: RootState) => state.auth.current_user,
   );
@@ -67,7 +69,7 @@ export default function Login() {
           Log in to your account
         </Header>
         <Form size="large">
-          <Segment>
+          <Segment textAlign="left">
             <Form.Input
               fluid
               icon="user"
@@ -85,12 +87,19 @@ export default function Login() {
               icon="lock"
               iconPosition="left"
               placeholder="Password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setPassword(e.currentTarget.value);
               }}
               required
+            />
+            <Form.Checkbox
+              label="Show password"
+              checked={showPassword}
+              onChange={(e, data) => {
+                setShowPassword(data.checked || false);
+              }}
             />
             <QueryErrorMessage query={loginResult} />
             <Button
