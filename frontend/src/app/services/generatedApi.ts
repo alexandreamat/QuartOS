@@ -1330,8 +1330,6 @@ export type InstitutionalAccount = {
   id: number;
   type: InstitutionalAccountType;
   mask: string;
-  bic?: string;
-  iban?: string;
   userinstitutionlink_id: number;
 };
 export type NonInstitutionalAccountType =
@@ -1356,8 +1354,6 @@ export type AccountApiOut = {
 export type InstitutionalAccount2 = {
   type: InstitutionalAccountType;
   mask: string;
-  bic?: string;
-  iban?: string;
 };
 export type NonInstitutionalAccount2 = {
   type: NonInstitutionalAccountType;

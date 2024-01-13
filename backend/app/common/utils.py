@@ -16,12 +16,10 @@
 import re
 from typing import TypeVar
 
+from sqlalchemy import String
 from sqlalchemy.sql.elements import ColumnClause
 from sqlmodel import or_, and_
 from sqlmodel.sql.expression import SelectOfScalar
-from sqlalchemy import String
-
-from .models import Base
 
 BaseType = TypeVar("BaseType", bound="Base")
 
