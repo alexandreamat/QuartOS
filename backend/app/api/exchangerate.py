@@ -15,6 +15,7 @@
 
 from decimal import Decimal
 from datetime import date
+import logging
 
 import requests
 from fastapi import APIRouter, HTTPException, status
@@ -23,10 +24,12 @@ from app.features.exchangerate import get_exchange_rate
 
 router = APIRouter()
 
+logger = logging.getLogger(__name__)
+
 
 @router.get("/")
 def read_exchange_rate(from_currency: str, to_currency: str, date: date) -> Decimal:
     try:
         return get_exchange_rate(from_currency, to_currency, date)
-    except requests.HTTPError:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+    except requests.HTTPError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(e))

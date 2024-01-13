@@ -15,8 +15,10 @@
 
 import json
 import logging
+import time
+from typing import Any, Callable
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 
 from app import initial_data
 from app.settings import settings
@@ -30,12 +32,32 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 initial_data.main()
 
 app = FastAPI(title=settings.PROJECT_NAME, openapi_url="/openapi.json")
 
 app.include_router(router)
+
+
+@app.middleware("http")
+async def add_process_time_header(
+    request: Request, call_next: Callable[[Request], Any]
+) -> Any:
+    start_time = time.time()
+    logger.debug("Calling %s %s...", request.method, request.url.path)
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    logger.debug(
+        "Called %s %s: %s (%.2f s).",
+        request.method,
+        request.url.path,
+        response.status_code,
+        process_time,
+    )
+    return response
+
 
 with open("openapi.json", "w") as file:
     json.dump(app.openapi(), file, indent=2)

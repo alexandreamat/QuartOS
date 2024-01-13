@@ -12,12 +12,12 @@ COPY Pipfile Pipfile.lock /app/
 
 RUN pipenv install --deploy --ignore-pipfile
 
-RUN apt-get remove -y gcc libc-dev && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get remove -y gcc libc-dev && \
+#     apt-get autoremove -y && \
+#     rm -rf /var/lib/apt/lists/*
 
 COPY . /app
 
 ENTRYPOINT ["pipenv", "run", "./entrypoint.sh"]
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--root-path=/api/"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--root-path=/api"]
