@@ -155,10 +155,10 @@ export default function Form(props: {
             query={deleteMovementResult}
           />
         )}
-        {transactionsModalOpen && (
+        {transactionsModalOpen && movementQuery.data && (
           <AddTransactionsModal
             onClose={() => setTransactionsModalOpen(false)}
-            movementId={movementId}
+            movement={movementQuery.data}
           />
         )}
         <Button

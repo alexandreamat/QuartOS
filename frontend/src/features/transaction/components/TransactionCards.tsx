@@ -60,6 +60,7 @@ export default function TransactionCards(props: {
     <TransactionCard
       transaction={t}
       checked={t && props.checkboxes.checked.has(t.id)}
+      checkBoxDisabled={t && props.checkboxes.disabled.has(t.id)}
       onCheckedChange={
         props.isMultipleChoice && t
           ? (x) => props.checkboxes.onChange(t.id, x)

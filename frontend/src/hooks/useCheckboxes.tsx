@@ -17,10 +17,16 @@ import { useState } from "react";
 
 export type Checkboxes = ReturnType<typeof useCheckboxes>;
 
-export function useCheckboxes() {
-  const [checked, setChecked] = useState(new Set<number>());
+export function useCheckboxes(
+  initalChecked?: Set<number>,
+  disabled?: Set<number>,
+) {
+  const disabled_ = new Set<number>(disabled);
+  const [checked, setChecked] = useState(new Set<number>(initalChecked));
 
   function handleChange(id: number, checked: boolean) {
+    if (disabled_.has(id)) return;
+
     setChecked((x) => {
       if (checked) x.add(id);
       else x.delete(id);
@@ -32,5 +38,10 @@ export function useCheckboxes() {
     setChecked(new Set());
   }
 
-  return { checked, onChange: handleChange, reset };
+  return {
+    checked,
+    disabled: disabled_,
+    onChange: handleChange,
+    reset,
+  };
 }
