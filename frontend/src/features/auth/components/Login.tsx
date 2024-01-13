@@ -13,12 +13,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { BodyLoginAuthLoginPost, api } from "app/services/api";
-import { RootState, useAppDispatch } from "app/store";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Button,
   Form,
@@ -27,40 +24,18 @@ import {
   Message,
   Segment,
 } from "semantic-ui-react";
-import { logMutationError } from "utils/error";
-import { setCredentials } from "../slice";
+import { useLogin } from "../hooks";
 
 export default function Login() {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-
   const [username, setusername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const isAuthenticated = useSelector(
-    (state: RootState) => state.auth.current_user,
-  );
-
-  const [login, loginResult] = api.endpoints.loginAuthLoginPost.useMutation();
+  const [login, loginResult] = useLogin(username, password);
 
   const handleSumit = async () => {
-    const formData = new FormData();
-    formData.append("username", username);
-    formData.append("password", password);
-    try {
-      const token = await login(
-        formData as unknown as BodyLoginAuthLoginPost,
-      ).unwrap();
-      dispatch(setCredentials(token.access_token));
-    } catch (error) {
-      logMutationError(error, loginResult);
-      return;
-    }
-    navigate("/");
+    await login();
   };
-
-  if (isAuthenticated) return <Navigate to="/" />;
 
   return (
     <Grid textAlign="center" style={{ height: "100vh" }} verticalAlign="middle">
