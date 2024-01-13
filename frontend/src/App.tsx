@@ -14,7 +14,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 import {
   Container,
   Grid,
@@ -40,6 +46,7 @@ import { api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
 import Profile from "features/profile";
 import FlexColumn from "components/FlexColumn";
+import FlexRow from "components/FlexRow";
 
 function flattenRoutes(routes?: RouteI[], parent?: RouteI) {
   if (!routes) return [];
@@ -55,32 +62,12 @@ function flattenRoutes(routes?: RouteI[], parent?: RouteI) {
   return flatRoutes;
 }
 
-function Content() {
-  return (
-    <Routes>
-      {flattenRoutes(routes).map((route) => (
-        <Route
-          key={route.label}
-          path={route.path}
-          element={
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-              }}
-            >
-              <Header as="h2">{route.label}</Header>
-              <div style={{ flex: 1, overflow: "hidden", padding: 1 }}>
-                <route.component />
-              </div>
-            </div>
-          }
-        />
-      ))}
+const Content = () => (
+  <Routes>
+    {flattenRoutes(routes).map((route) => (
       <Route
-        key="profile"
-        path="/profile"
+        key={route.label}
+        path={route.path}
         element={
           <div
             style={{
@@ -89,37 +76,54 @@ function Content() {
               height: "100%",
             }}
           >
-            <Header as="h2">Profile</Header>
-            <div style={{ flex: 1, overflow: "hidden" }}>
-              <Profile />
+            <Header as="h2">{route.label}</Header>
+            <div style={{ flex: 1, overflow: "hidden", padding: 1 }}>
+              <route.component />
             </div>
           </div>
         }
       />
-    </Routes>
-  );
-}
+    ))}
+    <Route
+      key="profile"
+      path="/profile"
+      element={
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
+        >
+          <Header as="h2">Profile</Header>
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            <Profile />
+          </div>
+        </div>
+      }
+    />
+    <Route key="default" path="/*" element={<Navigate to="/" />} />
+  </Routes>
+);
 
 function MobileApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden" }}>
-      <Sidebar.Pushable>
-        <Sidebar
-          animation="overlay"
-          direction="left"
-          onHide={() => setSidebarOpen(false)}
-          visible={sidebarOpen}
-        >
-          <SidebarMenu />
-        </Sidebar>
-        <Sidebar.Pusher dimmed={sidebarOpen}>
-          <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-          <Content />
-        </Sidebar.Pusher>
-      </Sidebar.Pushable>
-    </div>
+    <Sidebar.Pushable>
+      <Sidebar
+        animation="overlay"
+        direction="left"
+        onHide={() => setSidebarOpen(false)}
+        visible={sidebarOpen}
+      >
+        <SidebarMenu fluid />
+      </Sidebar>
+      <Sidebar.Pusher dimmed={sidebarOpen}>
+        <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <Content />
+      </Sidebar.Pusher>
+    </Sidebar.Pushable>
   );
 }
 
@@ -127,17 +131,19 @@ function DesktopApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <SidebarMenu style={sidebarOpen ? {} : { display: "none" }} />
-      <FlexColumn style={{ flex: 1 }}>
-        <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <FlexColumn.Auto>
-          <Container style={{ height: "100%" }}>
-            <Content />
-          </Container>
-        </FlexColumn.Auto>
-      </FlexColumn>
-    </div>
+    <FlexRow style={{ height: "100vh" }}>
+      {sidebarOpen && <SidebarMenu />}
+      <FlexRow.Auto>
+        <FlexColumn>
+          <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+          <FlexColumn.Auto>
+            <Container style={{ height: "100%" }}>
+              <Content />
+            </Container>
+          </FlexColumn.Auto>
+        </FlexColumn>
+      </FlexRow.Auto>
+    </FlexRow>
   );
 }
 
@@ -156,7 +162,9 @@ function UnauthenticatedApp() {
 function AuthenticatedApp() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
   const updateMedia = useCallback(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);

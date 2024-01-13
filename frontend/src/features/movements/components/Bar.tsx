@@ -20,6 +20,7 @@ import MenuDropdownAccount from "components/MenuDropdownAccount";
 import MenuNumericRange from "components/MenuNumericRange";
 import MenuCheckbox from "components/MenuCheckbox";
 import { useState } from "react";
+import FlexRow from "components/FlexRow";
 
 export type MovementsBarState = ReturnType<typeof useMovementsBarState>;
 
@@ -44,33 +45,43 @@ export function Bar(props: {
   barState: MovementsBarState;
 }) {
   return (
-    <Menu secondary>
-      <Menu.Item fitted>
-        <Button icon="plus" circular primary onClick={props.onOpenCreateForm} />
-      </Menu.Item>
-      <MenuInputSearch searchState={props.barState.searchState} />
-      <MenuDropdownAccount accountIdState={props.barState.accountIdState} />
-      <MenuDateRange
-        dateGeState={props.barState.startDateState}
-        dateLeState={props.barState.endDateState}
-        isDescendingState={props.barState.isDescendingState}
-      />
-      <MenuNumericRange
-        icon="exchange"
-        valueGeState={props.barState.transactionsGeState}
-        valueLeState={props.barState.transactionsLeState}
-      />
-      <MenuNumericRange
-        icon="dollar"
-        valueGeState={props.barState.amountGeState}
-        valueLeState={props.barState.amountLeState}
-        isAbsState={props.barState.isAmountAbsState}
-        decimal
-        signed
-      />
-      <MenuCheckbox
-        isMultipleChoiceState={props.barState.isMultipleChoiceState}
-      />
-    </Menu>
+    <FlexRow>
+      <FlexRow.Auto>
+        {/* Correct negative margins that would add unnecessary scroll bar */}
+        <Menu secondary style={{ margin: 0 }}>
+          <Menu.Item fitted>
+            <Button
+              icon="plus"
+              circular
+              primary
+              onClick={props.onOpenCreateForm}
+            />
+          </Menu.Item>
+          <MenuInputSearch searchState={props.barState.searchState} />
+          <MenuDropdownAccount accountIdState={props.barState.accountIdState} />
+          <MenuDateRange
+            dateGeState={props.barState.startDateState}
+            dateLeState={props.barState.endDateState}
+            isDescendingState={props.barState.isDescendingState}
+          />
+          <MenuNumericRange
+            icon="exchange"
+            valueGeState={props.barState.transactionsGeState}
+            valueLeState={props.barState.transactionsLeState}
+          />
+          <MenuNumericRange
+            icon="dollar"
+            valueGeState={props.barState.amountGeState}
+            valueLeState={props.barState.amountLeState}
+            isAbsState={props.barState.isAmountAbsState}
+            decimal
+            signed
+          />
+          <MenuCheckbox
+            isMultipleChoiceState={props.barState.isMultipleChoiceState}
+          />
+        </Menu>
+      </FlexRow.Auto>
+    </FlexRow>
   );
 }

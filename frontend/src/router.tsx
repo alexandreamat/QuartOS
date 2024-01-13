@@ -24,6 +24,7 @@ import TransactionDeserialisers from "features/transactiondeserialiser";
 import Movements from "features/movements";
 import PL from "features/pl";
 import plReport from "features/pl/components/PLReport";
+import Dashboard from "features/dashboard";
 
 export interface RouteI {
   path: string;
@@ -36,13 +37,13 @@ export interface RouteI {
 }
 
 export default [
-  // {
-  //   path: "/",
-  //   label: "Account",
-  //   icon: "home",
-  //   component: Dashboard,
-  //   requires_superuser: false,
-  // },
+  {
+    path: "/",
+    label: "Account",
+    icon: "home",
+    component: Dashboard,
+    requires_superuser: false,
+  },
   {
     path: "/institution-links",
     label: "My Institutions",
