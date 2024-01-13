@@ -44,7 +44,7 @@ FlexRow.Auto = (props: {
 }) => (
   <div
     ref={props.reference}
-    style={{ flex: 1, overflow: "auto", ...props.style }}
+    style={{ flex: 1, overflowX: "auto", overflowY: "hidden", ...props.style }}
   >
     {props.children}
   </div>

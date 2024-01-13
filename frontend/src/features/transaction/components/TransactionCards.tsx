@@ -71,7 +71,7 @@ export default function TransactionCards(props: {
   );
 
   return (
-    <Card.Group style={{ margin: 0, overflow: "hidden" }}>
+    <Card.Group style={{ margin: 1, overflow: "hidden" }}>
       <InfiniteScroll
         reference={props.reference}
         endpoint={api.endpoints.readManyUsersMeTransactionsGet}

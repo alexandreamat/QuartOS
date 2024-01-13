@@ -110,7 +110,7 @@ function MobileApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <Sidebar.Pushable>
+    <Sidebar.Pushable style={{ height: "100vh" }}>
       <Sidebar
         animation="overlay"
         direction="left"
@@ -119,9 +119,15 @@ function MobileApp() {
       >
         <SidebarMenu fluid />
       </Sidebar>
-      <Sidebar.Pusher dimmed={sidebarOpen}>
-        <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <Content />
+      <Sidebar.Pusher dimmed={sidebarOpen} style={{ height: "100%" }}>
+        <FlexColumn>
+          <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+          <FlexColumn.Auto>
+            <Container style={{ height: "100%" }}>
+              <Content />
+            </Container>
+          </FlexColumn.Auto>
+        </FlexColumn>
       </Sidebar.Pusher>
     </Sidebar.Pushable>
   );
