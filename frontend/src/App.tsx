@@ -110,22 +110,20 @@ function MobileApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden" }}>
-      <Sidebar.Pushable>
-        <Sidebar
-          animation="overlay"
-          direction="left"
-          onHide={() => setSidebarOpen(false)}
-          visible={sidebarOpen}
-        >
-          <SidebarMenu />
-        </Sidebar>
-        <Sidebar.Pusher dimmed={sidebarOpen}>
-          <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-          <Content />
-        </Sidebar.Pusher>
-      </Sidebar.Pushable>
-    </div>
+    <Sidebar.Pushable>
+      <Sidebar
+        animation="overlay"
+        direction="left"
+        onHide={() => setSidebarOpen(false)}
+        visible={sidebarOpen}
+      >
+        <SidebarMenu fluid />
+      </Sidebar>
+      <Sidebar.Pusher dimmed={sidebarOpen}>
+        <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <Content />
+      </Sidebar.Pusher>
+    </Sidebar.Pushable>
   );
 }
 
