@@ -27,6 +27,7 @@ export default function TopBar(props: { onToggleSidebar: () => void }) {
   const handleLogout = () => {
     dispatch(unsetCredentials());
     dispatch(unsetCurrentUser());
+    dispatch(api.internalActions.resetApiState());
     navigate("/");
   };
 
