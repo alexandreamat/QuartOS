@@ -14,7 +14,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+} from "react-router-dom";
 import {
   Container,
   Grid,
@@ -55,32 +61,12 @@ function flattenRoutes(routes?: RouteI[], parent?: RouteI) {
   return flatRoutes;
 }
 
-function Content() {
-  return (
-    <Routes>
-      {flattenRoutes(routes).map((route) => (
-        <Route
-          key={route.label}
-          path={route.path}
-          element={
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-              }}
-            >
-              <Header as="h2">{route.label}</Header>
-              <div style={{ flex: 1, overflow: "hidden", padding: 1 }}>
-                <route.component />
-              </div>
-            </div>
-          }
-        />
-      ))}
+const Content = () => (
+  <Routes>
+    {flattenRoutes(routes).map((route) => (
       <Route
-        key="profile"
-        path="/profile"
+        key={route.label}
+        path={route.path}
         element={
           <div
             style={{
@@ -89,16 +75,35 @@ function Content() {
               height: "100%",
             }}
           >
-            <Header as="h2">Profile</Header>
-            <div style={{ flex: 1, overflow: "hidden" }}>
-              <Profile />
+            <Header as="h2">{route.label}</Header>
+            <div style={{ flex: 1, overflow: "hidden", padding: 1 }}>
+              <route.component />
             </div>
           </div>
         }
       />
-    </Routes>
-  );
-}
+    ))}
+    <Route
+      key="profile"
+      path="/profile"
+      element={
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
+        >
+          <Header as="h2">Profile</Header>
+          <div style={{ flex: 1, overflow: "hidden" }}>
+            <Profile />
+          </div>
+        </div>
+      }
+    />
+    <Route key="default" path="/*" element={<Navigate to="/" />} />
+  </Routes>
+);
 
 function MobileApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -156,7 +161,9 @@ function UnauthenticatedApp() {
 function AuthenticatedApp() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
   const updateMedia = useCallback(() => {
     setIsMobile(window.innerWidth < 768);
   }, []);
