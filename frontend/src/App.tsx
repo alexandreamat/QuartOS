@@ -131,7 +131,7 @@ function DesktopApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <FlexRow>
+    <FlexRow style={{ height: "100vh" }}>
       {sidebarOpen && <SidebarMenu />}
       <FlexRow.Auto>
         <FlexColumn>
