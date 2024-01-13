@@ -1,5 +1,6 @@
 services:
   db:
+    restart: no
     ports:
       - 5432:5432
       
@@ -8,3 +9,24 @@ services:
     volumes:
       - ./backend:/app
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
+  
+  frontend:
+    build: ./frontend
+    restart: no
+    volumes:
+      - ./frontend:/app
+
+  nginx:
+    depends_on:
+      - frontend
+    volumes:
+      - ./nginx/etc/nginx/conf.d/dev.conf:/etc/nginx/conf.d/default.conf
+
+  codegen:
+    build: ./frontend
+    depends_on:
+      - nginx
+    volumes:
+      - ./backend/openapi.json:/backend/openapi.json
+      - ./frontend:/app
+    command: ["npm", "run", "codegen:watch"]
