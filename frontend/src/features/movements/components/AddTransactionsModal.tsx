@@ -13,10 +13,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useTransactionBarState } from "features/transaction/components/Bar";
 import { Button, Modal } from "semantic-ui-react";
-import { api } from "app/services/api";
+import { MovementApiOut, api } from "app/services/api";
 import { logMutationError } from "utils/error";
 import TransactionBar from "features/transaction/components/Bar";
 import TransactionCards from "features/transaction/components/TransactionCards";
@@ -25,30 +25,38 @@ import FlexColumn from "components/FlexColumn";
 
 export default function AddTransactionsModal(props: {
   onClose: () => void;
-  movementId?: number;
+  movement: MovementApiOut;
 }) {
+  const initialTransactions = new Set(
+    props.movement.transactions.map((t) => t.id),
+  );
+
   const reference = useRef<HTMLDivElement | null>(null);
 
   const barState = useTransactionBarState();
-  const checkboxes = useCheckboxes();
+  const checkboxes = useCheckboxes(initialTransactions, initialTransactions);
 
   const [addTransactions, addTransactionsResult] =
     api.endpoints.addTransactionsUsersMeMovementsMovementIdTransactionsPut.useMutation();
 
+  // Refactor useCheckboxes so we don't need this hack
+  const additions = [
+    ...new Set(
+      [...checkboxes.checked].filter((x) => !checkboxes.disabled.has(x)),
+    ),
+  ];
+
   async function handleSubmit() {
-    if (props.movementId) {
-      try {
-        await addTransactions({
-          movementId: props.movementId,
-          body: [...checkboxes.checked],
-        }).unwrap();
-      } catch (error) {
-        logMutationError(error, addTransactionsResult);
-        return;
-      }
-    } else {
-      // create one movement from many transactions
+    try {
+      await addTransactions({
+        movementId: props.movement.id,
+        body: [...additions],
+      }).unwrap();
+    } catch (error) {
+      logMutationError(error, addTransactionsResult);
+      return;
     }
+    props.onClose();
   }
 
   return (
@@ -72,9 +80,9 @@ export default function AddTransactionsModal(props: {
       <Modal.Actions>
         <Button content="Cancel" onClick={props.onClose} />
         <Button
-          disabled={checkboxes.checked.size < 1}
-          content={`Add ${checkboxes.checked.size} ${
-            checkboxes.checked.size === 1 ? "transaction" : "transactions"
+          disabled={additions.length < 1}
+          content={`Add ${additions.length} ${
+            additions.length === 1 ? "transaction" : "transactions"
           } to the movement`}
           labelPosition="right"
           icon="checkmark"
