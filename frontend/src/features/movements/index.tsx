@@ -179,7 +179,7 @@ export default function Movements() {
       />
       <Bar onOpenCreateForm={handleOpenCreateForm} barState={barState} />
       <FlexColumn.Auto reference={reference}>
-        <Card.Group style={{ margin: 0 }}>
+        <Card.Group style={{ margin: 1 }}>
           <InfiniteScroll
             itemRenderer={CardGenerator}
             endpoint={api.endpoints.readManyUsersMeMovementsGet}

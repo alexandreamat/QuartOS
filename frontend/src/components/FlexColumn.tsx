@@ -35,7 +35,7 @@ FlexColumn.Auto = (props: {
 }) => (
   <div
     ref={props.reference}
-    style={{ flex: 1, padding: 1, overflow: "auto", ...props.style }}
+    style={{ flex: 1, overflowY: "auto", overflowX: "hidden", ...props.style }}
   >
     {props.children}
   </div>
