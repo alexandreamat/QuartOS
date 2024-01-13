@@ -15,19 +15,16 @@
 
 import React from "react";
 import { Icon, Menu, MenuItem } from "semantic-ui-react";
-import { useAppDispatch } from "app/store";
 import { useNavigate } from "react-router-dom";
-import { unsetCredentials, unsetCurrentUser } from "features/auth/slice";
 import { api } from "app/services/api";
+import { useLogout } from "features/auth/hooks";
 
 export default function TopBar(props: { onToggleSidebar: () => void }) {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const logout = useLogout();
 
   const handleLogout = () => {
-    dispatch(unsetCredentials());
-    dispatch(unsetCurrentUser());
-    navigate("/");
+    logout();
   };
 
   const handleNameClick = () => {

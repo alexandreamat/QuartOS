@@ -21,6 +21,7 @@ import { Menu } from "semantic-ui-react";
 import MenuCheckbox from "components/MenuCheckbox";
 import { useState } from "react";
 import { UseStateType } from "types";
+import FlexRow from "components/FlexRow";
 
 export type TransactionsBarState = ReturnType<typeof useTransactionBarState>;
 
@@ -42,25 +43,30 @@ export default function Bar(props: {
   isMultipleChoiceState?: UseStateType<boolean>;
 }) {
   return (
-    <Menu secondary>
-      <MenuInputSearch searchState={props.barState.search} />
-      <MenuDropdownAccount accountIdState={props.barState.accountId} />
-      <MenuDateRange
-        dateGeState={props.barState.timestampGe}
-        dateLeState={props.barState.timestampLe}
-        isDescendingState={props.barState.isDescending}
-      />
-      <MenuNumericRange
-        icon="dollar"
-        valueGeState={props.barState.amountGe}
-        valueLeState={props.barState.amountLe}
-        isAbsState={props.barState.isAmountAbs}
-        signed
-        decimal
-      />
-      {props.isMultipleChoiceState && (
-        <MenuCheckbox isMultipleChoiceState={props.isMultipleChoiceState} />
-      )}
-    </Menu>
+    <FlexRow>
+      <FlexRow.Auto>
+        {/* Correct negative margins that would add unnecessary scroll bar */}
+        <Menu secondary style={{ margin: 0 }}>
+          <MenuInputSearch searchState={props.barState.search} />
+          <MenuDropdownAccount accountIdState={props.barState.accountId} />
+          <MenuDateRange
+            dateGeState={props.barState.timestampGe}
+            dateLeState={props.barState.timestampLe}
+            isDescendingState={props.barState.isDescending}
+          />
+          <MenuNumericRange
+            icon="dollar"
+            valueGeState={props.barState.amountGe}
+            valueLeState={props.barState.amountLe}
+            isAbsState={props.barState.isAmountAbs}
+            signed
+            decimal
+          />
+          {props.isMultipleChoiceState && (
+            <MenuCheckbox isMultipleChoiceState={props.isMultipleChoiceState} />
+          )}
+        </Menu>
+      </FlexRow.Auto>
+    </FlexRow>
   );
 }
