@@ -54,8 +54,6 @@ class _AccountBase(SQLModel):
 
         type: InstitutionalAccountType
         mask: str
-        bic: str | None
-        iban: str | None
 
     class NonInstitutionalAccount(SQLModel):
         class NonInstitutionalAccountType(str, Enum):

@@ -34,14 +34,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def __fetch_auth_numbers(access_token: str) -> dict[str, tuple[str, str]]:
-    request = AuthGetRequest(access_token=access_token)
-    response: AuthGetResponse = client.auth_get(request)
-    numbers: AuthGetNumbers = response.numbers
-    international: list[NumbersInternational] = numbers.international
-    return {number.account_id: (number.bic, number.iban) for number in international}
-
-
 def fetch_accounts(
     user_institution_link: "UserInstitutionLinkPlaidOut",
 ) -> Iterable[AccountPlaidIn]:
@@ -50,15 +42,7 @@ def fetch_accounts(
     logger.info(response.to_str())
     accounts: list[AccountBase] = response.accounts
 
-    numbers = __fetch_auth_numbers(user_institution_link.access_token)
-
     for account in accounts:
-        try:
-            bic = numbers[account.account_id][0]
-            iban = numbers[account.account_id][1]
-        except:
-            bic = None
-            iban = None
         yield AccountPlaidIn(
             institutionalaccount=AccountPlaidIn.InstitutionalAccount(
                 plaid_id=account.account_id,
@@ -66,8 +50,6 @@ def fetch_accounts(
                 mask=account.mask or "",
                 type=account.type.value,
                 userinstitutionlink_id=user_institution_link.id,
-                bic=bic,
-                iban=iban,
             ),
             name=account.name,
             currency_code=account.balances.iso_currency_code,
