@@ -13,8 +13,6 @@ services:
     restart: always
     depends_on:
       - db
-    ports:
-      - 8080:8080
 
   backend:
     build: ./backend
@@ -26,7 +24,9 @@ services:
       - ./backend/.env
     environment:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
-
+    volumes:
+      - ./backend/http_cache.sqlite:/app/http_cache.sqlite
+    
   nginx:
     build:
       context: .
@@ -34,6 +34,7 @@ services:
     image: alexandreamat/quartos-nginx:latest
     depends_on:
       - backend
+      - adminer
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
     ports:
