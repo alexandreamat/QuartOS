@@ -46,6 +46,7 @@ import { api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
 import Profile from "features/profile";
 import FlexColumn from "components/FlexColumn";
+import FlexRow from "components/FlexRow";
 
 function flattenRoutes(routes?: RouteI[], parent?: RouteI) {
   if (!routes) return [];
@@ -132,17 +133,19 @@ function DesktopApp() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <SidebarMenu style={sidebarOpen ? {} : { display: "none" }} />
-      <FlexColumn style={{ flex: 1 }}>
-        <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <FlexColumn.Auto>
-          <Container style={{ height: "100%" }}>
-            <Content />
-          </Container>
-        </FlexColumn.Auto>
-      </FlexColumn>
-    </div>
+    <FlexRow>
+      {sidebarOpen && <SidebarMenu />}
+      <FlexRow.Auto>
+        <FlexColumn>
+          <TopBar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+          <FlexColumn.Auto>
+            <Container style={{ height: "100%" }}>
+              <Content />
+            </Container>
+          </FlexColumn.Auto>
+        </FlexColumn>
+      </FlexRow.Auto>
+    </FlexRow>
   );
 }
 
