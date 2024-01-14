@@ -13,8 +13,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any
+import logging
+from typing import TYPE_CHECKING
 import base64
+
 
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
@@ -34,6 +36,8 @@ from app.common.models import UrlType, ColorType
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLink
 
+logger = logging.getLogger(__name__)
+
 
 class __InstitutionBase(SQLModel):
     name: str
@@ -43,7 +47,7 @@ class __InstitutionBase(SQLModel):
 
 
 class InstitutionApiOut(__InstitutionBase, SyncableBase):
-    logo_base64: str | None
+    logo_base64: str | None = None
     is_synced: bool
     transactiondeserialiser_id: int | None
     replacementpattern_id: int | None
@@ -83,5 +87,6 @@ class Institution(__InstitutionBase, SyncableBase, table=True):
     def is_synced(self) -> bool:
         return self.plaid_id is not None
 
+    @property
     def logo_base64(self) -> str | None:
         return base64.b64encode(self.logo).decode() if self.logo else None

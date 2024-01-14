@@ -13,14 +13,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any
+from datetime import date
 from decimal import Decimal
 from enum import Enum
-from datetime import date
+from typing import TYPE_CHECKING, Any
 
 from sqlmodel import Field, Relationship, SQLModel, Session
 from sqlmodel.sql.expression import SelectOfScalar
-from pydantic import WithJsonSchema
 
 from app.common.models import (
     Base,
@@ -30,10 +29,9 @@ from app.common.models import (
     SyncedBase,
     BaseType,
 )
-
+from app.features.movement import Movement
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser import TransactionDeserialiser
-from app.features.movement import Movement
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -66,17 +64,6 @@ class _AccountBase(SQLModel):
     initial_balance: Decimal
     name: str
 
-    @root_validator()
-    def only_one_type_allowed(
-        cls,
-        values: dict[str, Any],
-    ) -> dict[str, Any]:
-        institutionalaccount = values.get("institutionalaccount")
-        noninstitutionalaccount = values.get("noninstitutionalaccount")
-        if bool(institutionalaccount) is bool(noninstitutionalaccount):
-            raise ValueError("One and only one account must be defined")
-        return values
-
 
 class AccountApiIn(_AccountBase):
     class InstitutionalAccount(_AccountBase.InstitutionalAccount):
@@ -85,8 +72,8 @@ class AccountApiIn(_AccountBase):
     class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount):
         ...
 
-    institutionalaccount: InstitutionalAccount | None
-    noninstitutionalaccount: NonInstitutionalAccount | None
+    institutionalaccount: InstitutionalAccount | None = None
+    noninstitutionalaccount: NonInstitutionalAccount | None = None
 
 
 class AccountApiOut(_AccountBase, Base):

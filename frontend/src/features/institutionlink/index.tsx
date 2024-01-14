@@ -175,9 +175,11 @@ export default function InstitutionsLinks() {
 
   if (institutionsLinksQuery.isLoading) return <Loader active size="huge" />;
 
+  if (institutionsLinksQuery.isError)
+    return <QueryErrorMessage query={institutionsLinksQuery} />;
+
   return (
     <>
-      <QueryErrorMessage query={institutionsLinksQuery} />
       <InstitutionLinksTable
         onOpenCreateForm={handleOpenCreateForm}
         onOpenEditForm={handleOpenEditForm}

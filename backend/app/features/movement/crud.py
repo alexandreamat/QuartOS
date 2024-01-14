@@ -68,9 +68,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         cls, db: Session, id: int, currency_code: CurrencyCode = CurrencyCode("USD")
     ) -> MovementApiOut:
         movement = Movement.read(db, id)
-        return cls.out_model.model_validate(
-            movement.model_dump, update={"amount": movement.get_amount(currency_code)}
-        )
+        return cls.out_model.model_validate(movement)
 
     @classmethod
     def add_transaction(
@@ -98,9 +96,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         old_movement = Movement.read(db, old_movement_id)
         if not old_movement.transactions:
             cls.delete(db, old_movement_id)
-        return MovementApiOut.model_validate(
-            movement.model_dump, update={"amount": movement.get_amount(currency_code)}
-        )
+        return MovementApiOut.model_validate(movement)
 
     @classmethod
     def add_transactions(
