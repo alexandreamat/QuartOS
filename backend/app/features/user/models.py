@@ -47,6 +47,7 @@ class UserApiIn(__UserBase):
 
 class User(__UserBase, Base, table=True):
     hashed_password: str
+    email: str
 
     institution_links: list[UserInstitutionLink] = Relationship(
         back_populates="user",

@@ -19,7 +19,6 @@ from sqlmodel import Session
 
 from app.common.crud import CRUDBase
 from app.common.models import CurrencyCode
-
 from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
@@ -27,7 +26,6 @@ from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
 )
-
 from .models import Movement, MovementApiIn, MovementApiOut
 
 
@@ -70,9 +68,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         cls, db: Session, id: int, currency_code: CurrencyCode = CurrencyCode("USD")
     ) -> MovementApiOut:
         movement = Movement.read(db, id)
-        return cls.out_model.from_orm(
-            movement, {"amount": movement.get_amount(currency_code)}
-        )
+        return cls.out_model.model_validate(movement)
 
     @classmethod
     def add_transaction(
@@ -100,9 +96,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         old_movement = Movement.read(db, old_movement_id)
         if not old_movement.transactions:
             cls.delete(db, old_movement_id)
-        return MovementApiOut.from_orm(
-            movement, {"amount": movement.get_amount(currency_code)}
-        )
+        return MovementApiOut.model_validate(movement)
 
     @classmethod
     def add_transactions(
@@ -137,7 +131,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         cls, db: Session, movement_id: int
     ) -> Iterable[TransactionApiOut]:
         for t in Movement.read(db, movement_id).transactions:
-            yield TransactionApiOut.from_orm(t)
+            yield TransactionApiOut.model_validate(t)
 
     @classmethod
     def update_transaction(
@@ -155,7 +149,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         )
         if not movement.transactions:
             cls.delete(db, movement.id)
-        return TransactionApiOut.from_orm(transaction_out)
+        return TransactionApiOut.model_validate(transaction_out)
 
     @classmethod
     def delete_transaction(cls, db: Session, id: int, transaction_id: int) -> None:

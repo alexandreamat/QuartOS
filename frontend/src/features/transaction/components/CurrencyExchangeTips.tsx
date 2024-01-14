@@ -26,7 +26,7 @@ function CurrencyExchangeTip(props: {
     props.relatedTransaction.account_id,
   );
 
-  const amount = props.relatedTransaction.amount;
+  const amount = Number(props.relatedTransaction.amount);
   const fromCurrency = accountQuery.data?.currency_code;
   const toCurrency = props.currencyCode;
 
@@ -51,7 +51,10 @@ function CurrencyExchangeTip(props: {
       {renderCurrency(amount, fromCurrency)}
       {toCurrency !== fromCurrency &&
         exchangeRateQuery.isSuccess &&
-        ` = ${renderCurrency(exchangeRateQuery.data * amount, toCurrency)}`}
+        ` = ${renderCurrency(
+          Number(exchangeRateQuery.data) * amount,
+          toCurrency,
+        )}`}
     </Label>
   );
 }

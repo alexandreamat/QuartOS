@@ -75,7 +75,7 @@ def test_create(superuser_client: TestClient, institutions_db: Session) -> None:
         "/api/institutions/",
         json=InstitutionApiIn(
             name="The Best Bank", country_code="ES", url="http://bestbank.eu"
-        ).dict(),
+        ).model_dump(),
     )
     assert response.status_code == 200
     data = response.json()

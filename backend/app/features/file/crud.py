@@ -32,7 +32,7 @@ class CRUDFile(CRUDBase[File, FileApiOut, FileApiIn]):
     def create(cls, db: Session, file_in: FileApiIn, **kwargs: Any) -> FileApiOut:
         file = File.from_schema(file_in, uploaded=datetime.now(timezone.utc), **kwargs)
         file = File.create(db, file)
-        return FileApiOut.from_orm(file)
+        return FileApiOut.model_validate(file)
 
     @classmethod
     def read_data(cls, db: Session, file_id: int) -> bytes:

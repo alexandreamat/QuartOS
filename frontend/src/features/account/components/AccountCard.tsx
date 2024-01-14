@@ -99,7 +99,7 @@ export default function AccountCard(props: {
           />
         )}
         <CurrencyLabel
-          amount={props.account.balance}
+          amount={Number(props.account.balance)}
           currencyCode={props.account.currency_code}
         />
       </Card.Content>

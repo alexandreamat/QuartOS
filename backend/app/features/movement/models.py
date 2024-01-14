@@ -13,14 +13,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import requests
-import re
-from enum import Enum
-from decimal import Decimal
 from datetime import date
-from typing import Iterable, Any
+from decimal import Decimal
+from enum import Enum
+from typing import Iterable, Any, Type, Union, Dict
 
-from sqlmodel import SQLModel, Relationship, col, func, select, asc, desc
+import requests
+from sqlmodel import SQLModel, Relationship, col, func, select, desc, asc
+from sqlmodel.main import _TSQLModel
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base, CurrencyCode
@@ -52,6 +52,26 @@ class MovementApiOut(__MovementBase, Base):
     transactions: list[TransactionApiOut]
     amounts: dict[CurrencyCode, Decimal]
     amount: Decimal
+
+    @classmethod
+    def model_validate(
+        cls: Type[_TSQLModel],
+        obj: Any,
+        *,
+        strict: Union[bool, None] = None,
+        from_attributes: Union[bool, None] = None,
+        context: Union[Dict[str, Any], None] = None,
+        update: Union[Dict[str, Any], None] = None,
+    ) -> _TSQLModel:
+        # TODO: model_validate of SQLModel has a bug, remove when that is fixed
+        return cls(
+            **obj.model_dump(),
+            latest_timestamp=obj.latest_timestamp,
+            earliest_timestamp=obj.earliest_timestamp,
+            transactions=obj.transactions,
+            amounts=obj.amounts,
+            amount=obj.get_amount("USD"),
+        )
 
 
 class MovementApiIn(__MovementBase):
@@ -100,7 +120,7 @@ class Movement(__MovementBase, Base, table=True):
         statement = Transaction.select_transactions(transaction_id, **kwargs)
 
         statement = statement.join(cls)
-        if movement_id is not None:
+        if movement_id:
             statement = statement.where(cls.id == movement_id)
 
         return statement
@@ -154,7 +174,7 @@ class Movement(__MovementBase, Base, table=True):
                         func.count(Transaction.id).label("transaction_count"),
                     ]
                 )
-                .group_by(Transaction.movement_id)
+                .group_by(col(Transaction.movement_id))
                 .subquery()
             )
             statement = statement.join(
@@ -170,7 +190,7 @@ class Movement(__MovementBase, Base, table=True):
                 )
 
         # GROUP BY
-        statement = statement.group_by(Movement.id)
+        statement = statement.group_by(col(Movement.id))
 
         # ORDER BY
         if sort_by is MovementField.TIMESTAMP:
