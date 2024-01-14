@@ -26,6 +26,7 @@ import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import ActionButton from "components/ActionButton";
 import { InstitutionLogo } from "./components/InstitutionLogo";
+import FlexColumn from "components/FlexColumn";
 
 const InstitutionsTable = (props: {
   onOpenEditForm: (x: InstitutionApiOut) => void;
@@ -143,21 +144,23 @@ export default function Institutions() {
   if (institutionsQuery.isError) console.error(institutionsQuery.originalArgs);
 
   return (
-    <>
-      {institutionsQuery.data?.length ? (
-        <InstitutionsTable
-          data={institutionsQuery.data}
-          onOpenCreateForm={handleOpenCreateForm}
-          onOpenEditForm={handleOpenEditForm}
+    <FlexColumn>
+      <FlexColumn.Auto>
+        {institutionsQuery.data?.length ? (
+          <InstitutionsTable
+            data={institutionsQuery.data}
+            onOpenCreateForm={handleOpenCreateForm}
+            onOpenEditForm={handleOpenEditForm}
+          />
+        ) : (
+          <EmptyTablePlaceholder onCreate={handleOpenCreateForm} />
+        )}
+        <InstitutionForm
+          institution={selectedInstitution}
+          open={isModalOpen}
+          onClose={handleClose}
         />
-      ) : (
-        <EmptyTablePlaceholder onCreate={handleOpenCreateForm} />
-      )}
-      <InstitutionForm
-        institution={selectedInstitution}
-        open={isModalOpen}
-        onClose={handleClose}
-      />
-    </>
+      </FlexColumn.Auto>
+    </FlexColumn>
   );
 }
