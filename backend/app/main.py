@@ -13,16 +13,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 import logging
 import time
 from typing import Any, Callable
 
+import uvicorn
 from fastapi import FastAPI, Request
 
 from app import initial_data
-from app.settings import settings
 from app.api import router
+from app.settings import settings
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,8 +36,12 @@ logger.setLevel(logging.DEBUG)
 
 initial_data.main()
 
-app = FastAPI(title=settings.PROJECT_NAME, openapi_url="/openapi.json")
-
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    openapi_url="/openapi.json",
+    root_path_in_servers=True,
+    root_path="/api",
+)
 app.include_router(router)
 
 
@@ -59,5 +63,6 @@ async def add_process_time_header(
     return response
 
 
-with open("openapi.json", "w") as file:
-    json.dump(app.openapi(), file, indent=2)
+# To run PyCharm debugger
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8080)
