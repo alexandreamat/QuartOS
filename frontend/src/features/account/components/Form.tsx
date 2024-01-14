@@ -43,8 +43,8 @@ export default function AccountForm(props: {
   const mask = useFormField("");
   const name = useFormField("");
   const currencyCode = useFormField("");
-  const institutionalType = useFormField("");
-  const nonInstitutionalType = useFormField("");
+  const institutionalType = useFormField<InstitutionalAccountType>();
+  const nonInstitutionalType = useFormField<NonInstitutionalAccountType>();
   const institutionLinkId = useFormField(0);
   const initialBalanceStr = useFormField("");
 
@@ -147,12 +147,12 @@ export default function AccountForm(props: {
       institutionalaccount: isInstitutional.value
         ? {
             mask: mask.value!,
-            type: institutionalType.value! as InstitutionalAccountType,
+            type: institutionalType.value!,
           }
         : undefined,
       noninstitutionalaccount: !isInstitutional.value
         ? {
-            type: nonInstitutionalType.value! as NonInstitutionalAccountType,
+            type: nonInstitutionalType.value!,
           }
         : undefined,
     };

@@ -308,7 +308,7 @@ function FormAdd(props: {
       const transactionOut = await createTransaction({
         accountId: accountId,
         movementId: props.movementId,
-        transactionApiIn: transactionIn,
+        transactionApiInInput: transactionIn,
       }).unwrap();
       props.onAdded && props.onAdded(transactionOut);
     } catch (error) {
@@ -353,7 +353,7 @@ function FormEdit(props: {
         accountId: accountId,
         movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
-        transactionApiIn: transactionIn,
+        transactionApiInInput: transactionIn,
         newMovementId: props.transaction.movement_id,
       }).unwrap();
       props.onEdited && props.onEdited();

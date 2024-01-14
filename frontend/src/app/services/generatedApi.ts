@@ -148,13 +148,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["replacement-patterns"],
       }),
-      readManyInstitutionsGet: build.query<
-        ReadManyInstitutionsGetApiResponse,
-        ReadManyInstitutionsGetApiArg
-      >({
-        query: () => ({ url: `/institutions/` }),
-        providesTags: ["institutions"],
-      }),
       createInstitutionsPost: build.mutation<
         CreateInstitutionsPostApiResponse,
         CreateInstitutionsPostApiArg
@@ -169,6 +162,13 @@ const injectedRtkApi = api
           },
         }),
         invalidatesTags: ["institutions"],
+      }),
+      readManyInstitutionsGet: build.query<
+        ReadManyInstitutionsGetApiResponse,
+        ReadManyInstitutionsGetApiArg
+      >({
+        query: () => ({ url: `/institutions/` }),
+        providesTags: ["institutions"],
       }),
       readInstitutionsInstitutionIdGet: build.query<
         ReadInstitutionsInstitutionIdGetApiResponse,
@@ -266,16 +266,6 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/users/${queryArg}`, method: "DELETE" }),
         invalidatesTags: ["users"],
       }),
-      readManyUsersGet: build.query<
-        ReadManyUsersGetApiResponse,
-        ReadManyUsersGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/`,
-          params: { offset: queryArg.offset, limit: queryArg.limit },
-        }),
-        providesTags: ["users"],
-      }),
       createUsersPost: build.mutation<
         CreateUsersPostApiResponse,
         CreateUsersPostApiArg
@@ -286,6 +276,16 @@ const injectedRtkApi = api
           body: queryArg,
         }),
         invalidatesTags: ["users"],
+      }),
+      readManyUsersGet: build.query<
+        ReadManyUsersGetApiResponse,
+        ReadManyUsersGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/`,
+          params: { offset: queryArg.offset, limit: queryArg.limit },
+        }),
+        providesTags: ["users"],
       }),
       getLinkTokenUsersMeInstitutionLinksLinkTokenGet: build.query<
         GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiResponse,
@@ -322,13 +322,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "institution-links"],
       }),
-      readManyUsersMeInstitutionLinksGet: build.query<
-        ReadManyUsersMeInstitutionLinksGetApiResponse,
-        ReadManyUsersMeInstitutionLinksGetApiArg
-      >({
-        query: () => ({ url: `/users/me/institution-links/` }),
-        providesTags: ["users", "institution-links"],
-      }),
       createUsersMeInstitutionLinksPost: build.mutation<
         CreateUsersMeInstitutionLinksPostApiResponse,
         CreateUsersMeInstitutionLinksPostApiArg
@@ -340,6 +333,13 @@ const injectedRtkApi = api
           params: { institution_id: queryArg.institutionId },
         }),
         invalidatesTags: ["users", "institution-links"],
+      }),
+      readManyUsersMeInstitutionLinksGet: build.query<
+        ReadManyUsersMeInstitutionLinksGetApiResponse,
+        ReadManyUsersMeInstitutionLinksGetApiArg
+      >({
+        query: () => ({ url: `/users/me/institution-links/` }),
+        providesTags: ["users", "institution-links"],
       }),
       readUsersMeInstitutionLinksUserinstitutionlinkIdGet: build.query<
         ReadUsersMeInstitutionLinksUserinstitutionlinkIdGetApiResponse,
@@ -426,6 +426,17 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["users", "institution-links", "transactions"],
         }),
+      createUsersMeMovementsPost: build.mutation<
+        CreateUsersMeMovementsPostApiResponse,
+        CreateUsersMeMovementsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/movements/`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["users", "movements"],
+      }),
       readManyUsersMeMovementsGet: build.query<
         ReadManyUsersMeMovementsGetApiResponse,
         ReadManyUsersMeMovementsGetApiArg
@@ -450,17 +461,6 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ["users", "movements"],
-      }),
-      createUsersMeMovementsPost: build.mutation<
-        CreateUsersMeMovementsPostApiResponse,
-        CreateUsersMeMovementsPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/movements/`,
-          method: "POST",
-          body: queryArg,
-        }),
-        invalidatesTags: ["users", "movements"],
       }),
       readUsersMeMovementsMovementIdGet: build.query<
         ReadUsersMeMovementsMovementIdGetApiResponse,
@@ -650,7 +650,7 @@ const injectedRtkApi = api
           query: (queryArg) => ({
             url: `/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/`,
             method: "POST",
-            body: queryArg.transactionApiIn,
+            body: queryArg.transactionApiInInput,
           }),
           invalidatesTags: ["users", "accounts", "movements", "transactions"],
         }),
@@ -672,7 +672,7 @@ const injectedRtkApi = api
           query: (queryArg) => ({
             url: `/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}`,
             method: "PUT",
-            body: queryArg.transactionApiIn,
+            body: queryArg.transactionApiInInput,
             params: { new_movement_id: queryArg.newMovementId },
           }),
           invalidatesTags: ["users", "accounts", "movements", "transactions"],
@@ -688,22 +688,6 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["users", "accounts", "movements", "transactions"],
         }),
-      readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet:
-        build.query<
-          ReadManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiResponse,
-          ReadManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiArg
-        >({
-          query: (queryArg) => ({
-            url: `/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}/files/`,
-          }),
-          providesTags: [
-            "users",
-            "accounts",
-            "movements",
-            "transactions",
-            "files",
-          ],
-        }),
       createUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
         build.mutation<
           CreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPostApiResponse,
@@ -715,6 +699,22 @@ const injectedRtkApi = api
             body: queryArg.bodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost,
           }),
           invalidatesTags: [
+            "users",
+            "accounts",
+            "movements",
+            "transactions",
+            "files",
+          ],
+        }),
+      readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet:
+        build.query<
+          ReadManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiResponse,
+          ReadManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/users/me/accounts/${queryArg.accountId}/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}/files/`,
+          }),
+          providesTags: [
             "users",
             "accounts",
             "movements",
@@ -776,7 +776,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/transactions/plaid/${queryArg.id}`,
           method: "PUT",
-          body: queryArg.transactionPlaidIn,
+          body: queryArg.transactionPlaidInInput,
         }),
         invalidatesTags: ["transactions"],
       }),
@@ -791,7 +791,7 @@ export type ResetAuthResetPasswordPostApiResponse =
   /** status 200 Successful Response */ any;
 export type ResetAuthResetPasswordPostApiArg = BodyResetAuthResetPasswordPost;
 export type ReadExchangeRateExchangerateGetApiResponse =
-  /** status 200 Successful Response */ number;
+  /** status 200 Successful Response */ string;
 export type ReadExchangeRateExchangerateGetApiArg = {
   fromCurrency: string;
   toCurrency: string;
@@ -834,16 +834,16 @@ export type UpdateReplacementPatternsIdPutApiArg = {
 export type DeleteReplacementPatternsIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
 export type DeleteReplacementPatternsIdDeleteApiArg = number;
-export type ReadManyInstitutionsGetApiResponse =
-  /** status 200 Successful Response */ InstitutionApiOut[];
-export type ReadManyInstitutionsGetApiArg = void;
 export type CreateInstitutionsPostApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
 export type CreateInstitutionsPostApiArg = {
-  transactiondeserialiserId?: number;
-  replacementpatternId?: number;
+  transactiondeserialiserId?: number | null;
+  replacementpatternId?: number | null;
   institutionApiIn: InstitutionApiIn;
 };
+export type ReadManyInstitutionsGetApiResponse =
+  /** status 200 Successful Response */ InstitutionApiOut[];
+export type ReadManyInstitutionsGetApiArg = void;
 export type ReadInstitutionsInstitutionIdGetApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
 export type ReadInstitutionsInstitutionIdGetApiArg = number;
@@ -851,8 +851,8 @@ export type UpdateInstitutionsInstitutionIdPutApiResponse =
   /** status 200 Successful Response */ InstitutionApiOut;
 export type UpdateInstitutionsInstitutionIdPutApiArg = {
   institutionId: number;
-  transactiondeserialiserId?: number;
-  replacementpatternId?: number;
+  transactiondeserialiserId?: number | null;
+  replacementpatternId?: number | null;
   institutionApiIn: InstitutionApiIn;
 };
 export type DeleteInstitutionsInstitutionIdDeleteApiResponse =
@@ -882,18 +882,20 @@ export type UpdateUsersUserIdPutApiArg = {
 export type DeleteUsersUserIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
 export type DeleteUsersUserIdDeleteApiArg = number;
+export type CreateUsersPostApiResponse =
+  /** status 200 Successful Response */ UserApiOut;
+export type CreateUsersPostApiArg = UserApiIn;
 export type ReadManyUsersGetApiResponse =
   /** status 200 Successful Response */ UserApiOut[];
 export type ReadManyUsersGetApiArg = {
   offset?: number;
   limit?: number;
 };
-export type CreateUsersPostApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type CreateUsersPostApiArg = UserApiIn;
 export type GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiResponse =
   /** status 200 Successful Response */ string;
-export type GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiArg = number;
+export type GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiArg =
+  | number
+  | null;
 export type SetPublicTokenUsersMeInstitutionLinksPublicTokenPostApiResponse =
   /** status 200 Successful Response */ any;
 export type SetPublicTokenUsersMeInstitutionLinksPublicTokenPostApiArg = {
@@ -903,15 +905,15 @@ export type SetPublicTokenUsersMeInstitutionLinksPublicTokenPostApiArg = {
 export type ResyncUsersMeInstitutionLinksResyncPostApiResponse =
   /** status 200 Successful Response */ UserInstitutionLinkPlaidOut;
 export type ResyncUsersMeInstitutionLinksResyncPostApiArg = number;
-export type ReadManyUsersMeInstitutionLinksGetApiResponse =
-  /** status 200 Successful Response */ UserInstitutionLinkApiOut[];
-export type ReadManyUsersMeInstitutionLinksGetApiArg = void;
 export type CreateUsersMeInstitutionLinksPostApiResponse =
   /** status 200 Successful Response */ UserInstitutionLinkApiOut;
 export type CreateUsersMeInstitutionLinksPostApiArg = {
   institutionId: number;
   userInstitutionLinkApiIn: UserInstitutionLinkApiIn;
 };
+export type ReadManyUsersMeInstitutionLinksGetApiResponse =
+  /** status 200 Successful Response */ UserInstitutionLinkApiOut[];
+export type ReadManyUsersMeInstitutionLinksGetApiArg = void;
 export type ReadUsersMeInstitutionLinksUserinstitutionlinkIdGetApiResponse =
   /** status 200 Successful Response */ UserInstitutionLinkApiOut;
 export type ReadUsersMeInstitutionLinksUserinstitutionlinkIdGetApiArg = number;
@@ -957,27 +959,27 @@ export type ResyncUsersMeInstitutionLinksUserinstitutionlinkIdTransactionsPlaidR
     endDate: string;
     dryRun?: boolean;
   };
-export type ReadManyUsersMeMovementsGetApiResponse =
-  /** status 200 Successful Response */ MovementApiOut[];
-export type ReadManyUsersMeMovementsGetApiArg = {
-  userinstitutionlinkId?: number;
-  accountId?: number;
-  page?: number;
-  perPage?: number;
-  startDate?: string;
-  endDate?: string;
-  search?: string;
-  transactionAmountGe?: number;
-  transactionAmountLe?: number;
-  isAmountAbs?: boolean;
-  transactionsGe?: number;
-  transactionsLe?: number;
-  isDescending?: boolean;
-  sortBy?: MovementField;
-};
 export type CreateUsersMeMovementsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
 export type CreateUsersMeMovementsPostApiArg = number[];
+export type ReadManyUsersMeMovementsGetApiResponse =
+  /** status 200 Successful Response */ MovementApiOut[];
+export type ReadManyUsersMeMovementsGetApiArg = {
+  userinstitutionlinkId?: number | null;
+  accountId?: number | null;
+  page?: number;
+  perPage?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  search?: string | null;
+  transactionAmountGe?: number | string | null;
+  transactionAmountLe?: number | string | null;
+  isAmountAbs?: boolean;
+  transactionsGe?: number | null;
+  transactionsLe?: number | null;
+  isDescending?: boolean;
+  sortBy?: MovementField;
+};
 export type ReadUsersMeMovementsMovementIdGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
 export type ReadUsersMeMovementsMovementIdGetApiArg = number;
@@ -1025,15 +1027,15 @@ export type GetManyAggregatesUsersMeMovementsAggregatesGetApiArg = {
 export type ReadManyUsersMeTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
-  accountId?: number;
+  accountId?: number | null;
   page?: number;
   perPage?: number;
-  timestampGe?: string;
-  timestampLe?: string;
-  search?: string;
+  timestampGe?: string | null;
+  timestampLe?: string | null;
+  search?: string | null;
   isDescending?: boolean;
-  amountGe?: number;
-  amountLe?: number;
+  amountGe?: number | string | null;
+  amountLe?: number | string | null;
   isAmountAbs?: boolean;
 };
 export type ReadManyUsersMeAccountsGetApiResponse =
@@ -1042,7 +1044,7 @@ export type ReadManyUsersMeAccountsGetApiArg = void;
 export type CreateUsersMeAccountsPostApiResponse =
   /** status 200 Successful Response */ AccountApiOut;
 export type CreateUsersMeAccountsPostApiArg = {
-  userinstitutionlinkId?: number;
+  userinstitutionlinkId?: number | null;
   accountApiIn: AccountApiIn;
 };
 export type PreviewUsersMeAccountsPreviewPostApiResponse =
@@ -1058,7 +1060,7 @@ export type UpdateUsersMeAccountsAccountIdPutApiResponse =
   /** status 200 Successful Response */ AccountApiOut;
 export type UpdateUsersMeAccountsAccountIdPutApiArg = {
   accountId: number;
-  userinstitutionlinkId: number;
+  userinstitutionlinkId: number | null;
   accountApiIn: AccountApiIn;
 };
 export type DeleteUsersMeAccountsAccountIdDeleteApiResponse =
@@ -1080,7 +1082,7 @@ export type CreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsPostApi
   {
     accountId: number;
     movementId: number;
-    transactionApiIn: TransactionApiIn;
+    transactionApiInInput: TransactionApiIn2;
   };
 export type ReadUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut;
@@ -1098,19 +1100,11 @@ export type UpdateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransac
     movementId: number;
     transactionId: number;
     newMovementId: number;
-    transactionApiIn: TransactionApiIn;
+    transactionApiInInput: TransactionApiIn2;
   };
 export type DeleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
 export type DeleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDeleteApiArg =
-  {
-    accountId: number;
-    movementId: number;
-    transactionId: number;
-  };
-export type ReadManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiResponse =
-  /** status 200 Successful Response */ FileApiOut[];
-export type ReadManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiArg =
   {
     accountId: number;
     movementId: number;
@@ -1124,6 +1118,14 @@ export type CreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransac
     movementId: number;
     transactionId: number;
     bodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost: BodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost;
+  };
+export type ReadManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiResponse =
+  /** status 200 Successful Response */ FileApiOut[];
+export type ReadManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGetApiArg =
+  {
+    accountId: number;
+    movementId: number;
+    transactionId: number;
   };
 export type ReadUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGetApiResponse =
   /** status 200 Successful Response */ Blob;
@@ -1153,7 +1155,7 @@ export type UpdatePlaidTransactionsPlaidIdPutApiResponse =
   /** status 200 Successful Response */ TransactionPlaidOut;
 export type UpdatePlaidTransactionsPlaidIdPutApiArg = {
   id: number;
-  transactionPlaidIn: TransactionPlaidIn;
+  transactionPlaidInInput: TransactionPlaidIn2;
 };
 export type Token = {
   access_token: string;
@@ -1168,12 +1170,12 @@ export type HttpValidationError = {
   detail?: ValidationError[];
 };
 export type BodyLoginAuthLoginPost = {
-  grant_type?: string;
+  grant_type?: string | null;
   username: string;
   password: string;
   scope?: string;
-  client_id?: string;
-  client_secret?: string;
+  client_id?: string | null;
+  client_secret?: string | null;
 };
 export type BodyResetAuthResetPasswordPost = {
   token: string;
@@ -1211,22 +1213,22 @@ export type ReplacementPatternApiIn = {
 };
 export type InstitutionApiOut = {
   id: number;
-  plaid_id?: string;
-  plaid_metadata?: string;
+  plaid_id: string | null;
+  plaid_metadata: string | null;
   name: string;
   country_code: string;
-  url?: string;
-  colour?: string;
-  logo_base64?: string;
+  url: string | null;
+  colour?: string | null;
+  logo_base64?: string | null;
   is_synced: boolean;
-  transactiondeserialiser_id?: number;
-  replacementpattern_id?: number;
+  transactiondeserialiser_id: number | null;
+  replacementpattern_id: number | null;
 };
 export type InstitutionApiIn = {
   name: string;
   country_code: string;
   url: string;
-  colour?: string;
+  colour?: string | null;
 };
 export type UserApiOut = {
   id: number;
@@ -1247,14 +1249,14 @@ export type UserInstitutionLinkPlaidOut = {
   plaid_id: string;
   plaid_metadata: string;
   access_token: string;
-  cursor?: string;
+  cursor?: string | null;
   institution_id: number;
   user_id: number;
 };
 export type UserInstitutionLinkApiOut = {
   id: number;
-  plaid_id?: string;
-  plaid_metadata?: string;
+  plaid_id: string | null;
+  plaid_metadata: string | null;
   institution_id: number;
   user_id: number;
   is_synced: boolean;
@@ -1263,7 +1265,7 @@ export type UserInstitutionLinkApiIn = {};
 export type TransactionPlaidIn = {
   plaid_id: string;
   plaid_metadata: string;
-  amount: number;
+  amount: string;
   timestamp: string;
   name: string;
 };
@@ -1277,10 +1279,10 @@ export type TransactionPlaidOut = {
   id: number;
   plaid_id: string;
   plaid_metadata: string;
-  amount: number;
+  amount: string;
   timestamp: string;
   name: string;
-  account_balance: number;
+  account_balance: string;
   account_id: number;
   movement_id: number;
   files: FileApiOut[];
@@ -1288,10 +1290,10 @@ export type TransactionPlaidOut = {
 };
 export type TransactionApiOut = {
   id: number;
-  amount: number;
+  amount: string;
   timestamp: string;
   name: string;
-  account_balance: number;
+  account_balance: string;
   account_id: number;
   movement_id: number;
   files: FileApiOut[];
@@ -1300,13 +1302,13 @@ export type TransactionApiOut = {
 export type MovementApiOut = {
   id: number;
   name: string;
-  earliest_timestamp?: string;
-  latest_timestamp?: string;
+  earliest_timestamp: string | null;
+  latest_timestamp: string | null;
   transactions: TransactionApiOut[];
   amounts: {
-    [key: string]: number;
+    [key: string]: string;
   };
-  amount: number;
+  amount: string;
 };
 export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
@@ -1315,8 +1317,8 @@ export type MovementApiIn = {
 export type PlStatement = {
   start_date: string;
   end_date: string;
-  income: number;
-  expenses: number;
+  income: string;
+  expenses: string;
   currency_code: string;
 };
 export type InstitutionalAccountType =
@@ -1344,12 +1346,12 @@ export type NonInstitutionalAccount = {
 export type AccountApiOut = {
   id: number;
   currency_code: string;
-  initial_balance: number;
+  initial_balance: string;
   name: string;
-  institutionalaccount?: InstitutionalAccount;
-  noninstitutionalaccount?: NonInstitutionalAccount;
+  institutionalaccount: InstitutionalAccount | null;
+  noninstitutionalaccount: NonInstitutionalAccount | null;
   is_synced: boolean;
-  balance: number;
+  balance: string;
 };
 export type InstitutionalAccount2 = {
   type: InstitutionalAccountType;
@@ -1360,24 +1362,36 @@ export type NonInstitutionalAccount2 = {
 };
 export type AccountApiIn = {
   currency_code: string;
-  initial_balance: number;
+  initial_balance: number | string;
   name: string;
-  institutionalaccount?: InstitutionalAccount2;
-  noninstitutionalaccount?: NonInstitutionalAccount2;
+  institutionalaccount?: InstitutionalAccount2 | null;
+  noninstitutionalaccount?: NonInstitutionalAccount2 | null;
 };
 export type TransactionApiIn = {
-  amount: number;
+  amount: string;
   timestamp: string;
   name: string;
 };
 export type BodyPreviewUsersMeAccountsPreviewPost = {
   file: Blob;
 };
+export type TransactionApiIn2 = {
+  amount: number | string;
+  timestamp: string;
+  name: string;
+};
 export type BodyCreateManyUsersMeAccountsAccountIdMovementsPost = {
-  transactions: TransactionApiIn[];
+  transactions: TransactionApiIn2[];
   transaction_ids: number[];
 };
 export type BodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost =
   {
     file: Blob;
   };
+export type TransactionPlaidIn2 = {
+  plaid_id: string;
+  plaid_metadata: string;
+  amount: number | string;
+  timestamp: string;
+  name: string;
+};
