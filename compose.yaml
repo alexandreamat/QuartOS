@@ -28,9 +28,7 @@ services:
       - ./backend/http_cache.sqlite:/app/http_cache.sqlite
     
   nginx:
-    build:
-      context: .
-      dockerfile: nginx/Dockerfile
+    build: ./nginx
     image: alexandreamat/quartos-nginx:latest
     depends_on:
       - backend
