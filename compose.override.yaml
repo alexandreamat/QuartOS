@@ -3,13 +3,26 @@ services:
     restart: no
     ports:
       - 5432:5432
-      
+
   backend:
     restart: no
     volumes:
       - ./backend:/app
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80", "--reload"]
-  
+    ports:
+      - 8000:80
+    command:
+      [
+        "uvicorn",
+        "app.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "80",
+        "--reload",
+        "--root-path",
+        "/api"
+      ]
+
   frontend:
     build: ./frontend
     restart: no
@@ -27,6 +40,6 @@ services:
     depends_on:
       - nginx
     volumes:
-      - ./backend/openapi.json:/backend/openapi.json
+      - ./backend:/backend
       - ./frontend:/app
-    command: ["npm", "run", "codegen:watch"]
+    command: [ "npm", "run", "codegen:watch" ]
