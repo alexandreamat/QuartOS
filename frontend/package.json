@@ -35,7 +35,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "openapi": "npx @rtk-query/codegen-openapi openapi-config.ts",
-    "codegen:watch": "nodemon --watch ../backend/openapi.json -e ts,tsx,js,jsx,json --exec 'npm run openapi' start"
+    "codegen:watch": "nodemon --watch ../backend/**/models.py -e py --exec 'npm run openapi' start"
   },
   "eslintConfig": {
     "extends": [
