@@ -13,48 +13,44 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Annotated, Any
+import logging
+from typing import TYPE_CHECKING
 import base64
 
-from pydantic import HttpUrl, validator, constr
-from sqlmodel import Relationship, SQLModel, Field
-import pycountry
 
-from app.common.models import SyncedMixin, SyncableBase, SyncedBase
+from pydantic import HttpUrl
+from pydantic_extra_types.color import Color
+from sqlmodel import Column, Relationship, SQLModel, Field, null
+
+from app.common.models import (
+    SyncedMixin,
+    SyncableBase,
+    SyncedBase,
+    CountryCode,
+    SyncableBase,
+)
 from app.features.transactiondeserialiser import TransactionDeserialiser
 from app.features.replacementpattern import ReplacementPattern
+from app.common.models import UrlType, ColorType
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLink
 
+logger = logging.getLogger(__name__)
+
 
 class __InstitutionBase(SQLModel):
     name: str
-    country_code: str
+    country_code: CountryCode
     url: HttpUrl | None
-    colour: Annotated[str, constr(regex=r"^#[0-9a-fA-F]{6}$")] | None
-
-    @validator("country_code")
-    def country_code_must_exist(cls, value: str) -> str:
-        if value not in [country.alpha_2 for country in pycountry.countries]:
-            raise ValueError("Invalid country code")
-        return value
+    colour: Color | None = None
 
 
 class InstitutionApiOut(__InstitutionBase, SyncableBase):
-    logo_base64: str | None
+    logo_base64: str | None = None
     is_synced: bool
     transactiondeserialiser_id: int | None
     replacementpattern_id: int | None
-
-    @classmethod
-    def from_orm(
-        cls, obj: Any, update: dict[str, Any] | None = None
-    ) -> "InstitutionApiOut":
-        m = super().from_orm(obj, update)
-        if obj.logo:
-            m.logo_base64 = base64.b64encode(obj.logo).decode()
-        return m
 
 
 class InstitutionApiIn(__InstitutionBase):
@@ -70,6 +66,8 @@ class InstitutionPlaidIn(__InstitutionBase, SyncedMixin):
 
 
 class Institution(__InstitutionBase, SyncableBase, table=True):
+    url: HttpUrl | None = Field(sa_type=UrlType)
+    colour: Color | None = Field(sa_type=ColorType)
     logo: bytes | None
     transactiondeserialiser_id: int | None = Field(
         foreign_key="transactiondeserialiser.id"
@@ -88,3 +86,7 @@ class Institution(__InstitutionBase, SyncableBase, table=True):
     @property
     def is_synced(self) -> bool:
         return self.plaid_id is not None
+
+    @property
+    def logo_base64(self) -> str | None:
+        return base64.b64encode(self.logo).decode() if self.logo else None

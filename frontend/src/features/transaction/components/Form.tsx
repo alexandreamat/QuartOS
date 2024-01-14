@@ -92,10 +92,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     );
 
   const form: TransactionApiInForm = {
-    amountStr: useFormField(
-      isEdit ? props.transaction.amount.toFixed(2) : "",
-      "amount",
-    ),
+    amountStr: useFormField(isEdit ? props.transaction.amount : "", "amount"),
     timestamp: useFormField(
       isEdit ? new Date(props.transaction.timestamp) : new Date(),
       "date",
@@ -311,7 +308,7 @@ function FormAdd(props: {
       const transactionOut = await createTransaction({
         accountId: accountId,
         movementId: props.movementId,
-        transactionApiIn: transactionIn,
+        transactionApiInInput: transactionIn,
       }).unwrap();
       props.onAdded && props.onAdded(transactionOut);
     } catch (error) {
@@ -356,7 +353,7 @@ function FormEdit(props: {
         accountId: accountId,
         movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
-        transactionApiIn: transactionIn,
+        transactionApiInInput: transactionIn,
         newMovementId: props.transaction.movement_id,
       }).unwrap();
       props.onEdited && props.onEdited();

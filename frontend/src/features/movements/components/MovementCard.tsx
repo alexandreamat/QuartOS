@@ -173,7 +173,7 @@ export function MovementCard(props: {
               ([currencyCode, amount], i) => (
                 <CurrencyLabel
                   key={i}
-                  amount={amount}
+                  amount={Number(amount)}
                   currencyCode={currencyCode}
                 />
               ),

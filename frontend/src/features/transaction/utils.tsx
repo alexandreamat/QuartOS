@@ -21,7 +21,7 @@ export function transactionApiOutToForm(
   transaction: TransactionApiOut,
   form: TransactionApiInForm
 ) {
-  form.amountStr.set(transaction.amount.toFixed(2));
+  form.amountStr.set(transaction.amount);
   form.timestamp.set(
     transaction.timestamp ? new Date(transaction.timestamp) : new Date()
   );
@@ -33,7 +33,7 @@ export function transactionFormToApiIn(
   form: TransactionApiInForm
 ): TransactionApiIn {
   return {
-    amount: Number(form.amountStr.value!),
+    amount: form.amountStr.value!,
     timestamp: formatDateParam(form.timestamp.value!),
     name: form.name.value!,
   };

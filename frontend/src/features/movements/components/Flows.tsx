@@ -52,18 +52,17 @@ function Flow(props: {
       content={
         props.transaction &&
         currencyCode &&
-        `Account balance: ${props.transaction.account_balance.toLocaleString(
-          undefined,
-          {
-            style: "currency",
-            currency: currencyCode,
-          },
-        )}`
+        `Account balance: ${Number(
+          props.transaction.account_balance,
+        ).toLocaleString(undefined, {
+          style: "currency",
+          currency: currencyCode,
+        })}`
       }
       trigger={
         <div>
           <CurrencyLabel
-            amount={props.transaction?.amount}
+            amount={Number(props.transaction?.amount)}
             currencyCode={currencyCode}
             loading={props.loading || accountQueries.isLoading}
           />
@@ -201,7 +200,7 @@ export function Flows(props: {
         onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
-        filterPredicate={(t) => t.amount < 0}
+        filterPredicate={(t) => Number(t.amount) < 0}
         reverse
       />
       <StepFlows
@@ -209,7 +208,7 @@ export function Flows(props: {
         onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
         transactions={props.transactions}
-        filterPredicate={(t) => t.amount >= 0}
+        filterPredicate={(t) => Number(t.amount) >= 0}
       />
     </Step.Group>
   );

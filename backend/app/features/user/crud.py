@@ -12,25 +12,16 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from typing import Iterable, Any
-from decimal import Decimal
+import logging
 from datetime import date
+from decimal import Decimal
+from typing import Iterable, Any
+
 from dateutil.relativedelta import relativedelta
-
 from sqlmodel import Session
-from sqlalchemy.exc import NoResultFound
 
-from app.utils import get_password_hash
 from app.common.crud import CRUDBase
 from app.common.models import CurrencyCode
-from app.common.exceptions import ObjectNotFoundError
-
-from app.features.userinstitutionlink import (
-    UserInstitutionLinkApiOut,
-    UserInstitutionLink,
-)
-from app.features.transaction import TransactionApiOut, Transaction
 from app.features.account import AccountApiOut, Account
 from app.features.movement import (
     MovementApiOut,
@@ -39,9 +30,15 @@ from app.features.movement import (
     Movement,
     MovementField,
 )
-from app.features.user import UserApiIn, UserApiOut
-
+from app.features.transaction import TransactionApiOut, Transaction
+from app.features.userinstitutionlink import (
+    UserInstitutionLinkApiOut,
+    UserInstitutionLink,
+)
+from app.utils import get_password_hash
 from .models import User, UserApiOut, UserApiIn
+
+logger = logging.getLogger(__name__)
 
 
 class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
@@ -55,11 +52,11 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         db_obj_in = User.from_schema(obj_in)
         db_obj_in.hashed_password = hashed_password
         db_obj_out = User.create(db, db_obj_in)
-        return UserApiOut.from_orm(db_obj_out)
+        return UserApiOut.model_validate(db_obj_out)
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> UserApiOut:
-        return UserApiOut.from_orm(User.read_by_email(db, email=email))
+        return UserApiOut.model_validate(User.read_by_email(db, email=email))
 
     @classmethod
     def update(
@@ -72,11 +69,11 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             **kwargs,
             hashed_password=get_password_hash(obj_in.password),
         )
-        return UserApiOut.from_orm(db_obj_out)
+        return UserApiOut.model_validate(db_obj_out)
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> UserApiOut:
-        return UserApiOut.from_orm(User.authenticate(db, email, password))
+        return UserApiOut.model_validate(User.authenticate(db, email, password))
 
     @classmethod
     def read_user_institution_links(
@@ -85,7 +82,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         statement = User.select_user_institution_links(user_id, None)
         uils = db.exec(statement).all()
         for uil in uils:
-            yield UserInstitutionLinkApiOut.from_orm(uil)
+            yield UserInstitutionLinkApiOut.model_validate(uil)
 
     @classmethod
     def read_user_institution_link(
@@ -98,7 +95,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         uil = UserInstitutionLink.read_one_from_query(
             db, statement, userinstitutionlink_id
         )
-        return UserInstitutionLinkApiOut.from_orm(uil)
+        return UserInstitutionLinkApiOut.model_validate(uil)
 
     @classmethod
     def update_movement(
@@ -109,10 +106,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         movement_in: MovementApiIn,
     ) -> MovementApiOut:
         user_out = cls.read(db, user_id)
-        movement = Movement.update(db, movement_id, **movement_in.dict())
-        return MovementApiOut.from_orm(
-            movement, {"amount": movement.get_amount(user_out.default_currency_code)}
-        )
+        movement = Movement.update(db, movement_id, **movement_in.model_dump())
+        return MovementApiOut.model_validate(movement)
 
     @classmethod
     def read_transactions(
@@ -125,11 +120,16 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         **kwargs: Any,
     ) -> Iterable[TransactionApiOut]:
         statement = User.select_transactions(
-            user_id, userinstitutionlink_id, account_id, movement_id, None, **kwargs
+            user_id,
+            userinstitutionlink_id,
+            account_id,
+            None,
+            movement_id,
+            **kwargs,
         )
 
         for t in db.exec(statement).all():
-            yield TransactionApiOut.from_orm(t)
+            yield TransactionApiOut.model_validate(t)
 
     @classmethod
     def read_transaction(
@@ -145,7 +145,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             user_id, userinstitutionlink_id, account_id, movement_id, transaction_id
         )
         transaction = Transaction.read_one_from_query(db, statement, transaction_id)
-        return TransactionApiOut.from_orm(transaction)
+        return TransactionApiOut.model_validate(transaction)
 
     @classmethod
     def read_account(
@@ -157,7 +157,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     ) -> AccountApiOut:
         statement = User.select_accounts(user_id, userinstitutionlink_id, account_id)
         account = Account.read_one_from_query(db, statement, account_id)
-        return AccountApiOut.from_orm(account)
+        return AccountApiOut.model_validate(account)
 
     @classmethod
     def read_accounts(
@@ -170,7 +170,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         accounts = db.exec(statement).all()
 
         for a in accounts:
-            yield AccountApiOut.from_orm(a)
+            yield AccountApiOut.model_validate(a)
 
     @classmethod
     def read_movements(
@@ -223,10 +223,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             amount_lt=amount_lt,
         )
         for movement in movements:
-            yield MovementApiOut.from_orm(
-                movement,
-                {"amount": movement.get_amount(currency_code)},
-            )
+            yield MovementApiOut.model_validate(movement)
 
     @classmethod
     def read_movement(
@@ -243,9 +240,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             user_id, userinstitutionlink_id, account_id, movement_id, **kwargs
         )
         movement = Movement.read_one_from_query(db, statement, movement_id)
-        return MovementApiOut.from_orm(
-            movement, {"amount": movement.get_amount(user_out.default_currency_code)}
-        )
+        return MovementApiOut.model_validate(movement)
 
     @classmethod
     def get_movement_aggregate(

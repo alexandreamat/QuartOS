@@ -34,7 +34,7 @@ class __UserInstitutionLinkBase(SQLModel):
 
 class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
     access_token: str
-    cursor: str | None
+    cursor: str | None = None
 
 
 class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
