@@ -13,19 +13,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime  # eval expression might need it
 import re
 from decimal import Decimal
 
+from plaid.model.counterparty_type import CounterpartyType
+from plaid.model.transaction import Transaction
 from sqlmodel import Session
 
-from plaid.model.transaction import Transaction
-from plaid.model.counterparty_type import CounterpartyType
-
 from app.features.replacementpattern import ReplacementPatternApiOut
-
-from .models import TransactionPlaidIn, TransactionPlaidOut
 from .crud import CRUDSyncableTransaction
+from .models import TransactionPlaidIn, TransactionPlaidOut
 
 
 def create_transaction_plaid_in(
@@ -44,7 +41,7 @@ def create_transaction_plaid_in(
         amount=-transaction.amount,
         name=name,
         plaid_id=transaction.transaction_id,
-        timestamp=transaction.date,
+        timestamp=getattr(transaction, "authorized_date") or transaction.date,
         plaid_metadata=transaction.to_str(),
     )
 
