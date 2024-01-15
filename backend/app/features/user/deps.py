@@ -22,16 +22,13 @@ from pydantic import ValidationError
 from sqlalchemy.exc import NoResultFound
 
 from app.database.deps import DBSession
-from app.utils import ALGORITHM
-from app.settings import settings
-
-from .crud import CRUDUser
-
 from app.features.auth.models import TokenPayload
-
+from app.settings import settings
+from app.utils import ALGORITHM
+from .crud import CRUDUser
 from .models import UserApiOut
 
-reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/auth/login")
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 def get_current_user(
