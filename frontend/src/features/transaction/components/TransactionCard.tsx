@@ -101,7 +101,6 @@ export function TransactionCard(
           </Card.Meta>
           <AccountIcon
             account={account}
-            institution={accountQueries.institution}
             loading={props.loading || accountQueries.isLoading}
             style={{
               height: "90%",

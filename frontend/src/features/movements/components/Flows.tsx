@@ -95,7 +95,6 @@ function Flow(props: {
         <div>
           <AccountIcon
             account={accountQueries.account}
-            institution={accountQueries.institution}
             loading={props.loading || accountQueries.isLoading}
             style={{ width: "2em" }}
           />
