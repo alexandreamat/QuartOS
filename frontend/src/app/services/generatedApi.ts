@@ -1229,6 +1229,7 @@ export type InstitutionApiIn = {
   country_code: string;
   url: string;
   colour?: string | null;
+  logo_base64: string;
 };
 export type UserApiOut = {
   id: number;

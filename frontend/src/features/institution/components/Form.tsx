@@ -24,6 +24,7 @@ import FormTextInput from "components/FormTextInput";
 import FormDropdownInput from "components/FormDropdownInput";
 import { useTransactionDeserialiserOptions } from "features/transactiondeserialiser/hooks";
 import { FormValidationError } from "components/FormValidationError";
+import FormTextFile from "components/FormFile";
 
 registerLocale(require("i18n-iso-countries/langs/en.json"));
 
@@ -43,10 +44,17 @@ export default function InstitutionForm(props: {
   const countryCode = useFormField("");
   const url = useFormField("");
   const transactionDeserialiserId = useFormField(0, undefined, true);
+  const logoBase64 = useFormField("");
 
   const transactionDeserialiserOptions = useTransactionDeserialiserOptions();
 
-  const fields = [name, countryCode, url, transactionDeserialiserId];
+  const fields = [
+    name,
+    countryCode,
+    url,
+    transactionDeserialiserId,
+    logoBase64,
+  ];
 
   const [createInstitution, createInstitutionResult] =
     api.endpoints.createInstitutionsPost.useMutation();
@@ -61,6 +69,7 @@ export default function InstitutionForm(props: {
     transactionDeserialiserId.set(
       props.institution.transactiondeserialiser_id || undefined,
     );
+    logoBase64.set(props.institution.logo_base64 || "");
   }, [props.institution]);
 
   const handleClose = () => {
@@ -75,6 +84,7 @@ export default function InstitutionForm(props: {
       name: name.value!,
       country_code: countryCode.value!,
       url: url.value!,
+      logo_base64: logoBase64.value!,
     };
     if (props.institution) {
       try {
@@ -111,6 +121,7 @@ export default function InstitutionForm(props: {
       }
     >
       <FormTextInput label="Name" field={name} />
+      <FormTextFile label="Logo" field={logoBase64} />
       <FormTextInput type="url" label="Website" field={url} />
       <FormDropdownInput
         label="Country"
