@@ -45,7 +45,7 @@ export default function FormTextInput(props: {
       value={props.field.value}
       onChange={(
         e: React.ChangeEvent<HTMLInputElement>,
-        data: InputOnChangeData
+        data: InputOnChangeData,
       ) => {
         props.field.reset();
         props.field.set(data.value);
