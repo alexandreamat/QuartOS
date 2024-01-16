@@ -13,25 +13,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-from typing import TYPE_CHECKING
 import base64
-
+import logging
+from typing import TYPE_CHECKING, Any
 
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
-from sqlmodel import Column, Relationship, SQLModel, Field, null
+from sqlmodel import Relationship, SQLModel, Field
 
 from app.common.models import (
     SyncedMixin,
-    SyncableBase,
     SyncedBase,
     CountryCode,
     SyncableBase,
 )
-from app.features.transactiondeserialiser import TransactionDeserialiser
-from app.features.replacementpattern import ReplacementPattern
 from app.common.models import UrlType, ColorType
+from app.features.replacementpattern import ReplacementPattern
+from app.features.transactiondeserialiser import TransactionDeserialiser
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLink
@@ -55,6 +53,17 @@ class InstitutionApiOut(__InstitutionBase, SyncableBase):
 
 class InstitutionApiIn(__InstitutionBase):
     url: HttpUrl
+    logo_base64: str
+
+    @property
+    def logo(self) -> bytes:
+        return base64.b64decode(self.logo_base64.encode())
+
+    # TODO: there should be a better way, remove this when possible
+    def model_dump(self, **kwargs) -> dict[str, Any]:
+        institution_dict = super().model_dump(**kwargs)
+        institution_dict["logo"] = self.logo
+        return institution_dict
 
 
 class InstitutionPlaidOut(__InstitutionBase, SyncedBase):
@@ -90,3 +99,7 @@ class Institution(__InstitutionBase, SyncableBase, table=True):
     @property
     def logo_base64(self) -> str | None:
         return base64.b64encode(self.logo).decode() if self.logo else None
+
+    @logo_base64.setter
+    def logo_base64(self, value: str | None) -> None:
+        self.logo = base64.b64decode(value.encode()) if value else None
