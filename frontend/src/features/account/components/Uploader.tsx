@@ -97,7 +97,9 @@ export default function Uploader(props: {
     if (!transactionsIn || !lastTransaction) return;
 
     transactionsIn.forEach((transactionIn, i) => {
-      if (transactionIn.timestamp <= lastTransaction.timestamp) {
+      if (
+        new Date(transactionIn.timestamp) <= new Date(lastTransaction.timestamp)
+      ) {
         setShowDupsWarn(true);
         checkboxes.onChange(i, false);
       } else {
