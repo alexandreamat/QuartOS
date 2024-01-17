@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Button, Form, Modal } from "semantic-ui-react";
+import { Button, Form, Input, Label, Modal } from "semantic-ui-react";
 import { useEffect } from "react";
 import {
   AccountApiOut,
@@ -39,7 +39,7 @@ export default function AccountForm(props: {
   open: boolean;
   onClose: () => void;
 }) {
-  const isInstitutional = useFormField(false);
+  const isInstitutional = useFormField(true);
   const mask = useFormField("");
   const name = useFormField("");
   const currencyCode = useFormField("");
@@ -223,7 +223,13 @@ export default function AccountForm(props: {
                 field={institutionalType}
                 options={institutionalTypeOptions}
               />
-              <FormTextInput label="Account Number" field={mask} />
+              <Form.Field required>
+                <label>Account Number Mask</label>
+                <Input
+                  label={<Label>＊＊＊＊</Label>}
+                  placeholder="last 4 digits of your account number"
+                />
+              </Form.Field>
             </>
           ) : (
             <>
@@ -235,7 +241,7 @@ export default function AccountForm(props: {
             </>
           )}
           <FormCurrencyInputs
-            label="Current Balance"
+            label="Initial Balance"
             amount={initialBalanceStr}
             currencyCode={currencyCode}
           />

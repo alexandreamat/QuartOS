@@ -14,9 +14,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { skipToken } from "@reduxjs/toolkit/dist/query";
-import { AccountApiOut, api } from "app/services/api";
+import { api } from "app/services/api";
 import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
+import { DropdownItemProps } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
+import AccountIcon from "./components/Icon";
 
 export function useAccountQueries(accountId?: number) {
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
@@ -61,34 +63,17 @@ export function useAccountQueries(accountId?: number) {
   };
 }
 
-function AccountOption(props: { account: AccountApiOut }) {
-  const accountQueries = useAccountQueries(props.account.id);
-  if (accountQueries.account?.institutionalaccount)
-    return (
-      <p>
-        {accountQueries.institution?.name} / ···{" "}
-        {accountQueries.account.institutionalaccount.mask}
-      </p>
-    );
-
-  if (accountQueries.account?.noninstitutionalaccount)
-    return <p>{accountQueries.account.name}</p>;
-
-  return <p></p>;
-}
-
 export function useAccountOptions() {
   const query = api.endpoints.readManyUsersMeAccountsGet.useQuery();
 
-  const options = query.data?.map((account) => {
-    const option = <AccountOption account={account} />;
-    return {
-      key: account.id,
-      value: account.id,
-      content: option,
-      text: account.name,
-    };
-  });
+  const options: DropdownItemProps[] =
+    query.data?.map((a) => ({
+      key: a.id,
+      value: a.id,
+      content: a.name,
+      text: a.name,
+      image: <AccountIcon account={a} />,
+    })) || [];
 
   return {
     options,

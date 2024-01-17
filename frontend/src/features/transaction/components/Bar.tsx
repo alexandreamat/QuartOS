@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import MenuDateRange from "components/MenuDateInput";
-import MenuDropdownAccount from "components/MenuDropdownAccount";
+import MenuDropdownAccount from "features/account/components/MenuDropdownAccount";
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuNumericRange from "components/MenuNumericRange";
 import { Menu } from "semantic-ui-react";
