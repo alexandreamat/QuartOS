@@ -72,6 +72,15 @@ export default function Uploader(props: {
     [lastTransactionQuery],
   );
 
+  function handleSelectAll() {
+    if (!transactionsIn) return;
+    transactionsIn.forEach((t, i) => checkboxes.onChange(i, true));
+  }
+
+  function handleClearAll() {
+    checkboxes.reset();
+  }
+
   const handleClose = () => {
     setShowDupsWarn(false);
     uploadResult.reset();
@@ -111,7 +120,7 @@ export default function Uploader(props: {
   const [createMovements, createMovementsResult] =
     api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
 
-  const handleCreateTransactions = async () => {
+  async function handleCreateTransactions() {
     if (!uploadResult.data) return;
 
     const transactions = uploadResult.data.filter((_, i) =>
@@ -130,7 +139,7 @@ export default function Uploader(props: {
       return;
     }
     handleClose();
-  };
+  }
 
   return (
     <Modal open onClose={props.onClose}>
@@ -194,6 +203,26 @@ export default function Uploader(props: {
         </FlexColumn>
       </Modal.Content>
       <Modal.Actions>
+        <Button
+          compact
+          onClick={handleSelectAll}
+          floated="left"
+          disabled={
+            transactionsIn
+              ? checkboxes.checked.size === transactionsIn.length
+              : true
+          }
+        >
+          Select All
+        </Button>
+        <Button
+          compact
+          onClick={handleClearAll}
+          floated="left"
+          disabled={transactionsIn ? checkboxes.checked.size === 0 : true}
+        >
+          Clear All
+        </Button>
         <Button onClick={handleClose}>Cancel</Button>
         <Button
           disabled={!uploadResult.isSuccess || checkboxes.checked.size < 1}
