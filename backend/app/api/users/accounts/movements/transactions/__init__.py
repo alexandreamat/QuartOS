@@ -16,15 +16,13 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.database.deps import DBSession
-
-from app.features.user import CurrentUser, CRUDUser
 from app.features.account import CRUDAccount
 from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
     CRUDTransaction,
 )
-
+from app.features.user import CurrentUser, CRUDUser
 from . import files
 
 router = APIRouter()

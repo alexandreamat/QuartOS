@@ -14,20 +14,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Any
+
 from pydantic import EmailStr
-
-
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, select, or_
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base, CurrencyCode
-from app.utils import verify_password
-
-from app.features.userinstitutionlink import UserInstitutionLink
 from app.features.account import Account
-from app.features.transaction import Transaction
 from app.features.movement import Movement
+from app.features.transaction import Transaction
+from app.features.userinstitutionlink import UserInstitutionLink
+from app.utils import verify_password
 
 
 class __UserBase(SQLModel):

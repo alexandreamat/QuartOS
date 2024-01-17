@@ -14,34 +14,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import TYPE_CHECKING, Iterable
 from datetime import date
+from typing import TYPE_CHECKING, Iterable
+
 import sqlalchemy
-
-from sqlmodel import Session
-from pydantic import BaseModel
-
 from plaid.model.item import Item
 from plaid.model.item_get_request import ItemGetRequest
 from plaid.model.item_get_response import ItemGetResponse
 from plaid.model.transaction import Transaction
-from plaid.model.transactions_sync_request import TransactionsSyncRequest
-from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
-from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 from plaid.model.transactions_get_response import TransactionsGetResponse
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
+from plaid.model.transactions_sync_response import TransactionsSyncResponse
+from pydantic import BaseModel
+from sqlmodel import Session
 
 from app.common.plaid import client
-
-from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.account import CRUDAccount
+from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
     create_transaction_plaid_in,
 )
-
 from .crud import CRUDSyncableUserInstitutionLink
 from .models import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
 

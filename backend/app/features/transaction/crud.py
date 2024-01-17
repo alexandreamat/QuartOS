@@ -18,9 +18,7 @@ from typing import Iterable
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
-
 from app.features.file import FileApiOut
-
 from .models import (
     Transaction,
     TransactionApiOut,

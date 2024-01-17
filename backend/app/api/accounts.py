@@ -16,8 +16,8 @@
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-from app.features.user import CurrentSuperuser
 from app.features.account import CRUDAccount
+from app.features.user import CurrentSuperuser
 
 router = APIRouter()
 

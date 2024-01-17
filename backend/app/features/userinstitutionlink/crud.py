@@ -13,15 +13,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Iterable
+from typing import Iterable
 
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
-from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.account import AccountPlaidOut
+from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.transaction import TransactionPlaidOut
-
 from .models import (
     UserInstitutionLink,
     UserInstitutionLinkApiOut,

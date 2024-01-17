@@ -16,12 +16,9 @@
 import re
 from typing import TypeVar
 
-from sqlmodel import or_, and_
-
-from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.orm import Mapped
-
-from .models import Base
+from sqlmodel import or_, and_
+from sqlmodel.sql.expression import SelectOfScalar
 
 BaseType = TypeVar("BaseType", bound="Base")
 

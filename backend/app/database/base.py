@@ -14,16 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # 1. Import base model
-from app.common.models import Base
 
 # 2. Import inheritors of the base model
-from app.features.replacementpattern import ReplacementPattern
-from app.features.transactiondeserialiser import TransactionDeserialiser
-from app.features.user import User
-from app.features.institution import Institution
-from app.features.userinstitutionlink import UserInstitutionLink
-from app.features.account import Account
-from app.features.movement import Movement
-from app.features.transaction import Transaction
 
 # 3. Import this file from Alembic

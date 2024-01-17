@@ -18,13 +18,12 @@ from typing import Iterable
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-from app.features.user import CurrentSuperuser
 from app.features.replacementpattern import (
     CRUDReplacementPattern,
     ReplacementPatternApiIn,
     ReplacementPatternApiOut,
 )
-
+from app.features.user import CurrentSuperuser
 
 router = APIRouter()
 

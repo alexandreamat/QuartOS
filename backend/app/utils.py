@@ -14,18 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import hashlib
-import logging
 from datetime import datetime, timedelta
-from pathlib import Path
-from typing import Any
 
-import emails
-from emails.template import JinjaTemplate
 from fastapi import HTTPException, status
 from jose import jwt
 
 from app.settings import settings
-
 
 ALGORITHM = "HS256"
 

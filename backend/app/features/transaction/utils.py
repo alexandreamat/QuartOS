@@ -14,10 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import csv
-import datetime  # noqa
+import re
+
 # imports for exec
 import decimal  # noqa
-import re
+import datetime  # noqa
 from typing import Iterable, BinaryIO
 
 from app.features.transactiondeserialiser import TransactionDeserialiserApiOut

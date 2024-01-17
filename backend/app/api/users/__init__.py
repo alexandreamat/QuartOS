@@ -19,7 +19,6 @@ from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from app.database.deps import DBSession
-
 from app.features.user import (
     CurrentUser,
     CurrentSuperuser,
@@ -27,9 +26,8 @@ from app.features.user import (
     UserApiOut,
     UserApiIn,
 )
-
-from . import institutionlinks
 from . import accounts
+from . import institutionlinks
 from . import movements
 from . import transactions
 

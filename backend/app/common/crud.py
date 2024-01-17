@@ -59,8 +59,8 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         cls, db: Session, id: int, obj_in: InModelType, **kwargs: Any
     ) -> OutModelType:
         obj = cls.db_model.update(db, id, **obj_in.model_dump(), **kwargs)
-        out_obj: OutModelType = cls.out_model.model_validate(obj)
-        return out_obj
+        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        return obj_out
 
     @classmethod
     def delete(cls, db: Session, id: int) -> int:
