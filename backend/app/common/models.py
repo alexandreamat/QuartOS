@@ -42,7 +42,9 @@ class Base(SQLModel):
 
     @classmethod
     def create(cls: Type[BaseType], db: Session, **kwargs: Any) -> BaseType:
-        obj = cls(**kwargs)
+        obj = cls()
+        for key, value in kwargs.items():
+            setattr(obj, key, value)
         db.add(obj)
         db.flush()
         return obj
