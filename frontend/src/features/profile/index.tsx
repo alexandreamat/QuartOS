@@ -13,13 +13,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import React, { useState } from "react";
 import { api } from "app/services/api";
+import FormCurrencyCodeDropdown from "components/FormCurrencyCodeDropdown";
 import FormTextInput from "components/FormTextInput";
 import useFormField from "hooks/useFormField";
+import { useState } from "react";
 import { Button, Form, Loader, Message, Segment } from "semantic-ui-react";
 import { logMutationError, renderErrorMessage } from "utils/error";
-import FormCurrencyCodeDropdown from "components/FormCurrencyCodeDropdown";
 
 export default function Profile() {
   const me = api.endpoints.readMeUsersMeGet.useQuery();
@@ -31,7 +31,7 @@ export default function Profile() {
   const email = useFormField(me.data?.email || "");
   const password = useFormField("");
   const defaultCurrencyCode = useFormField(
-    me.data?.default_currency_code || ""
+    me.data?.default_currency_code || "",
   );
 
   const fields = [fullName, email, password, defaultCurrencyCode];

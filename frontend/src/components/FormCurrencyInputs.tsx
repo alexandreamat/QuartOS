@@ -37,7 +37,7 @@ export default function FormCurrencyInputs(props: {
         value={props.amount.value}
         onChange={(
           e: React.ChangeEvent<HTMLInputElement>,
-          data: InputOnChangeData
+          data: InputOnChangeData,
         ) => {
           props.amount.reset();
           props.amount.set(data.value as string);

@@ -14,15 +14,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import React from "react";
-import { Segment, Grid, Form, Button, Header } from "semantic-ui-react";
 import { useNavigate } from "react-router";
+import { Button, Form, Grid, Header, Segment } from "semantic-ui-react";
 
 import { api } from "app/services/api";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { logMutationError } from "utils/error";
 import FormCurrencyCodeDropdown from "components/FormCurrencyCodeDropdown";
-import useFormField from "hooks/useFormField";
 import FormTextInput from "components/FormTextInput";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import useFormField from "hooks/useFormField";
+import { logMutationError } from "utils/error";
 
 export function SignUp() {
   const navigate = useNavigate();

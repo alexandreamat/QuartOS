@@ -13,15 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { useState } from "react";
-import { Table, Loader, Label } from "semantic-ui-react";
-import UserForm from "./Form";
 import { UserApiOut, api } from "app/services/api";
-import { logMutationError } from "utils/error";
-import TableHeader from "components/TableHeader";
-import TableFooter from "components/TableFooter";
-import EditActionButton from "components/EditActionButton";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
+import EditActionButton from "components/EditActionButton";
+import TableFooter from "components/TableFooter";
+import TableHeader from "components/TableHeader";
+import { useState } from "react";
+import { Label, Loader, Table } from "semantic-ui-react";
+import { logMutationError } from "utils/error";
+import UserForm from "./Form";
 
 export default function Users() {
   const [isModalOpen, setIsModalOpen] = useState(false);

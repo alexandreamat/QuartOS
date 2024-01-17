@@ -13,15 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import FlexRow from "components/FlexRow";
+import MenuCheckbox from "components/MenuCheckbox";
 import MenuDateRange from "components/MenuDateInput";
 import MenuDropdownAccount from "features/account/components/MenuDropdownAccount";
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuNumericRange from "components/MenuNumericRange";
-import { Menu } from "semantic-ui-react";
-import MenuCheckbox from "components/MenuCheckbox";
 import { useState } from "react";
+import { Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
-import FlexRow from "components/FlexRow";
 
 export type TransactionsBarState = ReturnType<typeof useTransactionBarState>;
 

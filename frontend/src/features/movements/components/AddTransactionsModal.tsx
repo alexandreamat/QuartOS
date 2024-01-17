@@ -13,15 +13,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import React, { useEffect, useRef } from "react";
-import { useTransactionBarState } from "features/transaction/components/Bar";
-import { Button, Modal } from "semantic-ui-react";
 import { MovementApiOut, api } from "app/services/api";
-import { logMutationError } from "utils/error";
-import TransactionBar from "features/transaction/components/Bar";
+import FlexColumn from "components/FlexColumn";
+import TransactionBar, {
+  useTransactionBarState,
+} from "features/transaction/components/Bar";
 import TransactionCards from "features/transaction/components/TransactionCards";
 import { useCheckboxes } from "hooks/useCheckboxes";
-import FlexColumn from "components/FlexColumn";
+import { useRef } from "react";
+import { Button, Modal } from "semantic-ui-react";
+import { logMutationError } from "utils/error";
 
 export default function AddTransactionsModal(props: {
   onClose: () => void;

@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
+import { TypedUseQueryHookResult } from "@reduxjs/toolkit/dist/query/react";
 import useFormField from "hooks/useFormField";
 import { Form, Label } from "semantic-ui-react";
 import { capitaliseFirstLetter } from "utils/string";
 import CurrencyLabel from "./CurrencyLabel";
-import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
-import { TypedUseQueryHookResult } from "@reduxjs/toolkit/dist/query/react";
 
 export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
   label?: string;

@@ -13,15 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { useState } from "react";
-import { Card } from "semantic-ui-react";
 import { AccountApiOut } from "app/services/api";
-import EditActionButton from "components/EditActionButton";
-import { useNavigate } from "react-router-dom";
-import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
-import CurrencyLabel from "components/CurrencyLabel";
-import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import ActionButton from "components/ActionButton";
+import CurrencyLabel from "components/CurrencyLabel";
+import EditActionButton from "components/EditActionButton";
+import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
+import { useInstitutionLinkQueries } from "features/institutionlink/hooks";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card } from "semantic-ui-react";
 import Uploader from "./Uploader";
 
 export default function AccountCard(props: {

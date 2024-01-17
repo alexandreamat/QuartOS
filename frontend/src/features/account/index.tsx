@@ -13,22 +13,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { useState } from "react";
-import { Loader, Icon, Menu, Card, Divider, Header } from "semantic-ui-react";
-import Form from "./components/Form";
 import {
   AccountApiOut,
   InstitutionalAccountType,
   NonInstitutionalAccountType,
   api,
 } from "app/services/api";
-import { useLocation } from "react-router-dom";
-import { capitaliseFirstLetter } from "utils/string";
-import { accountTypeToIconName } from "./utils";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
-import FlexColumn from "components/FlexColumn";
 import CreateNewButton from "components/CreateNewButton";
+import FlexColumn from "components/FlexColumn";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Card, Divider, Header, Icon, Loader, Menu } from "semantic-ui-react";
+import { capitaliseFirstLetter } from "utils/string";
 import AccountCard from "./components/AccountCard";
+import Form from "./components/Form";
+import { accountTypeToIconName } from "./utils";
 
 export default function Accounts() {
   const [selectedAccount, setSelectedAccount] = useState<
@@ -65,14 +65,20 @@ export default function Accounts() {
 
   const accounts = accountsQuery.data;
 
-  const groupedAccounts = accounts.reduce((acc, account) => {
-    const type = account.institutionalaccount
-      ? account.institutionalaccount.type
-      : account.noninstitutionalaccount!.type;
-    if (!acc[type]) acc[type] = [];
-    acc[type].push(account);
-    return acc;
-  }, {} as Record<InstitutionalAccountType | NonInstitutionalAccountType, AccountApiOut[]>);
+  const groupedAccounts = accounts.reduce(
+    (acc, account) => {
+      const type = account.institutionalaccount
+        ? account.institutionalaccount.type
+        : account.noninstitutionalaccount!.type;
+      if (!acc[type]) acc[type] = [];
+      acc[type].push(account);
+      return acc;
+    },
+    {} as Record<
+      InstitutionalAccountType | NonInstitutionalAccountType,
+      AccountApiOut[]
+    >,
+  );
 
   return (
     <FlexColumn>
@@ -91,7 +97,7 @@ export default function Accounts() {
                   name={accountTypeToIconName(
                     type as
                       | InstitutionalAccountType
-                      | NonInstitutionalAccountType
+                      | NonInstitutionalAccountType,
                   )}
                 />
                 {capitaliseFirstLetter(type)}

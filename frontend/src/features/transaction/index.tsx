@@ -14,14 +14,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { api } from "app/services/api";
-import { useEffect, useRef, useState } from "react";
-import Bar from "./components/Bar";
 import FlexColumn from "components/FlexColumn";
-import { logMutationError } from "utils/error";
-import SpanButton from "./components/SpanButton";
-import { useTransactionBarState } from "./components/Bar";
 import { useCheckboxes } from "hooks/useCheckboxes";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { logMutationError } from "utils/error";
+import Bar, { useTransactionBarState } from "./components/Bar";
+import SpanButton from "./components/SpanButton";
 import TransactionCards from "./components/TransactionCards";
 
 export const PER_PAGE = 20;
