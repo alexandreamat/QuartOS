@@ -15,7 +15,7 @@
 
 import { UserInstitutionLinkApiOut, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import {
   PlaidLinkOnEvent,
   PlaidLinkOnEventMetadata,

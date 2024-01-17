@@ -13,7 +13,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import React, { useCallback, useEffect, useState } from "react";
+import { api } from "app/services/api";
+import { useAppDispatch, useAppSelector } from "app/store";
+import FlexColumn from "components/FlexColumn";
+import FlexRow from "components/FlexRow";
+import SidebarMenu from "components/SidebarMenu";
+import TopBar from "components/TopBar";
+import Login from "features/auth/components/Login";
+import { SignUp } from "features/auth/components/SignUp";
+import {
+  setCredentials,
+  setCurrentUser,
+  unsetCredentials,
+  unsetCurrentUser,
+} from "features/auth/slice";
+import Profile from "features/profile";
+import { throttle } from "lodash";
+import { useCallback, useEffect, useState } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -29,24 +45,8 @@ import {
   Message,
   Sidebar,
 } from "semantic-ui-react";
-import SidebarMenu from "components/SidebarMenu";
-import routes, { RouteI } from "./router";
-import { useAppDispatch, useAppSelector } from "app/store";
-import TopBar from "components/TopBar";
-import Login from "features/auth/components/Login";
-import { SignUp } from "features/auth/components/SignUp";
-import { throttle } from "lodash";
-import {
-  setCredentials,
-  setCurrentUser,
-  unsetCredentials,
-  unsetCurrentUser,
-} from "features/auth/slice";
-import { api } from "app/services/api";
 import { renderErrorMessage } from "utils/error";
-import Profile from "features/profile";
-import FlexColumn from "components/FlexColumn";
-import FlexRow from "components/FlexRow";
+import routes, { RouteI } from "./router";
 
 function flattenRoutes(routes?: RouteI[], parent?: RouteI) {
   if (!routes) return [];

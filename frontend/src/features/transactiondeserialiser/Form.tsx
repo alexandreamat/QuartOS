@@ -13,18 +13,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Button, Form, Modal } from "semantic-ui-react";
-import { useEffect } from "react";
 import {
   TransactionDeserialiserApiIn,
   TransactionDeserialiserApiOut,
   api,
 } from "app/services/api";
-import useFormField from "hooks/useFormField";
 import FormTextArea from "components/FormTextArea";
 import FormTextInput from "components/FormTextInput";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { FormValidationError } from "components/FormValidationError";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import useFormField from "hooks/useFormField";
+import { useEffect } from "react";
+import { Button, Form, Modal } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 
 export default function TransactionDeserialiserForm(props: {

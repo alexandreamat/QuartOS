@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { useState } from "react";
-import { Confirm, SemanticFLOATS } from "semantic-ui-react";
-import ActionButton from "./ActionButton";
-import { renderErrorMessage } from "utils/error";
 import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
 import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
+import { useState } from "react";
+import { Confirm, SemanticFLOATS } from "semantic-ui-react";
+import { renderErrorMessage } from "utils/error";
+import ActionButton from "./ActionButton";
 
 export default function ConfirmDeleteButton<
   R,

@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import ActionButton from "./ActionButton";
 import { SemanticFLOATS } from "semantic-ui-react";
+import ActionButton from "./ActionButton";
 
 export default function MutateActionButton(props: {
   onOpenEditForm: () => void;

@@ -14,8 +14,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import useFormField from "hooks/useFormField";
-import { Form, TextAreaProps } from "semantic-ui-react";
 import { useEffect, useRef } from "react";
+import { Form, TextAreaProps } from "semantic-ui-react";
 
 export default function FormTextArea(props: {
   label: string;
@@ -43,7 +43,7 @@ export default function FormTextArea(props: {
       value={props.field.value}
       onChange={(
         event: React.ChangeEvent<HTMLTextAreaElement>,
-        data: TextAreaProps
+        data: TextAreaProps,
       ) => {
         props.field.reset();
         props.field.set(data.value as string);

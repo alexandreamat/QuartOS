@@ -18,14 +18,14 @@ import {
   TransactionApiOut,
   api,
 } from "app/services/api";
-import { TransactionsBarState } from "./Bar";
-import { TransactionCard } from "./TransactionCard";
-import { formatDateParam } from "utils/time";
 import { Checkboxes } from "hooks/useCheckboxes";
-import { InfiniteScroll } from "../../../components/InfiniteScroll";
 import { MutableRefObject } from "react";
 import { Card } from "semantic-ui-react";
 import { PaginatedItemProps } from "types";
+import { formatDateParam } from "utils/time";
+import { InfiniteScroll } from "../../../components/InfiniteScroll";
+import { TransactionsBarState } from "./Bar";
+import { TransactionCard } from "./TransactionCard";
 
 export default function TransactionCards(props: {
   barState: TransactionsBarState;

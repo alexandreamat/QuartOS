@@ -14,38 +14,38 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { BaseQueryFn, skipToken } from "@reduxjs/toolkit/dist/query";
+import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
 import {
   MovementApiOut,
   TransactionApiIn,
   TransactionApiOut,
   api,
 } from "app/services/api";
+import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDateTimeInput from "components/FormDateTimeInput";
 import FormDropdownInput from "components/FormDropdownInput";
 import FormTextInput from "components/FormTextInput";
 import { FormValidationError } from "components/FormValidationError";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import UploadButton from "components/UploadButton";
 import { useAccountOptions } from "features/account/hooks";
 import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
 import {
+  Button,
+  Form,
   Icon,
   Message,
   Modal,
-  Form,
-  Button,
   Placeholder,
 } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
+import { stringToDate } from "utils/time";
+import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
-import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
-import UploadButton from "components/UploadButton";
-import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
-import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
-import { stringToDate } from "utils/time";
 
 export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   props: {

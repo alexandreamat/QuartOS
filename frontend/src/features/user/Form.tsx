@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Message } from "semantic-ui-react";
 import { UserApiOut } from "app/services/api";
 import FormModal from "components/FormModal";
+import FormTextInput from "components/FormTextInput";
 import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
-import FormTextInput from "components/FormTextInput";
+import { Message } from "semantic-ui-react";
 
 export default function UserForm(props: {
   user?: UserApiOut;

@@ -13,20 +13,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { useState } from "react";
-import { Table, Loader, Flag, FlagNameValues, Label } from "semantic-ui-react";
-import InstitutionForm from "./components/Form";
 import { InstitutionApiOut, api } from "app/services/api";
-import { getName } from "i18n-iso-countries";
-import { logMutationError } from "utils/error";
-import EmptyTablePlaceholder from "components/TablePlaceholder";
-import TableHeader from "components/TableHeader";
-import TableFooter from "components/TableFooter";
-import EditActionButton from "components/EditActionButton";
-import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import ActionButton from "components/ActionButton";
-import { InstitutionLogo } from "./components/InstitutionLogo";
+import ConfirmDeleteButton from "components/ConfirmDeleteButton";
+import EditActionButton from "components/EditActionButton";
 import FlexColumn from "components/FlexColumn";
+import TableFooter from "components/TableFooter";
+import TableHeader from "components/TableHeader";
+import EmptyTablePlaceholder from "components/TablePlaceholder";
+import { getName } from "i18n-iso-countries";
+import { useState } from "react";
+import { Flag, FlagNameValues, Label, Loader, Table } from "semantic-ui-react";
+import { logMutationError } from "utils/error";
+import InstitutionForm from "./components/Form";
+import { InstitutionLogo } from "./components/InstitutionLogo";
 
 const InstitutionsTable = (props: {
   onOpenEditForm: (x: InstitutionApiOut) => void;

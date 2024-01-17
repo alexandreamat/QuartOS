@@ -20,6 +20,10 @@ import {
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import UploadSegment from "components/UploadSegment";
+import { TransactionCard } from "features/transaction/components/TransactionCard";
+import { useCheckboxes } from "hooks/useCheckboxes";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -30,10 +34,6 @@ import {
   Modal,
 } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
-import UploadSegment from "components/UploadSegment";
-import { useCheckboxes } from "hooks/useCheckboxes";
-import { TransactionCard } from "features/transaction/components/TransactionCard";
-import { useEffect, useMemo, useState } from "react";
 
 export default function Uploader(props: {
   account: AccountApiOut;

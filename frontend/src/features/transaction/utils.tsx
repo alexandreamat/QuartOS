@@ -14,8 +14,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { TransactionApiIn, TransactionApiOut } from "app/services/api";
-import { TransactionApiInForm } from "./types";
 import { formatDateParam, stringToDate } from "utils/time";
+import { TransactionApiInForm } from "./types";
 
 export function transactionApiOutToForm(
   transaction: TransactionApiOut,

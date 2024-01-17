@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import ClickableIcon from "components/ClickableIcon";
 import { useAccountOptions } from "features/account/hooks";
 import { Button, Dropdown, Menu, Popup } from "semantic-ui-react";
-import ClickableIcon from "components/ClickableIcon";
 import { UseStateType } from "types";
 
 export default function MenuDropdownAccount(props: {

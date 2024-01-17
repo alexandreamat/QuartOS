@@ -13,12 +13,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { MutableRefObject, useEffect, useMemo, useState } from "react";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
-import ExhaustedDataCard from "components/ExhaustedDataCard";
 import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
-import { PaginatedQueryArg, PaginatedQueryEndpoint } from "types";
-import { PaginatedItemProps } from "types";
+import ExhaustedDataCard from "components/ExhaustedDataCard";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { MutableRefObject, useEffect, useMemo, useState } from "react";
+import { PaginatedItemProps, PaginatedQueryArg, PaginatedQueryEndpoint } from "types";
 
 const PER_PAGE = 20;
 const RATE = 1;

@@ -13,13 +13,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 
-import appReducer from "./slice";
+import { setupListeners } from "@reduxjs/toolkit/dist/query";
 import authReducer from "features/auth/slice";
 import { api } from "./services/api";
-import { setupListeners } from "@reduxjs/toolkit/dist/query";
+import appReducer from "./slice";
 
 export const store = configureStore({
   reducer: {
