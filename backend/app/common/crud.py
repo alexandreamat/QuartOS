@@ -38,8 +38,7 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         obj_in: InModelType,
         **kwargs: Any,
     ) -> OutModelType:
-        db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
-        db_obj_out = cls.db_model.create(db, db_obj_in)
+        db_obj_out = cls.db_model.create(db, **obj_in.model_dump(), **kwargs)
         api_out_obj: OutModelType = cls.out_model.model_validate(db_obj_out)
         return api_out_obj
 

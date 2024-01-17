@@ -13,10 +13,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from typing import TYPE_CHECKING
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Any
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Session
 
 from app.common.models import Base
 
@@ -43,3 +43,11 @@ class File(__FileBase, Base, table=True):
     transaction_id: int = Field(foreign_key="transaction.id")
 
     transaction: "Transaction" = Relationship(back_populates="files")
+
+    @classmethod
+    def create(cls, db: Session, **kwargs: Any) -> "File":
+        return super().create(db, uploaded=datetime.now(timezone.utc), **kwargs)
+
+    @property
+    def read_data(cls, db: Session, file_id: int) -> bytes:
+        return File.read(db, file_id).data

@@ -35,7 +35,6 @@ from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
     UserInstitutionLink,
 )
-from app.utils import get_password_hash
 from .models import User, UserApiOut, UserApiIn
 
 logger = logging.getLogger(__name__)
@@ -46,30 +45,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     out_model = UserApiOut
 
     @classmethod
-    def create(cls, db: Session, obj_in: UserApiIn, **_: Any) -> UserApiOut:
-        hashed_password = get_password_hash(obj_in.password)
-        del obj_in.password
-        db_obj_in = User.from_schema(obj_in)
-        db_obj_in.hashed_password = hashed_password
-        db_obj_out = User.create(db, db_obj_in)
-        return UserApiOut.model_validate(db_obj_out)
-
-    @classmethod
     def read_by_email(cls, db: Session, email: str) -> UserApiOut:
         return UserApiOut.model_validate(User.read_by_email(db, email=email))
-
-    @classmethod
-    def update(
-        cls, db: Session, id: int, obj_in: UserApiIn, **kwargs: Any
-    ) -> UserApiOut:
-        db_obj_out = User.update(
-            db,
-            id,
-            **obj_in.dict(exclude={"password"}),
-            **kwargs,
-            hashed_password=get_password_hash(obj_in.password),
-        )
-        return UserApiOut.model_validate(db_obj_out)
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> UserApiOut:

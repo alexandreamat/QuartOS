@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+import logging
 import re
 from typing import Iterable, TypeVar, Type, Any, Annotated
 
@@ -30,6 +30,8 @@ BaseType = TypeVar("BaseType", bound="Base")
 SyncableBaseType = TypeVar("SyncableBaseType", bound="SyncableBase")
 SchemaType = TypeVar("SchemaType", bound=SQLModel)
 
+logger = logging.getLogger(__name__)
+
 
 class Base(SQLModel):
     id: int = Field(primary_key=True)
@@ -39,11 +41,8 @@ class Base(SQLModel):
         return select(cls)
 
     @classmethod
-    def from_schema(cls: Type[BaseType], obj_in: SchemaType, **kwargs: Any) -> BaseType:
-        return cls(**obj_in.model_dump(), **kwargs)
-
-    @classmethod
-    def create(cls: Type[BaseType], db: Session, obj: BaseType) -> BaseType:
+    def create(cls: Type[BaseType], db: Session, **kwargs: Any) -> BaseType:
+        obj = cls(**kwargs)
         db.add(obj)
         db.flush()
         return obj
