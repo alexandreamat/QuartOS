@@ -13,18 +13,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { AccountApiOut, InstitutionApiOut } from "app/services/api";
+import { AccountApiOut } from "app/services/api";
 import { Icon, Placeholder } from "semantic-ui-react";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import { accountTypeToIconName } from "features/account/utils";
 import { CSSProperties } from "react";
+import { useAccountQueries } from "../hooks";
 
 export default function AccountIcon(props: {
   account?: AccountApiOut;
-  institution?: InstitutionApiOut;
   loading?: boolean;
   style?: CSSProperties;
 }) {
+  const accountQueries = useAccountQueries(props.account?.id);
+
   if (props.loading)
     return (
       <Placeholder>
@@ -32,23 +34,27 @@ export default function AccountIcon(props: {
       </Placeholder>
     );
 
-  if (props.institution)
+  if (!props.account) return <Icon name="warning" />;
+
+  if (props.account.institutionalaccount)
     return (
-      <InstitutionLogo institution={props.institution} style={props.style} />
+      <InstitutionLogo
+        institution={accountQueries.institution}
+        style={props.style}
+        loading={accountQueries.isLoading}
+      />
     );
 
-  if (props.account)
+  if (props.account.noninstitutionalaccount)
     return (
       <Icon
         color="grey"
         name={accountTypeToIconName(
-          props.account.institutionalaccount?.type ||
-            props.account.noninstitutionalaccount?.type ||
-            "other",
+          props.account.noninstitutionalaccount?.type || "other",
         )}
         style={props.style}
       />
     );
 
-  return <Icon />;
+  return <Icon name="warning" />;
 }

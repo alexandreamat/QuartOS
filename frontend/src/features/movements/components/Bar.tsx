@@ -16,7 +16,7 @@
 import { Button, Menu } from "semantic-ui-react";
 import MenuDateRange from "components/MenuDateInput";
 import MenuInputSearch from "components/MenuInputSearch";
-import MenuDropdownAccount from "components/MenuDropdownAccount";
+import MenuDropdownAccount from "features/account/components/MenuDropdownAccount";
 import MenuNumericRange from "components/MenuNumericRange";
 import MenuCheckbox from "components/MenuCheckbox";
 import { useState } from "react";
