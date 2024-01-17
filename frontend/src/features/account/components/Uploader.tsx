@@ -121,9 +121,9 @@ export default function Uploader(props: {
     api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
 
   async function handleCreateTransactions() {
-    if (!uploadResult.data) return;
+    if (!transactionsIn) return;
 
-    const transactions = uploadResult.data.filter((_, i) =>
+    const transactions = transactionsIn.filter((_, i) =>
       checkboxes.checked.has(i),
     );
     try {
@@ -225,7 +225,7 @@ export default function Uploader(props: {
         </Button>
         <Button onClick={handleClose}>Cancel</Button>
         <Button
-          disabled={!uploadResult.isSuccess || checkboxes.checked.size < 1}
+          disabled={!uploadResult.isSuccess || checkboxes.checked.size === 0}
           content={`Upload ${checkboxes.checked.size} ${
             checkboxes.checked.size === 1 ? "transaction" : "transactions"
           }`}
