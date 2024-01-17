@@ -57,6 +57,7 @@ export default function Uploader(props: {
       uploadResult.isSuccess
         ? [...uploadResult.data].sort(
             (a, b) =>
+              // new Date is TZ aware but still keeps ordinality
               new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
           )
         : undefined,
