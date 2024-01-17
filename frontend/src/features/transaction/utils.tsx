@@ -15,22 +15,22 @@
 
 import { TransactionApiIn, TransactionApiOut } from "app/services/api";
 import { TransactionApiInForm } from "./types";
-import { formatDateParam } from "utils/time";
+import { formatDateParam, stringToDate } from "utils/time";
 
 export function transactionApiOutToForm(
   transaction: TransactionApiOut,
-  form: TransactionApiInForm
+  form: TransactionApiInForm,
 ) {
   form.amountStr.set(transaction.amount);
   form.timestamp.set(
-    transaction.timestamp ? new Date(transaction.timestamp) : new Date()
+    transaction.timestamp ? stringToDate(transaction.timestamp) : new Date(),
   );
   form.name.set(transaction.name);
   form.accountId.set(transaction.account_id);
 }
 
 export function transactionFormToApiIn(
-  form: TransactionApiInForm
+  form: TransactionApiInForm,
 ): TransactionApiIn {
   return {
     amount: form.amountStr.value!,
