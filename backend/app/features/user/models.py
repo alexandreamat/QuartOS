@@ -59,9 +59,13 @@ class User(__UserBase, Base, table=True):
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
 
-    @classmethod
-    def create(cls, db: Session, password: str, **kwargs: Any) -> "User":
-        return super().create(db, hashed_password=get_password_hash(password), **kwargs)
+    @property
+    def password(self) -> str:
+        raise NotImplementedError
+
+    @password.setter
+    def password(self, value: str) -> None:
+        self.hashed_password = get_password_hash(value)
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":

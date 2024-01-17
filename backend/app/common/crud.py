@@ -38,15 +38,15 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         obj_in: InModelType,
         **kwargs: Any,
     ) -> OutModelType:
-        db_obj_out = cls.db_model.create(db, **obj_in.model_dump(), **kwargs)
-        api_out_obj: OutModelType = cls.out_model.model_validate(db_obj_out)
-        return api_out_obj
+        obj = cls.db_model.create(db, **obj_in.model_dump(), **kwargs)
+        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        return obj_out
 
     @classmethod
     def read(cls, db: Session, id: int) -> OutModelType:
-        db_obj = cls.db_model.read(db, id)
-        api_out_obj: OutModelType = cls.out_model.model_validate(db_obj)
-        return api_out_obj
+        obj = cls.db_model.read(db, id)
+        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        return obj_out
 
     @classmethod
     def read_many(cls, db: Session, offset: int, limit: int) -> Iterable[OutModelType]:
