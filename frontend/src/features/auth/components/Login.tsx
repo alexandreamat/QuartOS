@@ -89,7 +89,7 @@ export default function Login() {
           </Segment>
         </Form>
         <Message>
-          New to us? <Link to="/signup">Sign Up</Link>
+          New to us? <Link to="/signup">Sign Up!</Link>
         </Message>
       </Grid.Column>
     </Grid>
