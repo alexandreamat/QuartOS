@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .crud import CRUDAccount, CRUDSyncableAccount
+from .exceptions import ForbiddenAccount
 from .models import (
     Account,
     AccountApiIn,
@@ -22,7 +23,6 @@ from .models import (
     AccountPlaidOut,
 )
 from .plaid import fetch_accounts
-from .exceptions import ForbiddenAccount
 
 __all__ = [
     "CRUDAccount",

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .models import FileApiOut, FileApiIn, File
 from .crud import CRUDFile
+from .models import FileApiOut, FileApiIn, File
 
 __all__ = ["File", "FileApiIn", "FileApiOut", "CRUDFile"]

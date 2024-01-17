@@ -13,33 +13,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import urllib3
-import plaid
 import json
-from typing import Iterable
 from datetime import date
+from typing import Iterable
 
+import plaid
+import urllib3
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
 from app.database.deps import DBSession
-
-from app.features.user import CurrentSuperuser, CRUDUser, CurrentUser
+from app.features.account import CRUDAccount
 from app.features.transaction import (
     TransactionPlaidIn,
     TransactionPlaidOut,
     reset_transaction_to_metadata,
     CRUDSyncableTransaction,
 )
-
+from app.features.user import CurrentSuperuser, CRUDUser, CurrentUser
 from app.features.userinstitutionlink import (
     CRUDUserInstitutionLink,
     CRUDSyncableUserInstitutionLink,
     fetch_transactions,
     sync_transactions as _sync_transactions,
 )
-from app.features.account import CRUDAccount
-
 
 router = APIRouter()
 

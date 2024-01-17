@@ -16,21 +16,16 @@
 from typing import Iterable
 
 import pytest
-from pydantic import ValidationError
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 from sqlmodel import Session
-from app.features.user._test import (
-    superuser_client,
-    superuser_read,
-    users_db,
-    user_write,
-    superuser_write,
-)
 
 from app._test import client, db
-
-from .models import InstitutionApiOut, InstitutionApiIn
+from app.features.user._test import (
+    superuser_client,
+)
 from .crud import CRUDInstitution
+from .models import InstitutionApiOut, InstitutionApiIn
 
 
 @pytest.fixture

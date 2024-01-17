@@ -13,23 +13,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, or_, and_, func
-from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
+from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, func
+from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
 from app.common.utils import filter_query_by_search
-
 from app.features.file import File, FileApiOut
 
 if TYPE_CHECKING:
-    from app.features.institution import Institution
     from app.features.user import User
-    from app.features.userinstitutionlink import UserInstitutionLink
     from app.features.account import Account
     from app.features.movement import Movement
 

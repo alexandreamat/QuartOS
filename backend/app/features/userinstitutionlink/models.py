@@ -20,8 +20,8 @@ from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import SyncedMixin, SyncableBase, SyncedBase
 from app.features.account import Account
-from app.features.transaction import Transaction
 from app.features.movement import Movement
+from app.features.transaction import Transaction
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
