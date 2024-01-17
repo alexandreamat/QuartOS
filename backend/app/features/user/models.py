@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from typing import Any
 
 from pydantic import EmailStr
@@ -25,7 +26,9 @@ from app.features.account import Account
 from app.features.movement import Movement
 from app.features.transaction import Transaction
 from app.features.userinstitutionlink import UserInstitutionLink
-from app.utils import verify_password
+from app.utils import verify_password, get_password_hash
+
+logger = logging.getLogger(__name__)
 
 
 class __UserBase(SQLModel):
@@ -55,6 +58,10 @@ class User(__UserBase, Base, table=True):
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
+
+    @classmethod
+    def create(cls, db: Session, password: str, **kwargs: Any) -> "User":
+        return super().create(db, hashed_password=get_password_hash(password), **kwargs)
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
