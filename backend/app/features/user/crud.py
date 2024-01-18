@@ -18,9 +18,12 @@ from decimal import Decimal
 from typing import Iterable, Any
 
 from dateutil.relativedelta import relativedelta
+from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session
 
+
 from app.common.crud import CRUDBase
+from app.common.exceptions import ObjectNotFoundError
 from app.common.models import CurrencyCode
 from app.features.account import AccountApiOut, Account
 from app.features.movement import (
@@ -225,8 +228,11 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_id: int,
         start_date: date,
     ) -> PLStatement:
-        statement = User.select_aggregates(user_id, start_date.month, start_date.year)
-        result = db.exec(statement).one()
+        statement = User.select_aggregates(user_id, start_date.year, start_date.month)
+        try:
+            result = db.exec(statement).one()
+        except NoResultFound:
+            raise ObjectNotFoundError("PLStatement")
         year = int(result.year)
         month = int(result.month)
         expenses = result.expenses
