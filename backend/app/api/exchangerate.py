@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from decimal import Decimal
-from datetime import date
 import logging
+from datetime import date
+from decimal import Decimal
 
 import requests
 from fastapi import APIRouter, HTTPException, status

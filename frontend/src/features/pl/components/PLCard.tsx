@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { PlStatement } from "app/services/api";
+import { PlStatement, api } from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
@@ -34,6 +34,7 @@ export default function PLCard(props: {
   const today = new Date();
   const isOngoing =
     startDate && endDate && startDate <= today && today <= endDate;
+  const me = api.endpoints.readMeUsersMeGet.useQuery();
 
   return (
     <Card fluid color="teal">
@@ -88,7 +89,7 @@ export default function PLCard(props: {
             <Step.Content>
               <CurrencyLabel
                 amount={Number(props.aggregate?.income)}
-                currencyCode={props.aggregate?.currency_code}
+                currencyCode={me.data?.default_currency_code}
                 loading={props.loading}
               />
             </Step.Content>
@@ -101,7 +102,7 @@ export default function PLCard(props: {
             <Step.Content>
               <CurrencyLabel
                 amount={Number(props.aggregate?.expenses)}
-                currencyCode={props.aggregate?.currency_code}
+                currencyCode={me.data?.default_currency_code}
                 loading={props.loading}
               />
             </Step.Content>
@@ -118,7 +119,7 @@ export default function PLCard(props: {
                 Number(props.aggregate.expenses) +
                   Number(props.aggregate.income)
               }
-              currencyCode={props.aggregate?.currency_code}
+              currencyCode={me.data?.default_currency_code}
               loading={props.loading}
             />
           </Header>

@@ -16,14 +16,13 @@
 import re
 from typing import TypeVar
 
-from sqlmodel import or_, and_
+from app.common.models import Base
 
-from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.orm import Mapped
+from sqlmodel import or_, and_
+from sqlmodel.sql.expression import SelectOfScalar
 
-from .models import Base
-
-BaseType = TypeVar("BaseType", bound="Base")
+BaseType = TypeVar("BaseType", bound=Base)
 
 
 def filter_query_by_search(
@@ -37,7 +36,7 @@ def filter_query_by_search(
         token_unquoted = token.strip("-'\"")
         if not token_unquoted:
             continue
-        clause = col.like(f"%{token_unquoted}%")
+        clause = col.ilike(f"%{token_unquoted}%")
         if negative:
             negative_clauses.append(~clause)
         else:

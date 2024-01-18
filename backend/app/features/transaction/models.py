@@ -13,25 +13,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, or_, and_, func
-from sqlmodel.sql.expression import SelectOfScalar
 from sqlalchemy.sql.expression import ClauseElement
+from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, func
+from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import Base, CurrencyCode, SyncedMixin, SyncableBase, SyncedBase
+from app.common.models import (
+    Base,
+    CurrencyCode,
+    SyncedMixin,
+    SyncableBase,
+    SyncedBase,
+)
 from app.common.utils import filter_query_by_search
-
 from app.features.file import File, FileApiOut
 
 if TYPE_CHECKING:
-    from app.features.institution import Institution
     from app.features.user import User
-    from app.features.userinstitutionlink import UserInstitutionLink
     from app.features.account import Account
     from app.features.movement import Movement
+    from app.features.institution import Institution
+    from app.features.userinstitutionlink import UserInstitutionLink
 
 
 class __TransactionBase(SQLModel):
@@ -42,6 +47,7 @@ class __TransactionBase(SQLModel):
 
 class TransactionApiOut(__TransactionBase, Base):
     account_balance: Decimal
+    amount_default_currency: Decimal
     account_id: int
     movement_id: int
     files: list[FileApiOut]
@@ -63,6 +69,7 @@ class TransactionPlaidOut(TransactionApiOut, SyncedBase):
 class Transaction(__TransactionBase, SyncableBase, table=True):
     account_id: int = Field(foreign_key="account.id")
     movement_id: int = Field(foreign_key="movement.id")
+    amount_default_currency: Decimal
     account_balance: Decimal
     files: list[File] = Relationship(
         back_populates="transaction",
@@ -71,6 +78,16 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
 
     account: "Account" = Relationship(back_populates="transactions")
     movement: "Movement" = Relationship(back_populates="transactions")
+
+    @property
+    def exchange_rate(self) -> Decimal:
+        return self.amount / self.amount_default_currency
+
+    @exchange_rate.setter
+    def exchange_rate(self, value: Decimal) -> None:
+        TWO_PACES = Decimal(10) ** -2
+        amount_default_currency = self.amount * value
+        self.amount_default_currency = amount_default_currency.quantize(TWO_PACES)
 
     @property
     def currency_code(self) -> CurrencyCode:

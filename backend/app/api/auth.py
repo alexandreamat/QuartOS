@@ -18,18 +18,17 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy.exc import NoResultFound
 from jose.exceptions import JWTError
+from sqlalchemy.exc import NoResultFound
 
 from app import utils
+from app.database.deps import DBSession
+from app.features.auth import Token
+from app.features.user import CRUDUser, UserApiIn
 from app.settings import settings
 from app.utils import (
-    generate_password_reset_token,
     verify_password_reset_token,
 )
-from app.database.deps import DBSession
-from app.features.user import CRUDUser, UserApiIn
-from app.features.auth import Token
 
 router = APIRouter()
 

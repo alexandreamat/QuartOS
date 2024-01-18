@@ -16,13 +16,12 @@
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-
-from app.features.user import CurrentSuperuser
 from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
     TransactionPlaidOut,
 )
+from app.features.user import CurrentSuperuser
 
 router = APIRouter()
 

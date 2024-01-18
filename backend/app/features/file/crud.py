@@ -13,14 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any
-from datetime import datetime, timezone
-import io
-
-
 from sqlmodel import Session
-from app.common.crud import CRUDBase
 
+from app.common.crud import CRUDBase
 from .models import File, FileApiIn, FileApiOut
 
 
@@ -29,12 +24,5 @@ class CRUDFile(CRUDBase[File, FileApiOut, FileApiIn]):
     out_model = FileApiOut
 
     @classmethod
-    def create(cls, db: Session, file_in: FileApiIn, **kwargs: Any) -> FileApiOut:
-        file = File.from_schema(file_in, uploaded=datetime.now(timezone.utc), **kwargs)
-        file = File.create(db, file)
-        return FileApiOut.model_validate(file)
-
-    @classmethod
     def read_data(cls, db: Session, file_id: int) -> bytes:
-        file = File.read(db, file_id)
-        return file.data
+        return File.read(db, file_id).data

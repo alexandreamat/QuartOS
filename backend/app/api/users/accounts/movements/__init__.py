@@ -15,15 +15,13 @@
 
 from typing import Iterable
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 
 from app.database.deps import DBSession
-
-from app.features.user import CurrentUser, CRUDUser
 from app.features.account import CRUDAccount
-from app.features.movement import CRUDMovement, MovementApiOut
+from app.features.movement import MovementApiOut
 from app.features.transaction import TransactionApiIn
-
+from app.features.user import CurrentUser, CRUDUser
 from . import transactions
 
 router = APIRouter()
@@ -41,7 +39,11 @@ def create_many(
     for transaction_id in transaction_ids:
         CRUDUser.read_transaction(db, me.id, None, account_id, None, transaction_id)
     yield from CRUDAccount.create_many_movements(
-        db, account_id, transactions, transaction_ids
+        db,
+        account_id,
+        transactions,
+        transaction_ids,
+        default_currency_code=me.default_currency_code,
     )
 
 

@@ -48,6 +48,8 @@ export function MovementCard(props: {
   const [updateMovement, updateMovementResult] =
     api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
 
+  const me = api.endpoints.readMeUsersMeGet.useQuery();
+
   async function updateName() {
     if (!props.movement) return;
 
@@ -168,19 +170,11 @@ export function MovementCard(props: {
           >
             Total:
           </div>
-          {props.movement ? (
-            Object.entries(props.movement.amounts).map(
-              ([currencyCode, amount], i) => (
-                <CurrencyLabel
-                  key={i}
-                  amount={Number(amount)}
-                  currencyCode={currencyCode}
-                />
-              ),
-            )
-          ) : (
-            <CurrencyLabel loading />
-          )}
+          <CurrencyLabel
+            amount={Number(props.movement?.amount_default_currency)}
+            currencyCode={me.data?.default_currency_code}
+            loading={me.isLoading || props.loading}
+          />
         </FlexRow>
       </Card.Content>
     </Card>

@@ -34,7 +34,6 @@ class PLStatement(SQLModel):
     end_date: date
     income: Decimal
     expenses: Decimal
-    currency_code: CurrencyCode
 
 
 class __MovementBase(SQLModel):
@@ -50,28 +49,7 @@ class MovementApiOut(__MovementBase, Base):
     earliest_timestamp: date | None
     latest_timestamp: date | None
     transactions: list[TransactionApiOut]
-    amounts: dict[CurrencyCode, Decimal]
-    amount: Decimal
-
-    @classmethod
-    def model_validate(
-        cls: Type[_TSQLModel],
-        obj: Any,
-        *,
-        strict: Union[bool, None] = None,
-        from_attributes: Union[bool, None] = None,
-        context: Union[Dict[str, Any], None] = None,
-        update: Union[Dict[str, Any], None] = None,
-    ) -> _TSQLModel:
-        # TODO: model_validate of SQLModel has a bug, remove when that is fixed
-        return cls(
-            **obj.model_dump(),
-            latest_timestamp=obj.latest_timestamp,
-            earliest_timestamp=obj.earliest_timestamp,
-            transactions=obj.transactions,
-            amounts=obj.amounts,
-            amount=obj.get_amount("USD"),
-        )
+    amount_default_currency: Decimal
 
 
 class MovementApiIn(__MovementBase):
@@ -92,26 +70,12 @@ class Movement(__MovementBase, Base, table=True):
     def latest_timestamp(self) -> date:
         return max(t.timestamp for t in self.transactions)
 
-    def get_amount(self, currency_code: CurrencyCode) -> Decimal:
-        try:
-            return sum(
-                [
-                    t.amount
-                    * get_exchange_rate(t.currency_code, currency_code, t.timestamp)
-                    for t in self.transactions
-                ],
-                Decimal(0),
-            )
-        except requests.exceptions.ConnectionError:
-            return Decimal("NaN")
-
     @property
-    def currencies(self) -> set[CurrencyCode]:
-        return {t.currency_code for t in self.transactions}
-
-    @property
-    def amounts(self) -> dict[CurrencyCode, Decimal]:
-        return {c: self.get_amount(c) for c in self.currencies}
+    def amount_default_currency(self) -> Decimal:
+        return sum(
+            [t.amount_default_currency for t in self.transactions],
+            Decimal(0),
+        )
 
     @classmethod
     def select_transactions(
@@ -171,7 +135,7 @@ class Movement(__MovementBase, Base, table=True):
                 select(
                     [
                         Transaction.movement_id,
-                        func.count(Transaction.id).label("transaction_count"),
+                        func.count(col(Transaction.id)).label("transaction_count"),
                     ]
                 )
                 .group_by(col(Transaction.movement_id))
@@ -218,51 +182,20 @@ class Movement(__MovementBase, Base, table=True):
         movements: Iterable["Movement"],
         is_descending: bool,
         sort_by: MovementField,
-        currency_code: CurrencyCode,
         amount_gt: Decimal | None = None,
         amount_lt: Decimal | None = None,
     ) -> Iterable["Movement"]:
         if amount_gt is not None:
-            movements = [
-                m for m in movements if m.get_amount(currency_code) > amount_gt
-            ]
+            movements = [m for m in movements if m.amount_default_currency > amount_gt]
 
         if amount_lt is not None:
-            movements = [
-                m for m in movements if m.get_amount(currency_code) < amount_lt
-            ]
+            movements = [m for m in movements if m.amount_default_currency < amount_lt]
 
         if sort_by is MovementField.AMOUNT:
             movements = sorted(
                 movements,
-                key=lambda m: m.get_amount(currency_code),
+                key=lambda m: m.amount_default_currency,
                 reverse=is_descending,
             )
 
         return movements
-
-    @classmethod
-    def get_aggregate(
-        cls,
-        movements: Iterable["Movement"],
-        start_date: date,
-        end_date: date,
-        currency_code: CurrencyCode,
-    ) -> PLStatement:
-        income_total = Decimal(0)
-        expense_total = Decimal(0)
-
-        for movement in movements:
-            amount = movement.get_amount(currency_code)
-            if amount >= Decimal(0):
-                income_total += amount
-            else:
-                expense_total += amount
-
-        return PLStatement(
-            start_date=start_date,
-            end_date=end_date,
-            income=income_total,
-            expenses=expense_total,
-            currency_code=currency_code,
-        )

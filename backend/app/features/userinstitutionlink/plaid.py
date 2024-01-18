@@ -14,34 +14,32 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import TYPE_CHECKING, Iterable
 from datetime import date
+from typing import TYPE_CHECKING, Iterable
+
 import sqlalchemy
-
-from sqlmodel import Session
-from pydantic import BaseModel
-
 from plaid.model.item import Item
 from plaid.model.item_get_request import ItemGetRequest
 from plaid.model.item_get_response import ItemGetResponse
 from plaid.model.transaction import Transaction
-from plaid.model.transactions_sync_request import TransactionsSyncRequest
-from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
-from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 from plaid.model.transactions_get_response import TransactionsGetResponse
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
+from plaid.model.transactions_sync_response import TransactionsSyncResponse
+from pydantic import BaseModel
+from sqlmodel import Session
 
 from app.common.plaid import client
-
-from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.account import CRUDAccount
+from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
     create_transaction_plaid_in,
 )
-
+from app.common.models import CurrencyCode
 from .crud import CRUDSyncableUserInstitutionLink
 from .models import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
 
@@ -165,6 +163,7 @@ def sync_transactions(
     db: Session,
     user_institution_link_out: UserInstitutionLinkPlaidOut,
     replacement_pattern_out: ReplacementPatternApiOut | None,
+    default_currency_code: CurrencyCode,
 ) -> None:
     has_more = True
     while has_more:
@@ -173,7 +172,12 @@ def sync_transactions(
         )
         for account_id, transaction_in in sync_result.added:
             try:
-                CRUDAccount.create_movement_plaid(db, account_id, transaction_in)
+                CRUDAccount.create_movement_plaid(
+                    db,
+                    account_id,
+                    transaction_in,
+                    default_currency_code=default_currency_code,
+                )
             except sqlalchemy.exc.IntegrityError:
                 logger.warning("Repeated transaction: %s", str(transaction_in))
         for account_id, transaction_in in sync_result.modified:
@@ -187,6 +191,7 @@ def sync_transactions(
                 transaction_out.id,
                 transaction_in,
                 transaction_out.movement_id,
+                default_currency_code=default_currency_code,
             )
         for plaid_id in sync_result.removed:
             transaction_out = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)

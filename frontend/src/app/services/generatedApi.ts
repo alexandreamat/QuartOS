@@ -521,12 +521,12 @@ const injectedRtkApi = api
           }),
           providesTags: ["users", "movements"],
         }),
-      getAggregateUsersMeMovementsAggregatesStartDateEndDateGet: build.query<
-        GetAggregateUsersMeMovementsAggregatesStartDateEndDateGetApiResponse,
-        GetAggregateUsersMeMovementsAggregatesStartDateEndDateGetApiArg
+      getAggregateUsersMeMovementsAggregatesStartDateGet: build.query<
+        GetAggregateUsersMeMovementsAggregatesStartDateGetApiResponse,
+        GetAggregateUsersMeMovementsAggregatesStartDateGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}`,
+          url: `/users/me/movements/aggregates/${queryArg}`,
         }),
         providesTags: ["users", "movements"],
       }),
@@ -631,6 +631,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "accounts"],
       }),
+      updateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPut:
+        build.mutation<
+          UpdateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPutApiResponse,
+          UpdateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPutApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/users/me/accounts/${queryArg}/update-transactions-amount-default-currency`,
+            method: "PUT",
+          }),
+          invalidatesTags: ["users", "accounts"],
+        }),
       createManyUsersMeAccountsAccountIdMovementsPost: build.mutation<
         CreateManyUsersMeAccountsAccountIdMovementsPostApiResponse,
         CreateManyUsersMeAccountsAccountIdMovementsPostApiArg
@@ -1012,12 +1023,9 @@ export type ReadIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiArg 
     startDate: string;
     endDate: string;
   };
-export type GetAggregateUsersMeMovementsAggregatesStartDateEndDateGetApiResponse =
+export type GetAggregateUsersMeMovementsAggregatesStartDateGetApiResponse =
   /** status 200 Successful Response */ PlStatement;
-export type GetAggregateUsersMeMovementsAggregatesStartDateEndDateGetApiArg = {
-  startDate: string;
-  endDate: string;
-};
+export type GetAggregateUsersMeMovementsAggregatesStartDateGetApiArg = string;
 export type GetManyAggregatesUsersMeMovementsAggregatesGetApiResponse =
   /** status 200 Successful Response */ PlStatement[];
 export type GetManyAggregatesUsersMeMovementsAggregatesGetApiArg = {
@@ -1069,6 +1077,10 @@ export type DeleteUsersMeAccountsAccountIdDeleteApiArg = number;
 export type UpdateBalanceUsersMeAccountsAccountIdUpdateBalancePutApiResponse =
   /** status 200 Successful Response */ AccountApiOut;
 export type UpdateBalanceUsersMeAccountsAccountIdUpdateBalancePutApiArg =
+  number;
+export type UpdateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPutApiArg =
   number;
 export type CreateManyUsersMeAccountsAccountIdMovementsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
@@ -1286,6 +1298,7 @@ export type TransactionPlaidOut = {
   timestamp: string;
   name: string;
   account_balance: string;
+  amount_default_currency: string;
   account_id: number;
   movement_id: number;
   files: FileApiOut[];
@@ -1297,6 +1310,7 @@ export type TransactionApiOut = {
   timestamp: string;
   name: string;
   account_balance: string;
+  amount_default_currency: string;
   account_id: number;
   movement_id: number;
   files: FileApiOut[];
@@ -1308,10 +1322,7 @@ export type MovementApiOut = {
   earliest_timestamp: string | null;
   latest_timestamp: string | null;
   transactions: TransactionApiOut[];
-  amounts: {
-    [key: string]: string;
-  };
-  amount: string;
+  amount_default_currency: string;
 };
 export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
@@ -1322,7 +1333,6 @@ export type PlStatement = {
   end_date: string;
   income: string;
   expenses: string;
-  currency_code: string;
 };
 export type InstitutionalAccountType =
   | "investment"

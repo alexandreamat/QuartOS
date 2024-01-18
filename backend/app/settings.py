@@ -15,9 +15,9 @@
 
 import secrets
 
-from pydantic import EmailStr, Field, PostgresDsn
-from pydantic_settings import BaseSettings
 from pydantic import EmailStr
+from pydantic import Field, PostgresDsn
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):

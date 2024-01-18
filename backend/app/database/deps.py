@@ -13,15 +13,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Generator, Annotated
 import logging
+from typing import Generator, Annotated
 
-from sqlalchemy import event
 from fastapi import Depends
 from sqlmodel import create_engine, Session
 
 from app.settings import settings
-
 
 engine = create_engine(
     str(settings.DATABASE_URL),

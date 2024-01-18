@@ -21,9 +21,8 @@ from .models import (
     TransactionPlaidIn,
     TransactionPlaidOut,
 )
-
-from .utils import get_transactions_from_csv
 from .plaid import create_transaction_plaid_in, reset_transaction_to_metadata
+from .utils import get_transactions_from_csv
 
 __all__ = [
     "CRUDTransaction",

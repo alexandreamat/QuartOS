@@ -19,13 +19,8 @@ from typing import TYPE_CHECKING, Iterable
 from plaid.model.account_base import AccountBase
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
-from plaid.model.auth_get_request import AuthGetRequest
-from plaid.model.auth_get_response import AuthGetResponse
-from plaid.model.auth_get_numbers import AuthGetNumbers
-from plaid.model.numbers_international import NumbersInternational
 
 from app.common.plaid import client
-
 from .models import AccountPlaidIn
 
 if TYPE_CHECKING:

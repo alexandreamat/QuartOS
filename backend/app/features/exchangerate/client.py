@@ -14,11 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from datetime import date
 from decimal import Decimal
 
 import requests_cache
-from datetime import date
-
 
 OPEN_EXCHANGE_RATES_ID = os.environ["OPEN_EXCHANGE_RATES_ID"]
 BASE_URL = "https://openexchangerates.org/api"

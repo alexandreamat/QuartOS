@@ -17,30 +17,23 @@ from typing import Iterable
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
+from sqlmodel import Session
 
-from app.features.user.models import UserApiOut
-from app.features.institution.models import InstitutionApiOut
-
-from app._test import client, db
-from app.features.user._test import (
-    user_read,
-    user_client,
-    user_write,
-    superuser_client,
-    users_db,
-    superuser_write,
-    superuser_read,
-)
+from app._test import db
 from app.features.institution._test import (
     institutions_read,
     institutions_db,
-    institutions_write,
 )
-
-from .models import UserInstitutionLinkApiIn, UserInstitutionLinkApiOut
+from app.features.institution.models import InstitutionApiOut
+from app.features.user._test import (
+    user_read,
+    user_client,
+    superuser_read,
+)
+from app.features.user.models import UserApiOut
 from .crud import CRUDUserInstitutionLink
+from .models import UserInstitutionLinkApiIn, UserInstitutionLinkApiOut
 
 
 @pytest.fixture

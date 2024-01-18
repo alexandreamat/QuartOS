@@ -13,21 +13,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from typing import Any
+
 from pydantic import EmailStr
-
-
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Relationship, SQLModel, Session, select, or_
+from sqlmodel import Relationship, SQLModel, Session, col, func, or_
 from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy import select, case, desc
 
 from app.common.models import Base, CurrencyCode
-from app.utils import verify_password
-
-from app.features.userinstitutionlink import UserInstitutionLink
 from app.features.account import Account
-from app.features.transaction import Transaction
 from app.features.movement import Movement
+from app.features.transaction import Transaction
+from app.features.userinstitutionlink import UserInstitutionLink
+from app.utils import verify_password, get_password_hash
+
+logger = logging.getLogger(__name__)
 
 
 class __UserBase(SQLModel):
@@ -58,9 +60,17 @@ class User(__UserBase, Base, table=True):
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
 
+    @property
+    def password(self) -> str:
+        raise NotImplementedError
+
+    @password.setter
+    def password(self, value: str) -> None:
+        self.hashed_password = get_password_hash(value)
+
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
-        db_user = db.exec(select(cls).where(cls.email == email)).first()
+        db_user = db.exec(cls.select().where(cls.email == email)).first()
         if not db_user:
             raise NoResultFound
         return db_user
@@ -132,6 +142,75 @@ class User(__UserBase, Base, table=True):
             )
         )
         return statement
+
+    @classmethod
+    def select_aggregates(
+        cls,
+        user_id: int,
+        year: int | None = None,
+        month: int | None = None,
+        page: int = 0,
+        per_page: int = 12,
+    ) -> Any:
+        movements_subquery = (
+            select(
+                col(Transaction.movement_id).label("id"),
+                func.min(Transaction.timestamp).label("timestamp"),
+                func.sum(Transaction.amount_default_currency).label("amount"),
+            )
+            .join(Account)
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
+            .outerjoin(User)
+            .where(
+                or_(
+                    Account.NonInstitutionalAccount.user_id == user_id,
+                    UserInstitutionLink.user_id == user_id,
+                )
+            )
+            .group_by(col(Transaction.movement_id))
+            .subquery()
+        )
+
+        aggregates_query = (
+            select(
+                func.extract("year", movements_subquery.c.timestamp).label("year"),
+                func.extract("month", movements_subquery.c.timestamp).label("month"),
+                func.sum(
+                    case(
+                        (
+                            movements_subquery.c.amount < 0,
+                            movements_subquery.c.amount,
+                        ),
+                        else_=0,
+                    )
+                ).label("expenses"),
+                func.sum(
+                    case(
+                        (
+                            movements_subquery.c.amount > 0,
+                            movements_subquery.c.amount,
+                        ),
+                        else_=0,
+                    )
+                ).label("income"),
+            )
+            .group_by("year", "month")
+            .order_by(desc("year"), desc("month"))
+        )
+
+        if year:
+            aggregates_query.where(aggregates_query.c.year == year)
+
+        if month:
+            aggregates_query.where(aggregates_query.c.month == month)
+
+        if per_page:
+            offset = page * per_page
+            aggregates_query = aggregates_query.offset(offset).limit(per_page)
+
+        return aggregates_query
 
     @classmethod
     def select_transactions(
