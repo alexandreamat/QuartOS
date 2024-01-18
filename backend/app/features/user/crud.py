@@ -35,7 +35,6 @@ from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
     UserInstitutionLink,
 )
-from app.utils import get_password_hash
 from .models import User, UserApiOut, UserApiIn
 
 logger = logging.getLogger(__name__)
@@ -46,30 +45,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     out_model = UserApiOut
 
     @classmethod
-    def create(cls, db: Session, obj_in: UserApiIn, **_: Any) -> UserApiOut:
-        hashed_password = get_password_hash(obj_in.password)
-        del obj_in.password
-        db_obj_in = User.from_schema(obj_in)
-        db_obj_in.hashed_password = hashed_password
-        db_obj_out = User.create(db, db_obj_in)
-        return UserApiOut.model_validate(db_obj_out)
-
-    @classmethod
     def read_by_email(cls, db: Session, email: str) -> UserApiOut:
         return UserApiOut.model_validate(User.read_by_email(db, email=email))
-
-    @classmethod
-    def update(
-        cls, db: Session, id: int, obj_in: UserApiIn, **kwargs: Any
-    ) -> UserApiOut:
-        db_obj_out = User.update(
-            db,
-            id,
-            **obj_in.dict(exclude={"password"}),
-            **kwargs,
-            hashed_password=get_password_hash(obj_in.password),
-        )
-        return UserApiOut.model_validate(db_obj_out)
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> UserApiOut:
@@ -218,7 +195,6 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             movements,
             is_descending,
             sort_by,
-            currency_code,
             amount_gt=amount_gt,
             amount_lt=amount_lt,
         )
@@ -248,23 +224,18 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         db: Session,
         user_id: int,
         start_date: date,
-        end_date: date,
-        currency_code: CurrencyCode | None = None,
     ) -> PLStatement:
-        statement = User.select_movements(
-            user_id=user_id,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        movements = db.exec(statement).all()
-        if not currency_code:
-            user_out = cls.read(db, user_id)
-            currency_code = user_out.default_currency_code
-        return Movement.get_aggregate(
-            movements,
-            start_date=start_date,
-            end_date=end_date,
-            currency_code=currency_code,
+        statement = User.select_aggregates(user_id, start_date.month, start_date.year)
+        result = db.exec(statement).one()
+        year = int(result.year)
+        month = int(result.month)
+        expenses = result.expenses
+        income = result.income
+        return PLStatement(
+            start_date=date(year, month, 1),
+            end_date=date(year, month, 1) + relativedelta(months=1),
+            expenses=expenses,
+            income=income,
         )
 
     @classmethod
@@ -275,20 +246,16 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         page: int,
         per_page: int,
     ) -> Iterable[PLStatement]:
-        user_out = cls.read(db, user_id)
-        today = date.today()
-        last_start_date = today.replace(day=1)
-        offset = per_page * page
-        for i in range(offset, offset + per_page):
-            start_date = last_start_date - relativedelta(months=i)
-            end_date = min(
-                start_date + relativedelta(months=1),
-                today + relativedelta(days=1),
-            )
-            yield cls.get_movement_aggregate(
-                db,
-                user_id,
-                start_date=start_date,
-                end_date=end_date,
-                currency_code=user_out.default_currency_code,
+        statement = User.select_aggregates(user_id, None, None, page, per_page)
+        results = db.exec(statement).all()
+        for result in results:
+            year = int(result.year)
+            month = int(result.month)
+            expenses = result.expenses
+            income = result.income
+            yield PLStatement(
+                start_date=date(year, month, 1),
+                end_date=date(year, month, 1) + relativedelta(months=1),
+                expenses=expenses,
+                income=income,
             )

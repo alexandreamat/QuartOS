@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
+from sqlmodel import Session
 
-from app.settings import settings
 from app.features.user import CRUDUser, UserApiIn
+from app.settings import settings
 
 
 def init_db(db: Session) -> None:

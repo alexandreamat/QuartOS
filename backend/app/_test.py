@@ -16,21 +16,14 @@
 from typing import Generator
 
 import pytest
-from sqlalchemy import create_engine, event
-from sqlmodel import Session
-from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
-
-from app.main import app
+from sqlalchemy import create_engine, event
+from sqlalchemy.pool import StaticPool
+from sqlmodel import Session
 
 from app.common.models import Base
-from app.features.institution.models import Institution
-from app.features.user.models import User
-from app.features.userinstitutionlink.models import UserInstitutionLink
-from app.features.account.models import Account
-from app.features.transaction.models import Transaction
-
 from app.database.deps import get_db
+from app.main import app
 
 
 @pytest.fixture

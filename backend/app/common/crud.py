@@ -38,16 +38,15 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         obj_in: InModelType,
         **kwargs: Any,
     ) -> OutModelType:
-        db_obj_in = cls.db_model.from_schema(obj_in, **kwargs)
-        db_obj_out = cls.db_model.create(db, db_obj_in)
-        api_out_obj: OutModelType = cls.out_model.model_validate(db_obj_out)
-        return api_out_obj
+        obj = cls.db_model.create(db, **obj_in.model_dump(), **kwargs)
+        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        return obj_out
 
     @classmethod
     def read(cls, db: Session, id: int) -> OutModelType:
-        db_obj = cls.db_model.read(db, id)
-        api_out_obj: OutModelType = cls.out_model.model_validate(db_obj)
-        return api_out_obj
+        obj = cls.db_model.read(db, id)
+        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        return obj_out
 
     @classmethod
     def read_many(cls, db: Session, offset: int, limit: int) -> Iterable[OutModelType]:
@@ -59,8 +58,8 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         cls, db: Session, id: int, obj_in: InModelType, **kwargs: Any
     ) -> OutModelType:
         obj = cls.db_model.update(db, id, **obj_in.model_dump(), **kwargs)
-        out_obj: OutModelType = cls.out_model.model_validate(obj)
-        return out_obj
+        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        return obj_out
 
     @classmethod
     def delete(cls, db: Session, id: int) -> int:

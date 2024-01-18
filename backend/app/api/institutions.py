@@ -18,8 +18,6 @@ from typing import Iterable
 from fastapi import APIRouter, HTTPException, status
 
 from app.database.deps import DBSession
-
-from app.features.user.deps import CurrentSuperuser
 from app.features.institution import (
     CRUDInstitution,
     CRUDSyncableInstitution,
@@ -27,6 +25,7 @@ from app.features.institution import (
     InstitutionApiIn,
     fetch_institution,
 )
+from app.features.user.deps import CurrentSuperuser
 
 INSTITUTIONS = "institutions"
 

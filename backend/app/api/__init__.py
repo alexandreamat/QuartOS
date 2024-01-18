@@ -15,15 +15,14 @@
 
 from fastapi import APIRouter
 
-
+from . import accounts
 from . import auth
 from . import exchangerate
 from . import institutions
-from . import transactiondeserialisers
-from . import users
-from . import accounts
-from . import transactions
 from . import replacementpatterns
+from . import transactiondeserialisers
+from . import transactions
+from . import users
 
 router = APIRouter()
 

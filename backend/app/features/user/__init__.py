@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .models import User, UserApiIn, UserApiOut
 from .crud import CRUDUser
 from .deps import CurrentUser, CurrentSuperuser
+from .models import User, UserApiIn, UserApiOut
 
 __all__ = [
     "User",

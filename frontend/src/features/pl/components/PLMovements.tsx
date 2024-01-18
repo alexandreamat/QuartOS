@@ -51,7 +51,7 @@ export default function PLMovements(props: {
   return (
     <Card.Group style={{ margin: 0 }}>
       {movements.map((movement) => {
-        cumulativeAmount += Number(movement.amount);
+        cumulativeAmount += Number(movement.amount_default_currency);
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         return (
           <MovementCard

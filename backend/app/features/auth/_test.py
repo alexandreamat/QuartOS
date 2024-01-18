@@ -16,8 +16,8 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from app.features.user import UserApiIn, CRUDUser
 from app._test import client, db
+from app.features.user import UserApiIn, CRUDUser
 
 
 def test_login(client: TestClient, db: Session) -> None:

@@ -14,6 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .crud import CRUDUserInstitutionLink, CRUDSyncableUserInstitutionLink
+from .exceptions import (
+    SyncedEntity,
+    ForbiddenUserInstitutionLink,
+)
 from .models import (
     UserInstitutionLink,
     UserInstitutionLinkApiIn,
@@ -22,10 +26,6 @@ from .models import (
     UserInstitutionLinkPlaidOut,
 )
 from .plaid import fetch_user_institution_link, fetch_transactions, sync_transactions
-from .exceptions import (
-    SyncedEntity,
-    ForbiddenUserInstitutionLink,
-)
 
 __all__ = [
     "CRUDUserInstitutionLink",

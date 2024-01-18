@@ -13,16 +13,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Iterable
 from datetime import date
 from decimal import Decimal
+from typing import Iterable
 
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-
-from app.features.user import CurrentUser, CRUDUser
 from app.features.movement import PLStatement, MovementApiOut, MovementField
+from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()
 
@@ -63,19 +62,13 @@ def read_income(
     )
 
 
-@router.get("/{start_date}/{end_date}")
+@router.get("/{start_date}")
 def get_aggregate(
     db: DBSession,
     me: CurrentUser,
     start_date: date,
-    end_date: date,
 ) -> PLStatement:
-    return CRUDUser.get_movement_aggregate(
-        db,
-        me.id,
-        start_date=start_date,
-        end_date=end_date,
-    )
+    return CRUDUser.get_movement_aggregate(db, me.id, start_date)
 
 
 @router.get("/")

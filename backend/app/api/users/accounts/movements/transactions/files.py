@@ -13,17 +13,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import io
 import mimetypes
 from typing import Annotated, Iterable
+
 from fastapi import APIRouter, File as _File, UploadFile
 from fastapi.responses import Response
 
 from app.database.deps import DBSession
-
 from app.features.file import CRUDFile, FileApiIn, FileApiOut
-from app.features.user import CurrentUser, CRUDUser
 from app.features.transaction import CRUDTransaction
+from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()
 

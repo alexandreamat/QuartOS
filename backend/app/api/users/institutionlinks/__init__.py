@@ -15,12 +15,12 @@
 
 from typing import Iterable
 
-from sqlalchemy.exc import NoResultFound
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.exc import NoResultFound
 
-from app.database.deps import DBSession
 from app.common.plaid import create_link_token, exchange_public_token
-
+from app.database.deps import DBSession
+from app.features.account import CRUDSyncableAccount, fetch_accounts
 from app.features.institution import CRUDSyncableInstitution, fetch_institution
 from app.features.user import CRUDUser, CurrentUser
 from app.features.userinstitutionlink import (
@@ -31,8 +31,6 @@ from app.features.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
     fetch_user_institution_link,
 )
-from app.features.account import CRUDSyncableAccount, fetch_accounts
-
 from . import plaidtransactions
 
 router = APIRouter()

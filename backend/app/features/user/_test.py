@@ -14,17 +14,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Generator
-from fastapi.testclient import TestClient
+
 import pytest
+from fastapi.testclient import TestClient
 from sqlmodel import Session
+
+from app._test import db, client
 from app.features.user.deps import get_current_user
 from app.features.user.models import UserApiOut
 from app.main import app
-
-from app._test import db, client
-
-from .models import UserApiIn
 from .crud import CRUDUser
+from .models import UserApiIn
 
 
 @pytest.fixture
