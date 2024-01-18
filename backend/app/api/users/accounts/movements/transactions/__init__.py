@@ -36,7 +36,10 @@ def create(
     movement_id: int,
     transaction_in: TransactionApiIn,
 ) -> TransactionApiOut:
-    CRUDUser.read_movement(db, me.id, None, account_id, movement_id)
+    # check permissions for account and movement separately because the
+    # movement and the account might not be linked initially
+    CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    CRUDUser.read_account(db, me.id, None, account_id)
     return CRUDAccount.create_transaction(
         db,
         account_id,
