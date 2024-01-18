@@ -195,7 +195,6 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             movements,
             is_descending,
             sort_by,
-            currency_code,
             amount_gt=amount_gt,
             amount_lt=amount_lt,
         )
@@ -226,7 +225,6 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_id: int,
         start_date: date,
         end_date: date,
-        currency_code: CurrencyCode | None = None,
     ) -> PLStatement:
         statement = User.select_movements(
             user_id=user_id,
@@ -234,14 +232,10 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             end_date=end_date,
         )
         movements = db.exec(statement).all()
-        if not currency_code:
-            user_out = cls.read(db, user_id)
-            currency_code = user_out.default_currency_code
         return Movement.get_aggregate(
             movements,
             start_date=start_date,
             end_date=end_date,
-            currency_code=currency_code,
         )
 
     @classmethod
@@ -267,5 +261,4 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
                 user_id,
                 start_date=start_date,
                 end_date=end_date,
-                currency_code=user_out.default_currency_code,
             )

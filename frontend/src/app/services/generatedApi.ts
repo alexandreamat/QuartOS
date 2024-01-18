@@ -1325,10 +1325,7 @@ export type MovementApiOut = {
   earliest_timestamp: string | null;
   latest_timestamp: string | null;
   transactions: TransactionApiOut[];
-  amounts: {
-    [key: string]: string;
-  };
-  amount: string;
+  amount_default_currency: string;
 };
 export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
@@ -1339,7 +1336,6 @@ export type PlStatement = {
   end_date: string;
   income: string;
   expenses: string;
-  currency_code: string;
 };
 export type InstitutionalAccountType =
   | "investment"
