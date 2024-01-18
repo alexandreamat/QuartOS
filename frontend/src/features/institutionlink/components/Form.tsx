@@ -14,6 +14,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
+  UserInstitutionLinkApiIn,
+  UserInstitutionLinkApiOut,
+  api,
+} from "app/services/api";
+import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
+import FormDropdownInput from "components/FormDropdownInput";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { useInstitutionOptions } from "features/institution/hooks";
+import useFormField from "hooks/useFormField";
+import { useEffect } from "react";
+import {
   Button,
   Divider,
   Form,
@@ -21,19 +32,8 @@ import {
   Message,
   Modal,
 } from "semantic-ui-react";
-import { useEffect } from "react";
-import {
-  UserInstitutionLinkApiIn,
-  UserInstitutionLinkApiOut,
-  api,
-} from "app/services/api";
-import useFormField from "hooks/useFormField";
-import FormDropdownInput from "components/FormDropdownInput";
-import PlaidLinkButton from "./PlaidLinkButton";
-import { useInstitutionOptions } from "features/institution/hooks";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { logMutationError } from "utils/error";
-import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
+import PlaidLinkButton from "./PlaidLinkButton";
 
 export default function InstitutionLinkForm(props: {
   open: boolean;

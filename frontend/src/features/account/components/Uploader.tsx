@@ -20,6 +20,10 @@ import {
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import UploadSegment from "components/UploadSegment";
+import { TransactionCard } from "features/transaction/components/TransactionCard";
+import { useCheckboxes } from "hooks/useCheckboxes";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -30,10 +34,6 @@ import {
   Modal,
 } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
-import UploadSegment from "components/UploadSegment";
-import { useCheckboxes } from "hooks/useCheckboxes";
-import { TransactionCard } from "features/transaction/components/TransactionCard";
-import { useEffect, useMemo, useState } from "react";
 
 export default function Uploader(props: {
   account: AccountApiOut;
@@ -52,16 +52,7 @@ export default function Uploader(props: {
   const [upload, uploadResult] =
     api.endpoints.previewUsersMeAccountsPreviewPost.useMutation();
 
-  const transactionsIn = useMemo(
-    () =>
-      uploadResult.isSuccess
-        ? [...uploadResult.data].sort(
-            (a, b) =>
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-          )
-        : undefined,
-    [uploadResult],
-  );
+  const transactionsIn = uploadResult.data || [];
 
   const lastTransaction = useMemo(
     () =>
@@ -70,6 +61,14 @@ export default function Uploader(props: {
         : undefined,
     [lastTransactionQuery],
   );
+
+  function handleSelectAll() {
+    transactionsIn.forEach((t, i) => checkboxes.onChange(i, true));
+  }
+
+  function handleClearAll() {
+    checkboxes.reset();
+  }
 
   const handleClose = () => {
     setShowDupsWarn(false);
@@ -96,7 +95,9 @@ export default function Uploader(props: {
     if (!transactionsIn || !lastTransaction) return;
 
     transactionsIn.forEach((transactionIn, i) => {
-      if (transactionIn.timestamp <= lastTransaction.timestamp) {
+      if (
+        new Date(transactionIn.timestamp) <= new Date(lastTransaction.timestamp)
+      ) {
         setShowDupsWarn(true);
         checkboxes.onChange(i, false);
       } else {
@@ -108,10 +109,10 @@ export default function Uploader(props: {
   const [createMovements, createMovementsResult] =
     api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
 
-  const handleCreateTransactions = async () => {
-    if (!uploadResult.data) return;
+  async function handleCreateTransactions() {
+    if (!transactionsIn) return;
 
-    const transactions = uploadResult.data.filter((_, i) =>
+    const transactions = transactionsIn.filter((_, i) =>
       checkboxes.checked.has(i),
     );
     try {
@@ -127,7 +128,7 @@ export default function Uploader(props: {
       return;
     }
     handleClose();
-  };
+  }
 
   return (
     <Modal open onClose={props.onClose}>
@@ -191,9 +192,29 @@ export default function Uploader(props: {
         </FlexColumn>
       </Modal.Content>
       <Modal.Actions>
+        <Button
+          compact
+          onClick={handleSelectAll}
+          floated="left"
+          disabled={
+            transactionsIn
+              ? checkboxes.checked.size === transactionsIn.length
+              : true
+          }
+        >
+          Select All
+        </Button>
+        <Button
+          compact
+          onClick={handleClearAll}
+          floated="left"
+          disabled={transactionsIn ? checkboxes.checked.size === 0 : true}
+        >
+          Clear All
+        </Button>
         <Button onClick={handleClose}>Cancel</Button>
         <Button
-          disabled={!uploadResult.isSuccess || checkboxes.checked.size < 1}
+          disabled={!uploadResult.isSuccess || checkboxes.checked.size === 0}
           content={`Upload ${checkboxes.checked.size} ${
             checkboxes.checked.size === 1 ? "transaction" : "transactions"
           }`}

@@ -1,8 +1,8 @@
 import { BodyLoginAuthLoginPost, api } from "app/services/api";
 import { useAppDispatch } from "app/store";
+import { useNavigate } from "react-router-dom";
 import { logMutationError } from "utils/error";
 import { setCredentials, unsetCredentials, unsetCurrentUser } from "./slice";
-import { useNavigate } from "react-router-dom";
 
 export function useLogin(username: string, password: string) {
   const dispatch = useAppDispatch();

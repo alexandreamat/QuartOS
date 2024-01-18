@@ -14,13 +14,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { PlStatement, api } from "app/services/api";
+import FlexColumn from "components/FlexColumn";
+import { InfiniteScroll } from "components/InfiniteScroll";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "semantic-ui-react";
-import PLCard from "./components/PLCard";
-import FlexColumn from "components/FlexColumn";
-import { useRef } from "react";
-import { InfiniteScroll } from "components/InfiniteScroll";
 import { PaginatedItemProps } from "types";
+import PLCard from "./components/PLCard";
 
 function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
   const navigate = useNavigate();

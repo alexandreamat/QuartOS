@@ -13,17 +13,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import { Provider } from 'react-redux';
+import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 
-import { store } from './app/store';
-import App from './App';
-import ErrorBoundary from 'components/ErrorBoundary';
+import ErrorBoundary from "components/ErrorBoundary";
+import App from "./App";
+import { store } from "./app/store";
 
-import 'semantic-ui-css/semantic.min.css';
+import "semantic-ui-css/semantic.min.css";
 
-const container = document.getElementById('root')!;
+const container = document.getElementById("root")!;
 const root = createRoot(container);
 
 root.render(
@@ -32,6 +31,6 @@ root.render(
     <Provider store={store}>
       <App />
     </Provider>
-  </ErrorBoundary >
+  </ErrorBoundary>,
   // </React.StrictMode>
 );
