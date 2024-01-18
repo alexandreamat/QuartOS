@@ -27,3 +27,14 @@ from app.features.movement import Movement  # noqa
 from app.features.transaction import Transaction  # noqa
 
 # 3. Import this file from Alembic
+__all__ = [
+    "Base",
+    "ReplacementPattern",
+    "TransactionDeserialiser",
+    "User",
+    "Institution",
+    "UserInstitutionLink",
+    "Account",
+    "Movement",
+    "Transaction",
+]
