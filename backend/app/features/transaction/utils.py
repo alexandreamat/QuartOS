@@ -62,7 +62,7 @@ def __get_transactions_from_csv(
 
 def get_transactions_from_csv(
     deserialiser_out: TransactionDeserialiserApiOut, file: BinaryIO, account_id: int
-):
+) -> Iterable[TransactionApiIn]:
     ts = [t for t in __get_transactions_from_csv(deserialiser_out, file, account_id)]
     # Return first old and then recent
     if deserialiser_out.ascending_timestamp:
