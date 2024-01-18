@@ -39,7 +39,11 @@ def create_many(
     for transaction_id in transaction_ids:
         CRUDUser.read_transaction(db, me.id, None, account_id, None, transaction_id)
     yield from CRUDAccount.create_many_movements(
-        db, account_id, transactions, transaction_ids
+        db,
+        account_id,
+        transactions,
+        transaction_ids,
+        default_currency_code=me.default_currency_code,
     )
 
 

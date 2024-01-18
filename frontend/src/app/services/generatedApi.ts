@@ -631,6 +631,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "accounts"],
       }),
+      updateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPut:
+        build.mutation<
+          UpdateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPutApiResponse,
+          UpdateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPutApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/users/me/accounts/${queryArg}/update-transactions-amount-default-currency`,
+            method: "PUT",
+          }),
+          invalidatesTags: ["users", "accounts"],
+        }),
       createManyUsersMeAccountsAccountIdMovementsPost: build.mutation<
         CreateManyUsersMeAccountsAccountIdMovementsPostApiResponse,
         CreateManyUsersMeAccountsAccountIdMovementsPostApiArg
@@ -1070,6 +1081,10 @@ export type UpdateBalanceUsersMeAccountsAccountIdUpdateBalancePutApiResponse =
   /** status 200 Successful Response */ AccountApiOut;
 export type UpdateBalanceUsersMeAccountsAccountIdUpdateBalancePutApiArg =
   number;
+export type UpdateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateTransactionsAmountDefaultCurrencyUsersMeAccountsAccountIdUpdateTransactionsAmountDefaultCurrencyPutApiArg =
+  number;
 export type CreateManyUsersMeAccountsAccountIdMovementsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
 export type CreateManyUsersMeAccountsAccountIdMovementsPostApiArg = {
@@ -1286,6 +1301,7 @@ export type TransactionPlaidOut = {
   timestamp: string;
   name: string;
   account_balance: string;
+  amount_default_currency: string;
   account_id: number;
   movement_id: number;
   files: FileApiOut[];
@@ -1297,6 +1313,7 @@ export type TransactionApiOut = {
   timestamp: string;
   name: string;
   account_balance: string;
+  amount_default_currency: string;
   account_id: number;
   movement_id: number;
   files: FileApiOut[];

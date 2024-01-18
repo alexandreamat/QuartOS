@@ -102,7 +102,12 @@ def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
         db, userinstitutionlink_id
     )
     try:
-        _sync_transactions(db, institution_link_plaid_out, replacement_pattern_out)
+        _sync_transactions(
+            db,
+            institution_link_plaid_out,
+            replacement_pattern_out,
+            me.default_currency_code,
+        )
     except urllib3.exceptions.ReadTimeoutError:
         raise HTTPException(status.HTTP_504_GATEWAY_TIMEOUT)
     except plaid.ApiException as e:

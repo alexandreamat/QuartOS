@@ -36,9 +36,14 @@ def create(
     movement_id: int,
     transaction_in: TransactionApiIn,
 ) -> TransactionApiOut:
-    CRUDUser.read_movement(db, me.id, None, None, movement_id)
-    CRUDUser.read_account(db, me.id, None, account_id)
-    return CRUDAccount.create_transaction(db, account_id, movement_id, transaction_in)
+    CRUDUser.read_movement(db, me.id, None, account_id, movement_id)
+    return CRUDAccount.create_transaction(
+        db,
+        account_id,
+        movement_id,
+        transaction_in,
+        me.default_currency_code,
+    )
 
 
 @router.get("/{transaction_id}")
@@ -67,7 +72,13 @@ def update(
 ) -> TransactionApiOut:
     CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
     return CRUDAccount.update_transaction(
-        db, account_id, movement_id, transaction_id, transaction_in, new_movement_id
+        db,
+        account_id,
+        movement_id,
+        transaction_id,
+        transaction_in,
+        new_movement_id,
+        default_currency_code=me.default_currency_code,
     )
 
 
