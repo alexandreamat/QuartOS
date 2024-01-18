@@ -166,34 +166,6 @@ class Account(_AccountBase, Base, table=True):
     )
 
     @classmethod
-    def from_schema(  # type: ignore[override]
-        cls,
-        obj_in: AccountApiIn,
-        user_id: int | None = None,
-        userinstitutionlink_id: int | None = None,
-    ) -> "Account":
-        obj_in_dict = obj_in.dict(
-            exclude={"institutionalaccount", "noninstitutionalaccount"}
-        )
-        if obj_in.institutionalaccount:
-            return Account(
-                **obj_in_dict,
-                institutionalaccount=Account.InstitutionalAccount(
-                    userinstitutionlink_id=userinstitutionlink_id,
-                    **obj_in.institutionalaccount.dict(),
-                ),
-            )
-        if obj_in.noninstitutionalaccount:
-            return Account(
-                **obj_in_dict,
-                noninstitutionalaccount=Account.NonInstitutionalAccount(
-                    user_id=user_id,
-                    **obj_in.noninstitutionalaccount.dict(),
-                ),
-            )
-        raise ValueError
-
-    @classmethod
     def update_balance(
         cls, db: Session, id: int, timestamp: date | None = None
     ) -> "Account":
