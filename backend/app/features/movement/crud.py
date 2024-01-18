@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from typing import Iterable, Any, Sequence
 
 from sqlmodel import Session
@@ -37,7 +36,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def create(  # type: ignore[override]
         cls, db: Session, transactions: Sequence[TransactionApiIn | int], **kwargs: Any
     ) -> MovementApiOut:
-        movement = Movement.create(db, Movement(name=""))
+        movement = Movement.create(db, name="")
         for transaction in transactions:
             if isinstance(transaction, TransactionApiIn):
                 transaction_in = transaction
@@ -57,7 +56,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         transaction_in: TransactionPlaidIn,
         **kwargs: Any,
     ) -> MovementApiOut:
-        movement = Movement.create(db, Movement(name=transaction_in.name))
+        movement = Movement.create(db, name=transaction_in.name)
         CRUDSyncableTransaction.create(
             db, transaction_in, movement_id=movement.id, **kwargs
         )
