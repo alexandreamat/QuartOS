@@ -20,7 +20,7 @@ from pydantic import EmailStr
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, col, func, or_
 from sqlmodel.sql.expression import SelectOfScalar
-from sqlalchemy import select, case
+from sqlalchemy import select, case, desc
 
 from app.common.models import Base, CurrencyCode
 from app.features.account import Account
@@ -194,7 +194,7 @@ class User(__UserBase, Base, table=True):
                     else_=0,
                 )
             ).label("income"),
-        ).group_by("year", "month")
+        ).group_by(desc("year"), desc("month"))
 
         if year:
             aggregates_query.where(aggregates_query.c.year == year)
