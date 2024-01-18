@@ -171,7 +171,7 @@ class Movement(__MovementBase, Base, table=True):
                 select(
                     [
                         Transaction.movement_id,
-                        func.count(Transaction.id).label("transaction_count"),
+                        func.count(col(Transaction.id)).label("transaction_count"),
                     ]
                 )
                 .group_by(col(Transaction.movement_id))

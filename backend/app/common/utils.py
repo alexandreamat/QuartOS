@@ -16,11 +16,13 @@
 import re
 from typing import TypeVar
 
+from app.common.models import Base
+
 from sqlalchemy.orm import Mapped
 from sqlmodel import or_, and_
 from sqlmodel.sql.expression import SelectOfScalar
 
-BaseType = TypeVar("BaseType", bound="Base")
+BaseType = TypeVar("BaseType", bound=Base)
 
 
 def filter_query_by_search(
