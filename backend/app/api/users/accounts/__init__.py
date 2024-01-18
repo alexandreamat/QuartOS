@@ -17,11 +17,8 @@ from typing import Annotated, Iterable
 
 from fastapi import APIRouter, UploadFile, File
 
-from app.database.deps import DBSession
 from app.common.exceptions import UnknownError
-
-from app.features.user import CRUDUser, CurrentUser
-from app.features.userinstitutionlink import SyncedEntity
+from app.database.deps import DBSession
 from app.features.account import (
     CRUDAccount,
     AccountApiOut,
@@ -31,7 +28,8 @@ from app.features.transaction import (
     TransactionApiIn,
     get_transactions_from_csv,
 )
-
+from app.features.user import CRUDUser, CurrentUser
+from app.features.userinstitutionlink import SyncedEntity
 from . import movements
 
 router = APIRouter()
@@ -52,10 +50,7 @@ def preview(
     CRUDUser.read_account(db, me.id, None, account_id)
     deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
     try:
-        ts = [t for t in get_transactions_from_csv(deserialiser, file.file, account_id)]
-        # transactions normally come ordered from recent to old
-        for t in ts[::-1]:
-            yield t
+        return get_transactions_from_csv(deserialiser, file.file, account_id)
     except Exception as e:
         raise UnknownError(e)
 

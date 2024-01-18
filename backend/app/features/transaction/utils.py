@@ -17,14 +17,13 @@ import csv
 import re
 
 # imports for exec
-import decimal
-import datetime
+import decimal  # noqa
+import datetime  # noqa
 
 from typing import Iterable, BinaryIO
 
-from .models import TransactionApiIn
-
 from app.features.transactiondeserialiser import TransactionDeserialiserApiOut
+from .models import TransactionApiIn
 
 
 def __sanitise_row(row: list[str]) -> None:
@@ -32,7 +31,7 @@ def __sanitise_row(row: list[str]) -> None:
         row[i] = re.sub(r"[\s\t]+", " ", row[i]).strip()
 
 
-def get_transactions_from_csv(
+def __get_transactions_from_csv(
     deserialiser_out: TransactionDeserialiserApiOut,
     file: BinaryIO,
     account_id: int,
@@ -60,3 +59,18 @@ def get_transactions_from_csv(
         deserialized_row["account_id"] = account_id
         instance = TransactionApiIn(**deserialized_row)
         yield instance
+
+
+def get_transactions_from_csv(
+    deserialiser_out: TransactionDeserialiserApiOut, file: BinaryIO, account_id: int
+):
+    ts = (t for t in __get_transactions_from_csv(deserialiser_out, file, account_id))
+    # Return first old and then recent
+    if deserialiser_out.ascending_timestamp:
+        # transactions in the CSV are sorted from old to recent (ascending), no need to reverse
+        for t in ts:
+            yield t
+    else:
+        # transactions in the CSV are sorted from recent to old (descending), need to reverse
+        for t in ts[::-1]:
+            yield t

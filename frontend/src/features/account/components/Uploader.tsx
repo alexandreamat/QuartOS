@@ -52,17 +52,7 @@ export default function Uploader(props: {
   const [upload, uploadResult] =
     api.endpoints.previewUsersMeAccountsPreviewPost.useMutation();
 
-  const transactionsIn = useMemo(
-    () =>
-      uploadResult.isSuccess
-        ? [...uploadResult.data].sort(
-            (a, b) =>
-              // new Date is TZ aware but still keeps ordinality
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-          )
-        : undefined,
-    [uploadResult],
-  );
+  const transactionsIn = uploadResult.data || [];
 
   const lastTransaction = useMemo(
     () =>
@@ -73,7 +63,6 @@ export default function Uploader(props: {
   );
 
   function handleSelectAll() {
-    if (!transactionsIn) return;
     transactionsIn.forEach((t, i) => checkboxes.onChange(i, true));
   }
 

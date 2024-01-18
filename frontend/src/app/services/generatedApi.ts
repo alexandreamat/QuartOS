@@ -1188,6 +1188,7 @@ export type TransactionDeserialiserApiOut = {
   timestamp_deserialiser: string;
   name_deserialiser: string;
   skip_rows: number;
+  ascending_timestamp: boolean;
   columns: number;
   delimiter: string;
   encoding: string;
@@ -1198,6 +1199,7 @@ export type TransactionDeserialiserApiIn = {
   timestamp_deserialiser: string;
   name_deserialiser: string;
   skip_rows: number;
+  ascending_timestamp: boolean;
   columns: number;
   delimiter: string;
   encoding: string;
