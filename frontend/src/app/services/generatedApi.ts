@@ -521,12 +521,12 @@ const injectedRtkApi = api
           }),
           providesTags: ["users", "movements"],
         }),
-      getAggregateUsersMeMovementsAggregatesStartDateEndDateGet: build.query<
-        GetAggregateUsersMeMovementsAggregatesStartDateEndDateGetApiResponse,
-        GetAggregateUsersMeMovementsAggregatesStartDateEndDateGetApiArg
+      getAggregateUsersMeMovementsAggregatesStartDateGet: build.query<
+        GetAggregateUsersMeMovementsAggregatesStartDateGetApiResponse,
+        GetAggregateUsersMeMovementsAggregatesStartDateGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}`,
+          url: `/users/me/movements/aggregates/${queryArg}`,
         }),
         providesTags: ["users", "movements"],
       }),
@@ -1023,12 +1023,9 @@ export type ReadIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiArg 
     startDate: string;
     endDate: string;
   };
-export type GetAggregateUsersMeMovementsAggregatesStartDateEndDateGetApiResponse =
+export type GetAggregateUsersMeMovementsAggregatesStartDateGetApiResponse =
   /** status 200 Successful Response */ PlStatement;
-export type GetAggregateUsersMeMovementsAggregatesStartDateEndDateGetApiArg = {
-  startDate: string;
-  endDate: string;
-};
+export type GetAggregateUsersMeMovementsAggregatesStartDateGetApiArg = string;
 export type GetManyAggregatesUsersMeMovementsAggregatesGetApiResponse =
   /** status 200 Successful Response */ PlStatement[];
 export type GetManyAggregatesUsersMeMovementsAggregatesGetApiArg = {

@@ -77,10 +77,6 @@ class Movement(__MovementBase, Base, table=True):
             Decimal(0),
         )
 
-    @property
-    def currencies(self) -> set[CurrencyCode]:
-        return {t.currency_code for t in self.transactions}
-
     @classmethod
     def select_transactions(
         cls, movement_id: int | None, transaction_id: int | None, **kwargs: Any
@@ -203,27 +199,3 @@ class Movement(__MovementBase, Base, table=True):
             )
 
         return movements
-
-    @classmethod
-    def get_aggregate(
-        cls,
-        movements: Iterable["Movement"],
-        start_date: date,
-        end_date: date,
-    ) -> PLStatement:
-        income_total = Decimal(0)
-        expense_total = Decimal(0)
-
-        for movement in movements:
-            amount = movement.amount_default_currency
-            if amount >= Decimal(0):
-                income_total += amount
-            else:
-                expense_total += amount
-
-        return PLStatement(
-            start_date=start_date,
-            end_date=end_date,
-            income=income_total,
-            expenses=expense_total,
-        )

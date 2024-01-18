@@ -224,18 +224,18 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         db: Session,
         user_id: int,
         start_date: date,
-        end_date: date,
     ) -> PLStatement:
-        statement = User.select_movements(
-            user_id=user_id,
-            start_date=start_date,
-            end_date=end_date,
-        )
-        movements = db.exec(statement).all()
-        return Movement.get_aggregate(
-            movements,
-            start_date=start_date,
-            end_date=end_date,
+        statement = User.select_aggregates(user_id, start_date.month, start_date.year)
+        result = db.exec(statement).one()
+        year = int(result.year)
+        month = int(result.month)
+        expenses = result.expenses
+        income = result.income
+        return PLStatement(
+            start_date=date(year, month, 1),
+            end_date=date(year, month, 1) + relativedelta(months=1),
+            expenses=expenses,
+            income=income,
         )
 
     @classmethod
@@ -246,19 +246,16 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         page: int,
         per_page: int,
     ) -> Iterable[PLStatement]:
-        user_out = cls.read(db, user_id)
-        today = date.today()
-        last_start_date = today.replace(day=1)
-        offset = per_page * page
-        for i in range(offset, offset + per_page):
-            start_date = last_start_date - relativedelta(months=i)
-            end_date = min(
-                start_date + relativedelta(months=1),
-                today + relativedelta(days=1),
-            )
-            yield cls.get_movement_aggregate(
-                db,
-                user_id,
-                start_date=start_date,
-                end_date=end_date,
+        statement = User.select_aggregates(user_id, None, None, page, per_page)
+        results = db.exec(statement).all()
+        for result in results:
+            year = int(result.year)
+            month = int(result.month)
+            expenses = result.expenses
+            income = result.income
+            yield PLStatement(
+                start_date=date(year, month, 1),
+                end_date=date(year, month, 1) + relativedelta(months=1),
+                expenses=expenses,
+                income=income,
             )
