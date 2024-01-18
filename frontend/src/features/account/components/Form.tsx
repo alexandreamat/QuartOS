@@ -228,6 +228,11 @@ export default function AccountForm(props: {
                 <Input
                   label={<Label>＊＊＊＊</Label>}
                   placeholder="last 4 digits of your account number"
+                  value={mask.value}
+                  onChange={(e, data) => {
+                    mask.reset();
+                    mask.set(data.value);
+                  }}
                 />
               </Form.Field>
             </>
