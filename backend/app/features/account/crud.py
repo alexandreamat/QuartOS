@@ -21,6 +21,7 @@ from sqlmodel import Session
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.common.exceptions import ObjectNotFoundError
 from app.common.models import CurrencyCode
+from app.features.account.models import AccountApiIn, AccountApiOut
 from app.features.exchangerate import get_exchange_rate
 from app.features.movement import (
     MovementApiOut,
@@ -68,6 +69,45 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     ):
         db_model = Account.NonInstitutionalAccount
         out_model = AccountApiOut.NonInstitutionalAccount
+
+    @classmethod
+    def create(
+        cls,
+        db: Session,
+        obj_in: AccountApiIn,
+        userinstitutionlink_id: int | None = None,
+        user_id: int | None = None,
+        **kwargs: Any
+    ) -> AccountApiOut:
+        account_in = obj_in
+        account_kw = account_in.model_dump(
+            exclude={"institutionalaccount", "noninstitutionalaccount"}
+        )
+        if account_in.institutionalaccount:
+            institutionalaccount = Account.InstitutionalAccount(
+                userinstitutionlink_id=userinstitutionlink_id,
+                **account_in.institutionalaccount.model_dump(),
+            )
+            account = Account.create(
+                db,
+                institutionalaccount=institutionalaccount,
+                **account_kw,
+                **kwargs,
+            )
+        elif account_in.noninstitutionalaccount:
+            noninstitutionalaccount = Account.NonInstitutionalAccount(
+                user_id=user_id,
+                **account_in.noninstitutionalaccount.model_dump(),
+            )
+            account = Account.create(
+                db,
+                noninstitutionalaccount=noninstitutionalaccount,
+                **account_kw,
+                **kwargs,
+            )
+        else:
+            raise ValueError
+        return AccountApiOut.model_validate(account)
 
     @classmethod
     def read_transaction_deserialiser(
@@ -153,7 +193,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
             id,
             **dict_in,
             institutionalaccount_id=institutionalaccount_id,
-            noninstitutionalaccount_id=noninstitutionalaccount_id
+            noninstitutionalaccount_id=noninstitutionalaccount_id,
         )
         cls.update_balance(db, id)
         return AccountApiOut.model_validate(account)
@@ -343,7 +383,7 @@ class CRUDSyncableAccount:
         account = Account.create(
             db,
             **account_in.model_dump(exclude={"institutionalaccount"}),
-            institutionalaccount_id=institutionalaccount_out.id
+            institutionalaccount_id=institutionalaccount_out.id,
         )
         return AccountPlaidOut.model_validate(account)
 
@@ -357,13 +397,13 @@ class CRUDSyncableAccount:
             db,
             account.institutionalaccount_id,
             account_in.institutionalaccount,
-            **kwargs
+            **kwargs,
         )
         account = Account.update(
             db,
             account_id,
             **account_in.model_dump(exclude={"institutionalaccount"}),
-            institutionalaccount_id=institutionalaccount_out.id
+            institutionalaccount_id=institutionalaccount_out.id,
         )
         account = Account.update_balance(db, account_id)
         return AccountPlaidOut.model_validate(account)
