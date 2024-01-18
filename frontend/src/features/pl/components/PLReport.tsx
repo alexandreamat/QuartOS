@@ -26,15 +26,15 @@ import PLMovements from "./PLMovements";
 
 export default function PLReport() {
   const navigate = useNavigate();
-  const { startDate, endDate } = useParams();
+  const { startDate } = useParams();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [showIncome, setShowIncome] = useState(true);
   const [movementId, setMovementId] = useState(0);
 
   const aggregateQuery =
-    api.endpoints.getAggregateUsersMeMovementsAggregatesStartDateEndDateGet.useQuery(
-      startDate && endDate ? { startDate, endDate } : skipToken,
+    api.endpoints.getAggregateUsersMeMovementsAggregatesStartDateGet.useQuery(
+      startDate ? startDate : skipToken,
     );
 
   function handleClickIncome() {
