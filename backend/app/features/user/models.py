@@ -173,28 +173,32 @@ class User(__UserBase, Base, table=True):
             .subquery()
         )
 
-        aggregates_query = select(
-            func.extract("year", movements_subquery.c.timestamp).label("year"),
-            func.extract("month", movements_subquery.c.timestamp).label("month"),
-            func.sum(
-                case(
-                    (
-                        movements_subquery.c.amount < 0,
-                        movements_subquery.c.amount,
-                    ),
-                    else_=0,
-                )
-            ).label("expenses"),
-            func.sum(
-                case(
-                    (
-                        movements_subquery.c.amount > 0,
-                        movements_subquery.c.amount,
-                    ),
-                    else_=0,
-                )
-            ).label("income"),
-        ).group_by(desc("year"), desc("month"))
+        aggregates_query = (
+            select(
+                func.extract("year", movements_subquery.c.timestamp).label("year"),
+                func.extract("month", movements_subquery.c.timestamp).label("month"),
+                func.sum(
+                    case(
+                        (
+                            movements_subquery.c.amount < 0,
+                            movements_subquery.c.amount,
+                        ),
+                        else_=0,
+                    )
+                ).label("expenses"),
+                func.sum(
+                    case(
+                        (
+                            movements_subquery.c.amount > 0,
+                            movements_subquery.c.amount,
+                        ),
+                        else_=0,
+                    )
+                ).label("income"),
+            )
+            .group_by("year", "month")
+            .order_by(desc("year"), desc("month"))
+        )
 
         if year:
             aggregates_query.where(aggregates_query.c.year == year)
