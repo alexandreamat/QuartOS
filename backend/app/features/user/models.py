@@ -173,10 +173,13 @@ class User(__UserBase, Base, table=True):
             .subquery()
         )
 
+        year_extract = func.extract("year", movements_subquery.c.timestamp)
+        month_extract = func.extract("month", movements_subquery.c.timestamp)
+
         aggregates_query = (
             select(
-                func.extract("year", movements_subquery.c.timestamp).label("year"),
-                func.extract("month", movements_subquery.c.timestamp).label("month"),
+                year_extract.label("year"),
+                month_extract.label("month"),
                 func.sum(
                     case(
                         (
@@ -201,10 +204,10 @@ class User(__UserBase, Base, table=True):
         )
 
         if year:
-            aggregates_query.where(aggregates_query.c.year == year)
+            aggregates_query = aggregates_query.having(year_extract == year)
 
         if month:
-            aggregates_query.where(aggregates_query.c.month == month)
+            aggregates_query = aggregates_query.having(month_extract == month)
 
         if per_page:
             offset = page * per_page
