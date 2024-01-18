@@ -13,20 +13,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { useState } from "react";
-import { Table, Loader, Label } from "semantic-ui-react";
-import Form from "./components/Form";
 import { UserInstitutionLinkApiOut, api } from "app/services/api";
-import { logMutationError } from "utils/error";
-import EmptyTablePlaceholder from "components/TablePlaceholder";
 import ActionButton from "components/ActionButton";
 import LoadableLine from "components/LoadableLine";
-import TableHeader from "components/TableHeader";
-import TableFooter from "components/TableFooter";
 import MutateActionButton from "components/MutateActionButton";
-import { useNavigate } from "react-router-dom";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import TableFooter from "components/TableFooter";
+import TableHeader from "components/TableHeader";
+import EmptyTablePlaceholder from "components/TablePlaceholder";
 import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Label, Loader, Table } from "semantic-ui-react";
+import { logMutationError } from "utils/error";
+import Form from "./components/Form";
 
 function InstitutionLinkRow(props: {
   institutionLink: UserInstitutionLinkApiOut;

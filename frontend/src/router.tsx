@@ -14,17 +14,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Accounts from "features/account";
-import React from "react";
-import Transactions from "features/transaction";
-import InstitutionLinks from "features/institutionlink";
+import Dashboard from "features/dashboard";
 import Institutions from "features/institution";
-import Users from "features/user";
-import { SemanticICONS } from "semantic-ui-react";
-import TransactionDeserialisers from "features/transactiondeserialiser";
+import InstitutionLinks from "features/institutionlink";
 import Movements from "features/movements";
 import PL from "features/pl";
 import plReport from "features/pl/components/PLReport";
-import Dashboard from "features/dashboard";
+import Transactions from "features/transaction";
+import TransactionDeserialisers from "features/transactiondeserialiser";
+import Users from "features/user";
+import React from "react";
+import { SemanticICONS } from "semantic-ui-react";
 
 export interface RouteI {
   path: string;

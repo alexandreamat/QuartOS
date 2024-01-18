@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import React, { CSSProperties, ReactNode, LegacyRef } from "react";
 import { Property } from "csstype";
+import { CSSProperties, LegacyRef, ReactNode } from "react";
 
 const FlexRow = (props: {
   children: ReactNode;

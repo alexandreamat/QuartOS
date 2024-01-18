@@ -13,26 +13,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Button, Form, Input, Label, Modal } from "semantic-ui-react";
-import { useEffect } from "react";
 import {
-  AccountApiOut,
   AccountApiIn,
+  AccountApiOut,
   InstitutionalAccountType,
   NonInstitutionalAccountType,
   api,
 } from "app/services/api";
-import useFormField from "hooks/useFormField";
-import FormTextInput from "components/FormTextInput";
+import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import FormCurrencyInputs from "components/FormCurrencyInputs";
 import FormDropdownInput from "components/FormDropdownInput";
-import { useLocation } from "react-router-dom";
-import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
-import { capitaliseFirstLetter } from "utils/string";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
+import FormTextInput from "components/FormTextInput";
 import { FormValidationError } from "components/FormValidationError";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
+import useFormField from "hooks/useFormField";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { Button, Form, Input, Label, Modal } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
-import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
@@ -228,6 +228,11 @@ export default function AccountForm(props: {
                 <Input
                   label={<Label>＊＊＊＊</Label>}
                   placeholder="last 4 digits of your account number"
+                  value={mask.value}
+                  onChange={(e, data) => {
+                    mask.reset();
+                    mask.set(data.value);
+                  }}
                 />
               </Form.Field>
             </>

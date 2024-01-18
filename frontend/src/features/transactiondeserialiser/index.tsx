@@ -13,18 +13,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import { TransactionDeserialiserApiOut, api } from "app/services/api";
+import ConfirmDeleteButton from "components/ConfirmDeleteButton";
+import CreateNewButton from "components/CreateNewButton";
+import EditActionButton from "components/EditActionButton";
+import FlexColumn from "components/FlexColumn";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useState } from "react";
-import { Card, Loader, Menu } from "semantic-ui-react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
-import Form from "./Form";
-import { api, TransactionDeserialiserApiOut } from "app/services/api";
+import { Card, Loader, Menu } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
-import EditActionButton from "components/EditActionButton";
-import ConfirmDeleteButton from "components/ConfirmDeleteButton";
-import FlexColumn from "components/FlexColumn";
-import CreateNewButton from "components/CreateNewButton";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
+import Form from "./Form";
 
 function TransactionDeserialiser(props: {
   transactionDeserialiser: TransactionDeserialiserApiOut;
@@ -53,6 +53,9 @@ function TransactionDeserialiser(props: {
 columns = ${props.transactionDeserialiser.columns}
 delimiter = "${props.transactionDeserialiser.delimiter}"
 encoding = "${props.transactionDeserialiser.encoding}"
+ascending_timestamp = ${
+            props.transactionDeserialiser.ascending_timestamp ? "True" : "False"
+          }
 
 def deserialize_name(row: list[str]) -> str:
     return ${props.transactionDeserialiser.name_deserialiser}

@@ -13,9 +13,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Image, Icon, SemanticFLOATS, Placeholder } from "semantic-ui-react";
 import { InstitutionApiOut } from "app/services/api";
 import { CSSProperties } from "react";
+import { Icon, Image, Placeholder, SemanticFLOATS } from "semantic-ui-react";
 
 export function InstitutionLogo(props: {
   institution?: InstitutionApiOut;

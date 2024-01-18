@@ -13,18 +13,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Message } from "semantic-ui-react";
-import { useEffect } from "react";
-import { InstitutionApiOut, InstitutionApiIn, api } from "app/services/api";
-import { logMutationError, renderErrorMessage } from "utils/error";
-import { getAlpha2Codes, getName, registerLocale } from "i18n-iso-countries";
-import FormModal from "components/FormModal";
-import useFormField from "hooks/useFormField";
-import FormTextInput from "components/FormTextInput";
+import { InstitutionApiIn, InstitutionApiOut, api } from "app/services/api";
 import FormDropdownInput from "components/FormDropdownInput";
-import { useTransactionDeserialiserOptions } from "features/transactiondeserialiser/hooks";
-import { FormValidationError } from "components/FormValidationError";
 import FormTextFile from "components/FormFile";
+import FormModal from "components/FormModal";
+import FormTextInput from "components/FormTextInput";
+import { FormValidationError } from "components/FormValidationError";
+import { useTransactionDeserialiserOptions } from "features/transactiondeserialiser/hooks";
+import useFormField from "hooks/useFormField";
+import { getAlpha2Codes, getName, registerLocale } from "i18n-iso-countries";
+import { useEffect } from "react";
+import { Message } from "semantic-ui-react";
+import { logMutationError, renderErrorMessage } from "utils/error";
 
 registerLocale(require("i18n-iso-countries/langs/en.json"));
 

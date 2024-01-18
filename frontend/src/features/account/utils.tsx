@@ -13,14 +13,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { SemanticICONS } from "semantic-ui-react";
 import {
   InstitutionalAccountType,
   NonInstitutionalAccountType,
 } from "app/services/api";
+import { SemanticICONS } from "semantic-ui-react";
 
 export function accountTypeToIconName(
-  type: InstitutionalAccountType | NonInstitutionalAccountType
+  type: InstitutionalAccountType | NonInstitutionalAccountType,
 ): SemanticICONS {
   switch (type) {
     case "brokerage":

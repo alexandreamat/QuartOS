@@ -14,10 +14,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { AccountApiOut } from "app/services/api";
-import { Icon, Placeholder } from "semantic-ui-react";
-import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import { accountTypeToIconName } from "features/account/utils";
+import { InstitutionLogo } from "features/institution/components/InstitutionLogo";
 import { CSSProperties } from "react";
+import { Icon, Placeholder } from "semantic-ui-react";
 import { useAccountQueries } from "../hooks";
 
 export default function AccountIcon(props: {

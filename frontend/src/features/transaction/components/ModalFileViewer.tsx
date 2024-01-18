@@ -13,14 +13,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { TransactionApiOut, api } from "app/services/api";
-import { Button, Image, Loader, Modal } from "semantic-ui-react";
-import ActionButton from "components/ActionButton";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
-import FlexRow from "components/FlexRow";
-import React, { useState } from "react";
-import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { TransactionApiOut, api } from "app/services/api";
+import ActionButton from "components/ActionButton";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
+import FlexRow from "components/FlexRow";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { useState } from "react";
+import { Button, Image, Loader, Modal } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 
 function FileContent(props: { blob: Blob }) {

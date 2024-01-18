@@ -16,6 +16,7 @@
 import { format } from "date-fns";
 import { CSSProperties } from "react";
 import { Placeholder } from "semantic-ui-react";
+import { stringToDate } from "utils/time";
 
 export default function FormattedTimestamp(props: {
   timestamp?: string;
@@ -33,7 +34,7 @@ export default function FormattedTimestamp(props: {
 
   return (
     <p style={props.style}>
-      {props.timestamp && format(new Date(props.timestamp), " yyyy MMMM d")}
+      {props.timestamp && format(stringToDate(props.timestamp), " yyyy MMMM d")}
     </p>
   );
 }

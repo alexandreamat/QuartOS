@@ -13,10 +13,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import useFormField from "hooks/useFormField";
-import FormDropdownInput from "./FormDropdownInput";
 import { useCurrencyCodeOptions } from "hooks/useCurrencyCodeOptions";
+import useFormField from "hooks/useFormField";
 import { Form } from "semantic-ui-react";
+import FormDropdownInput from "./FormDropdownInput";
 
 export default function FormCurrencyCodeDropdown(props: {
   readOnly?: boolean;

@@ -19,17 +19,17 @@ import {
   api,
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
-import { Bar, useMovementsBarState } from "./components/Bar";
-import Form from "./components/Form";
+import { InfiniteScroll } from "components/InfiniteScroll";
+import SpanButton from "features/transaction/components/SpanButton";
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { formatDateParam } from "utils/time";
 import { Card } from "semantic-ui-react";
-import { MovementCard } from "./components/MovementCard";
-import SpanButton from "features/transaction/components/SpanButton";
-import { logMutationError } from "utils/error";
-import { InfiniteScroll } from "components/InfiniteScroll";
 import { PaginatedItemProps } from "types";
+import { logMutationError } from "utils/error";
+import { formatDateParam } from "utils/time";
+import { Bar, useMovementsBarState } from "./components/Bar";
+import Form from "./components/Form";
+import { MovementCard } from "./components/MovementCard";
 
 export default function Movements() {
   const location = useLocation();

@@ -13,11 +13,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Button, Input, Menu, Popup } from "semantic-ui-react";
 import { format } from "date-fns";
-import ClickableIcon from "./ClickableIcon";
-import { UseStateType } from "types";
 import { useEffect, useState } from "react";
+import { Button, Input, Menu, Popup } from "semantic-ui-react";
+import { UseStateType } from "types";
+import ClickableIcon from "./ClickableIcon";
 
 function MenuDateInput(props: {
   label: string;

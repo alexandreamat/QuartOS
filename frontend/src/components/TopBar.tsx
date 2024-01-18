@@ -13,11 +13,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import React from "react";
-import { Icon, Menu, MenuItem } from "semantic-ui-react";
-import { useNavigate } from "react-router-dom";
 import { api } from "app/services/api";
 import { useLogout } from "features/auth/hooks";
+import { useNavigate } from "react-router-dom";
+import { Icon, Menu, MenuItem } from "semantic-ui-react";
 
 export default function TopBar(props: { onToggleSidebar: () => void }) {
   const navigate = useNavigate();

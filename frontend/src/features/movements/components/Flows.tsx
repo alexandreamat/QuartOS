@@ -14,17 +14,17 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { TransactionApiOut } from "app/services/api";
+import ClickableIcon from "components/ClickableIcon";
 import CurrencyLabel from "components/CurrencyLabel";
+import FlexRow from "components/FlexRow";
 import FormattedTimestamp from "components/FormattedTimestamp";
+import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
-import { Popup, Step } from "semantic-ui-react";
-import ClickableIcon from "components/ClickableIcon";
-import React, { CSSProperties, useState } from "react";
-import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
-import ModalFileViewer from "features/transaction/components/ModalFileViewer";
-import FlexRow from "components/FlexRow";
 import TransactionForm from "features/transaction/components/Form";
+import ModalFileViewer from "features/transaction/components/ModalFileViewer";
+import React, { CSSProperties, useState } from "react";
+import { Popup, Step } from "semantic-ui-react";
 
 const flowPadding = "5px 15px 5px 15px";
 const flowGap = "10px";
