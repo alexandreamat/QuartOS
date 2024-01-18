@@ -82,7 +82,7 @@ export default [
     requires_superuser: false,
     routes: [
       {
-        path: "/:startDate/:endDate",
+        path: "/:startDate",
         label: "P&L Statement Detail",
         icon: "file alternate",
         component: plReport,

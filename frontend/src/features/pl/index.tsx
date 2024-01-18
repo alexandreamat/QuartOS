@@ -28,9 +28,7 @@ function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
   function handleGoToDetail() {
     if (!props.plStatement) return;
 
-    navigate(
-      `/pl-statements/${props.plStatement.start_date}/${props.plStatement.end_date}`,
-    );
+    navigate(`/pl-statements/${props.plStatement.start_date}`);
   }
   return (
     <PLCard
