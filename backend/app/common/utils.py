@@ -36,7 +36,7 @@ def filter_query_by_search(
         token_unquoted = token.strip("-'\"")
         if not token_unquoted:
             continue
-        clause = col.like(f"%{token_unquoted}%")
+        clause = col.ilike(f"%{token_unquoted}%")
         if negative:
             negative_clauses.append(~clause)
         else:
