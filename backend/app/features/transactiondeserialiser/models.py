@@ -16,6 +16,7 @@
 from typing import TYPE_CHECKING
 
 from sqlmodel import SQLModel, Relationship
+
 from app.common.models import Base, CodeSnippet
 
 if TYPE_CHECKING:
@@ -28,6 +29,7 @@ class __TransactionDeserialiserBase(SQLModel):
     timestamp_deserialiser: CodeSnippet
     name_deserialiser: CodeSnippet
     skip_rows: int
+    ascending_timestamp: bool
     columns: int
     delimiter: str
     encoding: str

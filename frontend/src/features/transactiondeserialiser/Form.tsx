@@ -24,7 +24,7 @@ import { FormValidationError } from "components/FormValidationError";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
-import { Button, Form, Modal } from "semantic-ui-react";
+import { Button, Form, FormCheckbox, Modal } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 
 export default function TransactionDeserialiserForm(props: {
@@ -34,6 +34,7 @@ export default function TransactionDeserialiserForm(props: {
 }) {
   const skipRowsStr = useFormField("0");
   const columnsStr = useFormField("0");
+  const ascendingTimestamp = useFormField(true);
   const delimiter = useFormField(",");
   const encoding = useFormField("utf-8");
   const moduleName = useFormField("");
@@ -44,6 +45,7 @@ export default function TransactionDeserialiserForm(props: {
   const fields = [
     moduleName,
     skipRowsStr,
+    ascendingTimestamp,
     columnsStr,
     delimiter,
     encoding,
@@ -80,6 +82,7 @@ export default function TransactionDeserialiserForm(props: {
     const transactionDeserialiser: TransactionDeserialiserApiIn = {
       module_name: moduleName.value!,
       skip_rows: Number(skipRowsStr.value!),
+      ascending_timestamp: ascendingTimestamp.value!,
       columns: Number(columnsStr.value!),
       name_deserialiser: name.value!,
       amount_deserialiser: amount.value!,
@@ -116,6 +119,10 @@ export default function TransactionDeserialiserForm(props: {
           <FormTextInput label="Module Name" field={moduleName} />
           <FormTextInput type="number" label="Skip Rows" field={skipRowsStr} />
           <FormTextInput type="number" label="Columns" field={columnsStr} />
+          <FormCheckbox
+            label="Transactions are sorted from old to recent"
+            field={ascendingTimestamp}
+          />
           <FormTextInput label="Delimiter" field={delimiter} />
           <FormTextInput label="Encoding" field={encoding} />
           <FormTextArea label="deserialise_name = lambda row:" field={name} />

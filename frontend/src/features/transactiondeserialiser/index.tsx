@@ -53,6 +53,9 @@ function TransactionDeserialiser(props: {
 columns = ${props.transactionDeserialiser.columns}
 delimiter = "${props.transactionDeserialiser.delimiter}"
 encoding = "${props.transactionDeserialiser.encoding}"
+ascending_timestamp = ${
+            props.transactionDeserialiser.ascending_timestamp ? "True" : "False"
+          }
 
 def deserialize_name(row: list[str]) -> str:
     return ${props.transactionDeserialiser.name_deserialiser}
