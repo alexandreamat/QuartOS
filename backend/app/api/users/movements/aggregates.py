@@ -62,19 +62,13 @@ def read_income(
     )
 
 
-@router.get("/{start_date}/{end_date}")
+@router.get("/{start_date}")
 def get_aggregate(
     db: DBSession,
     me: CurrentUser,
     start_date: date,
-    end_date: date,
 ) -> PLStatement:
-    return CRUDUser.get_movement_aggregate(
-        db,
-        me.id,
-        start_date=start_date,
-        end_date=end_date,
-    )
+    return CRUDUser.get_movement_aggregate(db, me.id, start_date)
 
 
 @router.get("/")

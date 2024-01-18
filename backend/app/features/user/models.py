@@ -18,8 +18,9 @@ from typing import Any
 
 from pydantic import EmailStr
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Relationship, SQLModel, Session, select, or_
+from sqlmodel import Relationship, SQLModel, Session, col, func, or_
 from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy import select, case
 
 from app.common.models import Base, CurrencyCode
 from app.features.account import Account
@@ -69,7 +70,7 @@ class User(__UserBase, Base, table=True):
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
-        db_user = db.exec(select(cls).where(cls.email == email)).first()
+        db_user = db.exec(cls.select().where(cls.email == email)).first()
         if not db_user:
             raise NoResultFound
         return db_user
@@ -141,6 +142,71 @@ class User(__UserBase, Base, table=True):
             )
         )
         return statement
+
+    @classmethod
+    def select_aggregates(
+        cls,
+        user_id: int,
+        year: int | None = None,
+        month: int | None = None,
+        page: int = 0,
+        per_page: int = 12,
+    ) -> Any:
+        movements_subquery = (
+            select(
+                col(Transaction.movement_id).label("id"),
+                func.min(Transaction.timestamp).label("timestamp"),
+                func.sum(Transaction.amount_default_currency).label("amount"),
+            )
+            .join(Account)
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
+            .outerjoin(User)
+            .where(
+                or_(
+                    Account.NonInstitutionalAccount.user_id == user_id,
+                    UserInstitutionLink.user_id == user_id,
+                )
+            )
+            .group_by(col(Transaction.movement_id))
+            .subquery()
+        )
+
+        aggregates_query = select(
+            func.extract("year", movements_subquery.c.timestamp).label("year"),
+            func.extract("month", movements_subquery.c.timestamp).label("month"),
+            func.sum(
+                case(
+                    (
+                        movements_subquery.c.amount < 0,
+                        movements_subquery.c.amount,
+                    ),
+                    else_=0,
+                )
+            ).label("expenses"),
+            func.sum(
+                case(
+                    (
+                        movements_subquery.c.amount > 0,
+                        movements_subquery.c.amount,
+                    ),
+                    else_=0,
+                )
+            ).label("income"),
+        ).group_by("year", "month")
+
+        if year:
+            aggregates_query.where(aggregates_query.c.year == year)
+
+        if month:
+            aggregates_query.where(aggregates_query.c.month == month)
+
+        if per_page:
+            offset = page * per_page
+            aggregates_query = aggregates_query.offset(offset).limit(per_page)
+
+        return aggregates_query
 
     @classmethod
     def select_transactions(
