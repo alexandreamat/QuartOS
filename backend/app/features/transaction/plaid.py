@@ -49,7 +49,7 @@ def create_transaction_plaid_in(
     try:
         plaid_category: PersonalFinanceCategory = transaction.personal_finance_category
         plaid_id: str = plaid_category.primary
-        name = plaid_id.replace("_", " ").capitalize()
+        category_name = plaid_id.replace("_", " ").capitalize()
         plaid_metadata = plaid_category.to_str()
         try:
             category_out = CRUDSyncableCategory.read_by_plaid_id(db, plaid_id)
@@ -61,7 +61,7 @@ def create_transaction_plaid_in(
                 response.raise_for_status()
                 icon = response.content
                 category_in = CategoryPlaidIn(
-                    name=name,
+                    name=category_name,
                     icon=icon,
                     plaid_id=plaid_id,
                     plaid_metadata=plaid_metadata,
