@@ -13,17 +13,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import (
-    exchangerate,
-    auth,
-    user,
-    transactiondeserialiser,
-    institution,
-    userinstitutionlink,
-    account,
-    transaction,
-    movement,
-    replacementpattern,
-    file,
-    category,
+
+from fastapi import APIRouter
+
+from app.database.deps import DBSession
+from app.features.category import (
+    CRUDCategory,
+    CategoryApiOut,
 )
+
+
+router = APIRouter()
+
+
+@router.get("/{category_id}")
+def read(db: DBSession, category_id: int) -> CategoryApiOut:
+    return CRUDCategory.read(db, category_id)

@@ -93,14 +93,14 @@ def __fetch_transaction_changes(
         added=[
             (
                 accounts[transaction.account_id],
-                create_transaction_plaid_in(transaction, replacement_pattern),
+                create_transaction_plaid_in(db, transaction, replacement_pattern),
             )
             for transaction in response.added
         ],
         modified=[
             (
                 accounts[transaction.account_id],
-                create_transaction_plaid_in(transaction, replacement_pattern),
+                create_transaction_plaid_in(db, transaction, replacement_pattern),
             )
             for transaction in response.modified
         ],
@@ -156,7 +156,7 @@ def fetch_transactions(
         transactions: list[Transaction] = response.transactions
         offset += len(transactions)
         for transaction in transactions:
-            yield create_transaction_plaid_in(transaction, replacement_pattern)
+            yield create_transaction_plaid_in(db, transaction, replacement_pattern)
 
 
 def sync_transactions(

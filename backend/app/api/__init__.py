@@ -23,6 +23,7 @@ from . import replacementpatterns
 from . import transactiondeserialisers
 from . import transactions
 from . import users
+from . import categories
 
 router = APIRouter()
 
@@ -49,3 +50,4 @@ router.include_router(accounts.router, prefix="/accounts", tags=["accounts"])
 router.include_router(
     transactions.router, prefix="/transactions", tags=["transactions"]
 )
+router.include_router(categories.router, prefix="/categories", tags=["categories"])

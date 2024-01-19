@@ -13,17 +13,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import (
-    exchangerate,
-    auth,
-    user,
-    transactiondeserialiser,
-    institution,
-    userinstitutionlink,
-    account,
-    transaction,
-    movement,
-    replacementpattern,
-    file,
-    category,
+from app.common.crud import CRUDBase, CRUDSyncedBase
+
+from .models import (
+    Category,
+    CategoryApiOut,
+    CategoryApiIn,
+    CategoryPlaidIn,
+    CategoryPlaidOut,
 )
+
+
+class CRUDCategory(
+    CRUDBase[Category, CategoryApiOut, CategoryApiIn],
+):
+    db_model = Category
+    out_model = CategoryApiOut
+
+
+class CRUDSyncableCategory(CRUDSyncedBase[Category, CategoryPlaidOut, CategoryPlaidIn]):
+    db_model = Category
+    out_model = CategoryPlaidOut
