@@ -19,7 +19,13 @@ from decimal import Decimal
 
 from plaid.model.counterparty_type import CounterpartyType
 from plaid.model.transaction import Transaction
+from plaid.model.personal_finance_category import PersonalFinanceCategory
+from requests import HTTPError
+from requests_cache import CachedSession
 from sqlmodel import Session
+from sqlalchemy.exc import NoResultFound
+from app.features.category.crud import CRUDSyncableCategory
+from app.features.category.models import CategoryPlaidIn
 
 from app.features.replacementpattern import ReplacementPatternApiOut
 from .crud import CRUDSyncableTransaction
@@ -27,7 +33,9 @@ from .models import TransactionPlaidIn, TransactionPlaidOut
 
 
 def create_transaction_plaid_in(
-    transaction: Transaction, replacement_pattern: ReplacementPatternApiOut | None
+    db: Session,
+    transaction: Transaction,
+    replacement_pattern: ReplacementPatternApiOut | None,
 ) -> TransactionPlaidIn:
     if replacement_pattern:
         name = re.sub(
@@ -38,12 +46,39 @@ def create_transaction_plaid_in(
     else:
         name = transaction.name
 
+    try:
+        plaid_category: PersonalFinanceCategory = transaction.personal_finance_category
+        plaid_id: str = plaid_category.primary
+        name = plaid_id.replace("_", " ").capitalize()
+        plaid_metadata = plaid_category.to_str()
+        try:
+            category_out = CRUDSyncableCategory.read_by_plaid_id(db, plaid_id)
+        except NoResultFound:
+            icon_url: str = transaction.personal_finance_category_icon_url
+            try:
+                with CachedSession(expire_after=None) as session:
+                    response = session.get(icon_url)
+                response.raise_for_status()
+                icon = response.content
+                category_in = CategoryPlaidIn(
+                    name=name,
+                    icon=icon,
+                    plaid_id=plaid_id,
+                    plaid_metadata=plaid_metadata,
+                )
+                category_out = CRUDSyncableCategory.create(db, category_in)
+            except HTTPError:
+                category_out = None
+    except AttributeError:
+        category_out = None
+
     return TransactionPlaidIn(
         amount=-transaction.amount,
         name=name,
         plaid_id=transaction.transaction_id,
         timestamp=getattr(transaction, "authorized_date") or transaction.date,
         plaid_metadata=transaction.to_str(),
+        category_id=category_out.id if category_out else None,
     )
 
 
@@ -58,7 +93,7 @@ def reset_transaction_to_metadata(
     except KeyError:
         pass
     transaction_in = create_transaction_plaid_in(
-        Transaction(**transaction_plaid), replacement_pattern
+        db, Transaction(**transaction_plaid), replacement_pattern
     )
     return CRUDSyncableTransaction.update(
         db, id, transaction_in, account_balance=Decimal(0)
