@@ -19,7 +19,7 @@ import Institutions from "features/institution";
 import InstitutionLinks from "features/institutionlink";
 import Movements from "features/movements";
 import PL from "features/pl";
-import plReport from "features/pl/components/PLReport";
+import PLStatement from "features/pl/components/PLStatement";
 import Transactions from "features/transaction";
 import TransactionDeserialisers from "features/transactiondeserialiser";
 import Users from "features/user";
@@ -85,7 +85,7 @@ export default [
         path: "/:startDate",
         label: "P&L Statement Detail",
         icon: "file alternate",
-        component: plReport,
+        component: PLStatement,
         requires_superuser: false,
       },
     ],

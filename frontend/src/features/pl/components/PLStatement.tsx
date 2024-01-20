@@ -24,7 +24,7 @@ import { Button, Icon, Loader } from "semantic-ui-react";
 import PLCard from "./PLCard";
 import PLMovements from "./PLMovements";
 
-export default function PLReport() {
+export default function PLStatement() {
   const navigate = useNavigate();
   const { startDate } = useParams();
 
@@ -33,7 +33,7 @@ export default function PLReport() {
   const [movementId, setMovementId] = useState(0);
 
   const aggregateQuery =
-    api.endpoints.getAggregateUsersMeMovementsAggregatesStartDateGet.useQuery(
+    api.endpoints.getPlStatementUsersMeAnalyticsMonthGet.useQuery(
       startDate ? startDate : skipToken,
     );
 

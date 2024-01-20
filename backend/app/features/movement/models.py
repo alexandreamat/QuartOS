@@ -34,7 +34,7 @@ class PLStatement(SQLModel):
     expenses: Decimal
 
 
-class DetailedPLReport(PLStatement):
+class DetailedPLStatement(PLStatement):
     income_by_category: dict[int, Decimal]
     expenses_by_category: dict[int, Decimal]
 

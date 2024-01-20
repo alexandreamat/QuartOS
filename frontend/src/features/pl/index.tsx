@@ -56,9 +56,7 @@ export default function IncomeStatement() {
           <InfiniteScroll
             itemRenderer={CardRenderer}
             reference={reference}
-            endpoint={
-              api.endpoints.getManyAggregatesUsersMeMovementsAggregatesGet
-            }
+            endpoint={api.endpoints.getManyPlStatementsUsersMeAnalyticsGet}
             params={{}}
           />
         </Card.Group>

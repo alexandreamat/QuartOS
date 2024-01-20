@@ -27,7 +27,6 @@ from app.features.movement import (
     CRUDMovement,
 )
 from app.features.user import CurrentUser, CRUDUser
-from . import aggregates
 
 router = APIRouter()
 
@@ -123,6 +122,3 @@ def delete(
 ) -> int:
     CRUDUser.read_movement(db, me.id, None, None, movement_id)
     return CRUDMovement.delete(db, movement_id)
-
-
-router.include_router(aggregates.router, prefix="/aggregates")

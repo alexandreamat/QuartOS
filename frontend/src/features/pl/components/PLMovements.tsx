@@ -24,10 +24,8 @@ export default function PLMovements(props: {
   onOpenEditForm: (x: MovementApiOut) => void;
 }) {
   const movementsEndpoint = props.showIncome
-    ? api.endpoints
-        .readIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGet
-    : api.endpoints
-        .readExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGet;
+    ? api.endpoints.readIncomeUsersMeAnalyticsStartDateEndDateIncomeGet
+    : api.endpoints.readExpensesUsersMeAnalyticsStartDateEndDateExpensesGet;
 
   const movementsQuery = movementsEndpoint.useQuery({
     startDate: props.aggregate.start_date,
