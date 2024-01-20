@@ -26,6 +26,7 @@ from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
 from app.features.category.crud import CRUDSyncableCategory
 from app.features.category.models import CategoryPlaidIn
+from app.features.category.plaid import create_category_plaid_in
 
 from app.features.replacementpattern import ReplacementPatternApiOut
 from .crud import CRUDSyncableTransaction
@@ -48,23 +49,14 @@ def create_transaction_plaid_in(
 
     try:
         plaid_category: PersonalFinanceCategory = transaction.personal_finance_category
-        plaid_id: str = plaid_category.primary
-        category_name = plaid_id.replace("_", " ").capitalize()
-        plaid_metadata = plaid_category.to_str()
         try:
-            category_out = CRUDSyncableCategory.read_by_plaid_id(db, plaid_id)
+            category_out = CRUDSyncableCategory.read_by_plaid_id(
+                db, plaid_category.primary
+            )
         except NoResultFound:
-            icon_url: str = transaction.personal_finance_category_icon_url
             try:
-                with CachedSession(expire_after=None) as session:
-                    response = session.get(icon_url)
-                response.raise_for_status()
-                icon = response.content
-                category_in = CategoryPlaidIn(
-                    name=category_name,
-                    icon=icon,
-                    plaid_id=plaid_id,
-                    plaid_metadata=plaid_metadata,
+                category_in = create_category_plaid_in(
+                    plaid_category, transaction.personal_finance_category_icon_url
                 )
                 category_out = CRUDSyncableCategory.create(db, category_in)
             except HTTPError:
