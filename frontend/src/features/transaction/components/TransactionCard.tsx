@@ -23,11 +23,11 @@ import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
 import MovementForm from "features/movements/components/Form";
 import { useState } from "react";
-import { Card, Checkbox, Header, Image, Popup } from "semantic-ui-react";
+import { Card, Checkbox, Header, Popup } from "semantic-ui-react";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import TransactionForm from "./Form";
 import ModalFileViewer from "./ModalFileViewer";
-import { skipToken } from "@reduxjs/toolkit/dist/query";
+import { CategoryIcon } from "features/categories/components/CategoryIcon";
 
 export function TransactionCard(
   props:
@@ -53,10 +53,6 @@ export function TransactionCard(
 ) {
   const accountQueries = useAccountQueries(
     props.preview ? props.accountId : props.transaction?.account_id,
-  );
-
-  const categoryQuery = api.endpoints.readCategoriesCategoryIdGet.useQuery(
-    props.preview ? skipToken : props.transaction?.category_id || skipToken,
   );
 
   const uploadTransactionFile = useUploadTransactionFile(
@@ -116,11 +112,8 @@ export function TransactionCard(
             style={{ width: "8em" }}
             loading={props.loading || accountQueries.isLoading}
           />
-          {categoryQuery.isSuccess && (
-            <Image
-              style={{ height: "90%", width: "auto", alignSelf: "center" }}
-              src={`data:image/png;base64,${categoryQuery.data.icon_base64}`}
-            />
+          {!props.preview && props.transaction?.category_id && (
+            <CategoryIcon categoryId={props.transaction.category_id} />
           )}
           <FlexRow.Auto>
             <Header as="h5">
