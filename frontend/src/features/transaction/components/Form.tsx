@@ -46,6 +46,7 @@ import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
+import { useCategoryOptions as useCategoryOptions } from "features/categories/hooks";
 
 export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   props: {
@@ -103,6 +104,10 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
       isEdit ? props.transaction.account_id : 0,
       "account",
     ),
+    categoryId: useFormField(
+      isEdit ? props.transaction.category_id || 0 : 0,
+      "category",
+    ),
   };
 
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
@@ -117,6 +122,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   const disableSynced = isEdit && props.transaction.is_synced;
 
   const accountOptions = useAccountOptions();
+  const categoryOptions = useCategoryOptions();
 
   useEffect(() => {
     if (isEdit) return;
@@ -174,9 +180,14 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
         <Form>
           <FormDropdownInput
             field={form.accountId}
-            options={accountOptions.options || []}
+            options={accountOptions.options}
             query={accountOptions.query}
             readOnly={disableSynced}
+          />
+          <FormDropdownInput
+            field={form.categoryId}
+            options={categoryOptions.options}
+            query={categoryOptions.query}
           />
           <FormCurrencyInput
             query={accountQuery}

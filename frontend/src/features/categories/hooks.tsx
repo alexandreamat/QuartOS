@@ -13,12 +13,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import useFormField from "hooks/useFormField";
+import { api } from "app/services/api";
+import { DropdownItemProps, Image } from "semantic-ui-react";
 
-export type TransactionApiInForm = {
-  amountStr: ReturnType<typeof useFormField<string>>;
-  timestamp: ReturnType<typeof useFormField<Date>>;
-  name: ReturnType<typeof useFormField<string>>;
-  accountId: ReturnType<typeof useFormField<number>>;
-  categoryId: ReturnType<typeof useFormField<number>>;
-};
+export function useCategoryOptions() {
+  const query = api.endpoints.readManyCategoriesGet.useQuery();
+  const options: DropdownItemProps[] =
+    query.data?.map((c) => ({
+      key: c.id,
+      value: c.id,
+      text: c.name,
+      image: <Image src={`data:image/png;base64,${c.icon_base64}`} />,
+    })) || [];
+  return { options, query };
+}

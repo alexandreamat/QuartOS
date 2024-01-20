@@ -792,6 +792,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["transactions"],
       }),
+      readManyCategoriesGet: build.query<
+        ReadManyCategoriesGetApiResponse,
+        ReadManyCategoriesGetApiArg
+      >({
+        query: () => ({ url: `/categories/` }),
+        providesTags: ["categories"],
+      }),
       readCategoriesCategoryIdGet: build.query<
         ReadCategoriesCategoryIdGetApiResponse,
         ReadCategoriesCategoryIdGetApiArg
@@ -1184,6 +1191,9 @@ export type UpdatePlaidTransactionsPlaidIdPutApiArg = {
   id: number;
   transactionPlaidInInput: TransactionPlaidIn2;
 };
+export type ReadManyCategoriesGetApiResponse =
+  /** status 200 Successful Response */ CategoryApiOut[];
+export type ReadManyCategoriesGetApiArg = void;
 export type ReadCategoriesCategoryIdGetApiResponse =
   /** status 200 Successful Response */ CategoryApiOut;
 export type ReadCategoriesCategoryIdGetApiArg = number;
@@ -1304,7 +1314,7 @@ export type TransactionPlaidIn = {
   amount: string;
   timestamp: string;
   name: string;
-  category_id?: number | null;
+  category_id: number | null;
 };
 export type FileApiOut = {
   id: number;
@@ -1319,7 +1329,7 @@ export type TransactionPlaidOut = {
   amount: string;
   timestamp: string;
   name: string;
-  category_id?: number | null;
+  category_id: number | null;
   account_balance: string;
   amount_default_currency: string;
   account_id: number;
@@ -1332,7 +1342,7 @@ export type TransactionApiOut = {
   amount: string;
   timestamp: string;
   name: string;
-  category_id?: number | null;
+  category_id: number | null;
   account_balance: string;
   amount_default_currency: string;
   account_id: number;
@@ -1408,7 +1418,7 @@ export type TransactionApiIn = {
   amount: string;
   timestamp: string;
   name: string;
-  category_id?: number | null;
+  category_id: number | null;
 };
 export type BodyPreviewUsersMeAccountsPreviewPost = {
   file: Blob;
@@ -1417,7 +1427,7 @@ export type TransactionApiIn2 = {
   amount: number | string;
   timestamp: string;
   name: string;
-  category_id?: number | null;
+  category_id: number | null;
 };
 export type BodyCreateManyUsersMeAccountsAccountIdMovementsPost = {
   transactions: TransactionApiIn2[];
@@ -1433,7 +1443,7 @@ export type TransactionPlaidIn2 = {
   amount: number | string;
   timestamp: string;
   name: string;
-  category_id?: number | null;
+  category_id: number | null;
 };
 export type CategoryApiOut = {
   id: number;
