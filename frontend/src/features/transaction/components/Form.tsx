@@ -46,7 +46,8 @@ import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
-import { useCategoryOptions as useCategoryOptions } from "features/categories/hooks";
+import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   props: {
@@ -122,7 +123,6 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   const disableSynced = isEdit && props.transaction.is_synced;
 
   const accountOptions = useAccountOptions();
-  const categoryOptions = useCategoryOptions();
 
   useEffect(() => {
     if (isEdit) return;
@@ -184,11 +184,13 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
             query={accountOptions.query}
             readOnly={disableSynced}
           />
-          <FormDropdownInput
-            field={form.categoryId}
-            options={categoryOptions.options}
-            query={categoryOptions.query}
-          />
+          <Form.Field required>
+            <label>
+              {form.categoryId.label &&
+                capitaliseFirstLetter(form.categoryId.label)}
+            </label>
+            <CategoriesDropdown categoryId={form.categoryId} />
+          </Form.Field>
           <FormCurrencyInput
             query={accountQuery}
             field={form.amountStr}
