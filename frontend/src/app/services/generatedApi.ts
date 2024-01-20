@@ -522,6 +522,16 @@ const injectedRtkApi = api
           }),
           providesTags: ["users", "movements"],
         }),
+      getDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGet:
+        build.query<
+          GetDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGetApiResponse,
+          GetDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/users/me/movements/aggregates/detailed/${queryArg}`,
+          }),
+          providesTags: ["users", "movements"],
+        }),
       getAggregateUsersMeMovementsAggregatesStartDateGet: build.query<
         GetAggregateUsersMeMovementsAggregatesStartDateGetApiResponse,
         GetAggregateUsersMeMovementsAggregatesStartDateGetApiArg
@@ -1063,6 +1073,10 @@ export type ReadIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiArg 
     startDate: string;
     endDate: string;
   };
+export type GetDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGetApiResponse =
+  /** status 200 Successful Response */ DetailedPlReport;
+export type GetDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGetApiArg =
+  string;
 export type GetAggregateUsersMeMovementsAggregatesStartDateGetApiResponse =
   /** status 200 Successful Response */ PlStatement;
 export type GetAggregateUsersMeMovementsAggregatesStartDateGetApiArg = string;
@@ -1388,6 +1402,18 @@ export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
   name: string;
   category_id: number | null;
+};
+export type DetailedPlReport = {
+  start_date: string;
+  end_date: string;
+  income: string;
+  expenses: string;
+  income_by_category: {
+    [key: string]: string;
+  };
+  expenses_by_category: {
+    [key: string]: string;
+  };
 };
 export type PlStatement = {
   start_date: string;

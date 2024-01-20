@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from collections import defaultdict
 import logging
 from datetime import date
 from decimal import Decimal
@@ -33,6 +34,7 @@ from app.features.movement import (
     Movement,
     MovementField,
 )
+from app.features.movement.models import DetailedPLReport
 from app.features.transaction import TransactionApiOut, Transaction
 from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
@@ -265,3 +267,34 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
                 expenses=expenses,
                 income=income,
             )
+
+    @classmethod
+    def get_detailed_pl_report(
+        cls,
+        db: Session,
+        user_id: int,
+        start_date: date,
+    ) -> DetailedPLReport:
+        statement = User.select_detailed_aggregates(
+            user_id, start_date.year, start_date.month
+        )
+
+        report: dict[int, dict[int, Decimal]] = defaultdict(
+            lambda: defaultdict(Decimal)
+        )
+
+        for result in db.exec(statement).all():
+            report[result.sign][result.category_id] += result.amount
+            # 0 is used to store the totla
+            report[result.sign][0] += result.amount
+
+        return DetailedPLReport(
+            start_date=date(start_date.year, start_date.month, 1),
+            end_date=date(start_date.year, start_date.month, 1)
+            + relativedelta(months=1),
+            income=report[1][0],
+            expenses=report[-1][0],
+            # remove totals from report by categories
+            income_by_category={k: v for k, v in report[1].items() if k},
+            expenses_by_category={k: v for k, v in report[-1].items() if k},
+        )

@@ -21,6 +21,7 @@ from fastapi import APIRouter
 
 from app.database.deps import DBSession
 from app.features.movement import PLStatement, MovementApiOut, MovementField
+from app.features.movement.models import DetailedPLReport
 from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()
@@ -60,6 +61,15 @@ def read_income(
         is_descending=True,
         amount_gt=Decimal(0),
     )
+
+
+@router.get("/detailed/{start_date}")
+def get_detailed_pl_report(
+    db: DBSession,
+    me: CurrentUser,
+    start_date: date,
+) -> DetailedPLReport:
+    return CRUDUser.get_detailed_pl_report(db, me.id, start_date)
 
 
 @router.get("/{start_date}")
