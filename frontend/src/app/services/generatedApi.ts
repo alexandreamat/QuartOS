@@ -799,6 +799,13 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/categories/${queryArg}` }),
         providesTags: ["categories"],
       }),
+      getAllCategoriesPlaidGetAllPut: build.mutation<
+        GetAllCategoriesPlaidGetAllPutApiResponse,
+        GetAllCategoriesPlaidGetAllPutApiArg
+      >({
+        query: () => ({ url: `/categories/plaid/get-all`, method: "PUT" }),
+        invalidatesTags: ["categories"],
+      }),
     }),
     overrideExisting: false,
   });
@@ -1180,6 +1187,9 @@ export type UpdatePlaidTransactionsPlaidIdPutApiArg = {
 export type ReadCategoriesCategoryIdGetApiResponse =
   /** status 200 Successful Response */ CategoryApiOut;
 export type ReadCategoriesCategoryIdGetApiArg = number;
+export type GetAllCategoriesPlaidGetAllPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type GetAllCategoriesPlaidGetAllPutApiArg = void;
 export type Token = {
   access_token: string;
   token_type: string;
