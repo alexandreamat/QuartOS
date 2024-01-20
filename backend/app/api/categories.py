@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+from typing import Iterable
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
@@ -22,9 +23,14 @@ from app.features.category import (
     CategoryApiOut,
 )
 from app.features.category.plaid import get_all_plaid_categories
-from app.features.user.deps import CurrentSuperuser
+from app.features.user.deps import CurrentSuperuser, CurrentUser
 
 router = APIRouter()
+
+
+@router.get("/")
+def read_many(db: DBSession, me: CurrentUser) -> Iterable[CategoryApiOut]:
+    return CRUDCategory.read_many(db, 0, 0)
 
 
 @router.get("/{category_id}")

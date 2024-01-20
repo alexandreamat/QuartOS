@@ -44,7 +44,7 @@ class __TransactionBase(SQLModel):
     amount: Decimal
     timestamp: date
     name: str
-    category_id: int | None = None
+    category_id: int | None
 
 
 class TransactionApiOut(__TransactionBase, Base):

@@ -36,5 +36,6 @@ export function transactionFormToApiIn(
     amount: form.amountStr.value!,
     timestamp: formatDateParam(form.timestamp.value!),
     name: form.name.value!,
+    category_id: form.categoryId.value!,
   };
 }
