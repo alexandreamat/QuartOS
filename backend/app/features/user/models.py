@@ -20,7 +20,7 @@ from pydantic import EmailStr
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, col, func, or_
 from sqlmodel.sql.expression import SelectOfScalar
-from sqlalchemy import select, case, desc
+from sqlalchemy import select, case, desc, asc
 
 from app.common.models import Base, CurrencyCode
 from app.features.account import Account
@@ -212,6 +212,63 @@ class User(__UserBase, Base, table=True):
         if per_page:
             offset = page * per_page
             aggregates_query = aggregates_query.offset(offset).limit(per_page)
+
+        return aggregates_query
+
+    @classmethod
+    def select_detailed_aggregates(cls, user_id: int, year: int, month: int) -> Any:
+        movements_subquery = (
+            select(
+                col(Movement.id),
+                col(Movement.category_id).label("category_id"),
+                func.min(Transaction.timestamp).label("timestamp"),
+                func.sum(Transaction.amount_default_currency).label("amount"),
+            )
+            .join(Account)
+            .join(Movement)
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
+            .outerjoin(User)
+            .where(
+                or_(
+                    Account.NonInstitutionalAccount.user_id == user_id,
+                    UserInstitutionLink.user_id == user_id,
+                )
+            )
+            .group_by(col(Movement.id))
+            .subquery()
+        )
+
+        year_extract = func.extract("year", movements_subquery.c.timestamp)
+        month_extract = func.extract("month", movements_subquery.c.timestamp)
+        amount_sign = func.sign(movements_subquery.c.amount)
+        amount_sum = func.sum(movements_subquery.c.amount)
+
+        aggregates_query = (
+            select(
+                year_extract.label("year"),
+                month_extract.label("month"),
+                amount_sign.label("sign"),
+                movements_subquery.c.category_id.label("category_id"),
+                amount_sum.label("amount"),
+            )
+            .group_by(
+                "year",
+                "month",
+                amount_sign,
+                movements_subquery.c.category_id,
+            )
+            .order_by(
+                desc("year"),
+                desc("month"),
+                asc(movements_subquery.c.category_id),
+                asc("sign"),
+            )
+        )
+
+        aggregates_query = aggregates_query.having(year_extract == year)
+        aggregates_query = aggregates_query.having(month_extract == month)
 
         return aggregates_query
 

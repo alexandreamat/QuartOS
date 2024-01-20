@@ -34,6 +34,11 @@ class PLStatement(SQLModel):
     expenses: Decimal
 
 
+class DetailedPLReport(PLStatement):
+    income_by_category: dict[int, Decimal]
+    expenses_by_category: dict[int, Decimal]
+
+
 class __MovementBase(SQLModel):
     name: str
     category_id: int | None
