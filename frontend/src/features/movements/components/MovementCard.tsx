@@ -30,6 +30,8 @@ import { Button, Card, Checkbox, Header, Input } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { Flows } from "./Flows";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
+import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
+import useFormField from "hooks/useFormField";
 
 export function MovementCard(props: {
   movement?: MovementApiOut;
@@ -45,16 +47,21 @@ export function MovementCard(props: {
 }) {
   const [name, setName] = useState(props.movement?.name || "");
   const [isEditMode, setIsEditMode] = useState(false);
+  const categoryId = useFormField(props.movement?.category_id || undefined);
 
   const [updateMovement, updateMovementResult] =
     api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
 
   const me = api.endpoints.readMeUsersMeGet.useQuery();
 
-  async function updateName() {
+  async function submitUpdateMovement() {
     if (!props.movement) return;
 
-    const newMovement: MovementApiIn = { ...props.movement, name };
+    const newMovement: MovementApiIn = {
+      ...props.movement,
+      name,
+      category_id: categoryId.value!,
+    };
     try {
       await updateMovement({
         movementId: props.movement.id,
@@ -68,7 +75,9 @@ export function MovementCard(props: {
   }
 
   useEffect(() => {
-    if (props.movement) setName(props.movement.name);
+    if (!props.movement) return;
+    setName(props.movement.name);
+    categoryId.set(props.movement.category_id || undefined);
   }, [props.movement]);
 
   return (
@@ -91,8 +100,12 @@ export function MovementCard(props: {
             />
           </Card.Meta>
 
-          {props.movement?.category_id && (
-            <CategoryIcon categoryId={props.movement.category_id} />
+          {isEditMode ? (
+            <CategoriesDropdown categoryId={categoryId} />
+          ) : (
+            props.movement?.category_id && (
+              <CategoryIcon categoryId={props.movement?.category_id} />
+            )
           )}
 
           {/* Name */}
@@ -113,7 +126,7 @@ export function MovementCard(props: {
             )}
           </FlexRow.Auto>
 
-          {/* Edit name controls */}
+          {/* Edit controls */}
           {props.movement &&
             (isEditMode ? (
               <>
@@ -123,6 +136,7 @@ export function MovementCard(props: {
                   size="tiny"
                   onClick={() => {
                     setName(props.movement!.name);
+                    categoryId.set(props.movement?.category_id || undefined);
                     setIsEditMode(false);
                   }}
                 />
@@ -131,8 +145,10 @@ export function MovementCard(props: {
                   positive
                   circular
                   size="tiny"
-                  onClick={updateName}
-                  disabled={name === props.movement.name}
+                  onClick={submitUpdateMovement}
+                  disabled={
+                    name === props.movement.name && !categoryId.hasChanged
+                  }
                   negative={updateMovementResult.isError}
                   loading={updateMovementResult.isLoading}
                 />
