@@ -774,6 +774,13 @@ const injectedRtkApi = api
         query: () => ({ url: `/accounts/update-balances`, method: "POST" }),
         invalidatesTags: ["accounts"],
       }),
+      updateCategoriesMovementsUpdateCategoriesPut: build.mutation<
+        UpdateCategoriesMovementsUpdateCategoriesPutApiResponse,
+        UpdateCategoriesMovementsUpdateCategoriesPutApiArg
+      >({
+        query: () => ({ url: `/movements/update-categories`, method: "PUT" }),
+        invalidatesTags: ["movements"],
+      }),
       readPlaidTransactionsPlaidIdGet: build.query<
         ReadPlaidTransactionsPlaidIdGetApiResponse,
         ReadPlaidTransactionsPlaidIdGetApiArg
@@ -792,6 +799,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["transactions"],
       }),
+      updateTransactionsAmountDefaultCurrencyTransactionsUpdateTransactionsAmountDefaultCurrencyPut:
+        build.mutation<
+          UpdateTransactionsAmountDefaultCurrencyTransactionsUpdateTransactionsAmountDefaultCurrencyPutApiResponse,
+          UpdateTransactionsAmountDefaultCurrencyTransactionsUpdateTransactionsAmountDefaultCurrencyPutApiArg
+        >({
+          query: () => ({
+            url: `/transactions/update-transactions-amount-default-currency`,
+            method: "PUT",
+          }),
+          invalidatesTags: ["transactions"],
+        }),
       readManyCategoriesGet: build.query<
         ReadManyCategoriesGetApiResponse,
         ReadManyCategoriesGetApiArg
@@ -1182,6 +1200,9 @@ export type DeleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransac
 export type UpdateBalancesAccountsUpdateBalancesPostApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateBalancesAccountsUpdateBalancesPostApiArg = void;
+export type UpdateCategoriesMovementsUpdateCategoriesPutApiResponse =
+  /** status 200 Successful Response */ MovementApiOut[];
+export type UpdateCategoriesMovementsUpdateCategoriesPutApiArg = void;
 export type ReadPlaidTransactionsPlaidIdGetApiResponse =
   /** status 200 Successful Response */ TransactionPlaidOut;
 export type ReadPlaidTransactionsPlaidIdGetApiArg = number;
@@ -1191,6 +1212,10 @@ export type UpdatePlaidTransactionsPlaidIdPutApiArg = {
   id: number;
   transactionPlaidInInput: TransactionPlaidIn2;
 };
+export type UpdateTransactionsAmountDefaultCurrencyTransactionsUpdateTransactionsAmountDefaultCurrencyPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateTransactionsAmountDefaultCurrencyTransactionsUpdateTransactionsAmountDefaultCurrencyPutApiArg =
+  void;
 export type ReadManyCategoriesGetApiResponse =
   /** status 200 Successful Response */ CategoryApiOut[];
 export type ReadManyCategoriesGetApiArg = void;
@@ -1353,6 +1378,7 @@ export type TransactionApiOut = {
 export type MovementApiOut = {
   id: number;
   name: string;
+  category_id: number | null;
   earliest_timestamp: string | null;
   latest_timestamp: string | null;
   transactions: TransactionApiOut[];
@@ -1361,6 +1387,7 @@ export type MovementApiOut = {
 export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
   name: string;
+  category_id: number | null;
 };
 export type PlStatement = {
   start_date: string;

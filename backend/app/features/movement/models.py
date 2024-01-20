@@ -13,19 +13,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from enum import Enum
-from typing import Iterable, Any, Type, Union, Dict
+from typing import Iterable, Any
 
-import requests
-from sqlmodel import SQLModel, Relationship, col, func, select, desc, asc
-from sqlmodel.main import _TSQLModel
+from sqlmodel import Field, SQLModel, Relationship, col, func, select, desc, asc
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import Base, CurrencyCode
+from app.common.models import Base
 from app.common.utils import filter_query_by_search
-from app.features.exchangerate.client import get_exchange_rate
 from app.features.transaction import Transaction, TransactionApiOut
 
 
@@ -38,6 +36,7 @@ class PLStatement(SQLModel):
 
 class __MovementBase(SQLModel):
     name: str
+    category_id: int | None
 
 
 class MovementField(str, Enum):
@@ -61,6 +60,7 @@ class Movement(__MovementBase, Base, table=True):
         back_populates="movement",
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
+    category_id: int | None = Field(foreign_key="category.id")
 
     @property
     def earliest_timestamp(self) -> date:
@@ -76,6 +76,15 @@ class Movement(__MovementBase, Base, table=True):
             [t.amount_default_currency for t in self.transactions],
             Decimal(0),
         )
+
+    @property
+    def default_category_id(self) -> int:
+        amounts: dict[int, Decimal] = defaultdict(Decimal)
+        for t in self.transactions:
+            if not t.category:
+                continue
+            amounts[t.category.id] += t.amount
+        return max(amounts, key=lambda x: abs(amounts[x]))
 
     @classmethod
     def select_transactions(

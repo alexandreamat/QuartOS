@@ -29,6 +29,7 @@ import { useEffect, useState } from "react";
 import { Button, Card, Checkbox, Header, Input } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { Flows } from "./Flows";
+import { CategoryIcon } from "features/categories/components/CategoryIcon";
 
 export function MovementCard(props: {
   movement?: MovementApiOut;
@@ -73,7 +74,7 @@ export function MovementCard(props: {
   return (
     <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
       <Card.Content>
-        <FlexRow alignItems="center" gap="1ch">
+        <FlexRow alignItems="center" gap="1ch" style={{ height: "2.2em" }}>
           {!props.loading && props.onCheckedChange && (
             <Checkbox
               checked={props.checked}
@@ -89,6 +90,10 @@ export function MovementCard(props: {
               style={{ width: "9em" }}
             />
           </Card.Meta>
+
+          {props.movement?.category_id && (
+            <CategoryIcon categoryId={props.movement.category_id} />
+          )}
 
           {/* Name */}
           <FlexRow.Auto>
