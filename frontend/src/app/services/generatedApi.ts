@@ -502,55 +502,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "movements"],
       }),
-      readExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGet:
-        build.query<
-          ReadExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiResponse,
-          ReadExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiArg
-        >({
-          query: (queryArg) => ({
-            url: `/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}/expenses`,
-          }),
-          providesTags: ["users", "movements"],
-        }),
-      readIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGet:
-        build.query<
-          ReadIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiResponse,
-          ReadIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiArg
-        >({
-          query: (queryArg) => ({
-            url: `/users/me/movements/aggregates/${queryArg.startDate}/${queryArg.endDate}/income`,
-          }),
-          providesTags: ["users", "movements"],
-        }),
-      getDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGet:
-        build.query<
-          GetDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGetApiResponse,
-          GetDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGetApiArg
-        >({
-          query: (queryArg) => ({
-            url: `/users/me/movements/aggregates/detailed/${queryArg}`,
-          }),
-          providesTags: ["users", "movements"],
-        }),
-      getAggregateUsersMeMovementsAggregatesStartDateGet: build.query<
-        GetAggregateUsersMeMovementsAggregatesStartDateGetApiResponse,
-        GetAggregateUsersMeMovementsAggregatesStartDateGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/movements/aggregates/${queryArg}`,
-        }),
-        providesTags: ["users", "movements"],
-      }),
-      getManyAggregatesUsersMeMovementsAggregatesGet: build.query<
-        GetManyAggregatesUsersMeMovementsAggregatesGetApiResponse,
-        GetManyAggregatesUsersMeMovementsAggregatesGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/movements/aggregates/`,
-          params: { page: queryArg.page, per_page: queryArg.perPage },
-        }),
-        providesTags: ["users", "movements"],
-      }),
       readManyUsersMeTransactionsGet: build.query<
         ReadManyUsersMeTransactionsGetApiResponse,
         ReadManyUsersMeTransactionsGetApiArg
@@ -777,6 +728,50 @@ const injectedRtkApi = api
             "files",
           ],
         }),
+      readExpensesUsersMeAnalyticsStartDateEndDateExpensesGet: build.query<
+        ReadExpensesUsersMeAnalyticsStartDateEndDateExpensesGetApiResponse,
+        ReadExpensesUsersMeAnalyticsStartDateEndDateExpensesGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/analytics/${queryArg.startDate}/${queryArg.endDate}/expenses`,
+        }),
+        providesTags: ["users", "movements"],
+      }),
+      readIncomeUsersMeAnalyticsStartDateEndDateIncomeGet: build.query<
+        ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiResponse,
+        ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/analytics/${queryArg.startDate}/${queryArg.endDate}/income`,
+        }),
+        providesTags: ["users", "movements"],
+      }),
+      getDetailedPlStatementUsersMeAnalyticsDetailedMonthGet: build.query<
+        GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiResponse,
+        GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/analytics/detailed/${queryArg}`,
+        }),
+        providesTags: ["users", "movements"],
+      }),
+      getPlStatementUsersMeAnalyticsMonthGet: build.query<
+        GetPlStatementUsersMeAnalyticsMonthGetApiResponse,
+        GetPlStatementUsersMeAnalyticsMonthGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/users/me/analytics/${queryArg}` }),
+        providesTags: ["users", "movements"],
+      }),
+      getManyPlStatementsUsersMeAnalyticsGet: build.query<
+        GetManyPlStatementsUsersMeAnalyticsGetApiResponse,
+        GetManyPlStatementsUsersMeAnalyticsGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/analytics/`,
+          params: { page: queryArg.page, per_page: queryArg.perPage },
+        }),
+        providesTags: ["users", "movements"],
+      }),
       updateBalancesAccountsUpdateBalancesPost: build.mutation<
         UpdateBalancesAccountsUpdateBalancesPostApiResponse,
         UpdateBalancesAccountsUpdateBalancesPostApiArg
@@ -1059,33 +1054,6 @@ export type AddTransactionsUsersMeMovementsMovementIdTransactionsPutApiArg = {
   movementId: number;
   body: number[];
 };
-export type ReadExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiResponse =
-  /** status 200 Successful Response */ MovementApiOut[];
-export type ReadExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGetApiArg =
-  {
-    startDate: string;
-    endDate: string;
-  };
-export type ReadIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiResponse =
-  /** status 200 Successful Response */ MovementApiOut[];
-export type ReadIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGetApiArg =
-  {
-    startDate: string;
-    endDate: string;
-  };
-export type GetDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGetApiResponse =
-  /** status 200 Successful Response */ DetailedPlReport;
-export type GetDetailedPlReportUsersMeMovementsAggregatesDetailedStartDateGetApiArg =
-  string;
-export type GetAggregateUsersMeMovementsAggregatesStartDateGetApiResponse =
-  /** status 200 Successful Response */ PlStatement;
-export type GetAggregateUsersMeMovementsAggregatesStartDateGetApiArg = string;
-export type GetManyAggregatesUsersMeMovementsAggregatesGetApiResponse =
-  /** status 200 Successful Response */ PlStatement[];
-export type GetManyAggregatesUsersMeMovementsAggregatesGetApiArg = {
-  page?: number;
-  perPage?: number;
-};
 export type ReadManyUsersMeTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
@@ -1211,6 +1179,31 @@ export type DeleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransac
     transactionId: number;
     fileId: number;
   };
+export type ReadExpensesUsersMeAnalyticsStartDateEndDateExpensesGetApiResponse =
+  /** status 200 Successful Response */ MovementApiOut[];
+export type ReadExpensesUsersMeAnalyticsStartDateEndDateExpensesGetApiArg = {
+  startDate: string;
+  endDate: string;
+};
+export type ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiResponse =
+  /** status 200 Successful Response */ MovementApiOut[];
+export type ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiArg = {
+  startDate: string;
+  endDate: string;
+};
+export type GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiResponse =
+  /** status 200 Successful Response */ DetailedPlStatement;
+export type GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiArg =
+  string;
+export type GetPlStatementUsersMeAnalyticsMonthGetApiResponse =
+  /** status 200 Successful Response */ PlStatement;
+export type GetPlStatementUsersMeAnalyticsMonthGetApiArg = string;
+export type GetManyPlStatementsUsersMeAnalyticsGetApiResponse =
+  /** status 200 Successful Response */ PlStatement[];
+export type GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
+  page?: number;
+  perPage?: number;
+};
 export type UpdateBalancesAccountsUpdateBalancesPostApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateBalancesAccountsUpdateBalancesPostApiArg = void;
@@ -1403,24 +1396,6 @@ export type MovementApiIn = {
   name: string;
   category_id: number | null;
 };
-export type DetailedPlReport = {
-  start_date: string;
-  end_date: string;
-  income: string;
-  expenses: string;
-  income_by_category: {
-    [key: string]: string;
-  };
-  expenses_by_category: {
-    [key: string]: string;
-  };
-};
-export type PlStatement = {
-  start_date: string;
-  end_date: string;
-  income: string;
-  expenses: string;
-};
 export type InstitutionalAccountType =
   | "investment"
   | "credit"
@@ -1490,6 +1465,24 @@ export type BodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTra
   {
     file: Blob;
   };
+export type DetailedPlStatement = {
+  start_date: string;
+  end_date: string;
+  income: string;
+  expenses: string;
+  income_by_category: {
+    [key: string]: string;
+  };
+  expenses_by_category: {
+    [key: string]: string;
+  };
+};
+export type PlStatement = {
+  start_date: string;
+  end_date: string;
+  income: string;
+  expenses: string;
+};
 export type TransactionPlaidIn2 = {
   plaid_id: string;
   plaid_metadata: string;

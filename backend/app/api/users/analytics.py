@@ -21,7 +21,7 @@ from fastapi import APIRouter
 
 from app.database.deps import DBSession
 from app.features.movement import PLStatement, MovementApiOut, MovementField
-from app.features.movement.models import DetailedPLReport
+from app.features.movement.models import DetailedPLStatement
 from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()
@@ -63,31 +63,29 @@ def read_income(
     )
 
 
-@router.get("/detailed/{start_date}")
-def get_detailed_pl_report(
+@router.get("/detailed/{month}")
+def get_detailed_pl_statement(
     db: DBSession,
     me: CurrentUser,
-    start_date: date,
-) -> DetailedPLReport:
-    return CRUDUser.get_detailed_pl_report(db, me.id, start_date)
+    month: date,
+) -> DetailedPLStatement:
+    return CRUDUser.get_detailed_pl_statement(db, me.id, month)
 
 
-@router.get("/{start_date}")
-def get_aggregate(
+@router.get("/{month}")
+def get_pl_statement(
     db: DBSession,
     me: CurrentUser,
-    start_date: date,
+    month: date,
 ) -> PLStatement:
-    return CRUDUser.get_movement_aggregate(db, me.id, start_date)
+    return CRUDUser.get_pl_statement(db, me.id, month)
 
 
 @router.get("/")
-def get_many_aggregates(
+def get_many_pl_statements(
     db: DBSession,
     me: CurrentUser,
     page: int = 0,
     per_page: int = 12,
 ) -> Iterable[PLStatement]:
-    return CRUDUser.get_many_movement_aggregates(
-        db, me.id, page=page, per_page=per_page
-    )
+    return CRUDUser.get_many_pl_statements(db, me.id, page=page, per_page=per_page)

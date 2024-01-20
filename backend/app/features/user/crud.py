@@ -34,7 +34,7 @@ from app.features.movement import (
     Movement,
     MovementField,
 )
-from app.features.movement.models import DetailedPLReport
+from app.features.movement.models import DetailedPLStatement
 from app.features.transaction import TransactionApiOut, Transaction
 from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
@@ -224,7 +224,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         return MovementApiOut.model_validate(movement)
 
     @classmethod
-    def get_movement_aggregate(
+    def get_pl_statement(
         cls,
         db: Session,
         user_id: int,
@@ -247,7 +247,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         )
 
     @classmethod
-    def get_many_movement_aggregates(
+    def get_many_pl_statements(
         cls,
         db: Session,
         user_id: int,
@@ -269,12 +269,12 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             )
 
     @classmethod
-    def get_detailed_pl_report(
+    def get_detailed_pl_statement(
         cls,
         db: Session,
         user_id: int,
         start_date: date,
-    ) -> DetailedPLReport:
+    ) -> DetailedPLStatement:
         statement = User.select_detailed_aggregates(
             user_id, start_date.year, start_date.month
         )
@@ -288,7 +288,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             # 0 is used to store the totla
             report[result.sign][0] += result.amount
 
-        return DetailedPLReport(
+        return DetailedPLStatement(
             start_date=date(start_date.year, start_date.month, 1),
             end_date=date(start_date.year, start_date.month, 1)
             + relativedelta(months=1),
