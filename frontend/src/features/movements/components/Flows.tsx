@@ -13,7 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { TransactionApiOut } from "app/services/api";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
+import { TransactionApiOut, api } from "app/services/api";
 import ClickableIcon from "components/ClickableIcon";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
@@ -189,16 +190,21 @@ function StepFlows(props: {
 export function Flows(props: {
   onRemove?: (x: TransactionApiOut) => void;
   selectedAccountId?: number;
-  transactions?: TransactionApiOut[];
+  movementId?: number;
   loading?: boolean;
 }) {
+  const transactionsQuery =
+    api.endpoints.readManyUsersMeMovementsMovementIdTransactionsGet.useQuery(
+      props.movementId || skipToken,
+    );
+
   return (
     <Step.Group fluid widths={2}>
       <StepFlows
         loading={props.loading}
         onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
-        transactions={props.transactions}
+        transactions={transactionsQuery.data}
         filterPredicate={(t) => Number(t.amount) < 0}
         reverse
       />
@@ -206,7 +212,7 @@ export function Flows(props: {
         loading={props.loading}
         onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
-        transactions={props.transactions}
+        transactions={transactionsQuery.data}
         filterPredicate={(t) => Number(t.amount) >= 0}
       />
     </Step.Group>

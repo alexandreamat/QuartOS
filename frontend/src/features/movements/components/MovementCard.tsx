@@ -55,10 +55,6 @@ export function MovementCard(props: {
     api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
 
   const me = api.endpoints.readMeUsersMeGet.useQuery();
-  const transactionsQuery =
-    api.endpoints.readManyUsersMeMovementsMovementIdTransactionsGet.useQuery(
-      props.movement ? props.movement.id : skipToken,
-    );
 
   async function submitUpdateMovement() {
     if (!props.movement) return;
@@ -183,7 +179,7 @@ export function MovementCard(props: {
             onRemove={props.onRemoveTransaction}
             selectedAccountId={props.selectedAccountId}
             loading={props.loading}
-            transactions={transactionsQuery.data}
+            movementId={props.movement?.id}
           />
         )}
       </Card.Content>
