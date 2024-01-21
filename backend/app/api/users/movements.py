@@ -60,12 +60,16 @@ def read_many(
     transactionsLe: int | None = None,
     is_descending: bool = True,
     sort_by: MovementField = MovementField.TIMESTAMP,
+    category_id: int | None = None,
+    amount_gt: Decimal | None = None,
+    amount_lt: Decimal | None = None,
 ) -> Iterable[MovementApiOut]:
     return CRUDUser.read_movements(
         db,
         me.id,
         userinstitutionlink_id,
         account_id,
+        category_id=category_id,
         page=page,
         per_page=per_page,
         start_date=start_date,
@@ -78,6 +82,8 @@ def read_many(
         transaction_amount_ge=transaction_amount_ge,
         transaction_amount_le=transaction_amount_le,
         is_amount_abs=is_amount_abs,
+        amount_gt=amount_gt,
+        amount_lt=amount_lt,
     )
 
 

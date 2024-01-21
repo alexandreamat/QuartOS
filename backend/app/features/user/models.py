@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import date
+from decimal import Decimal
 import logging
 from typing import Any
 
@@ -24,6 +26,7 @@ from sqlalchemy import select, case, desc, asc
 
 from app.common.models import Base, CurrencyCode
 from app.features.account import Account
+from app.features.category.models import Category
 from app.features.movement import Movement
 from app.features.transaction import Transaction
 from app.features.userinstitutionlink import UserInstitutionLink
@@ -141,6 +144,75 @@ class User(__UserBase, Base, table=True):
                 UserInstitutionLink.user_id == user_id,
             )
         )
+        return statement
+
+    @classmethod
+    def select_movements2(
+        cls,
+        user_id: int,
+        category_id: int | None = None,
+        page: int = 0,
+        per_page: int | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        amount_gt: Decimal | None = None,
+        amount_lt: Decimal | None = None,
+        is_descending: bool = True,
+    ) -> Any:
+        amount_sum = func.sum(Transaction.amount_default_currency)
+        timestamp_min = func.min(Transaction.timestamp)
+
+        # SELECT
+        statement = select(
+            col(Movement.id),
+            col(Movement.name),
+            col(Movement.category_id),
+            timestamp_min.label("timestamp"),
+            amount_sum.label("amount"),
+        )
+
+        # JOIN
+        statement = (
+            statement.join(Account)
+            .join(Movement)
+            .join(Category)
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
+            .outerjoin(User)
+        )
+
+        # WHERE
+        statement = statement.where(
+            or_(
+                Account.NonInstitutionalAccount.user_id == user_id,
+                UserInstitutionLink.user_id == user_id,
+            )
+        )
+        if category_id:
+            statement = statement.where(col(Movement.category_id) == category_id)
+
+        statement = statement.group_by(col(Movement.id))
+
+        # ORDER BY
+        order = desc if is_descending else asc
+        statement = statement.order_by(order("amount"))
+
+        # HAVING
+        if start_date:
+            statement = statement.having(timestamp_min >= start_date)
+        if end_date:
+            statement = statement.having(timestamp_min < end_date)
+        if amount_gt is not None:
+            statement = statement.having(amount_sum > amount_gt)
+        if amount_lt is not None:
+            statement = statement.having(amount_sum < amount_lt)
+
+        # OFFSET LIMIT
+        if per_page:
+            offset = page * per_page
+            statement = statement.offset(offset).limit(per_page)
+        logger.error(statement.compile(compile_kwargs={"literal_binds": True}))
         return statement
 
     @classmethod

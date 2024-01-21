@@ -459,6 +459,9 @@ const injectedRtkApi = api
             transactionsLe: queryArg.transactionsLe,
             is_descending: queryArg.isDescending,
             sort_by: queryArg.sortBy,
+            category_id: queryArg.categoryId,
+            amount_gt: queryArg.amountGt,
+            amount_lt: queryArg.amountLt,
           },
         }),
         providesTags: ["users", "movements"],
@@ -1035,6 +1038,9 @@ export type ReadManyUsersMeMovementsGetApiArg = {
   transactionsLe?: number | null;
   isDescending?: boolean;
   sortBy?: MovementField;
+  categoryId?: number | null;
+  amountGt?: number | string | null;
+  amountLt?: number | string | null;
 };
 export type ReadUsersMeMovementsMovementIdGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
@@ -1386,8 +1392,7 @@ export type MovementApiOut = {
   id: number;
   name: string;
   category_id: number | null;
-  earliest_timestamp: string | null;
-  latest_timestamp: string | null;
+  timestamp: string | null;
   transactions: TransactionApiOut[];
   amount_default_currency: string;
 };

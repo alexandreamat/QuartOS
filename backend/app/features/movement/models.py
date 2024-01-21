@@ -50,8 +50,7 @@ class MovementField(str, Enum):
 
 
 class MovementApiOut(__MovementBase, Base):
-    earliest_timestamp: date | None
-    latest_timestamp: date | None
+    timestamp: date | None
     transactions: list[TransactionApiOut]
     amount_default_currency: Decimal
 
@@ -68,12 +67,8 @@ class Movement(__MovementBase, Base, table=True):
     category_id: int | None = Field(foreign_key="category.id")
 
     @property
-    def earliest_timestamp(self) -> date:
+    def timestamp(self) -> date:
         return min(t.timestamp for t in self.transactions)
-
-    @property
-    def latest_timestamp(self) -> date:
-        return max(t.timestamp for t in self.transactions)
 
     @property
     def amount_default_currency(self) -> Decimal:

@@ -13,7 +13,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { MovementApiOut, PlStatement, api } from "app/services/api";
+import {
+  CategoryApiOut,
+  MovementApiOut,
+  PlStatement,
+  api,
+} from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { MovementCard } from "features/movements/components/MovementCard";
 import { Card, Loader } from "semantic-ui-react";
@@ -22,14 +27,14 @@ export default function PLMovements(props: {
   aggregate: PlStatement;
   showIncome: boolean;
   onOpenEditForm: (x: MovementApiOut) => void;
+  category?: CategoryApiOut;
 }) {
-  const movementsEndpoint = props.showIncome
-    ? api.endpoints.readIncomeUsersMeAnalyticsStartDateEndDateIncomeGet
-    : api.endpoints.readExpensesUsersMeAnalyticsStartDateEndDateExpensesGet;
-
-  const movementsQuery = movementsEndpoint.useQuery({
+  const movementsQuery = api.endpoints.readManyUsersMeMovementsGet.useQuery({
     startDate: props.aggregate.start_date,
     endDate: props.aggregate.end_date,
+    categoryId: props.category?.id,
+    amountGt: props.showIncome ? 0 : undefined,
+    amountLt: props.showIncome ? undefined : 0,
   });
 
   if (movementsQuery.isLoading || movementsQuery.isUninitialized)
@@ -58,6 +63,7 @@ export default function PLMovements(props: {
             onOpenEditForm={() => props.onOpenEditForm(movement)}
             explanationRate={explanationRate}
             showFlows={movement.transactions.length > 1}
+            hideCategory={props.category !== undefined}
           />
         );
       })}
