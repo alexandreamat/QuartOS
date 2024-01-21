@@ -82,13 +82,13 @@ class Movement(__MovementBase, Base, table=True):
         return len(self.transactions)
 
     @property
-    def default_category_id(self) -> int:
-        amounts: dict[int, Decimal] = defaultdict(Decimal)
+    def default_category_id(self) -> int | None:
+        amounts: dict[int | None, Decimal] = defaultdict(Decimal)
         for t in self.transactions:
             if not t.category:
                 continue
             amounts[t.category.id] += t.amount
-        return max(amounts, key=lambda x: abs(amounts[x]))
+        return max(amounts, key=lambda x: abs(amounts[x]), default=None)
 
     @classmethod
     def select_transactions(
