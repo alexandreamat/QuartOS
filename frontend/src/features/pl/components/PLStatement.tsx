@@ -14,15 +14,28 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { skipToken } from "@reduxjs/toolkit/dist/query";
-import { MovementApiOut, api } from "app/services/api";
+import { Doughnut } from "react-chartjs-2";
+import { CategoryApiOut, MovementApiOut, api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import Form from "features/movements/components/Form";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button, Icon, Loader } from "semantic-ui-react";
+import { Button, Grid, Header, Icon, Loader } from "semantic-ui-react";
 import PLCard from "./PLCard";
 import PLMovements from "./PLMovements";
+import {
+  Chart,
+  ArcElement,
+  Tooltip,
+  Legend,
+  ChartData,
+  Colors,
+} from "chart.js";
+import { CategoryIcon } from "features/categories/components/CategoryIcon";
+import FlexRow from "components/FlexRow";
+
+Chart.register(ArcElement, Tooltip, Legend, Colors);
 
 export default function PLStatement() {
   const navigate = useNavigate();
@@ -31,17 +44,22 @@ export default function PLStatement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [showIncome, setShowIncome] = useState(true);
   const [movementId, setMovementId] = useState(0);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>();
 
-  const aggregateQuery =
-    api.endpoints.getPlStatementUsersMeAnalyticsMonthGet.useQuery(
+  const detailedStatementQuery =
+    api.endpoints.getDetailedPlStatementUsersMeAnalyticsDetailedMonthGet.useQuery(
       startDate ? startDate : skipToken,
     );
 
+  const categoriesQuery = api.endpoints.readManyCategoriesGet.useQuery();
+
   function handleClickIncome() {
+    setSelectedCategoryId(undefined);
     setShowIncome(true);
   }
 
   function handleClickExpenses() {
+    setSelectedCategoryId(undefined);
     setShowIncome(false);
   }
 
@@ -55,11 +73,51 @@ export default function PLStatement() {
     setMovementId(0);
   }
 
-  if (aggregateQuery.isLoading || aggregateQuery.isUninitialized)
+  if (
+    detailedStatementQuery.isLoading ||
+    detailedStatementQuery.isUninitialized ||
+    categoriesQuery.isLoading ||
+    categoriesQuery.isUninitialized
+  )
     return <Loader active size="huge" />;
 
-  if (aggregateQuery.isError)
-    return <QueryErrorMessage query={aggregateQuery} />;
+  if (detailedStatementQuery.isError || categoriesQuery.isError)
+    return <QueryErrorMessage query={detailedStatementQuery} />;
+
+  const categoryNamesById = Object.fromEntries(
+    categoriesQuery.data.map((c) => [c.id, c.name]),
+  );
+
+  const categoriesById = categoriesQuery.data.reduce(
+    (acc, cat) => ({ ...acc, [cat.id]: cat }),
+    {} as { [id: number]: CategoryApiOut },
+  );
+
+  const selectedCategory = selectedCategoryId
+    ? categoriesById[selectedCategoryId]
+    : undefined;
+
+  const amountByCategoryRaw = showIncome
+    ? detailedStatementQuery.data.income_by_category
+    : detailedStatementQuery.data.expenses_by_category;
+
+  const doughnutEntries = Object.entries(amountByCategoryRaw)
+    .map(([categoryIdStr, amountStr]) => ({
+      id: Number(categoryIdStr),
+      name: categoryNamesById[categoryIdStr],
+      amount: Number(amountStr),
+    }))
+    .sort((a, b) => a.amount - b.amount);
+
+  const doughnutData: ChartData<"doughnut"> = {
+    datasets: [
+      {
+        data: doughnutEntries.map((o) => o.amount),
+        label: "Amount",
+      },
+    ],
+    labels: doughnutEntries.map((o) => o.name),
+  };
 
   return (
     <FlexColumn>
@@ -79,18 +137,44 @@ export default function PLStatement() {
           Go back
         </Button>
       </div>
-      <PLCard
-        aggregate={aggregateQuery.data}
-        showIncome={showIncome}
-        onClickIncome={handleClickIncome}
-        onClickExpenses={handleClickExpenses}
-      />
       <FlexColumn.Auto>
-        <PLMovements
-          aggregate={aggregateQuery.data}
+        <PLCard
+          aggregate={detailedStatementQuery.data}
           showIncome={showIncome}
-          onOpenEditForm={handleOpenEditForm}
+          onClickIncome={handleClickIncome}
+          onClickExpenses={handleClickExpenses}
         />
+        <Grid columns={2} stackable>
+          <Grid.Column>
+            <Doughnut
+              data={doughnutData}
+              options={{
+                onClick: (e, elements, c) =>
+                  setSelectedCategoryId(doughnutEntries[elements[0].index].id),
+              }}
+            />
+          </Grid.Column>
+          <Grid.Column>
+            {selectedCategory && (
+              <FlexRow
+                alignItems="center"
+                gap="1ch"
+                style={{ height: "2.2em" }}
+              >
+                <CategoryIcon categoryId={selectedCategory.id} />
+                <FlexRow.Auto>
+                  <Header as={"h3"}>{selectedCategory.name}</Header>
+                </FlexRow.Auto>
+              </FlexRow>
+            )}
+            <PLMovements
+              aggregate={detailedStatementQuery.data}
+              showIncome={showIncome}
+              onOpenEditForm={handleOpenEditForm}
+              category={selectedCategory}
+            />
+          </Grid.Column>
+        </Grid>
       </FlexColumn.Auto>
     </FlexColumn>
   );

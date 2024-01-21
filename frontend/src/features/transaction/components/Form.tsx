@@ -128,7 +128,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     if (isEdit) return;
     if (!movementQuery.isSuccess) return;
     const movement = movementQuery.data;
-    const timestamp = movement.earliest_timestamp;
+    const timestamp = movement.timestamp;
     form.timestamp.set(timestamp ? stringToDate(timestamp) : new Date());
     form.name.set(movement.name);
   }, [movementQuery.isSuccess, movementQuery.data, props.open]);

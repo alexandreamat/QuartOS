@@ -44,6 +44,7 @@ export function MovementCard(props: {
   editable?: boolean;
   onCheckedChange?: (x: boolean) => void;
   checked?: boolean;
+  hideCategory?: boolean;
 }) {
   const [name, setName] = useState(props.movement?.name || "");
   const [isEditMode, setIsEditMode] = useState(false);
@@ -94,7 +95,7 @@ export function MovementCard(props: {
           )}
           <Card.Meta>
             <FormattedTimestamp
-              timestamp={props.movement?.earliest_timestamp || undefined}
+              timestamp={props.movement?.timestamp || undefined}
               loading={props.loading}
               style={{ width: "9em" }}
             />
@@ -103,7 +104,8 @@ export function MovementCard(props: {
           {isEditMode ? (
             <CategoriesDropdown categoryId={categoryId} />
           ) : (
-            props.movement?.category_id && (
+            props.movement?.category_id &&
+            !props.hideCategory && (
               <CategoryIcon categoryId={props.movement?.category_id} />
             )
           )}

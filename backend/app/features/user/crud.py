@@ -161,6 +161,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_id: int,
         userinstitutionlink_id: int | None = None,
         account_id: int | None = None,
+        category_id: int | None = None,
         page: int = 0,
         per_page: int | None = None,
         start_date: date | None = None,
@@ -176,35 +177,57 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         amount_lt: Decimal | None = None,
         sort_by: MovementField = MovementField.TIMESTAMP,
     ) -> Iterable[MovementApiOut]:
-        statement = User.select_movements(
-            user_id=user_id,
-            userinstitutionlink_id=userinstitutionlink_id,
-            account_id=account_id,
-            page=page,
-            per_page=per_page,
-            start_date=start_date,
-            end_date=end_date,
-            search=search,
-            is_descending=is_descending,
-            transaction_amount_ge=transaction_amount_ge,
-            transaction_amount_le=transaction_amount_le,
-            is_amount_abs=is_amount_abs,
-            transactionsGe=transactionsGe,
-            transactionsLe=transactionsLe,
-            sort_by=sort_by,
-        )
-        movements: Iterable[Movement] = db.exec(statement).all()
-        user_out = cls.read(db, user_id)
-        currency_code = user_out.default_currency_code
-        movements = Movement.filter_movements(
-            movements,
-            is_descending,
-            sort_by,
-            amount_gt=amount_gt,
-            amount_lt=amount_lt,
-        )
-        for movement in movements:
-            yield MovementApiOut.model_validate(movement)
+        # TODO: Carefully remove old implemenation
+        if category_id:
+            statement = User.select_movements2(
+                user_id,
+                category_id,
+                page,
+                per_page,
+                start_date,
+                end_date,
+                amount_gt,
+                amount_lt,
+                is_descending,
+            )
+            for result in db.exec(statement).all():
+                yield MovementApiOut(
+                    id=result.id,
+                    name=result.name,
+                    category_id=result.category_id,
+                    transactions=[],
+                    timestamp=result.timestamp,
+                    amount_default_currency=result.amount,
+                )
+        else:
+            statement = User.select_movements(
+                user_id=user_id,
+                userinstitutionlink_id=userinstitutionlink_id,
+                account_id=account_id,
+                page=page,
+                per_page=per_page,
+                start_date=start_date,
+                end_date=end_date,
+                search=search,
+                is_descending=is_descending,
+                transaction_amount_ge=transaction_amount_ge,
+                transaction_amount_le=transaction_amount_le,
+                is_amount_abs=is_amount_abs,
+                transactionsGe=transactionsGe,
+                transactionsLe=transactionsLe,
+                sort_by=sort_by,
+            )
+            movements: Iterable[Movement] = db.exec(statement).all()
+            user_out = cls.read(db, user_id)
+            movements = Movement.filter_movements(
+                movements,
+                is_descending,
+                sort_by,
+                amount_gt=amount_gt,
+                amount_lt=amount_lt,
+            )
+            for movement in movements:
+                yield MovementApiOut.model_validate(movement)
 
     @classmethod
     def read_movement(
