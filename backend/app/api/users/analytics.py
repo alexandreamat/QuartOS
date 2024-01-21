@@ -21,7 +21,7 @@ from fastapi import APIRouter
 
 from app.database.deps import DBSession
 from app.features.movement import PLStatement, MovementApiOut, MovementField
-from app.features.movement.models import DetailedPLStatement
+from app.features.movement.models import DetailedPLStatementApiOut
 from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()
@@ -68,7 +68,7 @@ def get_detailed_pl_statement(
     db: DBSession,
     me: CurrentUser,
     month: date,
-) -> DetailedPLStatement:
+) -> DetailedPLStatementApiOut:
     return CRUDUser.get_detailed_pl_statement(db, me.id, month)
 
 

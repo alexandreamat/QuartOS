@@ -1198,7 +1198,7 @@ export type ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiArg = {
   endDate: string;
 };
 export type GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiResponse =
-  /** status 200 Successful Response */ DetailedPlStatement;
+  /** status 200 Successful Response */ DetailedPlStatementApiOut;
 export type GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiArg =
   string;
 export type GetPlStatementUsersMeAnalyticsMonthGetApiResponse =
@@ -1470,7 +1470,7 @@ export type BodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTra
   {
     file: Blob;
   };
-export type DetailedPlStatement = {
+export type DetailedPlStatementApiOut = {
   start_date: string;
   end_date: string;
   income: string;

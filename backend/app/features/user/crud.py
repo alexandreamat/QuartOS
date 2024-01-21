@@ -34,7 +34,7 @@ from app.features.movement import (
     Movement,
     MovementField,
 )
-from app.features.movement.models import DetailedPLStatement
+from app.features.movement.models import DetailedPLStatementApiOut
 from app.features.transaction import TransactionApiOut, Transaction
 from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
@@ -178,7 +178,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         sort_by: MovementField = MovementField.TIMESTAMP,
     ) -> Iterable[MovementApiOut]:
         # TODO: Carefully remove old implemenation
-        if category_id:
+        if category_id is not None:
             statement = User.select_movements2(
                 user_id,
                 category_id,
@@ -297,27 +297,25 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         db: Session,
         user_id: int,
         start_date: date,
-    ) -> DetailedPLStatement:
+    ) -> DetailedPLStatementApiOut:
         statement = User.select_detailed_aggregates(
             user_id, start_date.year, start_date.month
         )
-
-        report: dict[int, dict[int, Decimal]] = defaultdict(
+        by_category: dict[int, dict[int | None, Decimal]] = defaultdict(
             lambda: defaultdict(Decimal)
         )
+        totals: dict[int, Decimal] = defaultdict(Decimal)
 
         for result in db.exec(statement).all():
-            report[result.sign][result.category_id] += result.amount
-            # 0 is used to store the totla
-            report[result.sign][0] += result.amount
+            by_category[result.sign][result.category_id or 0] += result.amount
+            totals[result.sign] += result.amount
 
-        return DetailedPLStatement(
+        return DetailedPLStatementApiOut(
             start_date=date(start_date.year, start_date.month, 1),
             end_date=date(start_date.year, start_date.month, 1)
             + relativedelta(months=1),
-            income=report[1][0],
-            expenses=report[-1][0],
-            # remove totals from report by categories
-            income_by_category={k: v for k, v in report[1].items() if k},
-            expenses_by_category={k: v for k, v in report[-1].items() if k},
+            income_by_category=by_category[1],
+            expenses_by_category=by_category[-1],
+            income=totals[1],
+            expenses=totals[-1],
         )
