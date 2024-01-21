@@ -60,13 +60,17 @@ function CurrencyExchangeTip(props: {
 }
 
 export default function CurrencyExchangeTips(props: {
-  relatedTransactions: TransactionApiOut[];
+  movementId: number;
   currencyCode: string;
 }) {
+  const query =
+    api.endpoints.readManyUsersMeMovementsMovementIdTransactionsGet.useQuery(
+      props.movementId,
+    );
   return (
     <div style={{ lineHeight: 2 }}>
       Related amounts were{" "}
-      {props.relatedTransactions.map((transaction, i) => (
+      {query.data?.map((transaction, i) => (
         <CurrencyExchangeTip
           key={transaction.id}
           relatedTransaction={transaction}

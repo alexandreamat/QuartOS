@@ -59,7 +59,6 @@ export default function PLMovements(props: {
             movement={movement}
             onOpenEditForm={() => props.onOpenEditForm(movement)}
             explanationRate={explanationRate}
-            showFlows={movement.transactions.length > 1}
             hideCategory={props.categoryId !== undefined}
           />
         );

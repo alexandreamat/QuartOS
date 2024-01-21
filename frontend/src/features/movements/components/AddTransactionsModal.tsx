@@ -28,9 +28,12 @@ export default function AddTransactionsModal(props: {
   onClose: () => void;
   movement: MovementApiOut;
 }) {
-  const initialTransactions = new Set(
-    props.movement.transactions.map((t) => t.id),
-  );
+  const transactionsQuery =
+    api.endpoints.readManyUsersMeMovementsMovementIdTransactionsGet.useQuery(
+      props.movement.id,
+    );
+
+  const initialTransactions = new Set(transactionsQuery.data?.map((t) => t.id));
 
   const reference = useRef<HTMLDivElement | null>(null);
 

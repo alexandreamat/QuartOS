@@ -127,7 +127,7 @@ export default function Form(props: {
               <MovementCard
                 onRemoveTransaction={
                   movementQuery.isSuccess &&
-                  movementQuery.data.transactions.length > 1
+                  movementQuery.data.transactions_count > 1
                     ? handleRemoveTransaction
                     : undefined
                 }

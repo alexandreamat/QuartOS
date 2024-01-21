@@ -96,17 +96,15 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls,
         db: Session,
         user_id: int,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        movement_id: int | None,
+        *,
+        account_id: int | None = None,
+        movement_id: int | None = None,
         **kwargs: Any,
     ) -> Iterable[TransactionApiOut]:
         statement = User.select_transactions(
             user_id,
-            userinstitutionlink_id,
-            account_id,
-            None,
-            movement_id,
+            account_id=account_id,
+            movement_id=movement_id,
             **kwargs,
         )
 
@@ -117,14 +115,17 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     def read_transaction(
         cls,
         db: Session,
-        user_id: int | None,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        movement_id: int | None,
+        user_id: int,
         transaction_id: int,
+        *,
+        account_id: int | None = None,
+        movement_id: int | None = None,
     ) -> TransactionApiOut:
         statement = User.select_transactions(
-            user_id, userinstitutionlink_id, account_id, movement_id, transaction_id
+            user_id,
+            account_id=account_id,
+            movement_id=movement_id,
+            transaction_id=transaction_id,
         )
         transaction = Transaction.read_one_from_query(db, statement, transaction_id)
         return TransactionApiOut.model_validate(transaction)
@@ -159,8 +160,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls,
         db: Session,
         user_id: int,
-        userinstitutionlink_id: int | None = None,
-        account_id: int | None = None,
+        *,
         category_id: int | None = None,
         page: int = 0,
         per_page: int | None = None,
@@ -168,83 +168,65 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         end_date: date | None = None,
         search: str | None = None,
         is_descending: bool = True,
-        transaction_amount_ge: Decimal | None = None,
-        transaction_amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
-        transactionsGe: int | None = None,
-        transactionsLe: int | None = None,
+        transactions_ge: int | None = None,
+        transactions_le: int | None = None,
         amount_gt: Decimal | None = None,
         amount_lt: Decimal | None = None,
-        sort_by: MovementField = MovementField.TIMESTAMP,
+        amount_ge: Decimal | None = None,
+        amount_le: Decimal | None = None,
+        order_by: MovementField = MovementField.TIMESTAMP,
     ) -> Iterable[MovementApiOut]:
-        # TODO: Carefully remove old implemenation
-        if category_id is not None:
-            statement = User.select_movements2(
-                user_id,
-                category_id,
-                page,
-                per_page,
-                start_date,
-                end_date,
-                amount_gt,
-                amount_lt,
-                is_descending,
+        statement = User.select_movements(
+            user_id,
+            category_id=category_id,
+            page=page,
+            per_page=per_page,
+            start_date=start_date,
+            end_date=end_date,
+            amount_gt=amount_gt,
+            amount_lt=amount_lt,
+            is_descending=is_descending,
+            amount_ge=amount_ge,
+            amount_le=amount_le,
+            is_amount_abs=is_amount_abs,
+            order_by=order_by,
+            search=search,
+            transactions_ge=transactions_ge,
+            transactions_le=transactions_le,
+        )
+        for result in db.exec(statement).all():
+            yield MovementApiOut(
+                id=result.id,
+                name=result.name,
+                category_id=result.category_id,
+                timestamp=result.timestamp,
+                amount_default_currency=result.amount,
+                transactions_count=result.transactions_count,
             )
-            for result in db.exec(statement).all():
-                yield MovementApiOut(
-                    id=result.id,
-                    name=result.name,
-                    category_id=result.category_id,
-                    transactions=[],
-                    timestamp=result.timestamp,
-                    amount_default_currency=result.amount,
-                )
-        else:
-            statement = User.select_movements(
-                user_id=user_id,
-                userinstitutionlink_id=userinstitutionlink_id,
-                account_id=account_id,
-                page=page,
-                per_page=per_page,
-                start_date=start_date,
-                end_date=end_date,
-                search=search,
-                is_descending=is_descending,
-                transaction_amount_ge=transaction_amount_ge,
-                transaction_amount_le=transaction_amount_le,
-                is_amount_abs=is_amount_abs,
-                transactionsGe=transactionsGe,
-                transactionsLe=transactionsLe,
-                sort_by=sort_by,
-            )
-            movements: Iterable[Movement] = db.exec(statement).all()
-            user_out = cls.read(db, user_id)
-            movements = Movement.filter_movements(
-                movements,
-                is_descending,
-                sort_by,
-                amount_gt=amount_gt,
-                amount_lt=amount_lt,
-            )
-            for movement in movements:
-                yield MovementApiOut.model_validate(movement)
 
     @classmethod
     def read_movement(
         cls,
         db: Session,
         user_id: int,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
         movement_id: int,
         **kwargs: Any,
     ) -> MovementApiOut:
-        user_out = cls.read(db, user_id)
-        statement = User.select_movements(
-            user_id, userinstitutionlink_id, account_id, movement_id, **kwargs
+        cls.read(db, user_id)
+        statement = User.select_movements(user_id, movement_id=movement_id, **kwargs)
+        try:
+            result = db.exec(statement).one()
+        except NoResultFound:
+            raise ObjectNotFoundError("Movement", movement_id)
+        return MovementApiOut(
+            id=result.id,
+            name=result.name,
+            category_id=result.category_id,
+            timestamp=result.timestamp,
+            amount_default_currency=result.amount,
+            transactions_count=result.transactions_count,
         )
-        movement = Movement.read_one_from_query(db, statement, movement_id)
-        return MovementApiOut.model_validate(movement)
 
     @classmethod
     def get_pl_statement(

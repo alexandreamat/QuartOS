@@ -29,7 +29,6 @@ export function useMovementsBarState() {
     searchState: useState<string | undefined>(undefined),
     startDateState: useState<Date | undefined>(undefined),
     endDateState: useState<Date | undefined>(undefined),
-    accountIdState: useState<number | undefined>(undefined),
     transactionsGeState: useState<number | undefined>(undefined),
     transactionsLeState: useState<number | undefined>(undefined),
     isDescendingState: useState(true),
@@ -58,7 +57,6 @@ export function Bar(props: {
             />
           </Menu.Item>
           <MenuInputSearch searchState={props.barState.searchState} />
-          <MenuDropdownAccount accountIdState={props.barState.accountIdState} />
           <MenuDateRange
             dateGeState={props.barState.startDateState}
             dateLeState={props.barState.endDateState}

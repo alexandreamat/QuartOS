@@ -32,6 +32,7 @@ import { Flows } from "./Flows";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
 import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
 import useFormField from "hooks/useFormField";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export function MovementCard(props: {
   movement?: MovementApiOut;
@@ -54,6 +55,10 @@ export function MovementCard(props: {
     api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
 
   const me = api.endpoints.readMeUsersMeGet.useQuery();
+  const transactionsQuery =
+    api.endpoints.readManyUsersMeMovementsMovementIdTransactionsGet.useQuery(
+      props.movement ? props.movement.id : skipToken,
+    );
 
   async function submitUpdateMovement() {
     if (!props.movement) return;
@@ -168,6 +173,7 @@ export function MovementCard(props: {
             <MutateActionButton
               onOpenEditForm={props.onOpenEditForm}
               disabled={props.loading}
+              content={props.movement?.transactions_count.toFixed(0)}
             />
           )}
         </FlexRow>
@@ -177,7 +183,7 @@ export function MovementCard(props: {
             onRemove={props.onRemoveTransaction}
             selectedAccountId={props.selectedAccountId}
             loading={props.loading}
-            transactions={props.movement?.transactions}
+            transactions={transactionsQuery.data}
           />
         )}
       </Card.Content>

@@ -199,7 +199,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
           />
           {movementQuery.isSuccess && accountQuery.data?.currency_code && (
             <CurrencyExchangeTips
-              relatedTransactions={movementQuery.data.transactions}
+              movementId={movementQuery.data.id}
               currencyCode={accountQuery.data.currency_code}
             />
           )}
