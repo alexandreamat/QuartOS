@@ -445,23 +445,21 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/users/me/movements/`,
           params: {
-            userinstitutionlink_id: queryArg.userinstitutionlinkId,
-            account_id: queryArg.accountId,
             page: queryArg.page,
             per_page: queryArg.perPage,
             start_date: queryArg.startDate,
             end_date: queryArg.endDate,
             search: queryArg.search,
-            transaction_amount_ge: queryArg.transactionAmountGe,
-            transaction_amount_le: queryArg.transactionAmountLe,
             is_amount_abs: queryArg.isAmountAbs,
-            transactionsGe: queryArg.transactionsGe,
-            transactionsLe: queryArg.transactionsLe,
+            transactions_ge: queryArg.transactionsGe,
+            transactions_le: queryArg.transactionsLe,
             is_descending: queryArg.isDescending,
             sort_by: queryArg.sortBy,
             category_id: queryArg.categoryId,
             amount_gt: queryArg.amountGt,
             amount_lt: queryArg.amountLt,
+            amount_ge: queryArg.amountGe,
+            amount_le: queryArg.amountLe,
           },
         }),
         providesTags: ["users", "movements"],
@@ -504,6 +502,15 @@ const injectedRtkApi = api
           body: queryArg.body,
         }),
         invalidatesTags: ["users", "movements"],
+      }),
+      readManyUsersMeMovementsMovementIdTransactionsGet: build.query<
+        ReadManyUsersMeMovementsMovementIdTransactionsGetApiResponse,
+        ReadManyUsersMeMovementsMovementIdTransactionsGetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/movements/${queryArg}/transactions/`,
+        }),
+        providesTags: ["users", "movements", "transactions"],
       }),
       readManyUsersMeTransactionsGet: build.query<
         ReadManyUsersMeTransactionsGetApiResponse,
@@ -731,24 +738,6 @@ const injectedRtkApi = api
             "files",
           ],
         }),
-      readExpensesUsersMeAnalyticsStartDateEndDateExpensesGet: build.query<
-        ReadExpensesUsersMeAnalyticsStartDateEndDateExpensesGetApiResponse,
-        ReadExpensesUsersMeAnalyticsStartDateEndDateExpensesGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/analytics/${queryArg.startDate}/${queryArg.endDate}/expenses`,
-        }),
-        providesTags: ["users", "movements"],
-      }),
-      readIncomeUsersMeAnalyticsStartDateEndDateIncomeGet: build.query<
-        ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiResponse,
-        ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/analytics/${queryArg.startDate}/${queryArg.endDate}/income`,
-        }),
-        providesTags: ["users", "movements"],
-      }),
       getDetailedPlStatementUsersMeAnalyticsDetailedMonthGet: build.query<
         GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiResponse,
         GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiArg
@@ -1024,15 +1013,11 @@ export type CreateUsersMeMovementsPostApiArg = number[];
 export type ReadManyUsersMeMovementsGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
 export type ReadManyUsersMeMovementsGetApiArg = {
-  userinstitutionlinkId?: number | null;
-  accountId?: number | null;
   page?: number;
   perPage?: number;
   startDate?: string | null;
   endDate?: string | null;
   search?: string | null;
-  transactionAmountGe?: number | string | null;
-  transactionAmountLe?: number | string | null;
   isAmountAbs?: boolean;
   transactionsGe?: number | null;
   transactionsLe?: number | null;
@@ -1041,6 +1026,8 @@ export type ReadManyUsersMeMovementsGetApiArg = {
   categoryId?: number | null;
   amountGt?: number | string | null;
   amountLt?: number | string | null;
+  amountGe?: number | string | null;
+  amountLe?: number | string | null;
 };
 export type ReadUsersMeMovementsMovementIdGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
@@ -1060,6 +1047,9 @@ export type AddTransactionsUsersMeMovementsMovementIdTransactionsPutApiArg = {
   movementId: number;
   body: number[];
 };
+export type ReadManyUsersMeMovementsMovementIdTransactionsGetApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut[];
+export type ReadManyUsersMeMovementsMovementIdTransactionsGetApiArg = number;
 export type ReadManyUsersMeTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
@@ -1185,18 +1175,6 @@ export type DeleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransac
     transactionId: number;
     fileId: number;
   };
-export type ReadExpensesUsersMeAnalyticsStartDateEndDateExpensesGetApiResponse =
-  /** status 200 Successful Response */ MovementApiOut[];
-export type ReadExpensesUsersMeAnalyticsStartDateEndDateExpensesGetApiArg = {
-  startDate: string;
-  endDate: string;
-};
-export type ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiResponse =
-  /** status 200 Successful Response */ MovementApiOut[];
-export type ReadIncomeUsersMeAnalyticsStartDateEndDateIncomeGetApiArg = {
-  startDate: string;
-  endDate: string;
-};
 export type GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiResponse =
   /** status 200 Successful Response */ DetailedPlStatementApiOut;
 export type GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiArg =
@@ -1375,6 +1353,19 @@ export type TransactionPlaidOut = {
   files: FileApiOut[];
   is_synced: boolean;
 };
+export type MovementApiOut = {
+  id: number;
+  name: string;
+  category_id: number | null;
+  timestamp: string | null;
+  transactions_count: number;
+  amount_default_currency: string;
+};
+export type MovementField = "timestamp" | "amount";
+export type MovementApiIn = {
+  name: string;
+  category_id: number | null;
+};
 export type TransactionApiOut = {
   id: number;
   amount: string;
@@ -1387,19 +1378,6 @@ export type TransactionApiOut = {
   movement_id: number;
   files: FileApiOut[];
   is_synced: boolean;
-};
-export type MovementApiOut = {
-  id: number;
-  name: string;
-  category_id: number | null;
-  timestamp: string | null;
-  transactions: TransactionApiOut[];
-  amount_default_currency: string;
-};
-export type MovementField = "timestamp" | "amount";
-export type MovementApiIn = {
-  name: string;
-  category_id: number | null;
 };
 export type InstitutionalAccountType =
   | "investment"

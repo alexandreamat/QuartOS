@@ -20,47 +20,11 @@ from typing import Iterable
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-from app.features.movement import PLStatement, MovementApiOut, MovementField
+from app.features.movement import PLStatement
 from app.features.movement.models import DetailedPLStatementApiOut
 from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()
-
-
-@router.get("/{start_date}/{end_date}/expenses")
-def read_expenses(
-    db: DBSession,
-    me: CurrentUser,
-    start_date: date,
-    end_date: date,
-) -> Iterable[MovementApiOut]:
-    return CRUDUser.read_movements(
-        db,
-        user_id=me.id,
-        start_date=start_date,
-        end_date=end_date,
-        sort_by=MovementField.AMOUNT,
-        is_descending=False,
-        amount_lt=Decimal(0),
-    )
-
-
-@router.get("/{start_date}/{end_date}/income")
-def read_income(
-    db: DBSession,
-    me: CurrentUser,
-    start_date: date,
-    end_date: date,
-) -> Iterable[MovementApiOut]:
-    return CRUDUser.read_movements(
-        db,
-        user_id=me.id,
-        start_date=start_date,
-        end_date=end_date,
-        sort_by=MovementField.AMOUNT,
-        is_descending=True,
-        amount_gt=Decimal(0),
-    )
 
 
 @router.get("/detailed/{month}")

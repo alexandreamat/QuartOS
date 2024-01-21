@@ -44,9 +44,7 @@ def read_many(
     return CRUDUser.read_transactions(
         db,
         me.id,
-        None,
-        account_id,
-        None,
+        account_id=account_id,
         page=page,
         per_page=per_page,
         search=search,

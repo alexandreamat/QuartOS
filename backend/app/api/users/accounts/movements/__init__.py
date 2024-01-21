@@ -37,7 +37,9 @@ def create_many(
 ) -> Iterable[MovementApiOut]:
     CRUDUser.read_account(db, me.id, None, account_id)
     for transaction_id in transaction_ids:
-        CRUDUser.read_transaction(db, me.id, None, account_id, None, transaction_id)
+        CRUDUser.read_transaction(
+            db, me.id, account_id=account_id, transaction_id=transaction_id
+        )
     yield from CRUDAccount.create_many_movements(
         db,
         account_id,

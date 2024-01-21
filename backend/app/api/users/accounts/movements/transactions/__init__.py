@@ -38,7 +38,7 @@ def create(
 ) -> TransactionApiOut:
     # check permissions for account and movement separately because the
     # movement and the account might not be linked initially
-    CRUDUser.read_movement(db, me.id, None, None, movement_id)
+    CRUDUser.read_movement(db, me.id, movement_id)
     CRUDUser.read_account(db, me.id, None, account_id)
     return CRUDAccount.create_transaction(
         db,
@@ -58,7 +58,11 @@ def read(
     transaction_id: int,
 ) -> TransactionApiOut:
     transaction = CRUDUser.read_transaction(
-        db, me.id, None, account_id, movement_id, transaction_id
+        db,
+        me.id,
+        transaction_id,
+        account_id=account_id,
+        movement_id=movement_id,
     )
     return transaction
 
@@ -73,7 +77,13 @@ def update(
     transaction_in: TransactionApiIn,
     new_movement_id: int,
 ) -> TransactionApiOut:
-    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
+    CRUDUser.read_transaction(
+        db,
+        me.id,
+        account_id=account_id,
+        movement_id=movement_id,
+        transaction_id=transaction_id,
+    )
     return CRUDAccount.update_transaction(
         db,
         account_id,
@@ -93,7 +103,13 @@ def delete(
     movement_id: int,
     transaction_id: int,
 ) -> int:
-    CRUDUser.read_transaction(db, me.id, None, account_id, movement_id, transaction_id)
+    CRUDUser.read_transaction(
+        db,
+        me.id,
+        account_id=account_id,
+        movement_id=movement_id,
+        transaction_id=transaction_id,
+    )
     if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 

@@ -22,6 +22,7 @@ export default function MutateActionButton(props: {
   negative?: boolean;
   loading?: boolean;
   floated?: SemanticFLOATS;
+  content?: string;
 }) {
   return (
     <ActionButton
@@ -32,6 +33,7 @@ export default function MutateActionButton(props: {
       disabled={props.disabled}
       icon="ellipsis horizontal"
       onClick={() => props.onOpenEditForm()}
+      content={props.content}
     />
   );
 }
