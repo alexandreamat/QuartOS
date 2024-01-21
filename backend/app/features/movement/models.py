@@ -78,6 +78,10 @@ class Movement(__MovementBase, Base, table=True):
         )
 
     @property
+    def transactions_count(self) -> int:
+        return len(self.transactions)
+
+    @property
     def default_category_id(self) -> int:
         amounts: dict[int, Decimal] = defaultdict(Decimal)
         for t in self.transactions:
