@@ -44,7 +44,7 @@ export default function PLStatement() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [showIncome, setShowIncome] = useState(true);
   const [movementId, setMovementId] = useState(0);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number>();
+  const [selectedCategoryIdx, setSelectedCategoryIdx] = useState<number>();
 
   const detailedStatementQuery =
     api.endpoints.getDetailedPlStatementUsersMeAnalyticsDetailedMonthGet.useQuery(
@@ -54,12 +54,12 @@ export default function PLStatement() {
   const categoriesQuery = api.endpoints.readManyCategoriesGet.useQuery();
 
   function handleClickIncome() {
-    setSelectedCategoryId(undefined);
+    setSelectedCategoryIdx(undefined);
     setShowIncome(true);
   }
 
   function handleClickExpenses() {
-    setSelectedCategoryId(undefined);
+    setSelectedCategoryIdx(undefined);
     setShowIncome(false);
   }
 
@@ -93,10 +93,6 @@ export default function PLStatement() {
     {} as { [id: number]: CategoryApiOut },
   );
 
-  const selectedCategory = selectedCategoryId
-    ? categoriesById[selectedCategoryId]
-    : undefined;
-
   const amountByCategoryRaw = showIncome
     ? detailedStatementQuery.data.income_by_category
     : detailedStatementQuery.data.expenses_by_category;
@@ -104,10 +100,14 @@ export default function PLStatement() {
   const doughnutEntries = Object.entries(amountByCategoryRaw)
     .map(([categoryIdStr, amountStr]) => ({
       id: Number(categoryIdStr),
-      name: categoryNamesById[categoryIdStr],
       amount: Number(amountStr),
     }))
-    .sort((a, b) => a.amount - b.amount);
+    .map(({ id, amount }) => ({
+      id,
+      name: id === 0 ? "Uncategorised" : categoryNamesById[id],
+      amount,
+    }))
+    .sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
 
   const doughnutData: ChartData<"doughnut"> = {
     datasets: [
@@ -118,6 +118,16 @@ export default function PLStatement() {
     ],
     labels: doughnutEntries.map((o) => o.name),
   };
+
+  const selectedCategoryId =
+    selectedCategoryIdx !== undefined
+      ? doughnutEntries[selectedCategoryIdx].id
+      : undefined;
+
+  const selectedCategory =
+    selectedCategoryId !== undefined
+      ? categoriesById[selectedCategoryId]
+      : undefined;
 
   return (
     <FlexColumn>
@@ -150,20 +160,24 @@ export default function PLStatement() {
               data={doughnutData}
               options={{
                 onClick: (e, elements, c) =>
-                  setSelectedCategoryId(doughnutEntries[elements[0].index].id),
+                  setSelectedCategoryIdx(elements[0].index),
               }}
             />
           </Grid.Column>
           <Grid.Column>
-            {selectedCategory && (
+            {selectedCategoryId !== undefined && (
               <FlexRow
                 alignItems="center"
                 gap="1ch"
                 style={{ height: "2.2em" }}
               >
-                <CategoryIcon categoryId={selectedCategory.id} />
+                {selectedCategory && (
+                  <CategoryIcon categoryId={selectedCategory.id} />
+                )}
                 <FlexRow.Auto>
-                  <Header as={"h3"}>{selectedCategory.name}</Header>
+                  <Header as={"h3"}>
+                    {selectedCategory?.name || "Uncategorised"}
+                  </Header>
                 </FlexRow.Auto>
               </FlexRow>
             )}
@@ -171,7 +185,7 @@ export default function PLStatement() {
               aggregate={detailedStatementQuery.data}
               showIncome={showIncome}
               onOpenEditForm={handleOpenEditForm}
-              category={selectedCategory}
+              categoryId={selectedCategoryId}
             />
           </Grid.Column>
         </Grid>

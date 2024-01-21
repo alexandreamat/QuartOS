@@ -34,7 +34,7 @@ class PLStatement(SQLModel):
     expenses: Decimal
 
 
-class DetailedPLStatement(PLStatement):
+class DetailedPLStatementApiOut(PLStatement):
     income_by_category: dict[int, Decimal]
     expenses_by_category: dict[int, Decimal]
 

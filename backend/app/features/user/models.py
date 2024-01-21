@@ -175,7 +175,7 @@ class User(__UserBase, Base, table=True):
         statement = (
             statement.join(Account)
             .join(Movement)
-            .join(Category)
+            .outerjoin(Category)  # consider uncategorised movements
             .outerjoin(Account.InstitutionalAccount)
             .outerjoin(Account.NonInstitutionalAccount)
             .outerjoin(UserInstitutionLink)
@@ -189,8 +189,11 @@ class User(__UserBase, Base, table=True):
                 UserInstitutionLink.user_id == user_id,
             )
         )
-        if category_id:
-            statement = statement.where(col(Movement.category_id) == category_id)
+        if category_id is not None:
+            statement = statement.where(
+                col(Movement.category_id) == (category_id or None)
+            )
+            # category_id = 0 represents: WHERE category_id = NULL
 
         statement = statement.group_by(col(Movement.id))
 
@@ -212,7 +215,7 @@ class User(__UserBase, Base, table=True):
         if per_page:
             offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
-        logger.error(statement.compile(compile_kwargs={"literal_binds": True}))
+
         return statement
 
     @classmethod
