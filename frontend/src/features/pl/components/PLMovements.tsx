@@ -30,6 +30,8 @@ export default function PLMovements(props: {
     categoryId: props.categoryId,
     amountGt: props.showIncome ? 0 : undefined,
     amountLt: props.showIncome ? undefined : 0,
+    sortBy: "amount",
+    isDescending: props.showIncome,
   });
 
   if (movementsQuery.isLoading || movementsQuery.isUninitialized)
