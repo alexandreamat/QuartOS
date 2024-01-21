@@ -12,11 +12,13 @@
     "@types/node": "^17.0.45",
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
+    "chart.js": "^4.4.1",
     "currency-codes": "^2.1.0",
     "date-fns": "^2.29.3",
     "i18n-iso-countries": "^7.6.0",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-infinite-scroll-component": "^6.1.0",
     "react-plaid-link": "^3.4.0",
@@ -35,7 +37,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "openapi": "npx @rtk-query/codegen-openapi openapi-config.ts",
-    "codegen:watch": "nodemon --watch ../backend/**/models.py -e py --exec 'npm run openapi' start"
+    "codegen:watch": "nodemon --watch ../backend -e py --exec 'npm run openapi' start"
   },
   "eslintConfig": {
     "extends": [
