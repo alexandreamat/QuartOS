@@ -41,7 +41,7 @@ export default function Form(props: {
 
   const movementQuery =
     api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
-      movementId || skipToken,
+      (props.open && movementId) || skipToken,
     );
 
   const [createMovements, createMovementsResult] =
