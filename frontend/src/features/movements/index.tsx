@@ -71,8 +71,8 @@ export default function Movements() {
 
   const reference = useRef<HTMLDivElement | null>(null);
 
-  const [createMovement, createMovementResult] =
-    api.endpoints.createUsersMeMovementsPost.useMutation();
+  const [mergeMovements, mergeMovementsResult] =
+    api.endpoints.mergeUsersMeMovementsMergePost.useMutation();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -117,16 +117,14 @@ export default function Movements() {
   }
 
   async function handleMergeMovements() {
-    // const childrenIds = [...checkedMovements]
-    //   .map((m) => m.transactions.map((t) => t.id))
-    //   .flat(1);
-    // try {
-    //   await createMovement(childrenIds).unwrap();
-    // } catch (error) {
-    //   logMutationError(error, createMovementResult);
-    // }
-    // setIsMultipleChoice(false);
-    // setCheckedMovements(new Set());
+    const checkedMovementIds = [...checkedMovements].map((m) => m.id);
+    try {
+      await mergeMovements(checkedMovementIds).unwrap();
+    } catch (error) {
+      logMutationError(error, mergeMovementsResult);
+    }
+    setIsMultipleChoice(false);
+    setCheckedMovements(new Set());
   }
 
   const CardGenerator = ({
@@ -180,8 +178,8 @@ export default function Movements() {
         <SpanButton
           disabled={checkedMovements.size <= 1}
           onClick={handleMergeMovements}
-          loading={createMovementResult.isLoading}
-          negative={createMovementResult.isError}
+          loading={mergeMovementsResult.isLoading}
+          negative={mergeMovementsResult.isError}
         >
           {`Merge ${checkedMovements.size} ${
             checkedMovements.size === 1 ? "movement" : "movements"
