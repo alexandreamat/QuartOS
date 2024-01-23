@@ -59,6 +59,15 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return Movement.update(db, movement_id, category_id=m.default_category_id)
 
     @classmethod
+    def merge(cls, db: Session, movement_ids: list[int]) -> MovementApiOut:
+        transaction_ids = [
+            transaction.id
+            for movement_id in movement_ids
+            for transaction in Movement.read(db, movement_id).transactions
+        ]
+        return cls.create(db, transaction_ids)
+
+    @classmethod
     def create(  # type: ignore[override]
         cls, db: Session, transactions: Sequence[TransactionApiIn | int], **kwargs: Any
     ) -> MovementApiOut:

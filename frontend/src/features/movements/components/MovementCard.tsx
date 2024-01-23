@@ -32,7 +32,6 @@ import { Flows } from "./Flows";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
 import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
 import useFormField from "hooks/useFormField";
-import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export function MovementCard(props: {
   movement?: MovementApiOut;

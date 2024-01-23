@@ -43,6 +43,13 @@ def create(
     return CRUDMovement.create(db, transaction_ids)
 
 
+@router.post("/merge")
+def merge(db: DBSession, me: CurrentUser, movement_ids: list[int]) -> MovementApiOut:
+    for movement_id in movement_ids:
+        CRUDUser.read_movement(db, me.id, movement_id)
+    return CRUDMovement.merge(db, movement_ids)
+
+
 @router.get("/")
 def read_many(
     db: DBSession,
