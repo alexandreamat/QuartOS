@@ -35,7 +35,7 @@ import {
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
 import FlexRow from "components/FlexRow";
 
-Chart.register(ArcElement, Tooltip, Legend, Colors);
+Chart.register(Colors, ArcElement, Tooltip, Legend);
 
 export default function PLStatement() {
   const navigate = useNavigate();
@@ -161,6 +161,11 @@ export default function PLStatement() {
               options={{
                 onClick: (e, elements, c) =>
                   setSelectedCategoryIdx(elements[0].index),
+                plugins: {
+                  colors: {
+                    forceOverride: true,
+                  },
+                },
               }}
             />
           </Grid.Column>
