@@ -13,17 +13,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import (
-    exchangerate,
-    auth,
-    user,
-    transactiondeserialiser,
-    institution,
-    userinstitutionlink,
-    account,
-    transaction,
-    movement,
-    replacementpattern,
-    file,
-    category,
-)
+from typing import Iterable
+from fastapi import APIRouter
+
+from app.database.deps import DBSession
+from app.features.movement.crud import CRUDMovement
+from app.features.movement.models import MovementApiOut
+from app.features.user.deps import CurrentSuperuser
+
+router = APIRouter()
+
+
+@router.put("/update-categories")
+def update_categories(db: DBSession, me: CurrentSuperuser) -> Iterable[MovementApiOut]:
+    return CRUDMovement.update_categories(db)

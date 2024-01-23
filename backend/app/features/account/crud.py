@@ -351,7 +351,9 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         movement_id: int | None,
         transaction_id: int,
     ) -> TransactionApiOut:
-        statement = Account.select_transactions(account_id, movement_id, transaction_id)
+        statement = Account.select_transactions(
+            account_id, movement_id=movement_id, transaction_id=transaction_id
+        )
         transaction = Transaction.read_one_from_query(db, statement, transaction_id)
         return TransactionApiOut.model_validate(transaction)
 

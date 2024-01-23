@@ -30,6 +30,7 @@ from app.common.models import (
 )
 from app.common.utils import filter_query_by_search
 from app.features.file import File, FileApiOut
+from app.features.category import Category
 
 if TYPE_CHECKING:
     from app.features.user import User
@@ -43,6 +44,7 @@ class __TransactionBase(SQLModel):
     amount: Decimal
     timestamp: date
     name: str
+    category_id: int | None
 
 
 class TransactionApiOut(__TransactionBase, Base):
@@ -69,6 +71,7 @@ class TransactionPlaidOut(TransactionApiOut, SyncedBase):
 class Transaction(__TransactionBase, SyncableBase, table=True):
     account_id: int = Field(foreign_key="account.id")
     movement_id: int = Field(foreign_key="movement.id")
+    category_id: int | None = Field(foreign_key="category.id")
     amount_default_currency: Decimal
     account_balance: Decimal
     files: list[File] = Relationship(
@@ -78,6 +81,7 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
 
     account: "Account" = Relationship(back_populates="transactions")
     movement: "Movement" = Relationship(back_populates="transactions")
+    category: Category | None = Relationship()
 
     @property
     def exchange_rate(self) -> Decimal:
@@ -121,6 +125,7 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
     def select_transactions(
         cls,
         transaction_id: int | None,
+        *,
         page: int = 0,
         per_page: int = 0,
         search: str | None = None,
@@ -138,7 +143,6 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         if transaction_id is not None:
             statement = statement.where(Transaction.id == transaction_id)
         if timestamp_ge:
-            # where_op = "__le__" if is_descending else "__ge__"  # choose >= or <=
             statement = statement.where(Transaction.timestamp >= timestamp_ge)
         if timestamp_le:
             statement = statement.where(Transaction.timestamp <= timestamp_le)

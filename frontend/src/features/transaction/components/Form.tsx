@@ -46,6 +46,8 @@ import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
+import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   props: {
@@ -103,6 +105,10 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
       isEdit ? props.transaction.account_id : 0,
       "account",
     ),
+    categoryId: useFormField(
+      isEdit ? props.transaction.category_id || 0 : 0,
+      "category",
+    ),
   };
 
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
@@ -122,7 +128,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     if (isEdit) return;
     if (!movementQuery.isSuccess) return;
     const movement = movementQuery.data;
-    const timestamp = movement.earliest_timestamp;
+    const timestamp = movement.timestamp;
     form.timestamp.set(timestamp ? stringToDate(timestamp) : new Date());
     form.name.set(movement.name);
   }, [movementQuery.isSuccess, movementQuery.data, props.open]);
@@ -174,10 +180,17 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
         <Form>
           <FormDropdownInput
             field={form.accountId}
-            options={accountOptions.options || []}
+            options={accountOptions.options}
             query={accountOptions.query}
             readOnly={disableSynced}
           />
+          <Form.Field required>
+            <label>
+              {form.categoryId.label &&
+                capitaliseFirstLetter(form.categoryId.label)}
+            </label>
+            <CategoriesDropdown categoryId={form.categoryId} />
+          </Form.Field>
           <FormCurrencyInput
             query={accountQuery}
             field={form.amountStr}
@@ -186,7 +199,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
           />
           {movementQuery.isSuccess && accountQuery.data?.currency_code && (
             <CurrencyExchangeTips
-              relatedTransactions={movementQuery.data.transactions}
+              movementId={movementQuery.data.id}
               currencyCode={accountQuery.data.currency_code}
             />
           )}

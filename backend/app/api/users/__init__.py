@@ -30,6 +30,7 @@ from . import accounts
 from . import institutionlinks
 from . import movements
 from . import transactions
+from . import analytics
 
 router = APIRouter()
 
@@ -124,3 +125,4 @@ router.include_router(
     transactions.router, prefix="/me/transactions", tags=["transactions"]
 )
 router.include_router(accounts.router, prefix="/me/accounts", tags=["accounts"])
+router.include_router(analytics.router, prefix="/me/analytics", tags=["movements"])

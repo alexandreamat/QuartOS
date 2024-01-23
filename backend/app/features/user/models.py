@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import date
+from decimal import Decimal
 import logging
 from typing import Any
 
@@ -20,11 +22,14 @@ from pydantic import EmailStr
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, col, func, or_
 from sqlmodel.sql.expression import SelectOfScalar
-from sqlalchemy import select, case, desc
+from sqlalchemy import select, case, desc, asc
 
 from app.common.models import Base, CurrencyCode
+from app.common.utils import filter_query_by_search
 from app.features.account import Account
+from app.features.category.models import Category
 from app.features.movement import Movement
+from app.features.movement.models import MovementField
 from app.features.transaction import Transaction
 from app.features.userinstitutionlink import UserInstitutionLink
 from app.utils import verify_password, get_password_hash
@@ -122,25 +127,102 @@ class User(__UserBase, Base, table=True):
     @classmethod
     def select_movements(
         cls,
-        user_id: int | None = None,
-        userinstitutionlink_id: int | None = None,
-        account_id: int | None = None,
+        user_id: int,
+        *,
         movement_id: int | None = None,
-        **kwargs: Any,
-    ) -> SelectOfScalar[Movement]:
-        statement = Account.select_movements(account_id, movement_id, **kwargs)
+        category_id: int | None = None,
+        page: int = 0,
+        search: str | None = None,
+        per_page: int | None = None,
+        start_date: date | None = None,
+        end_date: date | None = None,
+        amount_gt: Decimal | None = None,
+        amount_lt: Decimal | None = None,
+        amount_ge: Decimal | None = None,
+        amount_le: Decimal | None = None,
+        transactions_ge: int | None = None,
+        transactions_le: int | None = None,
+        is_descending: bool = True,
+        is_amount_abs: bool = False,
+        order_by: MovementField = MovementField.TIMESTAMP,
+    ) -> Any:
+        amount_sum = func.sum(col(Transaction.amount_default_currency))
+        timestamp_min = func.min(col(Transaction.timestamp))
+        transactions_count = func.count(col(Transaction.id))
 
-        if userinstitutionlink_id:
-            statement = statement.where(
-                UserInstitutionLink.id == userinstitutionlink_id
-            )
+        # SELECT
+        statement = select(
+            col(Movement.id),
+            col(Movement.name),
+            col(Movement.category_id),
+            timestamp_min.label("timestamp"),
+            amount_sum.label("amount"),
+            transactions_count.label("transactions_count"),
+        )
 
-        statement = statement.outerjoin(UserInstitutionLink).where(
+        # JOIN
+        statement = (
+            statement.join(Account)
+            .join(Movement)
+            .outerjoin(Category)  # consider uncategorised movements
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
+            .outerjoin(User)
+        )
+
+        # WHERE
+        statement = statement.where(
             or_(
                 Account.NonInstitutionalAccount.user_id == user_id,
                 UserInstitutionLink.user_id == user_id,
             )
         )
+        if movement_id:
+            statement = statement.where(col(Movement.id) == movement_id)
+        if search:
+            statement = filter_query_by_search(search, statement, col(Movement.name))
+        if category_id is not None:
+            # category_id = 0 represents: WHERE category_id = NULL
+            statement = statement.where(
+                col(Movement.category_id) == (category_id or None)
+            )
+
+        # GROUP BY
+        statement = statement.group_by(col(Movement.id))
+
+        # ORDER BY
+        order = desc if is_descending else asc
+        if order_by is MovementField.AMOUNT:
+            statement = statement.order_by(order("amount"), col(Movement.id))
+        elif order_by is MovementField.TIMESTAMP:
+            statement = statement.order_by(order("timestamp"), col(Movement.id))
+
+        # HAVING
+        if start_date:
+            statement = statement.having(timestamp_min >= start_date)
+        if end_date:
+            statement = statement.having(timestamp_min < end_date)
+        if is_amount_abs:
+            amount_sum = func.abs(amount_sum)
+        if amount_gt is not None:
+            statement = statement.having(amount_sum > amount_gt)
+        if amount_lt is not None:
+            statement = statement.having(amount_sum < amount_lt)
+        if amount_ge is not None:
+            statement = statement.having(amount_sum >= amount_gt)
+        if amount_le is not None:
+            statement = statement.having(amount_sum <= amount_lt)
+        if transactions_ge:
+            statement = statement.having(transactions_count >= transactions_ge)
+        if transactions_le:
+            statement = statement.having(transactions_count <= transactions_le)
+
+        # OFFSET LIMIT
+        if per_page:
+            offset = page * per_page
+            statement = statement.offset(offset).limit(per_page)
+
         return statement
 
     @classmethod
@@ -216,23 +298,75 @@ class User(__UserBase, Base, table=True):
         return aggregates_query
 
     @classmethod
+    def select_detailed_aggregates(cls, user_id: int, year: int, month: int) -> Any:
+        movements_subquery = (
+            select(
+                col(Movement.id),
+                col(Movement.category_id).label("category_id"),
+                func.min(Transaction.timestamp).label("timestamp"),
+                func.sum(Transaction.amount_default_currency).label("amount"),
+            )
+            .join(Account)
+            .join(Movement)
+            .outerjoin(Account.InstitutionalAccount)
+            .outerjoin(Account.NonInstitutionalAccount)
+            .outerjoin(UserInstitutionLink)
+            .outerjoin(User)
+            .where(
+                or_(
+                    Account.NonInstitutionalAccount.user_id == user_id,
+                    UserInstitutionLink.user_id == user_id,
+                )
+            )
+            .group_by(col(Movement.id))
+            .subquery()
+        )
+
+        year_extract = func.extract("year", movements_subquery.c.timestamp)
+        month_extract = func.extract("month", movements_subquery.c.timestamp)
+        amount_sign = func.sign(movements_subquery.c.amount)
+        amount_sum = func.sum(movements_subquery.c.amount)
+
+        aggregates_query = (
+            select(
+                year_extract.label("year"),
+                month_extract.label("month"),
+                amount_sign.label("sign"),
+                movements_subquery.c.category_id.label("category_id"),
+                amount_sum.label("amount"),
+            )
+            .group_by(
+                "year",
+                "month",
+                amount_sign,
+                movements_subquery.c.category_id,
+            )
+            .order_by(
+                desc("year"),
+                desc("month"),
+                asc(movements_subquery.c.category_id),
+                asc("sign"),
+            )
+        )
+
+        aggregates_query = aggregates_query.having(year_extract == year)
+        aggregates_query = aggregates_query.having(month_extract == month)
+
+        return aggregates_query
+
+    @classmethod
     def select_transactions(
         cls,
-        user_id: int | None,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        movement_id: int | None,
-        transaction_id: int | None,
+        user_id: int,
+        *,
+        account_id: int | None = None,
+        movement_id: int | None = None,
+        transaction_id: int | None = None,
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
         statement = Account.select_transactions(
-            account_id, movement_id, transaction_id, **kwargs
+            account_id, movement_id=movement_id, transaction_id=transaction_id, **kwargs
         )
-
-        if userinstitutionlink_id is not None:
-            statement = statement.where(
-                UserInstitutionLink.id == userinstitutionlink_id
-            )
 
         statement = statement.outerjoin(UserInstitutionLink).where(
             or_(

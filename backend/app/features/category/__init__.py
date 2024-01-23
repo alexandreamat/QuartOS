@@ -13,17 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from . import (
-    exchangerate,
-    auth,
-    user,
-    transactiondeserialiser,
-    institution,
-    userinstitutionlink,
-    account,
-    transaction,
-    movement,
-    replacementpattern,
-    file,
-    category,
-)
+from .models import Category, CategoryApiIn, CategoryApiOut
+from .crud import CRUDCategory
+
+__all__ = ["Category", "CategoryApiIn", "CategoryApiOut", "CRUDCategory"]

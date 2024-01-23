@@ -79,41 +79,6 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
 
         return statement
 
-    @classmethod
-    def select_movements(
-        cls,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        movement_id: int | None,
-        **kwargs: Any,
-    ) -> SelectOfScalar[Movement]:
-        statement = Account.select_movements(account_id, movement_id, **kwargs)
-
-        statement = statement.join(cls)
-        if userinstitutionlink_id:
-            statement = statement.where(cls.id == userinstitutionlink_id)
-
-        return statement
-
-    @classmethod
-    def select_transactions(
-        cls,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        movement_id: int | None,
-        transaction_id: int | None,
-        **kwargs: Any,
-    ) -> SelectOfScalar[Transaction]:
-        statement = Account.select_transactions(
-            account_id, movement_id, transaction_id, **kwargs
-        )
-
-        statement = statement.join(cls)
-        if userinstitutionlink_id:
-            statement = statement.where(cls.id == userinstitutionlink_id)
-
-        return statement
-
     @property
     def is_synced(self) -> bool:
         return self.access_token != None

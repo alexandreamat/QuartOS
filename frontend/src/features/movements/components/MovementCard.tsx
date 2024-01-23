@@ -29,6 +29,9 @@ import { useEffect, useState } from "react";
 import { Button, Card, Checkbox, Header, Input } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { Flows } from "./Flows";
+import { CategoryIcon } from "features/categories/components/CategoryIcon";
+import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
+import useFormField from "hooks/useFormField";
 
 export function MovementCard(props: {
   movement?: MovementApiOut;
@@ -41,19 +44,25 @@ export function MovementCard(props: {
   editable?: boolean;
   onCheckedChange?: (x: boolean) => void;
   checked?: boolean;
+  hideCategory?: boolean;
 }) {
   const [name, setName] = useState(props.movement?.name || "");
   const [isEditMode, setIsEditMode] = useState(false);
+  const categoryId = useFormField(props.movement?.category_id || undefined);
 
   const [updateMovement, updateMovementResult] =
     api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
 
   const me = api.endpoints.readMeUsersMeGet.useQuery();
 
-  async function updateName() {
+  async function submitUpdateMovement() {
     if (!props.movement) return;
 
-    const newMovement: MovementApiIn = { ...props.movement, name };
+    const newMovement: MovementApiIn = {
+      ...props.movement,
+      name,
+      category_id: categoryId.value!,
+    };
     try {
       await updateMovement({
         movementId: props.movement.id,
@@ -67,13 +76,15 @@ export function MovementCard(props: {
   }
 
   useEffect(() => {
-    if (props.movement) setName(props.movement.name);
+    if (!props.movement) return;
+    setName(props.movement.name);
+    categoryId.set(props.movement.category_id || undefined);
   }, [props.movement]);
 
   return (
     <Card fluid color="teal" style={{ marginLeft: 0, marginRight: 0 }}>
       <Card.Content>
-        <FlexRow alignItems="center" gap="1ch">
+        <FlexRow alignItems="center" gap="1ch" style={{ height: "2.2em" }}>
           {!props.loading && props.onCheckedChange && (
             <Checkbox
               checked={props.checked}
@@ -84,11 +95,20 @@ export function MovementCard(props: {
           )}
           <Card.Meta>
             <FormattedTimestamp
-              timestamp={props.movement?.earliest_timestamp || undefined}
+              timestamp={props.movement?.timestamp || undefined}
               loading={props.loading}
               style={{ width: "9em" }}
             />
           </Card.Meta>
+
+          {isEditMode ? (
+            <CategoriesDropdown categoryId={categoryId} />
+          ) : (
+            props.movement?.category_id &&
+            !props.hideCategory && (
+              <CategoryIcon categoryId={props.movement?.category_id} />
+            )
+          )}
 
           {/* Name */}
           <FlexRow.Auto>
@@ -108,7 +128,7 @@ export function MovementCard(props: {
             )}
           </FlexRow.Auto>
 
-          {/* Edit name controls */}
+          {/* Edit controls */}
           {props.movement &&
             (isEditMode ? (
               <>
@@ -118,6 +138,7 @@ export function MovementCard(props: {
                   size="tiny"
                   onClick={() => {
                     setName(props.movement!.name);
+                    categoryId.set(props.movement?.category_id || undefined);
                     setIsEditMode(false);
                   }}
                 />
@@ -126,8 +147,10 @@ export function MovementCard(props: {
                   positive
                   circular
                   size="tiny"
-                  onClick={updateName}
-                  disabled={name === props.movement.name}
+                  onClick={submitUpdateMovement}
+                  disabled={
+                    name === props.movement.name && !categoryId.hasChanged
+                  }
                   negative={updateMovementResult.isError}
                   loading={updateMovementResult.isLoading}
                 />
@@ -145,6 +168,7 @@ export function MovementCard(props: {
             <MutateActionButton
               onOpenEditForm={props.onOpenEditForm}
               disabled={props.loading}
+              content={props.movement?.transactions_count.toFixed(0)}
             />
           )}
         </FlexRow>
@@ -154,7 +178,7 @@ export function MovementCard(props: {
             onRemove={props.onRemoveTransaction}
             selectedAccountId={props.selectedAccountId}
             loading={props.loading}
-            transactions={props.movement?.transactions}
+            movementId={props.movement?.id}
           />
         )}
       </Card.Content>

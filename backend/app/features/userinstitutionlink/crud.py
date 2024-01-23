@@ -65,4 +65,6 @@ class CRUDSyncableUserInstitutionLink(
         uil = UserInstitutionLink.read(db, id)
         for ia in uil.institutionalaccounts:
             for t in ia.account.transactions:
+                if not t.is_synced:
+                    continue
                 yield TransactionPlaidOut.model_validate(t)

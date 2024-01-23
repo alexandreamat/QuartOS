@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from collections import defaultdict
 import logging
 from datetime import date
 from decimal import Decimal
@@ -33,6 +34,7 @@ from app.features.movement import (
     Movement,
     MovementField,
 )
+from app.features.movement.models import DetailedPLStatementApiOut
 from app.features.transaction import TransactionApiOut, Transaction
 from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
@@ -94,17 +96,15 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls,
         db: Session,
         user_id: int,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        movement_id: int | None,
+        *,
+        account_id: int | None = None,
+        movement_id: int | None = None,
         **kwargs: Any,
     ) -> Iterable[TransactionApiOut]:
         statement = User.select_transactions(
             user_id,
-            userinstitutionlink_id,
-            account_id,
-            None,
-            movement_id,
+            account_id=account_id,
+            movement_id=movement_id,
             **kwargs,
         )
 
@@ -115,14 +115,17 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     def read_transaction(
         cls,
         db: Session,
-        user_id: int | None,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
-        movement_id: int | None,
+        user_id: int,
         transaction_id: int,
+        *,
+        account_id: int | None = None,
+        movement_id: int | None = None,
     ) -> TransactionApiOut:
         statement = User.select_transactions(
-            user_id, userinstitutionlink_id, account_id, movement_id, transaction_id
+            user_id,
+            account_id=account_id,
+            movement_id=movement_id,
+            transaction_id=transaction_id,
         )
         transaction = Transaction.read_one_from_query(db, statement, transaction_id)
         return TransactionApiOut.model_validate(transaction)
@@ -157,72 +160,76 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls,
         db: Session,
         user_id: int,
-        userinstitutionlink_id: int | None = None,
-        account_id: int | None = None,
+        *,
+        category_id: int | None = None,
         page: int = 0,
         per_page: int | None = None,
         start_date: date | None = None,
         end_date: date | None = None,
         search: str | None = None,
         is_descending: bool = True,
-        transaction_amount_ge: Decimal | None = None,
-        transaction_amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
-        transactionsGe: int | None = None,
-        transactionsLe: int | None = None,
+        transactions_ge: int | None = None,
+        transactions_le: int | None = None,
         amount_gt: Decimal | None = None,
         amount_lt: Decimal | None = None,
-        sort_by: MovementField = MovementField.TIMESTAMP,
+        amount_ge: Decimal | None = None,
+        amount_le: Decimal | None = None,
+        order_by: MovementField = MovementField.TIMESTAMP,
     ) -> Iterable[MovementApiOut]:
         statement = User.select_movements(
-            user_id=user_id,
-            userinstitutionlink_id=userinstitutionlink_id,
-            account_id=account_id,
+            user_id,
+            category_id=category_id,
             page=page,
             per_page=per_page,
             start_date=start_date,
             end_date=end_date,
-            search=search,
-            is_descending=is_descending,
-            transaction_amount_ge=transaction_amount_ge,
-            transaction_amount_le=transaction_amount_le,
-            is_amount_abs=is_amount_abs,
-            transactionsGe=transactionsGe,
-            transactionsLe=transactionsLe,
-            sort_by=sort_by,
-        )
-        movements: Iterable[Movement] = db.exec(statement).all()
-        user_out = cls.read(db, user_id)
-        currency_code = user_out.default_currency_code
-        movements = Movement.filter_movements(
-            movements,
-            is_descending,
-            sort_by,
             amount_gt=amount_gt,
             amount_lt=amount_lt,
+            is_descending=is_descending,
+            amount_ge=amount_ge,
+            amount_le=amount_le,
+            is_amount_abs=is_amount_abs,
+            order_by=order_by,
+            search=search,
+            transactions_ge=transactions_ge,
+            transactions_le=transactions_le,
         )
-        for movement in movements:
-            yield MovementApiOut.model_validate(movement)
+        for result in db.exec(statement).all():
+            yield MovementApiOut(
+                id=result.id,
+                name=result.name,
+                category_id=result.category_id,
+                timestamp=result.timestamp,
+                amount_default_currency=result.amount,
+                transactions_count=result.transactions_count,
+            )
 
     @classmethod
     def read_movement(
         cls,
         db: Session,
         user_id: int,
-        userinstitutionlink_id: int | None,
-        account_id: int | None,
         movement_id: int,
         **kwargs: Any,
     ) -> MovementApiOut:
-        user_out = cls.read(db, user_id)
-        statement = User.select_movements(
-            user_id, userinstitutionlink_id, account_id, movement_id, **kwargs
+        cls.read(db, user_id)
+        statement = User.select_movements(user_id, movement_id=movement_id, **kwargs)
+        try:
+            result = db.exec(statement).one()
+        except NoResultFound:
+            raise ObjectNotFoundError("Movement", movement_id)
+        return MovementApiOut(
+            id=result.id,
+            name=result.name,
+            category_id=result.category_id,
+            timestamp=result.timestamp,
+            amount_default_currency=result.amount,
+            transactions_count=result.transactions_count,
         )
-        movement = Movement.read_one_from_query(db, statement, movement_id)
-        return MovementApiOut.model_validate(movement)
 
     @classmethod
-    def get_movement_aggregate(
+    def get_pl_statement(
         cls,
         db: Session,
         user_id: int,
@@ -245,7 +252,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         )
 
     @classmethod
-    def get_many_movement_aggregates(
+    def get_many_pl_statements(
         cls,
         db: Session,
         user_id: int,
@@ -265,3 +272,32 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
                 expenses=expenses,
                 income=income,
             )
+
+    @classmethod
+    def get_detailed_pl_statement(
+        cls,
+        db: Session,
+        user_id: int,
+        start_date: date,
+    ) -> DetailedPLStatementApiOut:
+        statement = User.select_detailed_aggregates(
+            user_id, start_date.year, start_date.month
+        )
+        by_category: dict[int, dict[int | None, Decimal]] = defaultdict(
+            lambda: defaultdict(Decimal)
+        )
+        totals: dict[int, Decimal] = defaultdict(Decimal)
+
+        for result in db.exec(statement).all():
+            by_category[result.sign][result.category_id or 0] += result.amount
+            totals[result.sign] += result.amount
+
+        return DetailedPLStatementApiOut(
+            start_date=date(start_date.year, start_date.month, 1),
+            end_date=date(start_date.year, start_date.month, 1)
+            + relativedelta(months=1),
+            income_by_category=by_category[1],
+            expenses_by_category=by_category[-1],
+            income=totals[1],
+            expenses=totals[-1],
+        )

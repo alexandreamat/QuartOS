@@ -22,16 +22,16 @@ export default function PLMovements(props: {
   aggregate: PlStatement;
   showIncome: boolean;
   onOpenEditForm: (x: MovementApiOut) => void;
+  categoryId?: number;
 }) {
-  const movementsEndpoint = props.showIncome
-    ? api.endpoints
-        .readIncomeUsersMeMovementsAggregatesStartDateEndDateIncomeGet
-    : api.endpoints
-        .readExpensesUsersMeMovementsAggregatesStartDateEndDateExpensesGet;
-
-  const movementsQuery = movementsEndpoint.useQuery({
+  const movementsQuery = api.endpoints.readManyUsersMeMovementsGet.useQuery({
     startDate: props.aggregate.start_date,
     endDate: props.aggregate.end_date,
+    categoryId: props.categoryId,
+    amountGt: props.showIncome ? 0 : undefined,
+    amountLt: props.showIncome ? undefined : 0,
+    sortBy: "amount",
+    isDescending: props.showIncome,
   });
 
   if (movementsQuery.isLoading || movementsQuery.isUninitialized)
@@ -59,7 +59,7 @@ export default function PLMovements(props: {
             movement={movement}
             onOpenEditForm={() => props.onOpenEditForm(movement)}
             explanationRate={explanationRate}
-            showFlows={movement.transactions.length > 1}
+            hideCategory={props.categoryId !== undefined}
           />
         );
       })}

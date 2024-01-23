@@ -23,29 +23,27 @@ from . import replacementpatterns
 from . import transactiondeserialisers
 from . import transactions
 from . import users
+from . import categories
+from . import movements
 
 router = APIRouter()
 
-router.include_router(auth.router, prefix="/auth", tags=["auth"])
-router.include_router(
-    exchangerate.router, prefix="/exchangerate", tags=["exchangerate"]
+routes = (
+    (auth.router, "/auth", "auth"),
+    (exchangerate.router, "/exchangerate", "exchangerate"),
+    (
+        transactiondeserialisers.router,
+        "/transaction-deserialisers",
+        "transaction-deserialisers",
+    ),
+    (replacementpatterns.router, "/replacement-patterns", "replacement-patterns"),
+    (institutions.router, "/institutions", "institutions"),
+    (users.router, "/users", "users"),
+    (accounts.router, "/accounts", "accounts"),
+    (movements.router, "/movements", "movements"),
+    (transactions.router, "/transactions", "transactions"),
+    (categories.router, "/categories", "categories"),
 )
 
-router.include_router(
-    transactiondeserialisers.router,
-    prefix="/transaction-deserialisers",
-    tags=["transaction-deserialisers"],
-)
-router.include_router(
-    replacementpatterns.router,
-    prefix="/replacement-patterns",
-    tags=["replacement-patterns"],
-)
-router.include_router(
-    institutions.router, prefix="/institutions", tags=["institutions"]
-)
-router.include_router(users.router, prefix="/users", tags=["users"])
-router.include_router(accounts.router, prefix="/accounts", tags=["accounts"])
-router.include_router(
-    transactions.router, prefix="/transactions", tags=["transactions"]
-)
+for r in routes:
+    router.include_router(r[0], prefix=r[1], tags=[r[2]])
