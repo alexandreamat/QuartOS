@@ -52,7 +52,7 @@ export default function PLCard(props: {
               <ActionButton
                 onClick={props.onGoToDetail}
                 icon="file alternate outline"
-                content="See Report"
+                content="See Statement"
                 loading={props.loading}
               />
             )}

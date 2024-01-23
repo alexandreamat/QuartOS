@@ -41,7 +41,7 @@ export default function Form(props: {
 
   const movementQuery =
     api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
-      movementId || skipToken,
+      (props.open && movementId) || skipToken,
     );
 
   const [createMovements, createMovementsResult] =
@@ -89,19 +89,20 @@ export default function Form(props: {
 
   return (
     <Modal open={props.open} onClose={handleClose} size="fullscreen">
-      {movementId ? (
-        <TransactionForm.Add
-          open={transactionFormOpen}
-          onClose={() => setTransactionFormOpen(false)}
-          movementId={movementId}
-        />
-      ) : (
-        <TransactionForm.Create
-          open={transactionFormOpen}
-          onClose={() => setTransactionFormOpen(false)}
-          onSuccess={(m) => setMovementId(m.id)}
-        />
-      )}
+      {transactionFormOpen &&
+        (movementId ? (
+          <TransactionForm.Add
+            open
+            onClose={() => setTransactionFormOpen(false)}
+            movementId={movementId}
+          />
+        ) : (
+          <TransactionForm.Create
+            open
+            onClose={() => setTransactionFormOpen(false)}
+            onSuccess={(m) => setMovementId(m.id)}
+          />
+        ))}
       <Modal.Header>
         {movementId ? "Edit movement" : "Create a movement"}
       </Modal.Header>
@@ -127,7 +128,7 @@ export default function Form(props: {
               <MovementCard
                 onRemoveTransaction={
                   movementQuery.isSuccess &&
-                  movementQuery.data.transactions.length > 1
+                  movementQuery.data.transactions_count > 1
                     ? handleRemoveTransaction
                     : undefined
                 }

@@ -62,7 +62,6 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       invalidatesTags: (result, error, { movementId }) => [
         "users",
         { type: "movements", id: movementId },
-        ...cacheList("transactions", result?.transactions),
       ],
     },
     deleteUsersMeMovementsMovementIdDelete: {

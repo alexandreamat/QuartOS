@@ -13,27 +13,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { SemanticFLOATS } from "semantic-ui-react";
-import ActionButton from "./ActionButton";
+import { api } from "app/services/api";
+import { DropdownItemProps, Image } from "semantic-ui-react";
 
-export default function MutateActionButton(props: {
-  onOpenEditForm: () => void;
-  disabled?: boolean;
-  negative?: boolean;
-  loading?: boolean;
-  floated?: SemanticFLOATS;
-  content?: string;
-}) {
-  return (
-    <ActionButton
-      floated={props.floated}
-      tooltip="More"
-      negative={props.negative}
-      loading={props.loading}
-      disabled={props.disabled}
-      icon="ellipsis horizontal"
-      onClick={() => props.onOpenEditForm()}
-      content={props.content}
-    />
-  );
+export function useCategoryOptions() {
+  const query = api.endpoints.readManyCategoriesGet.useQuery();
+  const options: DropdownItemProps[] =
+    query.data?.map((c) => ({
+      key: c.id,
+      value: c.id,
+      text: c.name,
+      image: <Image src={`data:image/png;base64,${c.icon_base64}`} />,
+    })) || [];
+  return { options, query };
 }

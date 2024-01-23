@@ -20,4 +20,5 @@ export type TransactionApiInForm = {
   timestamp: ReturnType<typeof useFormField<Date>>;
   name: ReturnType<typeof useFormField<string>>;
   accountId: ReturnType<typeof useFormField<number>>;
+  categoryId: ReturnType<typeof useFormField<number>>;
 };

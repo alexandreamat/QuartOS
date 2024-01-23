@@ -48,12 +48,11 @@ export default function Movements() {
   const [search] = barState.searchState;
   const [startDate] = barState.startDateState;
   const [endDate] = barState.endDateState;
-  const [accountId, setAccountId] = barState.accountIdState;
   const [isDescending] = barState.isDescendingState;
   const [transactionsGe] = barState.transactionsGeState;
   const [transactionsLe] = barState.transactionsLeState;
-  const [transactionAmountGe] = barState.amountGeState;
-  const [transactionAmountLe] = barState.amountLeState;
+  const [amountGe] = barState.amountGeState;
+  const [amountLe] = barState.amountLeState;
   const [isAmountAbs] = barState.isAmountAbsState;
   const [isMultipleChoice, setIsMultipleChoice] =
     barState.isMultipleChoiceState;
@@ -63,18 +62,17 @@ export default function Movements() {
     isDescending,
     startDate: startDate && formatDateParam(startDate),
     endDate: endDate && formatDateParam(endDate),
-    accountId,
     transactionsGe,
     transactionsLe,
-    transactionAmountGe,
-    transactionAmountLe,
+    amountGe,
+    amountLe,
     isAmountAbs,
   };
 
   const reference = useRef<HTMLDivElement | null>(null);
 
-  const [createMovement, createMovementResult] =
-    api.endpoints.createUsersMeMovementsPost.useMutation();
+  const [mergeMovements, mergeMovementsResult] =
+    api.endpoints.mergeUsersMeMovementsMergePost.useMutation();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -83,13 +81,6 @@ export default function Movements() {
     if (isFormOpenParam) {
       setIsFormOpen(isFormOpenParam === "true");
       params.delete("isFormOpen");
-      navigate({ ...location, search: params.toString() }, { replace: true });
-    }
-
-    const accountIdParam = Number(params.get("accountId"));
-    if (accountIdParam) {
-      setAccountId(Number(accountIdParam));
-      params.delete("accountId");
       navigate({ ...location, search: params.toString() }, { replace: true });
     }
   }, [location, navigate]);
@@ -126,14 +117,11 @@ export default function Movements() {
   }
 
   async function handleMergeMovements() {
-    const childrenIds = [...checkedMovements]
-      .map((m) => m.transactions.map((t) => t.id))
-      .flat(1);
-
+    const checkedMovementIds = [...checkedMovements].map((m) => m.id);
     try {
-      await createMovement(childrenIds).unwrap();
+      await mergeMovements(checkedMovementIds).unwrap();
     } catch (error) {
-      logMutationError(error, createMovementResult);
+      logMutationError(error, mergeMovementsResult);
     }
     setIsMultipleChoice(false);
     setCheckedMovements(new Set());
@@ -147,8 +135,6 @@ export default function Movements() {
       key={m?.id}
       movement={m}
       onOpenEditForm={() => m && handleOpenEditForm(m.id)}
-      selectedAccountId={accountId}
-      showFlows={m && m.transactions.length > 1}
       checked={m && checkedMovements.has(m)}
       onCheckedChange={
         isMultipleChoice
@@ -192,8 +178,8 @@ export default function Movements() {
         <SpanButton
           disabled={checkedMovements.size <= 1}
           onClick={handleMergeMovements}
-          loading={createMovementResult.isLoading}
-          negative={createMovementResult.isError}
+          loading={mergeMovementsResult.isLoading}
+          negative={mergeMovementsResult.isError}
         >
           {`Merge ${checkedMovements.size} ${
             checkedMovements.size === 1 ? "movement" : "movements"

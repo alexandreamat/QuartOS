@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { TransactionApiIn, TransactionApiOut } from "app/services/api";
+import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
@@ -27,6 +27,7 @@ import { Card, Checkbox, Header, Popup } from "semantic-ui-react";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import TransactionForm from "./Form";
 import ModalFileViewer from "./ModalFileViewer";
+import { CategoryIcon } from "features/categories/components/CategoryIcon";
 
 export function TransactionCard(
   props:
@@ -111,6 +112,9 @@ export function TransactionCard(
             style={{ width: "8em" }}
             loading={props.loading || accountQueries.isLoading}
           />
+          {!props.preview && props.transaction?.category_id && (
+            <CategoryIcon categoryId={props.transaction.category_id} />
+          )}
           <FlexRow.Auto>
             <Header as="h5">
               <LineWithHiddenOverflow

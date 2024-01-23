@@ -16,12 +16,14 @@
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
+from app.features.account.crud import CRUDAccount
 from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
     TransactionPlaidOut,
 )
 from app.features.user import CurrentSuperuser
+from app.features.user.crud import CRUDUser
 
 router = APIRouter()
 
@@ -39,3 +41,14 @@ def update_plaid(
     transaction_in: TransactionPlaidIn,
 ) -> TransactionPlaidOut:
     return CRUDSyncableTransaction.update(db, id, transaction_in)
+
+
+@router.put("/update-transactions-amount-default-currency")
+def update_transactions_amount_default_currency(
+    db: DBSession, me: CurrentSuperuser
+) -> None:
+    for u in CRUDUser.read_many(db, 0, 0):
+        for a in CRUDUser.read_accounts(db, u.id, None):
+            CRUDAccount.update_transactions_amount_default_currency(
+                db, a.id, u.default_currency_code
+            )

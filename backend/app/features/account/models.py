@@ -231,26 +231,17 @@ class Account(_AccountBase, Base, table=True):
         return statement
 
     @classmethod
-    def select_movements(
-        cls,
-        account_id: int | None,
-        movement_id: int | None,
-        **kwargs: Any,
-    ) -> SelectOfScalar[Movement]:
-        statement = Movement.select_movements(movement_id, **kwargs)
-        statement = statement.join(Transaction)
-        statement = cls.select_children(account_id, statement)
-        return statement
-
-    @classmethod
     def select_transactions(
         cls,
         account_id: int | None,
+        *,
         movement_id: int | None,
         transaction_id: int | None,
         **kwargs: Any,
     ) -> SelectOfScalar[Transaction]:
-        statement = Movement.select_transactions(movement_id, transaction_id, **kwargs)
+        statement = Movement.select_transactions(
+            movement_id, transaction_id=transaction_id, **kwargs
+        )
         statement = cls.select_children(account_id, statement)
         return statement
 
