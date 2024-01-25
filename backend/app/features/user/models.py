@@ -28,6 +28,7 @@ from app.common.models import Base, CurrencyCode
 from app.common.utils import filter_query_by_search
 from app.features.account import Account
 from app.features.category.models import Category
+from app.features.merchant.models import Merchant
 from app.features.movement import Movement
 from app.features.movement.models import MovementField
 from app.features.transaction import Transaction
@@ -99,6 +100,15 @@ class User(__UserBase, Base, table=True):
         if user_id:
             statement = statement.where(cls.id == user_id)
 
+        return statement
+
+    @classmethod
+    def select_merchants(
+        cls, user_id: int, *, merchant_id: int | None = None
+    ) -> SelectOfScalar[Merchant]:
+        statement = Merchant.select().where(Merchant.user_id == user_id)
+        if merchant_id:
+            statement = statement.where(Merchant.id == merchant_id)
         return statement
 
     @classmethod
@@ -375,3 +385,8 @@ class User(__UserBase, Base, table=True):
             )
         )
         return statement
+
+    @classmethod
+    def update_movement_categories(cls, db: Session, user_id: int) -> None:
+        for m in db.exec(cls.select_movements(user_id)).all():
+            Movement.update(db, m.id)

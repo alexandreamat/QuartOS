@@ -1,6 +1,7 @@
 import useFormField from "hooks/useFormField";
-import { Dropdown } from "semantic-ui-react";
+import { Dropdown, Form } from "semantic-ui-react";
 import { useCategoryOptions } from "features/categories/hooks";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function CategoriesDropdown(props: {
   categoryId: ReturnType<typeof useFormField<number | undefined>>;
@@ -19,3 +20,19 @@ export default function CategoriesDropdown(props: {
     />
   );
 }
+
+function CategoriesDropdownForm(props: {
+  categoryId: ReturnType<typeof useFormField<number | undefined>>;
+}) {
+  return (
+    <Form.Field required>
+      <label>
+        {props.categoryId.label &&
+          capitaliseFirstLetter(props.categoryId.label)}
+      </label>
+      <CategoriesDropdown categoryId={props.categoryId} />
+    </Form.Field>
+  );
+}
+
+CategoriesDropdown.Form = CategoriesDropdownForm;
