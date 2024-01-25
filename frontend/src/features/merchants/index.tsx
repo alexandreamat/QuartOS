@@ -17,14 +17,14 @@ import { MerchantApiOut, api } from "app/services/api";
 import ConfirmDeleteButton from "components/ConfirmDeleteButton";
 import EditActionButton from "components/EditActionButton";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import TableFooter from "components/TableFooter";
 import TableHeader from "components/TableHeader";
 import EmptyTablePlaceholder from "components/TablePlaceholder";
 import { useState } from "react";
-import { Loader, Table } from "semantic-ui-react";
+import { Button, Loader, Table } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import MerchantForm from "./components/Form";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
+import CreateNewButton from "components/CreateNewButton";
 
 function MerchantRow(props: { merchant: MerchantApiOut }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,6 +70,18 @@ const MerchantsTable = (props: {
   onOpenCreateForm: () => void;
   data: MerchantApiOut[];
 }) => {
+  const [updateAllMovements, updateAllMovementsResult] =
+    api.endpoints.updateAllUsersMeMovementsPut.useMutation();
+
+  async function handleUpdateAllMovements() {
+    try {
+      await updateAllMovements().unwrap();
+    } catch (error) {
+      logMutationError(error, updateAllMovementsResult);
+      return;
+    }
+  }
+
   return (
     <Table>
       <TableHeader
@@ -81,7 +93,20 @@ const MerchantsTable = (props: {
           <MerchantRow key={merchant.id} merchant={merchant} />
         ))}
       </Table.Body>
-      <TableFooter columns={7} onCreate={props.onOpenCreateForm} />
+      <Table.Footer>
+        <Table.Row>
+          <Table.HeaderCell colSpan={7}>
+            <Button
+              onClick={handleUpdateAllMovements}
+              loading={updateAllMovementsResult.isLoading}
+              negative={updateAllMovementsResult.isError}
+            >
+              Update All Movements
+            </Button>
+            <CreateNewButton onCreate={props.onOpenCreateForm} />
+          </Table.HeaderCell>
+        </Table.Row>
+      </Table.Footer>
     </Table>
   );
 };

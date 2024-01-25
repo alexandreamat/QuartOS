@@ -31,7 +31,7 @@ def create(
     db: DBSession, me: CurrentUser, merchant_in: MerchantApiIn
 ) -> MerchantApiOut:
     m = CRUDMerchant.create(db, merchant_in, user_id=me.id)
-    CRUDUser.update_movement_categories(db, me.id)
+    CRUDUser.update_all_movements(db, me.id)
     return m
 
 

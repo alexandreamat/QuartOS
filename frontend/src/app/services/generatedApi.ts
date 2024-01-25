@@ -465,6 +465,13 @@ const injectedRtkApi = api
         }),
         providesTags: ["users", "movements"],
       }),
+      updateAllUsersMeMovementsPut: build.mutation<
+        UpdateAllUsersMeMovementsPutApiResponse,
+        UpdateAllUsersMeMovementsPutApiArg
+      >({
+        query: () => ({ url: `/users/me/movements/`, method: "PUT" }),
+        invalidatesTags: ["users", "movements"],
+      }),
       mergeUsersMeMovementsMergePost: build.mutation<
         MergeUsersMeMovementsMergePostApiResponse,
         MergeUsersMeMovementsMergePostApiArg
@@ -829,13 +836,6 @@ const injectedRtkApi = api
         query: () => ({ url: `/accounts/update-balances`, method: "POST" }),
         invalidatesTags: ["accounts"],
       }),
-      updateCategoriesMovementsUpdateCategoriesPut: build.mutation<
-        UpdateCategoriesMovementsUpdateCategoriesPutApiResponse,
-        UpdateCategoriesMovementsUpdateCategoriesPutApiArg
-      >({
-        query: () => ({ url: `/movements/update-categories`, method: "PUT" }),
-        invalidatesTags: ["movements"],
-      }),
       readPlaidTransactionsPlaidIdGet: build.query<
         ReadPlaidTransactionsPlaidIdGetApiResponse,
         ReadPlaidTransactionsPlaidIdGetApiArg
@@ -1087,6 +1087,9 @@ export type ReadManyUsersMeMovementsGetApiArg = {
   amountGe?: number | string | null;
   amountLe?: number | string | null;
 };
+export type UpdateAllUsersMeMovementsPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateAllUsersMeMovementsPutApiArg = void;
 export type MergeUsersMeMovementsMergePostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
 export type MergeUsersMeMovementsMergePostApiArg = number[];
@@ -1270,9 +1273,6 @@ export type DeleteUsersMeMerchantsMerchantIdDeleteApiArg = number;
 export type UpdateBalancesAccountsUpdateBalancesPostApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateBalancesAccountsUpdateBalancesPostApiArg = void;
-export type UpdateCategoriesMovementsUpdateCategoriesPutApiResponse =
-  /** status 200 Successful Response */ MovementApiOut[];
-export type UpdateCategoriesMovementsUpdateCategoriesPutApiArg = void;
 export type ReadPlaidTransactionsPlaidIdGetApiResponse =
   /** status 200 Successful Response */ TransactionPlaidOut;
 export type ReadPlaidTransactionsPlaidIdGetApiArg = number;
