@@ -17,6 +17,7 @@ import Accounts from "features/account";
 import Dashboard from "features/dashboard";
 import Institutions from "features/institution";
 import InstitutionLinks from "features/institutionlink";
+import Merchants from "features/merchants";
 import Movements from "features/movements";
 import PL from "features/pl";
 import PLStatement from "features/pl/components/PLStatement";
@@ -49,6 +50,13 @@ export default [
     label: "My Institutions",
     icon: "university",
     component: InstitutionLinks,
+    requires_superuser: false,
+  },
+  {
+    path: "/merchants",
+    label: "Merchants",
+    icon: "shop",
+    component: Merchants,
     requires_superuser: false,
   },
   {

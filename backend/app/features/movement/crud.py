@@ -17,7 +17,6 @@ from typing import Iterable, Any, Sequence
 from sqlmodel import Session
 
 from app.common.crud import CRUDBase
-from app.common.models import CurrencyCode
 from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
@@ -48,15 +47,10 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             movement_id=movement.id,
         )
         old_movement = Movement.read(db, old_movement_id)
-        cls.__update_category(db, old_movement.id)
+        Movement.update(db, old_movement.id)
         if not old_movement.transactions:
             cls.delete(db, old_movement_id)
         return MovementApiOut.model_validate(movement)
-
-    @classmethod
-    def __update_category(cls, db: Session, movement_id: int) -> Movement:
-        m = Movement.read(db, movement_id)
-        return Movement.update(db, movement_id, category_id=m.default_category_id)
 
     @classmethod
     def merge(cls, db: Session, movement_ids: list[int]) -> MovementApiOut:
@@ -71,17 +65,24 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def create(  # type: ignore[override]
         cls, db: Session, transactions: Sequence[TransactionApiIn | int], **kwargs: Any
     ) -> MovementApiOut:
-        movement = Movement.create(db, name="")
+        transaction_kwargs = {
+            kw.strip("transaction__"): kwargs.pop(kw)
+            for kw in kwargs
+            if kw.startswith("transaction__")
+        }
+        movement = Movement.create(db, name="", **kwargs)
         for transaction in transactions:
             if isinstance(transaction, TransactionApiIn):
                 transaction_in = transaction
                 if not movement.name:
                     movement.name = transaction_in.name
-                cls.create_transaction(db, movement.id, transaction_in, **kwargs)
+                cls.create_transaction(
+                    db, movement.id, transaction_in, **transaction_kwargs
+                )
             else:
                 transaction_id = transaction
                 cls.__add_transaction(db, movement, transaction_id)
-        cls.__update_category(db, movement.id)
+        Movement.update(db, movement.id)
         return CRUDMovement.read(db, movement.id)
 
     @classmethod
@@ -95,7 +96,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         CRUDSyncableTransaction.create(
             db, transaction_in, movement_id=movement.id, **kwargs
         )
-        cls.__update_category(db, movement.id)
+        Movement.update(db, movement.id)
         return CRUDMovement.read(db, movement.id)
 
     @classmethod
@@ -110,7 +111,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         movement = Movement.read(db, movement_id)
         for transaction_id in transaction_ids:
             cls.__add_transaction(db, movement, transaction_id)
-        cls.__update_category(db, movement_id)
+        Movement.update(db, movement_id)
         return CRUDMovement.read(db, movement_id)
 
     @classmethod
@@ -127,7 +128,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             movement_id=movement_id,
             **kwargs,
         )
-        cls.__update_category(db, movement_id)
+        Movement.update(db, movement_id)
         return transaction_out
 
     @classmethod
@@ -153,7 +154,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         )
         if not movement.transactions:
             cls.delete(db, movement.id)
-        cls.__update_category(db, movement_id)
+        Movement.update(db, movement_id)
         return TransactionApiOut.model_validate(transaction_out)
 
     @classmethod
@@ -161,11 +162,11 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         cls, db: Session, movement_id: int, transaction_id: int
     ) -> None:
         CRUDTransaction.delete(db, transaction_id)
-        cls.__update_category(db, movement_id)
+        Movement.update(db, movement_id)
         if not Movement.read(db, movement_id).transactions:
             cls.delete(db, movement_id)
 
     @classmethod
     def update_categories(cls, db: Session) -> Iterable[MovementApiOut]:
         for m in cls.read_many(db, 0, 0):
-            yield MovementApiOut.model_validate(cls.__update_category(db, m.id))
+            yield MovementApiOut.model_validate(Movement.update(db, m.id))

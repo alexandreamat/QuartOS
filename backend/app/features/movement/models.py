@@ -13,18 +13,22 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from enum import Enum
-from typing import Iterable, Any
+import re
+from typing import Any
 
-from sqlmodel import Field, SQLModel, Relationship, col, func, select, desc, asc
+from sqlmodel import Field, SQLModel, Relationship, Session
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base
-from app.common.utils import filter_query_by_search
-from app.features.transaction import Transaction, TransactionApiOut
+from app.features.category.models import Category
+from app.features.merchant.crud import CRUDMerchant
+from app.features.merchant.models import Merchant
+from app.features.transaction import Transaction
 
 
 class PLStatement(SQLModel):
@@ -53,6 +57,7 @@ class MovementApiOut(__MovementBase, Base):
     timestamp: date | None
     transactions_count: int
     amount_default_currency: Decimal
+    default_category_id: int | None
 
 
 class MovementApiIn(__MovementBase):
@@ -65,6 +70,10 @@ class Movement(__MovementBase, Base, table=True):
         sa_relationship_kwargs={"cascade": "all, delete"},
     )
     category_id: int | None = Field(foreign_key="category.id")
+    merchant_id: int | None = Field(foreign_key="merchant.id")
+
+    category: Category | None = Relationship()
+    merchant: Merchant | None = Relationship()
 
     @property
     def timestamp(self) -> date:
@@ -82,13 +91,25 @@ class Movement(__MovementBase, Base, table=True):
         return len(self.transactions)
 
     @property
-    def default_category_id(self) -> int | None:
+    def default_category_id_transactions(self) -> int | None:
         amounts: dict[int | None, Decimal] = defaultdict(Decimal)
         for t in self.transactions:
             if not t.category:
                 continue
             amounts[t.category.id] += t.amount
         return max(amounts, key=lambda x: abs(amounts[x]), default=None)
+
+    @property
+    def default_category_id_merchant(self) -> int | None:
+        if isinstance(self.merchant, Merchant):
+            return self.merchant.default_category_id
+        return None
+
+    @property
+    def default_category_id(self) -> int | None:
+        return (
+            self.default_category_id_merchant or self.default_category_id_transactions
+        )
 
     @classmethod
     def select_transactions(
@@ -101,3 +122,24 @@ class Movement(__MovementBase, Base, table=True):
             statement = statement.where(cls.id == movement_id)
 
         return statement
+
+    @classmethod
+    def update(cls, db: Session, id: int, **kwargs: Any) -> "Movement":
+        m = super().update(db, id, **kwargs)
+        if not m.merchant_id:
+            m.merchant_id = m.get_merchant_id(db)
+        return m
+
+    @classmethod
+    def create(cls, db: Session, **kwargs: Any) -> "Movement":
+        m = super().create(db, **kwargs)
+        if not m.merchant_id:
+            m.merchant_id = m.get_merchant_id(db)
+        return m
+
+    def get_merchant_id(self, db: Session) -> int | None:
+        for merchant in CRUDMerchant.read_many(db, 0, 0):
+            if re.compile(merchant.pattern).search(self.name):
+                return merchant.id
+        else:
+            return None

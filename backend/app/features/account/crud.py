@@ -227,9 +227,9 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
             yield CRUDMovement.create(
                 db,
                 [transaction_in],
-                account_id=account_id,
-                account_balance=Decimal(0),
-                exchange_rate=get_exchange_rate(
+                transaction__account_id=account_id,
+                transaction__account_balance=Decimal(0),
+                transaction__exchange_rate=get_exchange_rate(
                     account_out.currency_code,
                     default_currency_code,
                     transaction_in.timestamp,

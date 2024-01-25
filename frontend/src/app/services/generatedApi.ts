@@ -11,6 +11,7 @@ export const addTagTypes = [
   "movements",
   "accounts",
   "files",
+  "merchants",
   "categories",
 ] as const;
 const injectedRtkApi = api
@@ -775,6 +776,52 @@ const injectedRtkApi = api
         }),
         providesTags: ["users", "movements"],
       }),
+      readManyUsersMeMerchantsGet: build.query<
+        ReadManyUsersMeMerchantsGetApiResponse,
+        ReadManyUsersMeMerchantsGetApiArg
+      >({
+        query: () => ({ url: `/users/me/merchants/` }),
+        providesTags: ["users", "merchants"],
+      }),
+      createUsersMeMerchantsPost: build.mutation<
+        CreateUsersMeMerchantsPostApiResponse,
+        CreateUsersMeMerchantsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/merchants/`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["users", "merchants"],
+      }),
+      readUsersMeMerchantsMerchantIdGet: build.query<
+        ReadUsersMeMerchantsMerchantIdGetApiResponse,
+        ReadUsersMeMerchantsMerchantIdGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/users/me/merchants/${queryArg}` }),
+        providesTags: ["users", "merchants"],
+      }),
+      updateUsersMeMerchantsMerchantIdPut: build.mutation<
+        UpdateUsersMeMerchantsMerchantIdPutApiResponse,
+        UpdateUsersMeMerchantsMerchantIdPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/merchants/${queryArg.merchantId}`,
+          method: "PUT",
+          body: queryArg.merchantApiIn,
+        }),
+        invalidatesTags: ["users", "merchants"],
+      }),
+      deleteUsersMeMerchantsMerchantIdDelete: build.mutation<
+        DeleteUsersMeMerchantsMerchantIdDeleteApiResponse,
+        DeleteUsersMeMerchantsMerchantIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/merchants/${queryArg}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["users", "merchants"],
+      }),
       updateBalancesAccountsUpdateBalancesPost: build.mutation<
         UpdateBalancesAccountsUpdateBalancesPostApiResponse,
         UpdateBalancesAccountsUpdateBalancesPostApiArg
@@ -1202,6 +1249,24 @@ export type GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
   page?: number;
   perPage?: number;
 };
+export type ReadManyUsersMeMerchantsGetApiResponse =
+  /** status 200 Successful Response */ MerchantApiOut[];
+export type ReadManyUsersMeMerchantsGetApiArg = void;
+export type CreateUsersMeMerchantsPostApiResponse =
+  /** status 200 Successful Response */ MerchantApiOut;
+export type CreateUsersMeMerchantsPostApiArg = MerchantApiIn;
+export type ReadUsersMeMerchantsMerchantIdGetApiResponse =
+  /** status 200 Successful Response */ MerchantApiOut;
+export type ReadUsersMeMerchantsMerchantIdGetApiArg = number;
+export type UpdateUsersMeMerchantsMerchantIdPutApiResponse =
+  /** status 200 Successful Response */ MerchantApiOut;
+export type UpdateUsersMeMerchantsMerchantIdPutApiArg = {
+  merchantId: number;
+  merchantApiIn: MerchantApiIn;
+};
+export type DeleteUsersMeMerchantsMerchantIdDeleteApiResponse =
+  /** status 200 Successful Response */ number;
+export type DeleteUsersMeMerchantsMerchantIdDeleteApiArg = number;
 export type UpdateBalancesAccountsUpdateBalancesPostApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateBalancesAccountsUpdateBalancesPostApiArg = void;
@@ -1374,6 +1439,7 @@ export type MovementApiOut = {
   timestamp: string | null;
   transactions_count: number;
   amount_default_currency: string;
+  default_category_id: number | null;
 };
 export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
@@ -1479,6 +1545,18 @@ export type PlStatement = {
   end_date: string;
   income: string;
   expenses: string;
+};
+export type MerchantApiOut = {
+  id: number;
+  name: string;
+  pattern: string;
+  default_category_id: number;
+  user_id: number;
+};
+export type MerchantApiIn = {
+  name: string;
+  pattern: string;
+  default_category_id: number;
 };
 export type TransactionPlaidIn2 = {
   plaid_id: string;

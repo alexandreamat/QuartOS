@@ -184,13 +184,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
             query={accountOptions.query}
             readOnly={disableSynced}
           />
-          <Form.Field required>
-            <label>
-              {form.categoryId.label &&
-                capitaliseFirstLetter(form.categoryId.label)}
-            </label>
-            <CategoriesDropdown categoryId={form.categoryId} />
-          </Form.Field>
+          <CategoriesDropdown.Form categoryId={form.categoryId} />
           <FormCurrencyInput
             query={accountQuery}
             field={form.amountStr}
