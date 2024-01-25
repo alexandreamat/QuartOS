@@ -22,6 +22,7 @@ import CategoriesDropdown from "features/categories/components/CategoriesDropdow
 import useFormField from "hooks/useFormField";
 import { registerLocale } from "i18n-iso-countries";
 import { useEffect } from "react";
+import { Button, Form, Modal } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 
 registerLocale(require("i18n-iso-countries/langs/en.json"));
@@ -83,22 +84,38 @@ export default function MerchantForm(props: {
   };
 
   return (
-    <FormModal
-      open
-      onClose={handleClose}
-      onSubmit={handleSubmit}
-      title={(props.merchant ? "Edit" : "Add") + " a merchant"}
-    >
-      <FormTextInput label="Name" field={name} />
-      <FormTextInput label="Pattern" field={pattern} />
-      <CategoriesDropdown.Form categoryId={defaultCategoryId} />
-      <FormValidationError fields={fields} />
-      {createMerchantResult.isError && (
-        <QueryErrorMessage query={createMerchantResult} />
-      )}
-      {updateMerchantResult.isError && (
-        <QueryErrorMessage query={updateMerchantResult} />
-      )}
-    </FormModal>
+    <Modal open onClose={handleClose} size="mini">
+      <Modal.Header>
+        {(props.merchant ? "Edit" : "Add") + " a merchant"}
+      </Modal.Header>
+      <Modal.Content>
+        <Form>
+          <FormTextInput label="Name" field={name} />
+          <FormTextInput label="Pattern" field={pattern} />
+          <CategoriesDropdown.Form categoryId={defaultCategoryId} />
+          <FormValidationError fields={fields} />
+          {createMerchantResult.isError && (
+            <QueryErrorMessage query={createMerchantResult} />
+          )}
+          {updateMerchantResult.isError && (
+            <QueryErrorMessage query={updateMerchantResult} />
+          )}
+        </Form>
+      </Modal.Content>
+      <Modal.Actions>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button
+          content="Save"
+          type="submit"
+          labelPosition="right"
+          icon="checkmark"
+          onClick={handleSubmit}
+          positive
+          loading={
+            createMerchantResult.isLoading || updateMerchantResult.isLoading
+          }
+        />
+      </Modal.Actions>
+    </Modal>
   );
 }
