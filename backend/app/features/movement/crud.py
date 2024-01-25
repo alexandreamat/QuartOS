@@ -169,4 +169,6 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     @classmethod
     def update_categories(cls, db: Session) -> Iterable[MovementApiOut]:
         for m in cls.read_many(db, 0, 0):
-            yield MovementApiOut.model_validate(Movement.update(db, m.id))
+            yield MovementApiOut.model_validate(
+                Movement.update(db, m.id, category_id=m.amount_default_currency)
+            )
