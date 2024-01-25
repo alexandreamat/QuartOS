@@ -48,7 +48,15 @@ export function MovementCard(props: {
 }) {
   const [name, setName] = useState(props.movement?.name || "");
   const [isEditMode, setIsEditMode] = useState(false);
-  const categoryId = useFormField(props.movement?.category_id || undefined);
+
+  const categoryId =
+    props.movement?.category_id ||
+    props.movement?.default_category_id ||
+    undefined;
+
+  const selectedCategoryId = useFormField(
+    props.movement?.category_id || undefined,
+  );
 
   const [updateMovement, updateMovementResult] =
     api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
@@ -61,7 +69,7 @@ export function MovementCard(props: {
     const newMovement: MovementApiIn = {
       ...props.movement,
       name,
-      category_id: categoryId.value!,
+      category_id: selectedCategoryId.value!,
     };
     try {
       await updateMovement({
@@ -78,7 +86,7 @@ export function MovementCard(props: {
   useEffect(() => {
     if (!props.movement) return;
     setName(props.movement.name);
-    categoryId.set(props.movement.category_id || undefined);
+    selectedCategoryId.set(props.movement.category_id || undefined);
   }, [props.movement]);
 
   return (
@@ -102,12 +110,10 @@ export function MovementCard(props: {
           </Card.Meta>
 
           {isEditMode ? (
-            <CategoriesDropdown categoryId={categoryId} />
+            <CategoriesDropdown categoryId={selectedCategoryId} />
           ) : (
-            props.movement?.category_id &&
-            !props.hideCategory && (
-              <CategoryIcon categoryId={props.movement?.category_id} />
-            )
+            categoryId &&
+            !props.hideCategory && <CategoryIcon categoryId={categoryId} />
           )}
 
           {/* Name */}
@@ -138,7 +144,9 @@ export function MovementCard(props: {
                   size="tiny"
                   onClick={() => {
                     setName(props.movement!.name);
-                    categoryId.set(props.movement?.category_id || undefined);
+                    selectedCategoryId.set(
+                      props.movement?.category_id || undefined,
+                    );
                     setIsEditMode(false);
                   }}
                 />
@@ -149,7 +157,8 @@ export function MovementCard(props: {
                   size="tiny"
                   onClick={submitUpdateMovement}
                   disabled={
-                    name === props.movement.name && !categoryId.hasChanged
+                    name === props.movement.name &&
+                    !selectedCategoryId.hasChanged
                   }
                   negative={updateMovementResult.isError}
                   loading={updateMovementResult.isLoading}

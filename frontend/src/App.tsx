@@ -69,18 +69,12 @@ const Content = () => (
         key={route.label}
         path={route.path}
         element={
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              height: "100%",
-            }}
-          >
+          <FlexColumn>
             <Header as="h2">{route.label}</Header>
-            <div style={{ flex: 1, overflow: "hidden", padding: 1 }}>
+            <FlexColumn.Auto>
               <route.component />
-            </div>
-          </div>
+            </FlexColumn.Auto>
+          </FlexColumn>
         }
       />
     ))}
@@ -88,18 +82,12 @@ const Content = () => (
       key="profile"
       path="/profile"
       element={
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-          }}
-        >
+        <FlexColumn>
           <Header as="h2">Profile</Header>
-          <div style={{ flex: 1, overflow: "hidden" }}>
+          <FlexColumn.Auto>
             <Profile />
-          </div>
-        </div>
+          </FlexColumn.Auto>
+        </FlexColumn>
       }
     />
     <Route key="default" path="/*" element={<Navigate to="/" />} />
