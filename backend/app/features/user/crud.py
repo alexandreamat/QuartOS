@@ -27,6 +27,7 @@ from app.common.crud import CRUDBase
 from app.common.exceptions import ObjectNotFoundError
 from app.common.models import CurrencyCode
 from app.features.account import AccountApiOut, Account
+from app.features.merchant.models import MerchantApiOut
 from app.features.movement import (
     MovementApiOut,
     MovementApiIn,
@@ -90,6 +91,21 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         user_out = cls.read(db, user_id)
         movement = Movement.update(db, movement_id, **movement_in.model_dump())
         return MovementApiOut.model_validate(movement)
+
+    @classmethod
+    def read_merchants(cls, db: Session, user_id: int) -> Iterable[MerchantApiOut]:
+        statement = User.select_merchants(user_id)
+        merchants = db.exec(statement).all()
+        for merchant in merchants:
+            yield MerchantApiOut.model_validate(merchant)
+
+    @classmethod
+    def read_merchant(
+        cls, db: Session, user_id: int, merchant_id: int
+    ) -> MerchantApiOut:
+        statement = User.select_merchants(user_id, merchant_id=merchant_id)
+        merchant = db.exec(statement).one()
+        return MerchantApiOut.model_validate(merchant)
 
     @classmethod
     def read_transactions(
@@ -203,6 +219,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
                 timestamp=result.timestamp,
                 amount_default_currency=result.amount,
                 transactions_count=result.transactions_count,
+                # FIXME
+                default_category_id=Movement.read(db, result.id).default_category_id,
             )
 
     @classmethod
@@ -226,7 +244,13 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             timestamp=result.timestamp,
             amount_default_currency=result.amount,
             transactions_count=result.transactions_count,
+            # FIXME too
+            default_category_id=Movement.read(db, result.id).default_category_id,
         )
+
+    @classmethod
+    def update_all_movements(cls, db: Session, user_id: int) -> None:
+        User.update_all_movements(db, user_id)
 
     @classmethod
     def get_pl_statement(

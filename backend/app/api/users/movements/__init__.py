@@ -100,6 +100,11 @@ def read(
     return CRUDUser.read_movement(db, me.id, movement_id)
 
 
+@router.put("/")
+def update_all(db: DBSession, me: CurrentUser) -> None:
+    CRUDUser.update_all_movements(db, me.id)
+
+
 @router.put("/{movement_id}")
 def update(
     db: DBSession,
