@@ -128,6 +128,8 @@ class Movement(__MovementBase, Base, table=True):
         m = super().update(db, id, **kwargs)
         if not m.merchant_id:
             m.merchant_id = m.get_merchant_id(db)
+        if not m.category_id:
+            m.category_id = m.default_category_id
         return m
 
     @classmethod
@@ -135,6 +137,8 @@ class Movement(__MovementBase, Base, table=True):
         m = super().create(db, **kwargs)
         if not m.merchant_id:
             m.merchant_id = m.get_merchant_id(db)
+        if not m.category_id:
+            m.category_id = m.default_category_id
         return m
 
     def get_merchant_id(self, db: Session) -> int | None:
