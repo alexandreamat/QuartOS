@@ -24,26 +24,20 @@ from . import transactiondeserialisers
 from . import transactions
 from . import users
 from . import categories
-from . import movements
 
 router = APIRouter()
 
 routes = (
-    (auth.router, "/auth", "auth"),
-    (exchangerate.router, "/exchangerate", "exchangerate"),
-    (
-        transactiondeserialisers.router,
-        "/transaction-deserialisers",
-        "transaction-deserialisers",
-    ),
-    (replacementpatterns.router, "/replacement-patterns", "replacement-patterns"),
-    (institutions.router, "/institutions", "institutions"),
-    (users.router, "/users", "users"),
-    (accounts.router, "/accounts", "accounts"),
-    (movements.router, "/movements", "movements"),
-    (transactions.router, "/transactions", "transactions"),
-    (categories.router, "/categories", "categories"),
+    (auth.router, "auth"),
+    (exchangerate.router, "exchangerate"),
+    (transactiondeserialisers.router, "transaction-deserialisers"),
+    (replacementpatterns.router, "replacement-patterns"),
+    (institutions.router, "institutions"),
+    (users.router, "users"),
+    (accounts.router, "accounts"),
+    (transactions.router, "transactions"),
+    (categories.router, "categories"),
 )
 
 for r in routes:
-    router.include_router(r[0], prefix=r[1], tags=[r[2]])
+    router.include_router(r[0], prefix=f"/{r[1]}", tags=[r[1]])

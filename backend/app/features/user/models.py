@@ -387,6 +387,6 @@ class User(__UserBase, Base, table=True):
         return statement
 
     @classmethod
-    def update_movement_categories(cls, db: Session, user_id: int) -> None:
+    def update_all_movements(cls, db: Session, user_id: int) -> None:
         for m in db.exec(cls.select_movements(user_id)).all():
             Movement.update(db, m.id)

@@ -249,8 +249,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         )
 
     @classmethod
-    def update_movement_categories(cls, db: Session, user_id: int) -> None:
-        User.update_movement_categories(db, user_id)
+    def update_all_movements(cls, db: Session, user_id: int) -> None:
+        User.update_all_movements(db, user_id)
 
     @classmethod
     def get_pl_statement(
