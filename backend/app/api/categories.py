@@ -15,6 +15,7 @@
 
 
 from typing import Iterable
+
 from fastapi import APIRouter
 
 from app.database.deps import DBSession

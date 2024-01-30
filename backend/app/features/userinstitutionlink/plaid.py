@@ -31,6 +31,7 @@ from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from pydantic import BaseModel
 from sqlmodel import Session
 
+from app.common.models import CurrencyCode
 from app.common.plaid import client
 from app.features.account import CRUDAccount
 from app.features.replacementpattern import ReplacementPatternApiOut
@@ -39,7 +40,6 @@ from app.features.transaction import (
     TransactionPlaidIn,
     create_transaction_plaid_in,
 )
-from app.common.models import CurrencyCode
 from .crud import CRUDSyncableUserInstitutionLink
 from .models import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
 
