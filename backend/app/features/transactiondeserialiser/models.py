@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import SQLModel, Relationship
 
-from app.common.models import Base, CodeSnippet
+from app.common.models import Base, CodeSnippet, ApiInMixin, ApiOutMixin
 
 if TYPE_CHECKING:
     from app.features.institution.models import Institution
@@ -35,11 +35,11 @@ class __TransactionDeserialiserBase(SQLModel):
     encoding: str
 
 
-class TransactionDeserialiserApiIn(__TransactionDeserialiserBase):
+class TransactionDeserialiserApiIn(__TransactionDeserialiserBase, ApiInMixin):
     ...
 
 
-class TransactionDeserialiserApiOut(__TransactionDeserialiserBase, Base):
+class TransactionDeserialiserApiOut(__TransactionDeserialiserBase, ApiOutMixin):
     ...
 
 

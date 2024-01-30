@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from sqlmodel import Field, SQLModel
 
-from app.common.models import Base, RegexPattern
+from app.common.models import ApiInMixin, ApiOutMixin, Base, RegexPattern
 
 
 class __Merchant(SQLModel):
@@ -23,11 +23,11 @@ class __Merchant(SQLModel):
     default_category_id: int
 
 
-class MerchantApiIn(__Merchant):
+class MerchantApiIn(__Merchant, ApiInMixin):
     ...
 
 
-class MerchantApiOut(__Merchant, Base):
+class MerchantApiOut(__Merchant, ApiOutMixin):
     user_id: int
 
 

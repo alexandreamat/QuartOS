@@ -14,17 +14,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import re
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from enum import Enum
-import re
 from typing import Any
 
 from sqlmodel import Field, SQLModel, Relationship, Session
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import Base
+from app.common.models import ApiInMixin, ApiOutMixin, Base
 from app.features.category.models import Category
 from app.features.merchant.crud import CRUDMerchant
 from app.features.merchant.models import Merchant
@@ -53,14 +53,14 @@ class MovementField(str, Enum):
     AMOUNT = "amount"
 
 
-class MovementApiOut(__MovementBase, Base):
+class MovementApiOut(__MovementBase, ApiOutMixin):
     timestamp: date | None
     transactions_count: int
     amount_default_currency: Decimal
     default_category_id: int | None
 
 
-class MovementApiIn(__MovementBase):
+class MovementApiIn(__MovementBase, ApiInMixin):
     ...
 
 

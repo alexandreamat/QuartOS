@@ -13,18 +13,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from datetime import date
 from decimal import Decimal
-import logging
 from typing import Any
 
 from pydantic import EmailStr
+from sqlalchemy import select, case, desc, asc
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Relationship, SQLModel, Session, col, func, or_
 from sqlmodel.sql.expression import SelectOfScalar
-from sqlalchemy import select, case, desc, asc
 
-from app.common.models import Base, CurrencyCode
+from app.common.models import ApiInMixin, ApiOutMixin, Base, CurrencyCode
 from app.common.utils import filter_query_by_search
 from app.features.account import Account
 from app.features.category.models import Category
@@ -45,11 +45,11 @@ class __UserBase(SQLModel):
     default_currency_code: CurrencyCode
 
 
-class UserApiOut(__UserBase, Base):
+class UserApiOut(__UserBase, ApiOutMixin):
     ...
 
 
-class UserApiIn(__UserBase):
+class UserApiIn(__UserBase, ApiInMixin):
     password: str
 
 

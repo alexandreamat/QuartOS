@@ -23,11 +23,13 @@ from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import (
     Base,
-    CurrencyCode,
-    SyncedMixin,
+    PlaidInMixin,
     SyncableBase,
-    SyncedBase,
-    BaseType,
+    ApiInMixin,
+    SyncableApiOutMixin,
+    PlaidOutMixin,
+    ApiOutMixin,
+    CurrencyCode,
 )
 from app.features.movement import Movement
 from app.features.transaction import Transaction
@@ -65,22 +67,22 @@ class _AccountBase(SQLModel):
     name: str
 
 
-class AccountApiIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount):
+class AccountApiIn(_AccountBase, ApiInMixin):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, ApiInMixin):
         ...
 
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount):
+    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccountm, ApiInMixin):
         ...
 
     institutionalaccount: InstitutionalAccount | None = None
     noninstitutionalaccount: NonInstitutionalAccount | None = None
 
 
-class AccountApiOut(_AccountBase, Base):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, Base):
+class AccountApiOut(_AccountBase, ApiOutMixin):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncableApiOutMixin):
         userinstitutionlink_id: int
 
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, Base):
+    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, ApiOutMixin):
         user_id: int
 
     institutionalaccount: InstitutionalAccount | None
@@ -90,14 +92,14 @@ class AccountApiOut(_AccountBase, Base):
 
 
 class AccountPlaidIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncedMixin):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidInMixin):
         ...
 
     institutionalaccount: InstitutionalAccount
 
 
 class AccountPlaidOut(_AccountBase, Base):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncedBase):
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidOutMixin):
         ...
 
     institutionalaccount: InstitutionalAccount
@@ -202,8 +204,8 @@ class Account(_AccountBase, Base, table=True):
 
     @classmethod
     def join_subclasses(
-        cls, statement: SelectOfScalar[BaseType]
-    ) -> SelectOfScalar[BaseType]:
+        cls, statement: SelectOfScalar["Account"]
+    ) -> SelectOfScalar["Account"]:
         # fmt: off
         return ( 
             statement
@@ -214,8 +216,8 @@ class Account(_AccountBase, Base, table=True):
 
     @classmethod
     def select_children(
-        cls, account_id: int | None, statement: SelectOfScalar[BaseType]
-    ) -> SelectOfScalar[BaseType]:
+        cls, account_id: int | None, statement: SelectOfScalar["Account"]
+    ) -> SelectOfScalar["Account"]:
         statement = statement.join(cls)
         statement = cls.join_subclasses(statement)
         if account_id is not None:

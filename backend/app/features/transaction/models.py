@@ -22,22 +22,21 @@ from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, func
 from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import (
-    Base,
     CurrencyCode,
-    SyncedMixin,
+    PlaidInMixin,
     SyncableBase,
-    SyncedBase,
+    PlaidOutMixin,
+    SyncableApiOutMixin,
+    ApiInMixin,
 )
 from app.common.utils import filter_query_by_search
-from app.features.file import File, FileApiOut
 from app.features.category import Category
+from app.features.file import File, FileApiOut
 
 if TYPE_CHECKING:
     from app.features.user import User
     from app.features.account import Account
     from app.features.movement import Movement
-    from app.features.institution import Institution
-    from app.features.userinstitutionlink import UserInstitutionLink
 
 
 class __TransactionBase(SQLModel):
@@ -47,7 +46,7 @@ class __TransactionBase(SQLModel):
     category_id: int | None
 
 
-class TransactionApiOut(__TransactionBase, Base):
+class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
     account_balance: Decimal
     amount_default_currency: Decimal
     account_id: int
@@ -56,15 +55,15 @@ class TransactionApiOut(__TransactionBase, Base):
     is_synced: bool
 
 
-class TransactionApiIn(__TransactionBase):
+class TransactionApiIn(__TransactionBase, ApiInMixin):
     ...
 
 
-class TransactionPlaidIn(TransactionApiIn, SyncedMixin):
+class TransactionPlaidIn(TransactionApiIn, PlaidInMixin):
     ...
 
 
-class TransactionPlaidOut(TransactionApiOut, SyncedBase):
+class TransactionPlaidOut(TransactionApiOut, PlaidOutMixin):
     ...
 
 

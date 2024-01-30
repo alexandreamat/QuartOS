@@ -93,9 +93,21 @@ class Base(SQLModel):
         db.delete(cls.read(db, id))
 
 
-class SyncedMixin(SQLModel):
+class ApiInMixin(SQLModel):
+    ...
+
+
+class ApiOutMixin(SQLModel):
+    id: int
+
+
+class PlaidInMixin(ApiInMixin):
     plaid_id: str
     plaid_metadata: str
+
+
+class PlaidOutMixin(PlaidInMixin, ApiOutMixin):
+    ...
 
 
 class SyncableBase(Base):
@@ -108,10 +120,15 @@ class SyncableBase(Base):
     ) -> SyncableBaseType:
         return db.exec(select(cls).where(cls.plaid_id == plaid_id)).one()
 
+    @property
+    def is_synced(self) -> bool:
+        return self.plaid_id is not None
 
-class SyncedBase(SyncableBase):
-    plaid_id: str = Field(unique=True)
-    plaid_metadata: str
+
+class SyncableApiOutMixin(ApiOutMixin):
+    plaid_id: str | None
+    plaid_metadata: str | None
+    is_synced: bool
 
 
 def validate_currency_code(v: str) -> str:

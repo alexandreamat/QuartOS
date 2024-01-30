@@ -13,28 +13,35 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import base64
+
 from sqlmodel import Field, SQLModel
 
-from app.common.models import Base, SyncableBase, SyncedBase, SyncedMixin
+from app.common.models import (
+    ApiInMixin,
+    PlaidInMixin,
+    SyncableApiOutMixin,
+    SyncableBase,
+    PlaidOutMixin,
+)
 
 
 class __Category(SQLModel):
     name: str
 
 
-class CategoryApiIn(__Category):
+class CategoryApiIn(__Category, ApiInMixin):
     ...
 
 
-class CategoryApiOut(__Category, Base):
+class CategoryApiOut(__Category, SyncableApiOutMixin):
     icon_base64: bytes
 
 
-class CategoryPlaidOut(__Category, SyncedBase):
+class CategoryPlaidOut(__Category, PlaidOutMixin):
     icon: bytes
 
 
-class CategoryPlaidIn(__Category, SyncedMixin):
+class CategoryPlaidIn(__Category, PlaidInMixin):
     icon: bytes
 
 
