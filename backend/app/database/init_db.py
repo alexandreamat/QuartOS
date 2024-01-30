@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.features.user import CRUDUser, UserApiIn
 from app.settings import settings

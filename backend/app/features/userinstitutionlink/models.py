@@ -15,8 +15,8 @@
 
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship
-from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy import ForeignKey, Select
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.common.models import SyncableBase
 from app.features.account import Account
@@ -26,23 +26,25 @@ if TYPE_CHECKING:
     from app.features.user import User
 
 
-class UserInstitutionLink(SyncableBase, table=True):
-    user_id: int = Field(foreign_key="user.id")
-    institution_id: int = Field(foreign_key="institution.id")
-    access_token: str | None
-    cursor: str | None
+class UserInstitutionLink(SyncableBase):
+    __tablename__ = "userinstitutionlink"
 
-    user: "User" = Relationship(back_populates="institution_links")
-    institution: "Institution" = Relationship(back_populates="user_links")
-    institutionalaccounts: list[Account.InstitutionalAccount] = Relationship(
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    institution_id: Mapped[int] = mapped_column(ForeignKey("institution.id"))
+    access_token: Mapped[str | None]
+    cursor: Mapped[str | None]
+
+    user: Mapped["User"] = relationship(back_populates="institution_links")
+    institution: Mapped["Institution"] = relationship(back_populates="user_links")
+    institutionalaccounts: Mapped[list[Account.InstitutionalAccount]] = relationship(
         back_populates="userinstitutionlink",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        cascade="all, delete",
     )
 
     @classmethod
     def select_user_institution_links(
         cls, userinstitutionlink_id: int | None
-    ) -> SelectOfScalar["UserInstitutionLink"]:
+    ) -> Select[tuple["UserInstitutionLink"]]:
         statement = cls.select()
 
         statement = statement.outerjoin(cls)
@@ -54,7 +56,7 @@ class UserInstitutionLink(SyncableBase, table=True):
     @classmethod
     def select_accounts(
         cls, userinstitutionlink_id: int | None, account_id: int | None
-    ) -> SelectOfScalar[Account]:
+    ) -> Select[tuple[Account]]:
         statement = Account.select_accounts(account_id)
 
         statement = statement.outerjoin(cls)

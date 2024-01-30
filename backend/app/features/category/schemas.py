@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlmodel import SQLModel
+
+from pydantic import BaseModel
 
 from app.common.schemas import (
     ApiInMixin,
@@ -23,7 +24,7 @@ from app.common.schemas import (
 )
 
 
-class __Category(SQLModel):
+class __Category(BaseModel):
     name: str
 
 

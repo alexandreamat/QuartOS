@@ -16,7 +16,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlmodel import SQLModel
+from pydantic import BaseModel
 
 from app.common.schemas import ApiOutMixin, ApiInMixin
 
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     pass
 
 
-class __FileBase(SQLModel):
+class __FileBase(BaseModel):
     name: str
 
 

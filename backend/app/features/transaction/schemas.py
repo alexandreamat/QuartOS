@@ -17,7 +17,7 @@ from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlmodel import SQLModel
+from pydantic import BaseModel
 
 from app.common.schemas import (
     PlaidInMixin,
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     pass
 
 
-class __TransactionBase(SQLModel):
+class __TransactionBase(BaseModel):
     amount: Decimal
     timestamp: date
     name: str

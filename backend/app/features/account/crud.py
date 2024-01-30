@@ -16,7 +16,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Any, Iterable
 
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.common.exceptions import ObjectNotFoundError

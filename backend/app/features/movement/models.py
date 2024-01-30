@@ -20,8 +20,8 @@ from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from sqlmodel import Field, Relationship, Session
-from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy import ForeignKey, Select
+from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 
 from app.common.models import Base
 from app.features.category.models import Category
@@ -30,17 +30,18 @@ from app.features.merchant.models import Merchant
 from app.features.transaction import Transaction
 
 
-class Movement(Base, table=True):
-    name: str
-    transactions: list[Transaction] = Relationship(
+class Movement(Base):
+    __tablename__ = "movement"
+    name: Mapped[str]
+    transactions: Mapped[list[Transaction]] = relationship(
         back_populates="movement",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        cascade="all, delete",
     )
-    category_id: int | None = Field(foreign_key="category.id")
-    merchant_id: int | None = Field(foreign_key="merchant.id")
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"))
+    merchant_id: Mapped[int | None] = mapped_column(ForeignKey("merchant.id"))
 
-    category: Category | None = Relationship()
-    merchant: Merchant | None = Relationship()
+    category: Mapped[Category | None] = relationship()
+    merchant: Mapped[Merchant | None] = relationship()
 
     @property
     def timestamp(self) -> date:
@@ -81,7 +82,7 @@ class Movement(Base, table=True):
     @classmethod
     def select_transactions(
         cls, movement_id: int | None, *, transaction_id: int | None, **kwargs: Any
-    ) -> SelectOfScalar[Transaction]:
+    ) -> Select[tuple[Transaction]]:
         statement = Transaction.select_transactions(transaction_id, **kwargs)
 
         statement = statement.join(cls)

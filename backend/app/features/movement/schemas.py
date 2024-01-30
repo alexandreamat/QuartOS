@@ -16,12 +16,12 @@ from datetime import date
 from decimal import Decimal
 from enum import Enum
 
-from sqlmodel import SQLModel
+from pydantic import BaseModel
 
 from app.common.schemas import ApiInMixin, ApiOutMixin
 
 
-class PLStatement(SQLModel):
+class PLStatement(BaseModel):
     start_date: date
     end_date: date
     income: Decimal
@@ -33,7 +33,7 @@ class DetailedPLStatementApiOut(PLStatement):
     expenses_by_category: dict[int, Decimal]
 
 
-class __MovementBase(SQLModel):
+class __MovementBase(BaseModel):
     name: str
     category_id: int | None
 

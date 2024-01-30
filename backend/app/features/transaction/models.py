@@ -17,9 +17,9 @@ from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
+from sqlalchemy import ForeignKey, asc, desc, Select, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.expression import ClauseElement
-from sqlmodel import Field, Relationship, asc, desc, col, func
-from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import SyncableBase
 from app.common.utils import filter_query_by_search
@@ -27,28 +27,31 @@ from app.features.category import Category
 from app.features.file import File
 
 if TYPE_CHECKING:
+    from app.features.userinstitutionlink import UserInstitutionLink  # noqa
+    from app.features.institution import Institution  # noqa
     from app.features.user import User
     from app.features.account import Account
     from app.features.movement import Movement
 
 
-class Transaction(SyncableBase, table=True):
-    amount: Decimal
-    timestamp: date
-    name: str
-    account_id: int = Field(foreign_key="account.id")
-    movement_id: int = Field(foreign_key="movement.id")
-    category_id: int | None = Field(foreign_key="category.id")
-    amount_default_currency: Decimal
-    account_balance: Decimal
-    files: list[File] = Relationship(
+class Transaction(SyncableBase):
+    __tablename__ = "transaction"
+    amount: Mapped[Decimal]
+    timestamp: Mapped[date]
+    name: Mapped[str]
+    account_id: Mapped[int] = mapped_column(ForeignKey("account.id"))
+    movement_id: Mapped[int] = mapped_column(ForeignKey("movement.id"))
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"))
+    amount_default_currency: Mapped[Decimal]
+    account_balance: Mapped[Decimal]
+    files: Mapped[list[File]] = relationship(
         back_populates="transaction",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        cascade="all, delete",
     )
 
-    account: "Account" = Relationship(back_populates="transactions")
-    movement: "Movement" = Relationship(back_populates="transactions")
-    category: Category | None = Relationship()
+    account: Mapped["Account"] = relationship(back_populates="transactions")
+    movement: Mapped["Movement"] = relationship(back_populates="transactions")
+    category: Mapped[Category | None] = relationship()
 
     @property
     def exchange_rate(self) -> Decimal:
@@ -102,7 +105,7 @@ class Transaction(SyncableBase, table=True):
         amount_ge: Decimal | None = None,
         amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
-    ) -> SelectOfScalar["Transaction"]:
+    ) -> Select[tuple["Transaction"]]:
         # SELECT
         statement = Transaction.select()
 
@@ -114,13 +117,13 @@ class Transaction(SyncableBase, table=True):
         if timestamp_le:
             statement = statement.where(Transaction.timestamp <= timestamp_le)
         if search:
-            statement = filter_query_by_search(search, statement, col(Transaction.name))
+            statement = filter_query_by_search(search, statement, Transaction.name)
 
         if amount_ge:
             if is_amount_abs:
                 statement = statement.where(func.abs(Transaction.amount) >= amount_ge)
             else:
-                statement = statement.where(col(Transaction.amount) >= amount_ge)
+                statement = statement.where(Transaction.amount >= amount_ge)
         if amount_le:
             if is_amount_abs:
                 statement = statement.where(func.abs(Transaction.amount) <= amount_le)

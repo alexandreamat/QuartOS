@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from decimal import Decimal
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
-from sqlmodel import SQLModel
+from pydantic import BaseModel
 
 from app.common.schemas import (
     PlaidInMixin,
@@ -26,18 +26,15 @@ from app.common.schemas import (
     CurrencyCode,
 )
 
-if TYPE_CHECKING:
-    pass
 
-
-class _AccountBase(SQLModel):
-    class InstitutionalAccount(SQLModel):
+class _AccountBase(BaseModel):
+    class InstitutionalAccount(BaseModel):
         type: Literal[
             "investment", "credit", "depository", "loan", "brokerage", "other"
         ]
         mask: str
 
-    class NonInstitutionalAccount(SQLModel):
+    class NonInstitutionalAccount(BaseModel):
         type: Literal["personal ledger", "cash", "property"]
 
     currency_code: CurrencyCode

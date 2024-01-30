@@ -13,9 +13,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from sqlalchemy.orm import Mapped
+
 from app.common.models import Base
 
 
-class ReplacementPattern(Base, table=True):
-    pattern: str
-    replacement: str
+class ReplacementPattern(Base):
+    __tablename__ = "replacementpattern"
+    pattern: Mapped[str]
+    replacement: Mapped[str]

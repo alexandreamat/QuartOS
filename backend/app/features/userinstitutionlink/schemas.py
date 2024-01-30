@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import TYPE_CHECKING
 
-from sqlmodel import SQLModel
+from pydantic import BaseModel
 
 from app.common.schemas import (
     ApiInMixin,
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     pass
 
 
-class __UserInstitutionLinkBase(SQLModel):
+class __UserInstitutionLinkBase(BaseModel):
     ...
 
 

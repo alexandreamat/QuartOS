@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.common.crud import CRUDBase
 from .models import File

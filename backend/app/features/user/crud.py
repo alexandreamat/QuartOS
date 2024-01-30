@@ -20,7 +20,7 @@ from typing import Iterable, Any
 
 from dateutil.relativedelta import relativedelta
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.common.crud import CRUDBase
 from app.common.exceptions import ObjectNotFoundError
@@ -62,7 +62,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls, db: Session, user_id: int | None
     ) -> Iterable[UserInstitutionLinkApiOut]:
         statement = User.select_user_institution_links(user_id, None)
-        uils = db.exec(statement).all()
+        uils = db.scalars(statement).all()
         for uil in uils:
             yield UserInstitutionLinkApiOut.model_validate(uil)
 
@@ -94,7 +94,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     @classmethod
     def read_merchants(cls, db: Session, user_id: int) -> Iterable[MerchantApiOut]:
         statement = User.select_merchants(user_id)
-        merchants = db.exec(statement).all()
+        merchants = db.scalars(statement).all()
         for merchant in merchants:
             yield MerchantApiOut.model_validate(merchant)
 
@@ -103,7 +103,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls, db: Session, user_id: int, merchant_id: int
     ) -> MerchantApiOut:
         statement = User.select_merchants(user_id, merchant_id=merchant_id)
-        merchant = db.exec(statement).one()
+        merchant = db.scalars(statement).one()
         return MerchantApiOut.model_validate(merchant)
 
     @classmethod
@@ -123,7 +123,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             **kwargs,
         )
 
-        for t in db.exec(statement).all():
+        for t in db.scalars(statement).all():
             yield TransactionApiOut.model_validate(t)
 
     @classmethod
@@ -165,7 +165,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         userinstitutionlink_id: int | None,
     ) -> Iterable[AccountApiOut]:
         statement = User.select_accounts(user_id, userinstitutionlink_id, None)
-        accounts = db.exec(statement).all()
+        accounts = db.scalars(statement).all()
 
         for a in accounts:
             yield AccountApiOut.model_validate(a)
@@ -210,7 +210,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             transactions_ge=transactions_ge,
             transactions_le=transactions_le,
         )
-        for result in db.exec(statement).all():
+        for result in db.scalars(statement).all():
             yield MovementApiOut(
                 id=result.id,
                 name=result.name,
@@ -233,7 +233,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls.read(db, user_id)
         statement = User.select_movements(user_id, movement_id=movement_id, **kwargs)
         try:
-            result = db.exec(statement).one()
+            result = db.scalars(statement).one()
         except NoResultFound:
             raise ObjectNotFoundError("Movement", movement_id)
         return MovementApiOut(
@@ -260,7 +260,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     ) -> PLStatement:
         statement = User.select_aggregates(user_id, start_date.year, start_date.month)
         try:
-            result = db.exec(statement).one()
+            result = db.scalars(statement).one()
         except NoResultFound:
             raise ObjectNotFoundError("PLStatement")
         year = int(result.year)
@@ -283,7 +283,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         per_page: int,
     ) -> Iterable[PLStatement]:
         statement = User.select_aggregates(user_id, None, None, page, per_page)
-        results = db.exec(statement).all()
+        results = db.scalars(statement).all()
         for result in results:
             year = int(result.year)
             month = int(result.month)
@@ -311,7 +311,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         )
         totals: dict[int, Decimal] = defaultdict(Decimal)
 
-        for result in db.exec(statement).all():
+        for result in db.scalars(statement).all():
             by_category[result.sign][result.category_id or 0] += result.amount
             totals[result.sign] += result.amount
 

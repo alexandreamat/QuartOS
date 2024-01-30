@@ -13,13 +13,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from pydantic import BaseModel
 from pydantic import EmailStr
-from sqlmodel import SQLModel
 
 from app.common.schemas import ApiInMixin, ApiOutMixin, CurrencyCode
 
 
-class __UserBase(SQLModel):
+class __UserBase(BaseModel):
     email: EmailStr
     full_name: str
     is_superuser: bool

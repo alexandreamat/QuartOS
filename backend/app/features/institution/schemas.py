@@ -16,9 +16,8 @@
 import logging
 from typing import TYPE_CHECKING
 
-from pydantic import HttpUrl
+from pydantic import HttpUrl, BaseModel
 from pydantic_extra_types.color import Color
-from sqlmodel import SQLModel
 
 from app.common.schemas import (
     PlaidInMixin,
@@ -34,7 +33,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class __InstitutionBase(SQLModel):
+class __InstitutionBase(BaseModel):
     name: str
     country_code: CountryCode
     url: HttpUrl | None
