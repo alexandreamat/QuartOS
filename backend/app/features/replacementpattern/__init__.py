@@ -14,8 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .crud import CRUDReplacementPattern
-from .models import (
-    ReplacementPattern,
+from .models import ReplacementPattern
+from .schemas import (
     ReplacementPatternApiIn,
     ReplacementPatternApiOut,
 )

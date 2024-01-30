@@ -16,12 +16,14 @@
 from .crud import CRUDInstitution, CRUDSyncableInstitution
 from .models import (
     Institution,
+)
+from .plaid import fetch_institution
+from .schemas import (
     InstitutionApiIn,
     InstitutionApiOut,
     InstitutionPlaidIn,
     InstitutionPlaidOut,
 )
-from .plaid import fetch_institution
 
 __all__ = [
     "CRUDInstitution",

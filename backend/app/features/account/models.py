@@ -15,22 +15,12 @@
 
 from datetime import date
 from decimal import Decimal
-from enum import Enum
 from typing import TYPE_CHECKING, Any
 
-from sqlmodel import Field, Relationship, SQLModel, Session
+from sqlmodel import Field, Relationship, Session
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import (
-    Base,
-    PlaidInMixin,
-    SyncableBase,
-    ApiInMixin,
-    SyncableApiOutMixin,
-    PlaidOutMixin,
-    ApiOutMixin,
-    CurrencyCode,
-)
+from app.common.models import Base, SyncableBase
 from app.features.movement import Movement
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser import TransactionDeserialiser
@@ -41,74 +31,11 @@ if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLink
 
 
-class _AccountBase(SQLModel):
-    class InstitutionalAccount(SQLModel):
-        class InstitutionalAccountType(str, Enum):
-            INVESTMENT = "investment"
-            CREDIT = "credit"
-            DEPOSITORY = "depository"
-            LOAN = "loan"
-            BROKERAGE = "brokerage"
-            OTHER = "other"
-
-        type: InstitutionalAccountType
+class Account(Base, table=True):
+    class InstitutionalAccount(SyncableBase, table=True):
+        type: str
         mask: str
 
-    class NonInstitutionalAccount(SQLModel):
-        class NonInstitutionalAccountType(str, Enum):
-            PERSONAL_LEDGER = "personal ledger"
-            CASH = "cash"
-            PROPERTY = "property"
-
-        type: NonInstitutionalAccountType
-
-    currency_code: CurrencyCode
-    initial_balance: Decimal
-    name: str
-
-
-class AccountApiIn(_AccountBase, ApiInMixin):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, ApiInMixin):
-        ...
-
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccountm, ApiInMixin):
-        ...
-
-    institutionalaccount: InstitutionalAccount | None = None
-    noninstitutionalaccount: NonInstitutionalAccount | None = None
-
-
-class AccountApiOut(_AccountBase, ApiOutMixin):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncableApiOutMixin):
-        userinstitutionlink_id: int
-
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, ApiOutMixin):
-        user_id: int
-
-    institutionalaccount: InstitutionalAccount | None
-    noninstitutionalaccount: NonInstitutionalAccount | None
-    is_synced: bool
-    balance: Decimal
-
-
-class AccountPlaidIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidInMixin):
-        ...
-
-    institutionalaccount: InstitutionalAccount
-
-
-class AccountPlaidOut(_AccountBase, Base):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidOutMixin):
-        ...
-
-    institutionalaccount: InstitutionalAccount
-
-
-class Account(_AccountBase, Base, table=True):
-    class InstitutionalAccount(
-        _AccountBase.InstitutionalAccount, SyncableBase, table=True
-    ):
         userinstitutionlink_id: int = Field(foreign_key="userinstitutionlink.id")
 
         userinstitutionlink: "UserInstitutionLink" = Relationship(
@@ -135,15 +62,18 @@ class Account(_AccountBase, Base, table=True):
         def is_synced(self) -> bool:
             return True if self.plaid_id else False
 
-    class NonInstitutionalAccount(
-        _AccountBase.NonInstitutionalAccount, Base, table=True
-    ):
+    class NonInstitutionalAccount(Base, table=True):
+        type: str
         user_id: int = Field(foreign_key="user.id")
         user: "User" = Relationship(back_populates="noninstitutionalaccounts")
         account: "Account" = Relationship(
             back_populates="noninstitutionalaccount",
             sa_relationship_kwargs={"uselist": False},
         )
+
+    currency_code: str
+    initial_balance: Decimal
+    name: str
 
     institutionalaccount_id: int | None = Field(foreign_key="institutionalaccount.id")
     noninstitutionalaccount_id: int | None = Field(

@@ -18,20 +18,13 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy.sql.expression import ClauseElement
-from sqlmodel import Field, Relationship, SQLModel, asc, desc, col, func
+from sqlmodel import Field, Relationship, asc, desc, col, func
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import (
-    CurrencyCode,
-    PlaidInMixin,
-    SyncableBase,
-    PlaidOutMixin,
-    SyncableApiOutMixin,
-    ApiInMixin,
-)
+from app.common.models import SyncableBase
 from app.common.utils import filter_query_by_search
 from app.features.category import Category
-from app.features.file import File, FileApiOut
+from app.features.file import File
 
 if TYPE_CHECKING:
     from app.features.user import User
@@ -39,35 +32,10 @@ if TYPE_CHECKING:
     from app.features.movement import Movement
 
 
-class __TransactionBase(SQLModel):
+class Transaction(SyncableBase, table=True):
     amount: Decimal
     timestamp: date
     name: str
-    category_id: int | None
-
-
-class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
-    account_balance: Decimal
-    amount_default_currency: Decimal
-    account_id: int
-    movement_id: int
-    files: list[FileApiOut]
-    is_synced: bool
-
-
-class TransactionApiIn(__TransactionBase, ApiInMixin):
-    ...
-
-
-class TransactionPlaidIn(TransactionApiIn, PlaidInMixin):
-    ...
-
-
-class TransactionPlaidOut(TransactionApiOut, PlaidOutMixin):
-    ...
-
-
-class Transaction(__TransactionBase, SyncableBase, table=True):
     account_id: int = Field(foreign_key="account.id")
     movement_id: int = Field(foreign_key="movement.id")
     category_id: int | None = Field(foreign_key="category.id")
@@ -93,7 +61,7 @@ class Transaction(__TransactionBase, SyncableBase, table=True):
         self.amount_default_currency = amount_default_currency.quantize(TWO_PACES)
 
     @property
-    def currency_code(self) -> CurrencyCode:
+    def currency_code(self) -> str:
         return self.account.currency_code
 
     @property

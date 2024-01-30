@@ -21,7 +21,7 @@ from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 
 from app.common.plaid import client
-from .models import AccountPlaidIn
+from .schemas import AccountPlaidIn
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut

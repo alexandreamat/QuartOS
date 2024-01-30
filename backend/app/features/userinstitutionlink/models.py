@@ -15,16 +15,10 @@
 
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import (
-    ApiInMixin,
-    PlaidInMixin,
-    SyncableBase,
-    PlaidOutMixin,
-    SyncableApiOutMixin,
-)
+from app.common.models import SyncableBase
 from app.features.account import Account
 
 if TYPE_CHECKING:
@@ -32,34 +26,7 @@ if TYPE_CHECKING:
     from app.features.user import User
 
 
-class __UserInstitutionLinkBase(SQLModel):
-    ...
-
-
-class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
-    access_token: str
-    cursor: str | None = None
-
-
-class UserInstitutionLinkApiIn(__UserInstitutionLinkBase, ApiInMixin):
-    ...
-
-
-class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableApiOutMixin):
-    institution_id: int
-    user_id: int
-
-
-class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, PlaidInMixin):
-    ...
-
-
-class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, PlaidOutMixin):
-    institution_id: int
-    user_id: int
-
-
-class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
+class UserInstitutionLink(SyncableBase, table=True):
     user_id: int = Field(foreign_key="user.id")
     institution_id: int = Field(foreign_key="institution.id")
     access_token: str | None

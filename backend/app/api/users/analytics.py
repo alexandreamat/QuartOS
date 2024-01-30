@@ -19,8 +19,7 @@ from typing import Iterable
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-from app.features.movement import PLStatement
-from app.features.movement.models import DetailedPLStatementApiOut
+from app.features.movement import PLStatement, DetailedPLStatementApiOut
 from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()

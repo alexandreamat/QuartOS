@@ -18,8 +18,7 @@ from typing import Iterable
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-from app.features.merchant.crud import CRUDMerchant
-from app.features.merchant.models import MerchantApiIn, MerchantApiOut
+from app.features.merchant import MerchantApiIn, MerchantApiOut, CRUDMerchant
 from app.features.user.crud import CRUDUser
 from app.features.user.deps import CurrentUser
 

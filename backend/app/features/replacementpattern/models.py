@@ -13,23 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlmodel import SQLModel
-
-from app.common.models import Base, RegexPattern, ApiOutMixin, ApiInMixin
+from app.common.models import Base
 
 
-class __ReplacementPatternBase(SQLModel):
-    pattern: RegexPattern
+class ReplacementPattern(Base, table=True):
+    pattern: str
     replacement: str
-
-
-class ReplacementPatternApiIn(__ReplacementPatternBase, ApiInMixin):
-    ...
-
-
-class ReplacementPatternApiOut(__ReplacementPatternBase, ApiOutMixin):
-    ...
-
-
-class ReplacementPattern(__ReplacementPatternBase, Base, table=True):
-    ...

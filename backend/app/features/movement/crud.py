@@ -24,7 +24,8 @@ from app.features.transaction import (
     CRUDSyncableTransaction,
     TransactionPlaidIn,
 )
-from .models import Movement, MovementApiIn, MovementApiOut
+from .models import Movement
+from .schemas import MovementApiIn, MovementApiOut
 
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):

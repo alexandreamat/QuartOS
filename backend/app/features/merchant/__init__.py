@@ -14,6 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .crud import CRUDMerchant
-from .models import Merchant, MerchantApiIn, MerchantApiOut
+from .models import Merchant
+from .schemas import MerchantApiIn, MerchantApiOut
+
 
 __all__ = ["Merchant", "MerchantApiIn", "MerchantApiOut", "CRUDMerchant"]

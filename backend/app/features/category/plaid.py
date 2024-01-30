@@ -24,8 +24,8 @@ from requests import HTTPError
 from requests_cache import CachedSession
 from sqlmodel import Session
 
+from app.features.category import CategoryPlaidIn
 from app.features.category.crud import CRUDSyncableCategory
-from app.features.category.models import CategoryPlaidIn
 
 
 def create_category_plaid_in(

@@ -20,7 +20,7 @@ from sqlmodel import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.common.exceptions import ObjectNotFoundError
-from app.common.models import CurrencyCode
+from app.common.schemas import CurrencyCode
 from app.features.exchangerate import get_exchange_rate
 from app.features.movement import (
     MovementApiOut,
@@ -36,8 +36,8 @@ from app.features.transactiondeserialiser import (
     TransactionDeserialiserApiOut,
     TransactionDeserialiser,
 )
-from .models import (
-    Account,
+from .models import Account
+from .schemas import (
     AccountApiOut,
     AccountApiIn,
     AccountPlaidIn,

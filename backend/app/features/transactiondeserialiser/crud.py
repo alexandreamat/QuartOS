@@ -15,11 +15,8 @@
 
 from app.common.crud import CRUDBase
 
-from .models import (
-    TransactionDeserialiser,
-    TransactionDeserialiserApiOut,
-    TransactionDeserialiserApiIn,
-)
+from .models import TransactionDeserialiser
+from .schemas import TransactionDeserialiserApiOut, TransactionDeserialiserApiIn
 
 
 class CRUDTransactionDeserialiser(

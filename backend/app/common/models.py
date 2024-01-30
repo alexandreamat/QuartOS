@@ -13,11 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
-import re
-from typing import Iterable, TypeVar, Type, Any, Annotated
+from typing import Iterable, TypeVar, Type, Any
 
-import pycountry
-from pydantic import AfterValidator, HttpUrl
+from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
 from sqlalchemy import types
 from sqlalchemy.exc import NoResultFound
@@ -93,23 +91,6 @@ class Base(SQLModel):
         db.delete(cls.read(db, id))
 
 
-class ApiInMixin(SQLModel):
-    ...
-
-
-class ApiOutMixin(SQLModel):
-    id: int
-
-
-class PlaidInMixin(ApiInMixin):
-    plaid_id: str
-    plaid_metadata: str
-
-
-class PlaidOutMixin(PlaidInMixin, ApiOutMixin):
-    ...
-
-
 class SyncableBase(Base):
     plaid_id: str | None = Field(unique=True)
     plaid_metadata: str | None
@@ -123,46 +104,6 @@ class SyncableBase(Base):
     @property
     def is_synced(self) -> bool:
         return self.plaid_id is not None
-
-
-class SyncableApiOutMixin(ApiOutMixin):
-    plaid_id: str | None
-    plaid_metadata: str | None
-    is_synced: bool
-
-
-def validate_currency_code(v: str) -> str:
-    if v not in [currency.alpha_3 for currency in pycountry.currencies]:
-        raise ValueError("Invalid currency code")
-    return v
-
-
-CurrencyCode = Annotated[str, AfterValidator(validate_currency_code)]
-
-
-def validate_code_snippet(v: str) -> str:
-    exec(f"def deserialize_field(row): return {v}")
-    return v
-
-
-CodeSnippet = Annotated[str, AfterValidator(validate_code_snippet)]
-
-
-def validate_regex_pattern(v: str) -> str:
-    re.compile(v)
-    return v
-
-
-RegexPattern = Annotated[str, AfterValidator(validate_regex_pattern)]
-
-
-def validate_country_code(v: str) -> str:
-    if v not in [country.alpha_2 for country in pycountry.countries]:
-        raise ValueError("Invalid country code")
-    return v
-
-
-CountryCode = Annotated[str, AfterValidator(validate_country_code)]
 
 
 class UrlType(types.TypeDecorator[HttpUrl]):

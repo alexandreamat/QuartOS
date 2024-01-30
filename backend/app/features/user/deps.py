@@ -26,7 +26,7 @@ from app.features.auth.models import TokenPayload
 from app.settings import settings
 from app.utils import ALGORITHM
 from .crud import CRUDUser
-from .models import UserApiOut
+from .schemas import UserApiOut
 
 reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="auth/login")
 

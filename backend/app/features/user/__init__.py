@@ -15,7 +15,9 @@
 
 from .crud import CRUDUser
 from .deps import CurrentUser, CurrentSuperuser
-from .models import User, UserApiIn, UserApiOut
+from .models import User
+from .schemas import UserApiIn, UserApiOut
+
 
 __all__ = [
     "User",

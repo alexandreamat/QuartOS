@@ -23,6 +23,8 @@ from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.transaction import TransactionPlaidOut
 from .models import (
     UserInstitutionLink,
+)
+from .schemas import (
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
     UserInstitutionLinkPlaidIn,

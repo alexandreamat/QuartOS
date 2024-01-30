@@ -19,17 +19,9 @@ from typing import TYPE_CHECKING
 
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
-from sqlmodel import Relationship, SQLModel, Field
+from sqlmodel import Relationship, Field
 
-from app.common.models import (
-    PlaidInMixin,
-    CountryCode,
-    SyncableBase,
-    PlaidOutMixin,
-    SyncableApiOutMixin,
-    ApiInMixin,
-)
-from app.common.models import UrlType, ColorType
+from app.common.models import SyncableBase, UrlType, ColorType
 from app.features.replacementpattern import ReplacementPattern
 from app.features.transactiondeserialiser import TransactionDeserialiser
 
@@ -39,34 +31,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class __InstitutionBase(SQLModel):
+class Institution(SyncableBase, table=True):
     name: str
-    country_code: CountryCode
-    url: HttpUrl | None
-    colour: Color | None = None
-
-
-class InstitutionApiOut(__InstitutionBase, SyncableApiOutMixin):
-    logo_base64: str | None = None
-    is_synced: bool
-    transactiondeserialiser_id: int | None
-    replacementpattern_id: int | None
-
-
-class InstitutionApiIn(__InstitutionBase, ApiInMixin):
-    url: HttpUrl
-    logo_base64: str
-
-
-class InstitutionPlaidOut(__InstitutionBase, PlaidOutMixin):
-    logo: bytes | None
-
-
-class InstitutionPlaidIn(__InstitutionBase, PlaidInMixin):
-    logo: bytes | None
-
-
-class Institution(__InstitutionBase, SyncableBase, table=True):
+    country_code: str
     url: HttpUrl | None = Field(sa_type=UrlType)
     colour: Color | None = Field(sa_type=ColorType)
     logo: bytes | None
