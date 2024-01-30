@@ -13,15 +13,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship, SQLModel
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import SyncedMixin, SyncableBase, SyncedBase
+from app.common.models import (
+    ApiInMixin,
+    PlaidInMixin,
+    SyncableBase,
+    PlaidOutMixin,
+    SyncableApiOutMixin,
+)
 from app.features.account import Account
-from app.features.movement import Movement
-from app.features.transaction import Transaction
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -37,21 +41,20 @@ class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
     cursor: str | None = None
 
 
-class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
+class UserInstitutionLinkApiIn(__UserInstitutionLinkBase, ApiInMixin):
     ...
 
 
-class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableBase):
+class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableApiOutMixin):
     institution_id: int
     user_id: int
-    is_synced: bool
 
 
-class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, SyncedMixin):
+class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, PlaidInMixin):
     ...
 
 
-class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, SyncedBase):
+class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, PlaidOutMixin):
     institution_id: int
     user_id: int
 
@@ -74,6 +77,20 @@ class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
         cls, userinstitutionlink_id: int | None
     ) -> SelectOfScalar["UserInstitutionLink"]:
         statement = cls.select()
+
+        statement = statement.outerjoin(cls)
+        if userinstitutionlink_id:
+            statement = statement.where(cls.id == userinstitutionlink_id)
+
+        return statement
+
+    @classmethod
+    def select_accounts(
+        cls, userinstitutionlink_id: int | None, account_id: int | None
+    ) -> SelectOfScalar[Account]:
+        statement = Account.select_accounts(account_id)
+
+        statement = statement.outerjoin(cls)
         if userinstitutionlink_id:
             statement = statement.where(cls.id == userinstitutionlink_id)
 

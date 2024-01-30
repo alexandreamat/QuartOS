@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING, Any
 
 from sqlmodel import SQLModel, Field, Relationship, Session
 
-from app.common.models import Base
+from app.common.models import Base, ApiOutMixin, ApiInMixin
 
 if TYPE_CHECKING:
     from app.features.transaction import Transaction
@@ -28,12 +28,12 @@ class __FileBase(SQLModel):
     name: str
 
 
-class FileApiOut(__FileBase, Base):
+class FileApiOut(__FileBase, ApiOutMixin):
     uploaded: datetime
     transaction_id: int
 
 
-class FileApiIn(__FileBase):
+class FileApiIn(__FileBase, ApiInMixin):
     data: bytes
 
 

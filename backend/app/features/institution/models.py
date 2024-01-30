@@ -22,10 +22,12 @@ from pydantic_extra_types.color import Color
 from sqlmodel import Relationship, SQLModel, Field
 
 from app.common.models import (
-    SyncedMixin,
-    SyncedBase,
+    PlaidInMixin,
     CountryCode,
     SyncableBase,
+    PlaidOutMixin,
+    SyncableApiOutMixin,
+    ApiInMixin,
 )
 from app.common.models import UrlType, ColorType
 from app.features.replacementpattern import ReplacementPattern
@@ -44,23 +46,23 @@ class __InstitutionBase(SQLModel):
     colour: Color | None = None
 
 
-class InstitutionApiOut(__InstitutionBase, SyncableBase):
+class InstitutionApiOut(__InstitutionBase, SyncableApiOutMixin):
     logo_base64: str | None = None
     is_synced: bool
     transactiondeserialiser_id: int | None
     replacementpattern_id: int | None
 
 
-class InstitutionApiIn(__InstitutionBase):
+class InstitutionApiIn(__InstitutionBase, ApiInMixin):
     url: HttpUrl
     logo_base64: str
 
 
-class InstitutionPlaidOut(__InstitutionBase, SyncedBase):
+class InstitutionPlaidOut(__InstitutionBase, PlaidOutMixin):
     logo: bytes | None
 
 
-class InstitutionPlaidIn(__InstitutionBase, SyncedMixin):
+class InstitutionPlaidIn(__InstitutionBase, PlaidInMixin):
     logo: bytes | None
 
 
