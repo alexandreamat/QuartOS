@@ -14,9 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
-
-from .models import (
-    Institution,
+from .models import Institution
+from .schemas import (
     InstitutionApiOut,
     InstitutionApiIn,
     InstitutionPlaidIn,

@@ -14,7 +14,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .crud import CRUDMovement
-from .models import Movement, MovementApiIn, MovementApiOut, MovementField, PLStatement
+from .models import Movement
+from .schemas import (
+    MovementApiIn,
+    MovementApiOut,
+    MovementField,
+    PLStatement,
+    DetailedPLStatementApiOut,
+)
+
 
 __all__ = [
     "Movement",
@@ -23,4 +31,5 @@ __all__ = [
     "CRUDMovement",
     "MovementField",
     "PLStatement",
+    "DetailedPLStatementApiOut",
 ]

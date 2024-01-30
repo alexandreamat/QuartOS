@@ -28,7 +28,7 @@ from app.features.category.crud import CRUDSyncableCategory
 from app.features.category.plaid import create_category_plaid_in
 from app.features.replacementpattern import ReplacementPatternApiOut
 from .crud import CRUDSyncableTransaction
-from .models import TransactionPlaidIn, TransactionPlaidOut
+from .schemas import TransactionPlaidIn, TransactionPlaidOut
 
 
 def create_transaction_plaid_in(

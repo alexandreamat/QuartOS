@@ -18,19 +18,17 @@ from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from pydantic import EmailStr
 from sqlalchemy import select, case, desc, asc
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Relationship, SQLModel, Session, col, func, or_
+from sqlmodel import Relationship, Session, col, func, or_
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import ApiInMixin, ApiOutMixin, Base, CurrencyCode
+from app.common.models import Base
 from app.common.utils import filter_query_by_search
 from app.features.account import Account
 from app.features.category.models import Category
 from app.features.merchant.models import Merchant
-from app.features.movement import Movement
-from app.features.movement.models import MovementField
+from app.features.movement import Movement, MovementField
 from app.features.transaction import Transaction
 from app.features.userinstitutionlink import UserInstitutionLink
 from app.utils import verify_password, get_password_hash
@@ -38,24 +36,12 @@ from app.utils import verify_password, get_password_hash
 logger = logging.getLogger(__name__)
 
 
-class __UserBase(SQLModel):
-    email: EmailStr
-    full_name: str
-    is_superuser: bool
-    default_currency_code: CurrencyCode
-
-
-class UserApiOut(__UserBase, ApiOutMixin):
-    ...
-
-
-class UserApiIn(__UserBase, ApiInMixin):
-    password: str
-
-
-class User(__UserBase, Base, table=True):
+class User(Base, table=True):
     hashed_password: str
     email: str
+    full_name: str
+    is_superuser: bool
+    default_currency_code: str
 
     institution_links: list[UserInstitutionLink] = Relationship(
         back_populates="user",

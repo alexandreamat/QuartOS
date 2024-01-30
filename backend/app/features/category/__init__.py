@@ -14,6 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .crud import CRUDCategory
-from .models import Category, CategoryApiIn, CategoryApiOut
+from .models import Category
+from .schemas import CategoryApiIn, CategoryApiOut, CategoryPlaidIn, CategoryPlaidOut
 
-__all__ = ["Category", "CategoryApiIn", "CategoryApiOut", "CRUDCategory"]
+__all__ = [
+    "Category",
+    "CategoryApiIn",
+    "CategoryApiOut",
+    "CRUDCategory",
+    "CategoryPlaidIn",
+    "CategoryPlaidOut",
+]

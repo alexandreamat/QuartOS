@@ -18,53 +18,20 @@ import re
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
-from enum import Enum
 from typing import Any
 
-from sqlmodel import Field, SQLModel, Relationship, Session
+from sqlmodel import Field, Relationship, Session
 from sqlmodel.sql.expression import SelectOfScalar
 
-from app.common.models import ApiInMixin, ApiOutMixin, Base
+from app.common.models import Base
 from app.features.category.models import Category
 from app.features.merchant.crud import CRUDMerchant
 from app.features.merchant.models import Merchant
 from app.features.transaction import Transaction
 
 
-class PLStatement(SQLModel):
-    start_date: date
-    end_date: date
-    income: Decimal
-    expenses: Decimal
-
-
-class DetailedPLStatementApiOut(PLStatement):
-    income_by_category: dict[int, Decimal]
-    expenses_by_category: dict[int, Decimal]
-
-
-class __MovementBase(SQLModel):
+class Movement(Base, table=True):
     name: str
-    category_id: int | None
-
-
-class MovementField(str, Enum):
-    TIMESTAMP = "timestamp"
-    AMOUNT = "amount"
-
-
-class MovementApiOut(__MovementBase, ApiOutMixin):
-    timestamp: date | None
-    transactions_count: int
-    amount_default_currency: Decimal
-    default_category_id: int | None
-
-
-class MovementApiIn(__MovementBase, ApiInMixin):
-    ...
-
-
-class Movement(__MovementBase, Base, table=True):
     transactions: list[Transaction] = Relationship(
         back_populates="movement",
         sa_relationship_kwargs={"cascade": "all, delete"},

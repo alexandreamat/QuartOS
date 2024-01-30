@@ -18,14 +18,8 @@ from typing import Generic, Type, TypeVar, Iterable, Any
 
 from sqlmodel import Session
 
-from .models import (
-    Base,
-    SyncableBase,
-    PlaidOutMixin,
-    PlaidInMixin,
-    ApiOutMixin,
-    ApiInMixin,
-)
+from .models import Base, SyncableBase
+from .schemas import PlaidOutMixin, PlaidInMixin, ApiOutMixin, ApiInMixin
 
 ModelType = TypeVar("ModelType", bound=Base)
 InModelType = TypeVar("InModelType", bound=ApiInMixin)

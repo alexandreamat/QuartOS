@@ -31,7 +31,6 @@ from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from pydantic import BaseModel
 from sqlmodel import Session
 
-from app.common.models import CurrencyCode
 from app.common.plaid import client
 from app.features.account import CRUDAccount
 from app.features.replacementpattern import ReplacementPatternApiOut
@@ -41,7 +40,7 @@ from app.features.transaction import (
     create_transaction_plaid_in,
 )
 from .crud import CRUDSyncableUserInstitutionLink
-from .models import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
+from .schemas import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
 
 if TYPE_CHECKING:
     from app.features.institution import InstitutionPlaidOut
@@ -163,7 +162,7 @@ def sync_transactions(
     db: Session,
     user_institution_link_out: UserInstitutionLinkPlaidOut,
     replacement_pattern_out: ReplacementPatternApiOut | None,
-    default_currency_code: CurrencyCode,
+    default_currency_code: str,
 ) -> None:
     has_more = True
     while has_more:

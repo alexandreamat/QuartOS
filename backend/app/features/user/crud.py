@@ -25,7 +25,8 @@ from sqlmodel import Session
 from app.common.crud import CRUDBase
 from app.common.exceptions import ObjectNotFoundError
 from app.features.account import AccountApiOut, Account
-from app.features.merchant.models import MerchantApiOut
+from app.features.merchant import MerchantApiOut
+from app.features.movement import DetailedPLStatementApiOut
 from app.features.movement import (
     MovementApiOut,
     MovementApiIn,
@@ -33,13 +34,13 @@ from app.features.movement import (
     Movement,
     MovementField,
 )
-from app.features.movement.models import DetailedPLStatementApiOut
 from app.features.transaction import TransactionApiOut, Transaction
 from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
     UserInstitutionLink,
 )
-from .models import User, UserApiOut, UserApiIn
+from .models import User
+from .schemas import UserApiOut, UserApiIn
 
 logger = logging.getLogger(__name__)
 

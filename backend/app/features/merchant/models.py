@@ -12,25 +12,13 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field
 
-from app.common.models import ApiInMixin, ApiOutMixin, Base, RegexPattern
+from app.common.models import Base
 
 
-class __Merchant(SQLModel):
-    name: str
-    pattern: RegexPattern
+class Merchant(Base, table=True):
+    pattern: str
     default_category_id: int
-
-
-class MerchantApiIn(__Merchant, ApiInMixin):
-    ...
-
-
-class MerchantApiOut(__Merchant, ApiOutMixin):
-    user_id: int
-
-
-class Merchant(__Merchant, Base, table=True):
     name: str = Field(unique=True)
     user_id: int = Field(foreign_key="user.id")

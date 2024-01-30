@@ -16,9 +16,12 @@
 from .crud import CRUDTransactionDeserialiser
 from .models import (
     TransactionDeserialiser,
+)
+from .schemas import (
     TransactionDeserialiserApiIn,
     TransactionDeserialiserApiOut,
 )
+
 
 __all__ = [
     "CRUDTransactionDeserialiser",

@@ -16,28 +16,16 @@
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
-from sqlmodel import SQLModel, Field, Relationship, Session
+from sqlmodel import Field, Relationship, Session
 
-from app.common.models import Base, ApiOutMixin, ApiInMixin
+from app.common.models import Base
 
 if TYPE_CHECKING:
     from app.features.transaction import Transaction
 
 
-class __FileBase(SQLModel):
+class File(Base, table=True):
     name: str
-
-
-class FileApiOut(__FileBase, ApiOutMixin):
-    uploaded: datetime
-    transaction_id: int
-
-
-class FileApiIn(__FileBase, ApiInMixin):
-    data: bytes
-
-
-class File(__FileBase, Base, table=True):
     data: bytes
     uploaded: datetime
     transaction_id: int = Field(foreign_key="transaction.id")

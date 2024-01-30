@@ -15,8 +15,8 @@
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 
-from .models import (
-    Category,
+from .models import Category
+from .schemas import (
     CategoryApiOut,
     CategoryApiIn,
     CategoryPlaidIn,

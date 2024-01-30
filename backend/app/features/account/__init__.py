@@ -17,12 +17,14 @@ from .crud import CRUDAccount, CRUDSyncableAccount
 from .exceptions import ForbiddenAccount
 from .models import (
     Account,
+)
+from .plaid import fetch_accounts
+from .schemas import (
     AccountApiIn,
     AccountApiOut,
     AccountPlaidIn,
     AccountPlaidOut,
 )
-from .plaid import fetch_accounts
 
 __all__ = [
     "CRUDAccount",

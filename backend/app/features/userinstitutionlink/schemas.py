@@ -12,28 +12,43 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from typing import TYPE_CHECKING
 
-from sqlmodel import Relationship
+from sqlmodel import SQLModel
 
-from app.common.models import Base
+from app.common.schemas import (
+    ApiInMixin,
+    PlaidInMixin,
+    PlaidOutMixin,
+    SyncableApiOutMixin,
+)
 
 if TYPE_CHECKING:
-    from app.features.institution.models import Institution
+    pass
 
 
-class TransactionDeserialiser(Base, table=True):
-    module_name: str
-    amount_deserialiser: str
-    timestamp_deserialiser: str
-    name_deserialiser: str
-    skip_rows: int
-    ascending_timestamp: bool
-    columns: int
-    delimiter: str
-    encoding: str
+class __UserInstitutionLinkBase(SQLModel):
+    ...
 
-    institutions: list["Institution"] = Relationship(
-        back_populates="transactiondeserialiser"
-    )
+
+class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
+    access_token: str
+    cursor: str | None = None
+
+
+class UserInstitutionLinkApiIn(__UserInstitutionLinkBase, ApiInMixin):
+    ...
+
+
+class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableApiOutMixin):
+    institution_id: int
+    user_id: int
+
+
+class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, PlaidInMixin):
+    ...
+
+
+class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, PlaidOutMixin):
+    institution_id: int
+    user_id: int
