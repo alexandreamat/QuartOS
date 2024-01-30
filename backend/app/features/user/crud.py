@@ -12,8 +12,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from typing import Iterable, Any
@@ -22,10 +22,8 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session
 
-
 from app.common.crud import CRUDBase
 from app.common.exceptions import ObjectNotFoundError
-from app.common.models import CurrencyCode
 from app.features.account import AccountApiOut, Account
 from app.features.merchant.models import MerchantApiOut
 from app.features.movement import (

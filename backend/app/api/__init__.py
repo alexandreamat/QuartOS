@@ -17,13 +17,13 @@ from fastapi import APIRouter
 
 from . import accounts
 from . import auth
+from . import categories
 from . import exchangerate
 from . import institutions
 from . import replacementpatterns
 from . import transactiondeserialisers
 from . import transactions
 from . import users
-from . import categories
 
 router = APIRouter()
 

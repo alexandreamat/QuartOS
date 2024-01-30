@@ -17,14 +17,16 @@
 from app.common.models import Base
 
 # 2. Import inheritors of the base model
-from app.features.replacementpattern import ReplacementPattern  # noqa
-from app.features.transactiondeserialiser import TransactionDeserialiser  # noqa
-from app.features.user import User  # noqa
-from app.features.institution import Institution  # noqa
-from app.features.userinstitutionlink import UserInstitutionLink  # noqa
-from app.features.account import Account  # noqa
-from app.features.movement import Movement  # noqa
-from app.features.transaction import Transaction  # noqa
+from app.features.account import Account
+from app.features.category import Category
+from app.features.institution import Institution
+from app.features.merchant import Merchant
+from app.features.movement import Movement
+from app.features.replacementpattern import ReplacementPattern
+from app.features.transaction import Transaction
+from app.features.transactiondeserialiser import TransactionDeserialiser
+from app.features.user import User
+from app.features.userinstitutionlink import UserInstitutionLink
 
 # 3. Import this file from Alembic
 __all__ = [
@@ -37,4 +39,6 @@ __all__ = [
     "Account",
     "Movement",
     "Transaction",
+    "Merchant",
+    "Category",
 ]

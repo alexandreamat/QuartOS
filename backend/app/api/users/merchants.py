@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Iterable
+
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
@@ -21,7 +22,6 @@ from app.features.merchant.crud import CRUDMerchant
 from app.features.merchant.models import MerchantApiIn, MerchantApiOut
 from app.features.user.crud import CRUDUser
 from app.features.user.deps import CurrentUser
-
 
 router = APIRouter()
 
