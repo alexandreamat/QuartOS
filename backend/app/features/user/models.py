@@ -18,10 +18,9 @@ from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import select, case, desc, asc
+from sqlalchemy import select, case, desc, asc, Select, or_, func
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Relationship, Session, col, func, or_
-from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy.orm import Mapped, relationship, Session
 
 from app.common.models import Base
 from app.common.utils import filter_query_by_search
@@ -36,20 +35,23 @@ from app.utils import verify_password, get_password_hash
 logger = logging.getLogger(__name__)
 
 
-class User(Base, table=True):
-    hashed_password: str
-    email: str
-    full_name: str
-    is_superuser: bool
-    default_currency_code: str
+class User(Base):
+    __tablename__ = "user"
+    hashed_password: Mapped[str]
+    email: Mapped[str]
+    full_name: Mapped[str]
+    is_superuser: Mapped[bool]
+    default_currency_code: Mapped[str]
 
-    institution_links: list[UserInstitutionLink] = Relationship(
+    institution_links: Mapped[list[UserInstitutionLink]] = relationship(
         back_populates="user",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        cascade="all, delete",
     )
-    noninstitutionalaccounts: list[Account.NonInstitutionalAccount] = Relationship(
+    noninstitutionalaccounts: Mapped[
+        list[Account.NonInstitutionalAccount]
+    ] = relationship(
         back_populates="user",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        cascade="all, delete",
     )
 
     @property
@@ -62,10 +64,7 @@ class User(Base, table=True):
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
-        db_user = db.exec(cls.select().where(cls.email == email)).first()
-        if not db_user:
-            raise NoResultFound
-        return db_user
+        return db.scalars(cls.select().where(cls.email == email)).one()
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> "User":
@@ -77,7 +76,7 @@ class User(Base, table=True):
     @classmethod
     def select_user_institution_links(
         cls, user_id: int | None, userinstitutionlink_id: int | None
-    ) -> SelectOfScalar[UserInstitutionLink]:
+    ) -> Select[tuple[UserInstitutionLink]]:
         statement = UserInstitutionLink.select_user_institution_links(
             userinstitutionlink_id
         )
@@ -91,7 +90,7 @@ class User(Base, table=True):
     @classmethod
     def select_merchants(
         cls, user_id: int, *, merchant_id: int | None = None
-    ) -> SelectOfScalar[Merchant]:
+    ) -> Select[tuple[Merchant]]:
         statement = Merchant.select().where(Merchant.user_id == user_id)
         if merchant_id:
             statement = statement.where(Merchant.id == merchant_id)
@@ -103,7 +102,7 @@ class User(Base, table=True):
         user_id: int | None,
         userinstitutionlink_id: int | None,
         account_id: int | None,
-    ) -> SelectOfScalar[Account]:
+    ) -> Select[tuple[Account]]:
         statement = Account.select_accounts(account_id)
 
         if userinstitutionlink_id:
@@ -142,15 +141,15 @@ class User(Base, table=True):
         is_amount_abs: bool = False,
         order_by: MovementField = MovementField.TIMESTAMP,
     ) -> Any:
-        amount_sum = func.sum(col(Transaction.amount_default_currency))
-        timestamp_min = func.min(col(Transaction.timestamp))
-        transactions_count = func.count(col(Transaction.id))
+        amount_sum = func.sum(Transaction.amount_default_currency)
+        timestamp_min = func.min(Transaction.timestamp)
+        transactions_count = func.count(Transaction.id)
 
         # SELECT
         statement = select(
-            col(Movement.id),
-            col(Movement.name),
-            col(Movement.category_id),
+            Movement.id,
+            Movement.name,
+            Movement.category_id,
             timestamp_min.label("timestamp"),
             amount_sum.label("amount"),
             transactions_count.label("transactions_count"),
@@ -175,24 +174,23 @@ class User(Base, table=True):
             )
         )
         if movement_id:
-            statement = statement.where(col(Movement.id) == movement_id)
+            statement = statement.where(Movement.id == movement_id)
         if search:
-            statement = filter_query_by_search(search, statement, col(Movement.name))
+            # statement = filter_query_by_search(search, statement, Movement.name)
+            raise NotImplementedError
         if category_id is not None:
             # category_id = 0 represents: WHERE category_id = NULL
-            statement = statement.where(
-                col(Movement.category_id) == (category_id or None)
-            )
+            statement = statement.where(Movement.category_id == (category_id or None))
 
         # GROUP BY
-        statement = statement.group_by(col(Movement.id))
+        statement = statement.group_by(Movement.id)
 
         # ORDER BY
         order = desc if is_descending else asc
         if order_by is MovementField.AMOUNT:
-            statement = statement.order_by(order("amount"), col(Movement.id))
+            statement = statement.order_by(order("amount"), Movement.id)
         elif order_by is MovementField.TIMESTAMP:
-            statement = statement.order_by(order("timestamp"), col(Movement.id))
+            statement = statement.order_by(order("timestamp"), Movement.id)
 
         # HAVING
         if start_date:
@@ -232,7 +230,7 @@ class User(Base, table=True):
     ) -> Any:
         movements_subquery = (
             select(
-                col(Transaction.movement_id).label("id"),
+                Transaction.movement_id.label("id"),
                 func.min(Transaction.timestamp).label("timestamp"),
                 func.sum(Transaction.amount_default_currency).label("amount"),
             )
@@ -247,7 +245,7 @@ class User(Base, table=True):
                     UserInstitutionLink.user_id == user_id,
                 )
             )
-            .group_by(col(Transaction.movement_id))
+            .group_by(Transaction.movement_id)
             .subquery()
         )
 
@@ -297,8 +295,8 @@ class User(Base, table=True):
     def select_detailed_aggregates(cls, user_id: int, year: int, month: int) -> Any:
         movements_subquery = (
             select(
-                col(Movement.id),
-                col(Movement.category_id).label("category_id"),
+                Movement.id,
+                Movement.category_id.label("category_id"),
                 func.min(Transaction.timestamp).label("timestamp"),
                 func.sum(Transaction.amount_default_currency).label("amount"),
             )
@@ -314,7 +312,7 @@ class User(Base, table=True):
                     UserInstitutionLink.user_id == user_id,
                 )
             )
-            .group_by(col(Movement.id))
+            .group_by(Movement.id)
             .subquery()
         )
 
@@ -359,7 +357,7 @@ class User(Base, table=True):
         movement_id: int | None = None,
         transaction_id: int | None = None,
         **kwargs: Any,
-    ) -> SelectOfScalar[Transaction]:
+    ) -> Select[tuple[Transaction]]:
         statement = Account.select_transactions(
             account_id, movement_id=movement_id, transaction_id=transaction_id, **kwargs
         )
@@ -374,5 +372,5 @@ class User(Base, table=True):
 
     @classmethod
     def update_all_movements(cls, db: Session, user_id: int) -> None:
-        for m in db.exec(cls.select_movements(user_id)).all():
+        for m in db.scalars(cls.select_movements(user_id)).all():
             Movement.update(db, m.id)

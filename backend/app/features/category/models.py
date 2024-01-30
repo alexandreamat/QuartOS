@@ -14,14 +14,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import base64
 
-from sqlmodel import Field
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.common.models import SyncableBase
 
 
-class Category(SyncableBase, table=True):
-    name: str = Field(unique=True)
-    icon: bytes
+class Category(SyncableBase):
+    __tablename__ = "category"
+    name: Mapped[str] = mapped_column(unique=True)
+    icon: Mapped[bytes]
 
     @property
     def icon_base64(self) -> str:

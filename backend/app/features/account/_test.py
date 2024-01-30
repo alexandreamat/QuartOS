@@ -17,7 +17,7 @@ from typing import Iterable
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app._test import db
 from app.features.institution import InstitutionApiOut

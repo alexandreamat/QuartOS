@@ -17,25 +17,23 @@ from typing import Iterable, TypeVar, Type, Any
 
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
-from sqlalchemy import types
+from sqlalchemy import Select, types, select, String
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Session, SQLModel, Field, String, select
-from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy.orm import DeclarativeBase, Session, mapped_column, Mapped
 
 from app.common.exceptions import ObjectNotFoundError
 
 BaseType = TypeVar("BaseType", bound="Base")
 SyncableBaseType = TypeVar("SyncableBaseType", bound="SyncableBase")
-SchemaType = TypeVar("SchemaType", bound=SQLModel)
 
 logger = logging.getLogger(__name__)
 
 
-class Base(SQLModel):
-    id: int = Field(primary_key=True)
+class Base(DeclarativeBase):
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     @classmethod
-    def select(cls: Type[BaseType]) -> SelectOfScalar[BaseType]:
+    def select(cls: Type[BaseType]) -> Select[tuple[BaseType]]:
         return select(cls)
 
     @classmethod
@@ -56,11 +54,11 @@ class Base(SQLModel):
     def read_one_from_query(
         cls: Type[BaseType],
         db: Session,
-        statement: SelectOfScalar[BaseType],
+        statement: Select[tuple[BaseType]],
         id: int | None = None,
     ) -> BaseType:
         try:
-            return db.exec(statement).one()
+            return db.scalars(statement).one()
         except NoResultFound:
             raise ObjectNotFoundError(str(cls.__tablename__), id)
 
@@ -76,7 +74,7 @@ class Base(SQLModel):
             statement = statement.offset(offset)
         if limit:
             statement = statement.limit(limit)
-        return db.exec(statement).all()
+        return db.scalars(statement).all()
 
     @classmethod
     def update(cls: Type[BaseType], db: Session, id: int, **kwargs: Any) -> BaseType:
@@ -92,14 +90,15 @@ class Base(SQLModel):
 
 
 class SyncableBase(Base):
-    plaid_id: str | None = Field(unique=True)
-    plaid_metadata: str | None
+    __abstract__ = True
+    plaid_id: Mapped[str | None] = mapped_column(unique=True)
+    plaid_metadata: Mapped[str | None]
 
     @classmethod
     def read_by_plaid_id(
         cls: Type[SyncableBaseType], db: Session, plaid_id: str
     ) -> SyncableBaseType:
-        return db.exec(select(cls).where(cls.plaid_id == plaid_id)).one()
+        return db.scalars(select(cls).where(cls.plaid_id == plaid_id)).one()
 
     @property
     def is_synced(self) -> bool:

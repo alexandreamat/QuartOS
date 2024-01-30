@@ -16,9 +16,8 @@
 import re
 from typing import TypeVar
 
+from sqlalchemy import Select, and_, or_
 from sqlalchemy.orm import Mapped
-from sqlmodel import or_, and_
-from sqlmodel.sql.expression import SelectOfScalar
 
 from app.common.models import Base
 
@@ -26,8 +25,8 @@ BaseType = TypeVar("BaseType", bound=Base)
 
 
 def filter_query_by_search(
-    search: str, statement: SelectOfScalar[BaseType], col: Mapped[str]
-) -> SelectOfScalar[BaseType]:
+    search: str, statement: Select[tuple[BaseType]], col: Mapped[str]
+) -> Select[tuple[BaseType]]:
     tokens: list[str] = re.findall(r"-?\"[^\"]+\"|-?'[^']+'|\S+", search)
     positive_clauses = []
     negative_clauses = []

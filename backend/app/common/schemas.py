@@ -17,19 +17,19 @@ import re
 from typing import TypeVar, Annotated
 
 import pycountry
-from pydantic import AfterValidator
-from sqlmodel import SQLModel
+from pydantic import AfterValidator, BaseModel, ConfigDict
 
-SchemaType = TypeVar("SchemaType", bound=SQLModel)
+SchemaType = TypeVar("SchemaType", bound=BaseModel)
 
 logger = logging.getLogger(__name__)
 
 
-class ApiInMixin(SQLModel):
+class ApiInMixin(BaseModel):
     ...
 
 
-class ApiOutMixin(SQLModel):
+class ApiOutMixin(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: int
 
 

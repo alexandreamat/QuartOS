@@ -15,7 +15,7 @@
 
 from typing import Iterable
 
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.features.account import AccountPlaidOut

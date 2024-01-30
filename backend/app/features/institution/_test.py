@@ -18,7 +18,7 @@ from typing import Iterable
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app._test import client, db
 from app.features.user._test import (

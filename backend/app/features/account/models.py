@@ -15,10 +15,10 @@
 
 from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 
-from sqlmodel import Field, Relationship, Session
-from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy import ForeignKey, Select
+from sqlalchemy.orm import Mapped, relationship, mapped_column, Session
 
 from app.common.models import Base, SyncableBase
 from app.features.movement import Movement
@@ -30,20 +30,26 @@ if TYPE_CHECKING:
     from app.features.user import User
     from app.features.userinstitutionlink import UserInstitutionLink
 
+ModelType = TypeVar("ModelType", bound=Base)
 
-class Account(Base, table=True):
-    class InstitutionalAccount(SyncableBase, table=True):
-        type: str
-        mask: str
 
-        userinstitutionlink_id: int = Field(foreign_key="userinstitutionlink.id")
+class Account(Base):
+    __tablename__ = "account"
 
-        userinstitutionlink: "UserInstitutionLink" = Relationship(
+    class InstitutionalAccount(SyncableBase):
+        __tablename__ = "institutionalaccount"
+        type: Mapped[str]
+        mask: Mapped[str]
+
+        userinstitutionlink_id: Mapped[int] = mapped_column(
+            ForeignKey("userinstitutionlink.id")
+        )
+
+        userinstitutionlink: Mapped["UserInstitutionLink"] = relationship(
             back_populates="institutionalaccounts"
         )
-        account: "Account" = Relationship(
-            back_populates="institutionalaccount",
-            sa_relationship_kwargs={"uselist": False},
+        account: Mapped["Account"] = relationship(
+            back_populates="institutionalaccount", uselist=False
         )
 
         @property
@@ -62,39 +68,41 @@ class Account(Base, table=True):
         def is_synced(self) -> bool:
             return True if self.plaid_id else False
 
-    class NonInstitutionalAccount(Base, table=True):
-        type: str
-        user_id: int = Field(foreign_key="user.id")
-        user: "User" = Relationship(back_populates="noninstitutionalaccounts")
-        account: "Account" = Relationship(
+    class NonInstitutionalAccount(Base):
+        __tablename__ = "noninstitutionalaccount"
+        type: Mapped[str]
+        user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+        user: Mapped["User"] = relationship(back_populates="noninstitutionalaccounts")
+        account: Mapped["Account"] = relationship(
             back_populates="noninstitutionalaccount",
-            sa_relationship_kwargs={"uselist": False},
+            uselist=False,
         )
 
-    currency_code: str
-    initial_balance: Decimal
-    name: str
+    currency_code: Mapped[str]
+    initial_balance: Mapped[Decimal]
+    name: Mapped[str]
 
-    institutionalaccount_id: int | None = Field(foreign_key="institutionalaccount.id")
-    noninstitutionalaccount_id: int | None = Field(
-        foreign_key="noninstitutionalaccount.id"
+    institutionalaccount_id: Mapped[int | None] = mapped_column(
+        ForeignKey("institutionalaccount.id")
+    )
+    noninstitutionalaccount_id: Mapped[int | None] = mapped_column(
+        ForeignKey("noninstitutionalaccount.id")
     )
 
-    institutionalaccount: InstitutionalAccount | None = Relationship(
+    institutionalaccount: Mapped[InstitutionalAccount | None] = relationship(
         back_populates="account",
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
+        uselist=False,
+        cascade="all, delete",
     )
-    noninstitutionalaccount: NonInstitutionalAccount | None = Relationship(
+    noninstitutionalaccount: Mapped[NonInstitutionalAccount | None] = relationship(
         back_populates="account",
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
+        uselist=False,
+        cascade="all, delete",
     )
 
-    transactions: list[Transaction] = Relationship(
-        back_populates="account",
-        sa_relationship_kwargs={
-            "cascade": "all, delete",
-            "lazy": "dynamic",
-        },
+    transactions: Mapped[list[Transaction]] = relationship(
+        back_populates="account", cascade="all, delete", lazy="dynamic"
     )
 
     @classmethod
@@ -134,20 +142,16 @@ class Account(Base, table=True):
 
     @classmethod
     def join_subclasses(
-        cls, statement: SelectOfScalar["Account"]
-    ) -> SelectOfScalar["Account"]:
-        # fmt: off
-        return ( 
-            statement
-            .outerjoin(cls.NonInstitutionalAccount)
-            .outerjoin(cls.InstitutionalAccount)
-        )
-        # fmt: on
+        cls, statement: Select[tuple[ModelType]]
+    ) -> Select[tuple[ModelType]]:
+        statement = statement.outerjoin(cls.NonInstitutionalAccount)
+        statement = statement.outerjoin(cls.InstitutionalAccount)
+        return statement
 
     @classmethod
     def select_children(
-        cls, account_id: int | None, statement: SelectOfScalar["Account"]
-    ) -> SelectOfScalar["Account"]:
+        cls, account_id: int | None, statement: Select[tuple[ModelType]]
+    ) -> Select[tuple[ModelType]]:
         statement = statement.join(cls)
         statement = cls.join_subclasses(statement)
         if account_id is not None:
@@ -155,7 +159,7 @@ class Account(Base, table=True):
         return statement
 
     @classmethod
-    def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
+    def select_accounts(cls, account_id: int | None) -> Select[tuple["Account"]]:
         statement = cls.select()
         statement = cls.join_subclasses(statement)
         if account_id:
@@ -170,7 +174,7 @@ class Account(Base, table=True):
         movement_id: int | None,
         transaction_id: int | None,
         **kwargs: Any,
-    ) -> SelectOfScalar[Transaction]:
+    ) -> Select[tuple[Transaction]]:
         statement = Movement.select_transactions(
             movement_id, transaction_id=transaction_id, **kwargs
         )

@@ -16,7 +16,7 @@
 import logging
 from typing import Generic, Type, TypeVar, Iterable, Any
 
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from .models import Base, SyncableBase
 from .schemas import PlaidOutMixin, PlaidInMixin, ApiOutMixin, ApiInMixin

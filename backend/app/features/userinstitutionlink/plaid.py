@@ -29,7 +29,7 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
 from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from pydantic import BaseModel
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.common.plaid import client
 from app.features.account import CRUDAccount

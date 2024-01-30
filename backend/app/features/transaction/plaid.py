@@ -22,7 +22,7 @@ from plaid.model.personal_finance_category import PersonalFinanceCategory
 from plaid.model.transaction import Transaction
 from requests import HTTPError
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.features.category.crud import CRUDSyncableCategory
 from app.features.category.plaid import create_category_plaid_in

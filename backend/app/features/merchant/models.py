@@ -12,13 +12,17 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from sqlmodel import Field
+
+
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.common.models import Base
 
 
-class Merchant(Base, table=True):
-    pattern: str
-    default_category_id: int
-    name: str = Field(unique=True)
-    user_id: int = Field(foreign_key="user.id")
+class Merchant(Base):
+    __tablename__ = "merchant"
+    pattern: Mapped[str]
+    default_category_id: Mapped[int]
+    name: Mapped[str] = mapped_column(unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))

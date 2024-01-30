@@ -22,7 +22,7 @@ from fastapi import HTTPException, status
 from plaid.model.personal_finance_category import PersonalFinanceCategory
 from requests import HTTPError
 from requests_cache import CachedSession
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.features.category import CategoryPlaidIn
 from app.features.category.crud import CRUDSyncableCategory

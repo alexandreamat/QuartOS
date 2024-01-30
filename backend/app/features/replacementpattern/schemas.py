@@ -12,12 +12,12 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from sqlmodel import SQLModel
+from pydantic import BaseModel
 
 from app.common.schemas import RegexPattern, ApiOutMixin, ApiInMixin
 
 
-class __ReplacementPatternBase(SQLModel):
+class __ReplacementPatternBase(BaseModel):
     pattern: RegexPattern
     replacement: str
 

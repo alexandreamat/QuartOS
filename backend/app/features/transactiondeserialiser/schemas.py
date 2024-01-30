@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from typing import TYPE_CHECKING
 
-from sqlmodel import SQLModel
+from pydantic import BaseModel
 
 from app.common.schemas import CodeSnippet, ApiInMixin, ApiOutMixin
 
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     pass
 
 
-class __TransactionDeserialiserBase(SQLModel):
+class __TransactionDeserialiserBase(BaseModel):
     module_name: str
     amount_deserialiser: CodeSnippet
     timestamp_deserialiser: CodeSnippet
