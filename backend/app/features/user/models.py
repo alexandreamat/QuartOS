@@ -19,11 +19,9 @@ from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import select, case, desc, asc, Select, or_, func
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Mapped, relationship, Session
 
 from app.common.models import Base
-from app.common.utils import filter_query_by_search
 from app.features.account import Account
 from app.features.category.models import Category
 from app.features.merchant.models import Merchant
@@ -77,11 +75,13 @@ class User(Base):
     def select_user_institution_links(
         cls, user_id: int | None, userinstitutionlink_id: int | None
     ) -> Select[tuple[UserInstitutionLink]]:
-        statement = UserInstitutionLink.select_user_institution_links(
-            userinstitutionlink_id
-        )
-
+        statement = UserInstitutionLink.select()
         statement = statement.join(cls)
+
+        if userinstitutionlink_id:
+            statement = statement.where(
+                UserInstitutionLink.id == userinstitutionlink_id
+            )
         if user_id:
             statement = statement.where(cls.id == user_id)
 
@@ -140,26 +140,15 @@ class User(Base):
         is_descending: bool = True,
         is_amount_abs: bool = False,
         order_by: MovementField = MovementField.TIMESTAMP,
-    ) -> Any:
-        amount_sum = func.sum(Transaction.amount_default_currency)
-        timestamp_min = func.min(Transaction.timestamp)
-        transactions_count = func.count(Transaction.id)
-
+    ) -> Select[tuple[Movement]]:
         # SELECT
-        statement = select(
-            Movement.id,
-            Movement.name,
-            Movement.category_id,
-            timestamp_min.label("timestamp"),
-            amount_sum.label("amount"),
-            transactions_count.label("transactions_count"),
-        )
+        statement = Movement.select()
 
         # JOIN
         statement = (
-            statement.join(Account)
-            .join(Movement)
-            .outerjoin(Category)  # consider uncategorised movements
+            statement.join(Transaction)
+            .join(Account)
+            .join(Category, Category.id == Movement.category_id)
             .outerjoin(Account.InstitutionalAccount)
             .outerjoin(Account.NonInstitutionalAccount)
             .outerjoin(UserInstitutionLink)
@@ -188,17 +177,19 @@ class User(Base):
         # ORDER BY
         order = desc if is_descending else asc
         if order_by is MovementField.AMOUNT:
-            statement = statement.order_by(order("amount"), Movement.id)
+            statement = statement.order_by(
+                Movement.amount_default_currency, Movement.id
+            )
         elif order_by is MovementField.TIMESTAMP:
-            statement = statement.order_by(order("timestamp"), Movement.id)
+            statement = statement.order_by(Movement.timestamp, Movement.id)
 
         # HAVING
         if start_date:
-            statement = statement.having(timestamp_min >= start_date)
+            statement = statement.having(Movement.amount_default_currency >= start_date)
         if end_date:
-            statement = statement.having(timestamp_min < end_date)
+            statement = statement.having(Movement.amount_default_currency < end_date)
         if is_amount_abs:
-            amount_sum = func.abs(amount_sum)
+            amount_sum = func.abs(Movement.amount_default_currency)
         if amount_gt is not None:
             statement = statement.having(amount_sum > amount_gt)
         if amount_lt is not None:
@@ -208,9 +199,9 @@ class User(Base):
         if amount_le is not None:
             statement = statement.having(amount_sum <= amount_lt)
         if transactions_ge:
-            statement = statement.having(transactions_count >= transactions_ge)
+            statement = statement.having(Movement.transactions_count >= transactions_ge)
         if transactions_le:
-            statement = statement.having(transactions_count <= transactions_le)
+            statement = statement.having(Movement.transactions_count <= transactions_le)
 
         # OFFSET LIMIT
         if per_page:
@@ -227,13 +218,10 @@ class User(Base):
         month: int | None = None,
         page: int = 0,
         per_page: int = 12,
-    ) -> Any:
+    ) -> Select[tuple[int, int, Decimal, Decimal]]:
         movements_subquery = (
-            select(
-                Transaction.movement_id.label("id"),
-                func.min(Transaction.timestamp).label("timestamp"),
-                func.sum(Transaction.amount_default_currency).label("amount"),
-            )
+            select(Movement.id, Movement.timestamp, Movement.amount_default_currency)
+            .join(Transaction)
             .join(Account)
             .outerjoin(Account.InstitutionalAccount)
             .outerjoin(Account.NonInstitutionalAccount)
@@ -245,7 +233,7 @@ class User(Base):
                     UserInstitutionLink.user_id == user_id,
                 )
             )
-            .group_by(Transaction.movement_id)
+            .group_by(Movement.id)
             .subquery()
         )
 
@@ -259,8 +247,8 @@ class User(Base):
                 func.sum(
                     case(
                         (
-                            movements_subquery.c.amount < 0,
-                            movements_subquery.c.amount,
+                            movements_subquery.c.amount_default_currency < 0,
+                            movements_subquery.c.amount_default_currency,
                         ),
                         else_=0,
                     )
@@ -268,8 +256,8 @@ class User(Base):
                 func.sum(
                     case(
                         (
-                            movements_subquery.c.amount > 0,
-                            movements_subquery.c.amount,
+                            movements_subquery.c.amount_default_currency > 0,
+                            movements_subquery.c.amount_default_currency,
                         ),
                         else_=0,
                     )

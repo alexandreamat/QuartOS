@@ -47,7 +47,7 @@ class MovementApiOut(__MovementBase, ApiOutMixin):
     timestamp: date | None
     transactions_count: int
     amount_default_currency: Decimal
-    default_category_id: int | None
+    category_id: int | None
 
 
 class MovementApiIn(__MovementBase, ApiInMixin):

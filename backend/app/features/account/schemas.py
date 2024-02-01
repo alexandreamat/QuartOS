@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from decimal import Decimal
-from typing import Literal
+from enum import Enum
 
 from pydantic import BaseModel
 
@@ -29,13 +29,24 @@ from app.common.schemas import (
 
 class _AccountBase(BaseModel):
     class InstitutionalAccount(BaseModel):
-        type: Literal[
-            "investment", "credit", "depository", "loan", "brokerage", "other"
-        ]
+        class Type(str, Enum):
+            INVESTMENT = "investment"
+            CREDIT = "credit"
+            DEPOSITORY = "depository"
+            LOAN = "loan"
+            BROKERAGE = "brokerage"
+            OTHER = "other"
+
+        type: Type
         mask: str
 
     class NonInstitutionalAccount(BaseModel):
-        type: Literal["personal ledger", "cash", "property"]
+        class Type(str, Enum):
+            PERSONAL_LEDGER = "personal ledger"
+            CASH = "cash"
+            PROPERTY = "property"
+
+        type: Type
 
     currency_code: CurrencyCode
     initial_balance: Decimal
