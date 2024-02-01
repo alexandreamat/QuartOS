@@ -42,18 +42,6 @@ class UserInstitutionLink(SyncableBase):
     )
 
     @classmethod
-    def select_user_institution_links(
-        cls, userinstitutionlink_id: int | None
-    ) -> Select[tuple["UserInstitutionLink"]]:
-        statement = cls.select()
-
-        statement = statement.outerjoin(cls)
-        if userinstitutionlink_id:
-            statement = statement.where(cls.id == userinstitutionlink_id)
-
-        return statement
-
-    @classmethod
     def select_accounts(
         cls, userinstitutionlink_id: int | None, account_id: int | None
     ) -> Select[tuple[Account]]:

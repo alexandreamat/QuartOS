@@ -123,7 +123,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             **kwargs,
         )
 
-        for t in db.scalars(statement).all():
+        for t in db.scalars(statement):
             yield TransactionApiOut.model_validate(t)
 
     @classmethod
@@ -210,17 +210,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             transactions_ge=transactions_ge,
             transactions_le=transactions_le,
         )
-        for result in db.scalars(statement).all():
-            yield MovementApiOut(
-                id=result.id,
-                name=result.name,
-                category_id=result.category_id,
-                timestamp=result.timestamp,
-                amount_default_currency=result.amount,
-                transactions_count=result.transactions_count,
-                # FIXME
-                default_category_id=Movement.read(db, result.id).default_category_id,
-            )
+        for result in db.scalars(statement):
+            yield MovementApiOut.model_validate(result)
 
     @classmethod
     def read_movement(
@@ -228,24 +219,11 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         db: Session,
         user_id: int,
         movement_id: int,
-        **kwargs: Any,
     ) -> MovementApiOut:
         cls.read(db, user_id)
-        statement = User.select_movements(user_id, movement_id=movement_id, **kwargs)
-        try:
-            result = db.scalars(statement).one()
-        except NoResultFound:
-            raise ObjectNotFoundError("Movement", movement_id)
-        return MovementApiOut(
-            id=result.id,
-            name=result.name,
-            category_id=result.category_id,
-            timestamp=result.timestamp,
-            amount_default_currency=result.amount,
-            transactions_count=result.transactions_count,
-            # FIXME too
-            default_category_id=Movement.read(db, result.id).default_category_id,
-        )
+        statement = User.select_movements(user_id, movement_id=movement_id)
+        movement = Movement.read_one_from_query(db, statement, movement_id)
+        return MovementApiOut.model_validate(movement)
 
     @classmethod
     def update_all_movements(cls, db: Session, user_id: int) -> None:
@@ -283,8 +261,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         per_page: int,
     ) -> Iterable[PLStatement]:
         statement = User.select_aggregates(user_id, None, None, page, per_page)
-        results = db.scalars(statement).all()
-        for result in results:
+        for result in db.execute(statement):
             year = int(result.year)
             month = int(result.month)
             expenses = result.expenses

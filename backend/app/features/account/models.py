@@ -15,6 +15,7 @@
 
 from datetime import date
 from decimal import Decimal
+from enum import Enum
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from sqlalchemy import ForeignKey, Select
@@ -38,7 +39,16 @@ class Account(Base):
 
     class InstitutionalAccount(SyncableBase):
         __tablename__ = "institutionalaccount"
-        type: Mapped[str]
+
+        class Type(str, Enum):
+            INVESTMENT = "investment"
+            CREDIT = "credit"
+            DEPOSITORY = "depository"
+            LOAN = "loan"
+            BROKERAGE = "brokerage"
+            OTHER = "other"
+
+        type: Mapped[Type]
         mask: Mapped[str]
 
         userinstitutionlink_id: Mapped[int] = mapped_column(
@@ -70,7 +80,13 @@ class Account(Base):
 
     class NonInstitutionalAccount(Base):
         __tablename__ = "noninstitutionalaccount"
-        type: Mapped[str]
+
+        class Type(str, Enum):
+            PERSONAL_LEDGER = "personal ledger"
+            CASH = "cash"
+            PROPERTY = "property"
+
+        type: Mapped[Type]
         user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
         user: Mapped["User"] = relationship(back_populates="noninstitutionalaccounts")

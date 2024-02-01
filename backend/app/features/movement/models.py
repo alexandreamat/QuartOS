@@ -20,8 +20,9 @@ from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import ForeignKey, Select
+from sqlalchemy import ForeignKey, Select, func, ColumnElement, case
 from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from app.common.models import Base
 from app.features.category.models import Category
@@ -34,29 +35,42 @@ class Movement(Base):
     __tablename__ = "movement"
     name: Mapped[str]
     transactions: Mapped[list[Transaction]] = relationship(
-        back_populates="movement",
-        cascade="all, delete",
+        back_populates="movement", cascade="all, delete", lazy="selectin"
     )
     category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"))
     merchant_id: Mapped[int | None] = mapped_column(ForeignKey("merchant.id"))
 
-    category: Mapped[Category | None] = relationship()
-    merchant: Mapped[Merchant | None] = relationship()
+    category: Mapped[Category | None] = relationship(lazy="selectin")
+    merchant: Mapped[Merchant | None] = relationship(lazy="selectin")
 
-    @property
+    @hybrid_property
     def timestamp(self) -> date:
         return min(t.timestamp for t in self.transactions)
 
-    @property
+    @timestamp.inplace.expression
+    @classmethod
+    def _timestamp_expression(cls) -> ColumnElement[date]:
+        return func.min(Transaction.timestamp)
+
+    @hybrid_property
     def amount_default_currency(self) -> Decimal:
         return sum(
             [t.amount_default_currency for t in self.transactions],
             Decimal(0),
         )
 
-    @property
+    @amount_default_currency.inplace.expression
+    @classmethod
+    def _amount_default_currency_expression(cls) -> ColumnElement[Decimal]:
+        return func.sum(Transaction.amount_default_currency)
+
+    @hybrid_property
     def transactions_count(self) -> int:
         return len(self.transactions)
+
+    @transactions_count.inplace.expression
+    def _transactions_count_expression(cls) -> ColumnElement[int]:
+        return func.count(Transaction.id)
 
     @property
     def default_category_id_transactions(self) -> int | None:
