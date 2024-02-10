@@ -20,9 +20,9 @@ from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import ForeignKey, Select, func, ColumnElement, case
-from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
+from sqlalchemy import ForeignKey, Select, func, ColumnElement
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 
 from app.common.models import Base
 from app.features.category.models import Category
