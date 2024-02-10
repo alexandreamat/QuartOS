@@ -36,7 +36,7 @@ class UserInstitutionLink(SyncableBase):
 
     user: Mapped["User"] = relationship(back_populates="institution_links")
     institution: Mapped["Institution"] = relationship(back_populates="user_links")
-    institutionalaccounts: Mapped[list[Account.InstitutionalAccount]] = relationship(
+    institutionalaccounts: Mapped[list[Account]] = relationship(
         back_populates="userinstitutionlink",
         cascade="all, delete",
     )

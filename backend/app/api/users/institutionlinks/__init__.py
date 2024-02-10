@@ -73,16 +73,13 @@ def set_public_token(
 
     # 2. Create user institution link
     access_token = exchange_public_token(public_token)
-    userinstitutionlink_in = fetch_user_institution_link(
-        access_token, me, institution_out
-    )
+    userinstitutionlink_in = fetch_user_institution_link(access_token)
     userinstitutionlink_out = CRUDSyncableUserInstitutionLink.create(
         db, userinstitutionlink_in, institution_id=institution_out.id, user_id=me.id
     )
 
     # 3. Create accounts
-    accounts_in = fetch_accounts(userinstitutionlink_out)
-    for account_in in accounts_in:
+    for account_in in fetch_accounts(userinstitutionlink_out):
         CRUDSyncableAccount.create(
             db, account_in, userinstitutionlink_id=userinstitutionlink_out.id
         )

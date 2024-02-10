@@ -14,14 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from decimal import Decimal
 from typing import TYPE_CHECKING, Iterable
 
 from plaid.model.account_base import AccountBase
+from plaid.model.account_type import AccountType
 from plaid.model.accounts_get_request import AccountsGetRequest
 from plaid.model.accounts_get_response import AccountsGetResponse
 
 from app.common.plaid import client
-from .schemas import AccountPlaidIn
+from .schemas import AccountPlaidIn, CreditPlaidIn, DepositoryPlaidIn, LoanPlaidIn
 
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLinkPlaidOut
@@ -36,17 +38,35 @@ def fetch_accounts(
     response: AccountsGetResponse = client.accounts_get(request)
     logger.info(response.to_str())
     accounts: list[AccountBase] = response.accounts
-
     for account in accounts:
-        yield AccountPlaidIn(
-            institutionalaccount=AccountPlaidIn.InstitutionalAccount(
-                plaid_id=account.account_id,
-                plaid_metadata=account.to_str(),
-                mask=account.mask or "",
-                type=account.type.value,
-                userinstitutionlink_id=user_institution_link.id,
-            ),
-            name=account.name,
-            currency_code=account.balances.iso_currency_code,
-            initial_balance=0,
-        )
+        assert isinstance(account, AccountBase)
+        assert isinstance(account.type, AccountType)
+        match account.type.value:
+            case "depository":
+                yield DepositoryPlaidIn(
+                    plaid_id=account.account_id,
+                    plaid_metadata=account.to_str(),
+                    mask=account.mask or "",
+                    type=account.type.value,
+                    name=account.name,
+                    currency_code=account.balances.iso_currency_code,
+                    initial_balance=Decimal(0),
+                )
+            case "credit":
+                yield CreditPlaidIn(
+                    plaid_id=account.account_id,
+                    plaid_metadata=account.to_str(),
+                    type=account.type.value,
+                    name=account.name,
+                    currency_code=account.balances.iso_currency_code,
+                    initial_balance=Decimal(0),
+                )
+            case "loan":
+                yield LoanPlaidIn(
+                    plaid_id=account.account_id,
+                    plaid_metadata=account.to_str(),
+                    type=account.type.value,
+                    name=account.name,
+                    currency_code=account.balances.iso_currency_code,
+                    initial_balance=Decimal(0),
+                )

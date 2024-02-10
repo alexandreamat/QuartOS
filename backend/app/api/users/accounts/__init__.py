@@ -62,7 +62,8 @@ def create(
     account_in: AccountApiIn,
     userinstitutionlink_id: int | None = None,
 ) -> AccountApiOut:
-    if account_in.institutionalaccount and userinstitutionlink_id:
+    if account_in.type in ["depository", "loan", "brokerage", "investment"]:
+        assert userinstitutionlink_id
         CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
     return CRUDAccount.create(
         db, account_in, userinstitutionlink_id=userinstitutionlink_id, user_id=me.id
