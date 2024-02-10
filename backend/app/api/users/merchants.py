@@ -38,11 +38,6 @@ def read_many(db: DBSession, me: CurrentUser) -> Iterable[MerchantApiOut]:
     return CRUDUser.read_merchants(db, me.id)
 
 
-@router.get("/{merchant_id}")
-def read(db: DBSession, me: CurrentUser, merchant_id: int) -> MerchantApiOut:
-    return CRUDUser.read_merchant(db, me.id, merchant_id=merchant_id)
-
-
 @router.put("/{merchant_id}")
 def update(
     db: DBSession, me: CurrentUser, merchant_id: int, merchant_in: MerchantApiIn

@@ -23,8 +23,7 @@ from app.features.category import (
     CRUDCategory,
     CategoryApiOut,
 )
-from app.features.category.plaid import get_all_plaid_categories
-from app.features.user.deps import CurrentSuperuser, CurrentUser
+from app.features.user.deps import CurrentUser
 
 router = APIRouter()
 
@@ -32,13 +31,3 @@ router = APIRouter()
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[CategoryApiOut]:
     return CRUDCategory.read_many(db, 0, 0)
-
-
-@router.get("/{category_id}")
-def read(db: DBSession, category_id: int) -> CategoryApiOut:
-    return CRUDCategory.read(db, category_id)
-
-
-@router.put("/plaid/get-all")
-def get_all(db: DBSession, me: CurrentSuperuser) -> None:
-    get_all_plaid_categories(db)

@@ -34,15 +34,6 @@ def get_detailed_pl_statement(
     return CRUDUser.get_detailed_pl_statement(db, me.id, month)
 
 
-@router.get("/{month}")
-def get_pl_statement(
-    db: DBSession,
-    me: CurrentUser,
-    month: date,
-) -> PLStatement:
-    return CRUDUser.get_pl_statement(db, me.id, month)
-
-
 @router.get("/")
 def get_many_pl_statements(
     db: DBSession,

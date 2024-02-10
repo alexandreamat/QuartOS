@@ -27,7 +27,6 @@ from app.features.userinstitutionlink import (
     CRUDUserInstitutionLink,
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
-    UserInstitutionLinkPlaidOut,
     CRUDSyncableUserInstitutionLink,
     fetch_user_institution_link,
 )
@@ -89,36 +88,6 @@ def set_public_token(
         )
 
 
-@router.post("/resync")
-def resync(
-    db: DBSession, me: CurrentUser, userinstitutionlink_id: int
-) -> UserInstitutionLinkPlaidOut:
-    userinstitutionlink_out = CRUDSyncableUserInstitutionLink.read(
-        db, userinstitutionlink_id
-    )
-    institution_out = CRUDSyncableInstitution.read(
-        db, userinstitutionlink_out.institution_id
-    )
-    userinstitutionlink_in = fetch_user_institution_link(
-        userinstitutionlink_out.access_token, me, institution_out
-    )
-    userinstitutionlink_in.cursor = userinstitutionlink_out.cursor
-    userinstitutionlink_out = CRUDSyncableUserInstitutionLink.update(
-        db,
-        userinstitutionlink_out.id,
-        userinstitutionlink_in,
-        user_id=me.id,
-        institution_id=institution_out.id,
-    )
-    for account_in in fetch_accounts(userinstitutionlink_out):
-        account_out = CRUDSyncableAccount.read_by_plaid_id(
-            db, account_in.institutionalaccount.plaid_id
-        )
-        print(account_out)
-        account_out = CRUDSyncableAccount.update(db, account_out.id, account_in)
-    return userinstitutionlink_out
-
-
 @router.post("/")
 def create(
     db: DBSession,
@@ -129,13 +98,6 @@ def create(
     return CRUDUserInstitutionLink.create(
         db, user_institution_link_in, user_id=me.id, institution_id=institution_id
     )
-
-
-@router.get("/{userinstitutionlink_id}")
-def read(
-    db: DBSession, me: CurrentUser, userinstitutionlink_id: int
-) -> UserInstitutionLinkApiOut:
-    return CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
 
 
 @router.get("/")

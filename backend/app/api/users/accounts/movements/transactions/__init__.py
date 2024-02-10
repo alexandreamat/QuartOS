@@ -49,24 +49,6 @@ def create(
     )
 
 
-@router.get("/{transaction_id}")
-def read(
-    db: DBSession,
-    me: CurrentUser,
-    account_id: int,
-    movement_id: int,
-    transaction_id: int,
-) -> TransactionApiOut:
-    transaction = CRUDUser.read_transaction(
-        db,
-        me.id,
-        transaction_id,
-        account_id=account_id,
-        movement_id=movement_id,
-    )
-    return transaction
-
-
 @router.put("/{transaction_id}")
 def update(
     db: DBSession,
