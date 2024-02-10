@@ -37,64 +37,6 @@ ModelType = TypeVar("ModelType", bound=Base)
 class Account(Base):
     __tablename__ = "account"
 
-    class InstitutionalAccount(SyncableBase):
-        __tablename__ = "institutionalaccount"
-
-        class Type(str, Enum):
-            INVESTMENT = "investment"
-            CREDIT = "credit"
-            DEPOSITORY = "depository"
-            LOAN = "loan"
-            BROKERAGE = "brokerage"
-            OTHER = "other"
-
-        type: Mapped[Type]
-        mask: Mapped[str]
-
-        userinstitutionlink_id: Mapped[int] = mapped_column(
-            ForeignKey("userinstitutionlink.id")
-        )
-
-        userinstitutionlink: Mapped["UserInstitutionLink"] = relationship(
-            back_populates="institutionalaccounts"
-        )
-        account: Mapped["Account"] = relationship(
-            back_populates="institutionalaccount", uselist=False
-        )
-
-        @property
-        def user(self) -> "User":
-            return self.userinstitutionlink.user
-
-        @property
-        def institution(self) -> "Institution":
-            return self.userinstitutionlink.institution
-
-        @property
-        def transactiondeserialiser(self) -> TransactionDeserialiser | None:
-            return self.userinstitutionlink.institution.transactiondeserialiser
-
-        @property
-        def is_synced(self) -> bool:
-            return True if self.plaid_id else False
-
-    class NonInstitutionalAccount(Base):
-        __tablename__ = "noninstitutionalaccount"
-
-        class Type(str, Enum):
-            PERSONAL_LEDGER = "personal ledger"
-            CASH = "cash"
-            PROPERTY = "property"
-
-        type: Mapped[Type]
-        user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-
-        user: Mapped["User"] = relationship(back_populates="noninstitutionalaccounts")
-        account: Mapped["Account"] = relationship(
-            back_populates="noninstitutionalaccount",
-            uselist=False,
-        )
-
     currency_code: Mapped[str]
     initial_balance: Mapped[Decimal]
     name: Mapped[str]
@@ -106,12 +48,12 @@ class Account(Base):
         ForeignKey("noninstitutionalaccount.id")
     )
 
-    institutionalaccount: Mapped[InstitutionalAccount | None] = relationship(
+    institutionalaccount: Mapped["InstitutionalAccount" | None] = relationship(
         back_populates="account",
         uselist=False,
         cascade="all, delete",
     )
-    noninstitutionalaccount: Mapped[NonInstitutionalAccount | None] = relationship(
+    noninstitutionalaccount: Mapped["NonInstitutionalAccount" | None] = relationship(
         back_populates="account",
         uselist=False,
         cascade="all, delete",
@@ -160,8 +102,8 @@ class Account(Base):
     def join_subclasses(
         cls, statement: Select[tuple[ModelType]]
     ) -> Select[tuple[ModelType]]:
-        statement = statement.outerjoin(cls.NonInstitutionalAccount)
-        statement = statement.outerjoin(cls.InstitutionalAccount)
+        statement = statement.outerjoin(NonInstitutionalAccount)
+        statement = statement.outerjoin(InstitutionalAccount)
         return statement
 
     @classmethod
@@ -238,3 +180,63 @@ class Account(Base):
         if not first_transaction:
             return self.initial_balance
         return first_transaction.account_balance
+
+
+class InstitutionalAccount(SyncableBase):
+    __tablename__ = "institutionalaccount"
+
+    class Type(str, Enum):
+        INVESTMENT = "investment"
+        CREDIT = "credit"
+        DEPOSITORY = "depository"
+        LOAN = "loan"
+        BROKERAGE = "brokerage"
+        OTHER = "other"
+
+    type: Mapped[Type]
+    mask: Mapped[str]
+
+    userinstitutionlink_id: Mapped[int] = mapped_column(
+        ForeignKey("userinstitutionlink.id")
+    )
+
+    userinstitutionlink: Mapped["UserInstitutionLink"] = relationship(
+        back_populates="institutionalaccounts"
+    )
+    account: Mapped["Account"] = relationship(
+        back_populates="institutionalaccount", uselist=False
+    )
+
+    @property
+    def user(self) -> "User":
+        return self.userinstitutionlink.user
+
+    @property
+    def institution(self) -> "Institution":
+        return self.userinstitutionlink.institution
+
+    @property
+    def transactiondeserialiser(self) -> TransactionDeserialiser | None:
+        return self.userinstitutionlink.institution.transactiondeserialiser
+
+    @property
+    def is_synced(self) -> bool:
+        return True if self.plaid_id else False
+
+
+class NonInstitutionalAccount(Base):
+    __tablename__ = "noninstitutionalaccount"
+
+    class Type(str, Enum):
+        PERSONAL_LEDGER = "personal ledger"
+        CASH = "cash"
+        PROPERTY = "property"
+
+    type: Mapped[Type]
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+    user: Mapped["User"] = relationship(back_populates="noninstitutionalaccounts")
+    account: Mapped["Account"] = relationship(
+        back_populates="noninstitutionalaccount",
+        uselist=False,
+    )
