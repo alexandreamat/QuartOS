@@ -42,9 +42,6 @@ from app.features.transaction import (
 from .crud import CRUDSyncableUserInstitutionLink
 from .schemas import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
 
-if TYPE_CHECKING:
-    from app.features.institution import InstitutionPlaidOut
-    from app.features.user import UserApiOut
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +56,7 @@ class __TransactionsSyncResult(BaseModel):
 
 def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str, int]:
     return {
-        account.institutionalaccount.plaid_id: account.id
+        account.plaid_id: account.id
         for account in CRUDSyncableUserInstitutionLink.read_syncable_accounts(
             db, userinstitutionlink_id
         )
@@ -112,18 +109,12 @@ def __fetch_transaction_changes(
     )
 
 
-def fetch_user_institution_link(
-    access_token: str,
-    me: "UserApiOut",
-    institution: "InstitutionPlaidOut",
-) -> UserInstitutionLinkPlaidIn:
+def fetch_user_institution_link(access_token: str) -> UserInstitutionLinkPlaidIn:
     request = ItemGetRequest(access_token=access_token)
     response: ItemGetResponse = client.item_get(request)
     item: Item = response.item
     user_institution_link_in = UserInstitutionLinkPlaidIn(
         plaid_id=item.item_id,
-        institution_id=institution.id,
-        user_id=me.id,
         access_token=access_token,
         plaid_metadata=item.to_str(),
     )

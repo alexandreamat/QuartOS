@@ -18,7 +18,7 @@ from typing import Iterable
 from sqlalchemy.orm import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
-from app.features.account import AccountPlaidOut
+from app.features.account import AccountPlaidOut, CRUDSyncableAccount
 from app.features.replacementpattern import ReplacementPatternApiOut
 from app.features.transaction import TransactionPlaidOut
 from .models import (
@@ -60,13 +60,13 @@ class CRUDSyncableUserInstitutionLink(
         for ia in uil.institutionalaccounts:
             if not ia.plaid_id:
                 continue
-            yield AccountPlaidOut.model_validate(ia.account)
+            yield CRUDSyncableAccount.model_validate(ia)
 
     @classmethod
     def read_transactions(cls, db: Session, id: int) -> Iterable[TransactionPlaidOut]:
         uil = UserInstitutionLink.read(db, id)
         for ia in uil.institutionalaccounts:
-            for t in ia.account.transactions:
+            for t in ia.transactions:
                 if not t.is_synced:
                     continue
                 yield TransactionPlaidOut.model_validate(t)

@@ -19,10 +19,11 @@ from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import select, case, desc, asc, Select, or_, func
-from sqlalchemy.orm import Mapped, relationship, Session
+from sqlalchemy.orm import Mapped, Session
 
 from app.common.models import Base
 from app.features.account import Account
+from app.features.account.models import NonInstitutionalAccount
 from app.features.category.models import Category
 from app.features.merchant.models import Merchant
 from app.features.movement import Movement, MovementField
@@ -40,17 +41,6 @@ class User(Base):
     full_name: Mapped[str]
     is_superuser: Mapped[bool]
     default_currency_code: Mapped[str]
-
-    institution_links: Mapped[list[UserInstitutionLink]] = relationship(
-        back_populates="user",
-        cascade="all, delete",
-    )
-    noninstitutionalaccounts: Mapped[list[Account.NonInstitutionalAccount]] = (
-        relationship(
-            back_populates="user",
-            cascade="all, delete",
-        )
-    )
 
     @property
     def password(self) -> str:
@@ -112,7 +102,7 @@ class User(Base):
 
         statement = statement.outerjoin(UserInstitutionLink).where(
             or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
+                NonInstitutionalAccount.user_id == user_id,
                 UserInstitutionLink.user_id == user_id,
             )
         )
@@ -149,8 +139,6 @@ class User(Base):
             statement.join(Transaction)
             .join(Account)
             .outerjoin(Category, Category.id == Movement.category_id)
-            .outerjoin(Account.InstitutionalAccount)
-            .outerjoin(Account.NonInstitutionalAccount)
             .outerjoin(UserInstitutionLink)
             .outerjoin(User)
         )
@@ -158,7 +146,7 @@ class User(Base):
         # WHERE
         statement = statement.where(
             or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
+                NonInstitutionalAccount.user_id == user_id,
                 UserInstitutionLink.user_id == user_id,
             )
         )
@@ -228,13 +216,11 @@ class User(Base):
             select(Movement.id, Movement.timestamp, Movement.amount_default_currency)
             .join(Transaction)
             .join(Account)
-            .outerjoin(Account.InstitutionalAccount)
-            .outerjoin(Account.NonInstitutionalAccount)
             .outerjoin(UserInstitutionLink)
             .outerjoin(User)
             .where(
                 or_(
-                    Account.NonInstitutionalAccount.user_id == user_id,
+                    NonInstitutionalAccount.user_id == user_id,
                     UserInstitutionLink.user_id == user_id,
                 )
             )
@@ -295,13 +281,11 @@ class User(Base):
             )
             .join(Account)
             .join(Movement)
-            .outerjoin(Account.InstitutionalAccount)
-            .outerjoin(Account.NonInstitutionalAccount)
             .outerjoin(UserInstitutionLink)
             .outerjoin(User)
             .where(
                 or_(
-                    Account.NonInstitutionalAccount.user_id == user_id,
+                    NonInstitutionalAccount.user_id == user_id,
                     UserInstitutionLink.user_id == user_id,
                 )
             )
@@ -357,7 +341,7 @@ class User(Base):
 
         statement = statement.outerjoin(UserInstitutionLink).where(
             or_(
-                Account.NonInstitutionalAccount.user_id == user_id,
+                NonInstitutionalAccount.user_id == user_id,
                 UserInstitutionLink.user_id == user_id,
             )
         )

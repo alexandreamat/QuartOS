@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from decimal import Decimal
-from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -27,61 +27,146 @@ from app.common.schemas import (
 )
 
 
-class _AccountBase(BaseModel):
-    class InstitutionalAccount(BaseModel):
-        class InstitutionalAccountType(str, Enum):
-            INVESTMENT = "investment"
-            CREDIT = "credit"
-            DEPOSITORY = "depository"
-            LOAN = "loan"
-            BROKERAGE = "brokerage"
-            OTHER = "other"
+# Bases
 
-        type: InstitutionalAccountType
-        mask: str
 
-    class NonInstitutionalAccount(BaseModel):
-        class NonInstitutionalAccountType(str, Enum):
-            PERSONAL_LEDGER = "personal ledger"
-            CASH = "cash"
-            PROPERTY = "property"
-
-        type: NonInstitutionalAccountType
-
+class __AccountBase(BaseModel):
     currency_code: CurrencyCode
     initial_balance: Decimal
     name: str
 
 
-class AccountApiIn(_AccountBase, ApiInMixin):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, ApiInMixin): ...
-
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, ApiInMixin): ...
-
-    institutionalaccount: InstitutionalAccount | None = None
-    noninstitutionalaccount: NonInstitutionalAccount | None = None
+class __Depository(__AccountBase):
+    type: Literal["depository"]
+    mask: str
 
 
-class AccountApiOut(_AccountBase, ApiOutMixin):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncableApiOutMixin):
-        userinstitutionlink_id: int
+class __Loan(__AccountBase):
+    type: Literal["loan"]
+    # number: str
+    # term: timedelta
+    # origination_date: date
+    # origination_principal_amount: Decimal
 
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, ApiOutMixin):
-        user_id: int
 
-    institutionalaccount: InstitutionalAccount | None
-    noninstitutionalaccount: NonInstitutionalAccount | None
-    is_synced: bool
+class __Credit(__AccountBase):
+    type: Literal["credit"]
+
+
+class __Investment(__AccountBase):
+    type: Literal["investment"]
+
+
+class __Brokerage(__AccountBase):
+    type: Literal["brokerage"]
+
+
+class __Other(__AccountBase):
+    type: Literal["other"]
+
+
+class __Cash(__AccountBase):
+    type: Literal["cash"]
+
+
+class __PersonalLedger(__AccountBase):
+    type: Literal["personal_ledger"]
+
+
+class __Property(__AccountBase):
+    type: Literal["property"]
+    # address: str
+
+
+class __AccountOut(BaseModel):
     balance: Decimal
+    is_synced: bool
 
 
-class AccountPlaidIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidInMixin): ...
-
-    institutionalaccount: InstitutionalAccount
+class __InstitutionalAccountOut(__AccountOut):
+    userinstitutionlink_id: int
 
 
-class AccountPlaidOut(_AccountBase, ApiOutMixin):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidOutMixin): ...
+class __NonInstitutionalAccountOut(__AccountOut):
+    user_id: int
 
-    institutionalaccount: InstitutionalAccount
+
+# fmt: off
+
+# API In
+
+class DepositoryApiIn(__Depository, ApiInMixin): ...
+class LoanApiIn(__Loan, ApiInMixin): ... 
+class CreditApiIn(__Credit, ApiInMixin): ...
+class InvestmentApiIn(__Investment, ApiInMixin): ...
+class BrokerageApiIn(__Brokerage, ApiInMixin): ...
+class OtherApiIn(__Other, ApiInMixin): ...
+
+class CashApiIn(__Cash, ApiInMixin): ...
+class PersonalLedgerApiIn(__PersonalLedger, ApiInMixin): ...
+class PropertyApiIn(__Property, ApiInMixin): ... 
+
+# API Out
+
+class DepositoryApiOut(__Depository, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class LoanApiOut(__Loan, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class CreditApiOut(__Credit, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class InvestmentApiOut(__Investment, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+class BrokerageApiOut(__Brokerage, __InstitutionalAccountOut, SyncableApiOutMixin): ...
+
+class CashApiOut(__Cash, __NonInstitutionalAccountOut, ApiOutMixin): ...
+class PersonalLedgerApiOut(__PersonalLedger, __NonInstitutionalAccountOut, ApiOutMixin): ...
+class PropertyApiOut(__Property, __NonInstitutionalAccountOut, ApiOutMixin): ...
+
+# Plaid In
+
+class DepositoryPlaidIn(__Depository, PlaidInMixin): ...
+class LoanPlaidIn(__Loan, PlaidInMixin): ...
+class CreditPlaidIn(__Credit, PlaidInMixin): ...
+class InvestmentPlaidIn(__Investment, PlaidInMixin): ...
+class BrokeragePlaidIn(__Brokerage, PlaidInMixin): ...
+
+# Plaid Out
+
+class DepositoryPlaidOut(__Depository, __InstitutionalAccountOut, PlaidOutMixin): ...
+class LoanPlaidOut(__Loan, __InstitutionalAccountOut, PlaidOutMixin): ...
+class CreditPlaidOut(__Credit, __InstitutionalAccountOut, PlaidOutMixin): ...
+class InvestmentPlaidOut(__Investment, __InstitutionalAccountOut, PlaidOutMixin): ...
+class BrokeragePlaidOut(__Brokerage, __InstitutionalAccountOut, PlaidOutMixin): ...
+
+# fmt: on
+
+AccountApiIn = (
+    DepositoryApiIn
+    | LoanApiIn
+    | CreditApiIn
+    | BrokerageApiIn
+    | InvestmentApiIn
+    | CashApiIn
+    | PersonalLedgerApiIn
+    | PropertyApiIn
+)
+AccountApiOut = (
+    DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | BrokerageApiOut
+    | InvestmentApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut
+)
+AccountPlaidIn = (
+    DepositoryPlaidIn
+    | LoanPlaidIn
+    | CreditPlaidIn
+    | InvestmentPlaidIn
+    | BrokeragePlaidIn
+)
+AccountPlaidOut = (
+    DepositoryPlaidOut
+    | LoanPlaidOut
+    | CreditPlaidOut
+    | InvestmentPlaidOut
+    | BrokeragePlaidOut
+)
