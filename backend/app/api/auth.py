@@ -53,6 +53,7 @@ def login(db: DBSession, form_data: OAuth2PasswordRequestForm = Depends()) -> To
     )
 
 
+# TODO: use this in the front end
 @router.post("/reset-password/")
 def reset(
     db: DBSession,

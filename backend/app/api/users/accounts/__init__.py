@@ -74,22 +74,6 @@ def read(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
     return CRUDUser.read_account(db, me.id, None, account_id=account_id)
 
 
-@router.put("/{account_id}/update-balance")
-def update_balance(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
-    CRUDUser.read_account(db, me.id, None, account_id)
-    return CRUDAccount.update_balance(db, account_id)
-
-
-@router.put("/{account_id}/update-transactions-amount-default-currency")
-def update_transactions_amount_default_currency(
-    db: DBSession, me: CurrentUser, account_id: int
-) -> None:
-    CRUDUser.read_account(db, me.id, None, account_id)
-    CRUDAccount.update_transactions_amount_default_currency(
-        db, account_id, me.default_currency_code
-    )
-
-
 @router.put("/{account_id}")
 def update(
     db: DBSession,
