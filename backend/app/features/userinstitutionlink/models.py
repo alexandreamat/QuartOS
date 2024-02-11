@@ -13,67 +13,41 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship, SQLModel
-from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy import ForeignKey, Select
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.common.models import SyncedMixin, SyncableBase, SyncedBase
+from app.common.models import SyncableBase
 from app.features.account import Account
-from app.features.movement import Movement
-from app.features.transaction import Transaction
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
     from app.features.user import User
 
 
-class __UserInstitutionLinkBase(SQLModel):
-    ...
+class UserInstitutionLink(SyncableBase):
+    __tablename__ = "userinstitutionlink"
 
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    institution_id: Mapped[int] = mapped_column(ForeignKey("institution.id"))
+    access_token: Mapped[str | None]
+    cursor: Mapped[str | None]
 
-class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
-    access_token: str
-    cursor: str | None = None
-
-
-class UserInstitutionLinkApiIn(__UserInstitutionLinkBase):
-    ...
-
-
-class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableBase):
-    institution_id: int
-    user_id: int
-    is_synced: bool
-
-
-class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, SyncedMixin):
-    ...
-
-
-class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, SyncedBase):
-    institution_id: int
-    user_id: int
-
-
-class UserInstitutionLink(__UserInstitutionLinkBase, SyncableBase, table=True):
-    user_id: int = Field(foreign_key="user.id")
-    institution_id: int = Field(foreign_key="institution.id")
-    access_token: str | None
-    cursor: str | None
-
-    user: "User" = Relationship(back_populates="institution_links")
-    institution: "Institution" = Relationship(back_populates="user_links")
-    institutionalaccounts: list[Account.InstitutionalAccount] = Relationship(
+    user: Mapped["User"] = relationship(back_populates="institution_links")
+    institution: Mapped["Institution"] = relationship(back_populates="user_links")
+    institutionalaccounts: Mapped[list[Account.InstitutionalAccount]] = relationship(
         back_populates="userinstitutionlink",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        cascade="all, delete",
     )
 
     @classmethod
-    def select_user_institution_links(
-        cls, userinstitutionlink_id: int | None
-    ) -> SelectOfScalar["UserInstitutionLink"]:
-        statement = cls.select()
+    def select_accounts(
+        cls, userinstitutionlink_id: int | None, account_id: int | None
+    ) -> Select[tuple[Account]]:
+        statement = Account.select_accounts(account_id)
+
+        statement = statement.outerjoin(cls)
         if userinstitutionlink_id:
             statement = statement.where(cls.id == userinstitutionlink_id)
 

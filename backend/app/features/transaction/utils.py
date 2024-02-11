@@ -14,15 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import csv
-import re
-
 # imports for exec
-import decimal  # noqa
 import datetime  # noqa
+import decimal  # noqa
+import re
 from typing import Iterable, BinaryIO
 
 from app.features.transactiondeserialiser import TransactionDeserialiserApiOut
-from .models import TransactionApiIn
+from .schemas import TransactionApiIn
 
 
 def __sanitise_row(row: list[str]) -> None:

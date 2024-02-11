@@ -13,20 +13,32 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Iterable
 
-from fastapi import APIRouter
+from pydantic import BaseModel
 
-from app.database.deps import DBSession
-from app.features.transaction import TransactionApiOut
-from app.features.user.crud import CRUDUser
-from app.features.user.deps import CurrentUser
+from app.common.schemas import (
+    ApiInMixin,
+    PlaidInMixin,
+    SyncableApiOutMixin,
+    PlaidOutMixin,
+)
 
-router = APIRouter()
+
+class __Category(BaseModel):
+    name: str
 
 
-@router.get("/")
-def read_many(
-    db: DBSession, me: CurrentUser, movement_id: int
-) -> Iterable[TransactionApiOut]:
-    return CRUDUser.read_transactions(db, me.id, movement_id=movement_id)
+class CategoryApiIn(__Category, ApiInMixin):
+    ...
+
+
+class CategoryApiOut(__Category, SyncableApiOutMixin):
+    icon_base64: bytes
+
+
+class CategoryPlaidOut(__Category, PlaidOutMixin):
+    icon: bytes
+
+
+class CategoryPlaidIn(__Category, PlaidInMixin):
+    icon: bytes

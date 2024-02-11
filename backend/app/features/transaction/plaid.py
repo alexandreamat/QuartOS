@@ -18,19 +18,17 @@ import re
 from decimal import Decimal
 
 from plaid.model.counterparty_type import CounterpartyType
-from plaid.model.transaction import Transaction
 from plaid.model.personal_finance_category import PersonalFinanceCategory
+from plaid.model.transaction import Transaction
 from requests import HTTPError
-from requests_cache import CachedSession
-from sqlmodel import Session
 from sqlalchemy.exc import NoResultFound
-from app.features.category.crud import CRUDSyncableCategory
-from app.features.category.models import CategoryPlaidIn
-from app.features.category.plaid import create_category_plaid_in
+from sqlalchemy.orm import Session
 
+from app.features.category.crud import CRUDSyncableCategory
+from app.features.category.plaid import create_category_plaid_in
 from app.features.replacementpattern import ReplacementPatternApiOut
 from .crud import CRUDSyncableTransaction
-from .models import TransactionPlaidIn, TransactionPlaidOut
+from .schemas import TransactionPlaidIn, TransactionPlaidOut
 
 
 def create_transaction_plaid_in(

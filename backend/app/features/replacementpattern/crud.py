@@ -15,11 +15,8 @@
 
 from app.common.crud import CRUDBase
 
-from .models import (
-    ReplacementPattern,
-    ReplacementPatternApiIn,
-    ReplacementPatternApiOut,
-)
+from .models import ReplacementPattern
+from .schemas import ReplacementPatternApiIn, ReplacementPatternApiOut
 
 
 class CRUDReplacementPattern(

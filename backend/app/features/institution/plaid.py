@@ -23,7 +23,7 @@ from plaid.model.institutions_get_by_id_request_options import (
 from plaid.model.institutions_get_by_id_response import InstitutionsGetByIdResponse
 
 from app.common.plaid import client, country_codes
-from .models import InstitutionPlaidIn
+from .schemas import InstitutionPlaidIn
 
 
 def fetch_institution(plaid_id: str) -> InstitutionPlaidIn:

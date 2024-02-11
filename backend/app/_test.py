@@ -18,8 +18,8 @@ from typing import Generator
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
+from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
-from sqlmodel import Session
 
 from app.common.models import Base
 from app.database.deps import get_db

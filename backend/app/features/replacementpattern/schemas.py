@@ -12,21 +12,19 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from pydantic import BaseModel
 
-from typing import Iterable
-
-from fastapi import APIRouter
-
-from app.database.deps import DBSession
-from app.features.transaction import TransactionApiOut
-from app.features.user.crud import CRUDUser
-from app.features.user.deps import CurrentUser
-
-router = APIRouter()
+from app.common.schemas import RegexPattern, ApiOutMixin, ApiInMixin
 
 
-@router.get("/")
-def read_many(
-    db: DBSession, me: CurrentUser, movement_id: int
-) -> Iterable[TransactionApiOut]:
-    return CRUDUser.read_transactions(db, me.id, movement_id=movement_id)
+class __ReplacementPatternBase(BaseModel):
+    pattern: RegexPattern
+    replacement: str
+
+
+class ReplacementPatternApiIn(__ReplacementPatternBase, ApiInMixin):
+    ...
+
+
+class ReplacementPatternApiOut(__ReplacementPatternBase, ApiOutMixin):
+    ...

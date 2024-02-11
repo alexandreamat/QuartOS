@@ -17,7 +17,7 @@ from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app._test import db, client
 from app.features.user.deps import get_current_user

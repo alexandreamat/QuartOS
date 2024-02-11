@@ -15,35 +15,26 @@
 
 from typing import TYPE_CHECKING
 
-from sqlmodel import SQLModel, Relationship
+from sqlalchemy.orm import Mapped, relationship
 
-from app.common.models import Base, CodeSnippet
+from app.common.models import Base
 
 if TYPE_CHECKING:
     from app.features.institution.models import Institution
 
 
-class __TransactionDeserialiserBase(SQLModel):
-    module_name: str
-    amount_deserialiser: CodeSnippet
-    timestamp_deserialiser: CodeSnippet
-    name_deserialiser: CodeSnippet
-    skip_rows: int
-    ascending_timestamp: bool
-    columns: int
-    delimiter: str
-    encoding: str
+class TransactionDeserialiser(Base):
+    __tablename__ = "transactiondeserialiser"
+    module_name: Mapped[str]
+    amount_deserialiser: Mapped[str]
+    timestamp_deserialiser: Mapped[str]
+    name_deserialiser: Mapped[str]
+    skip_rows: Mapped[int]
+    ascending_timestamp: Mapped[bool]
+    columns: Mapped[int]
+    delimiter: Mapped[str]
+    encoding: Mapped[str]
 
-
-class TransactionDeserialiserApiIn(__TransactionDeserialiserBase):
-    ...
-
-
-class TransactionDeserialiserApiOut(__TransactionDeserialiserBase, Base):
-    ...
-
-
-class TransactionDeserialiser(__TransactionDeserialiserBase, Base, table=True):
-    institutions: list["Institution"] = Relationship(
+    institutions: Mapped[list["Institution"]] = relationship(
         back_populates="transactiondeserialiser"
     )

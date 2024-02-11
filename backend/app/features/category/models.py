@@ -13,34 +13,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import base64
-from sqlmodel import Field, SQLModel
 
-from app.common.models import Base, SyncableBase, SyncedBase, SyncedMixin
+from sqlalchemy.orm import Mapped, mapped_column
 
-
-class __Category(SQLModel):
-    name: str
+from app.common.models import SyncableBase
 
 
-class CategoryApiIn(__Category):
-    ...
-
-
-class CategoryApiOut(__Category, Base):
-    icon_base64: bytes
-
-
-class CategoryPlaidOut(__Category, SyncedBase):
-    icon: bytes
-
-
-class CategoryPlaidIn(__Category, SyncedMixin):
-    icon: bytes
-
-
-class Category(SyncableBase, table=True):
-    name: str = Field(unique=True)
-    icon: bytes
+class Category(SyncableBase):
+    __tablename__ = "category"
+    name: Mapped[str] = mapped_column(unique=True)
+    icon: Mapped[bytes]
 
     @property
     def icon_base64(self) -> str:

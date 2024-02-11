@@ -12,22 +12,21 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from collections import defaultdict
 import logging
+from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from typing import Iterable, Any
 
 from dateutil.relativedelta import relativedelta
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Session
-
+from sqlalchemy.orm import Session
 
 from app.common.crud import CRUDBase
 from app.common.exceptions import ObjectNotFoundError
-from app.common.models import CurrencyCode
 from app.features.account import AccountApiOut, Account
-from app.features.merchant.models import MerchantApiOut
+from app.features.merchant import MerchantApiOut
+from app.features.movement import DetailedPLStatementApiOut
 from app.features.movement import (
     MovementApiOut,
     MovementApiIn,
@@ -35,13 +34,13 @@ from app.features.movement import (
     Movement,
     MovementField,
 )
-from app.features.movement.models import DetailedPLStatementApiOut
 from app.features.transaction import TransactionApiOut, Transaction
 from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
     UserInstitutionLink,
 )
-from .models import User, UserApiOut, UserApiIn
+from .models import User
+from .schemas import UserApiOut, UserApiIn
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +62,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls, db: Session, user_id: int | None
     ) -> Iterable[UserInstitutionLinkApiOut]:
         statement = User.select_user_institution_links(user_id, None)
-        uils = db.exec(statement).all()
+        uils = db.scalars(statement).all()
         for uil in uils:
             yield UserInstitutionLinkApiOut.model_validate(uil)
 
@@ -95,7 +94,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     @classmethod
     def read_merchants(cls, db: Session, user_id: int) -> Iterable[MerchantApiOut]:
         statement = User.select_merchants(user_id)
-        merchants = db.exec(statement).all()
+        merchants = db.scalars(statement).all()
         for merchant in merchants:
             yield MerchantApiOut.model_validate(merchant)
 
@@ -104,7 +103,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls, db: Session, user_id: int, merchant_id: int
     ) -> MerchantApiOut:
         statement = User.select_merchants(user_id, merchant_id=merchant_id)
-        merchant = db.exec(statement).one()
+        merchant = db.scalars(statement).one()
         return MerchantApiOut.model_validate(merchant)
 
     @classmethod
@@ -124,7 +123,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             **kwargs,
         )
 
-        for t in db.exec(statement).all():
+        for t in db.scalars(statement):
             yield TransactionApiOut.model_validate(t)
 
     @classmethod
@@ -166,7 +165,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         userinstitutionlink_id: int | None,
     ) -> Iterable[AccountApiOut]:
         statement = User.select_accounts(user_id, userinstitutionlink_id, None)
-        accounts = db.exec(statement).all()
+        accounts = db.scalars(statement).all()
 
         for a in accounts:
             yield AccountApiOut.model_validate(a)
@@ -211,17 +210,8 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             transactions_ge=transactions_ge,
             transactions_le=transactions_le,
         )
-        for result in db.exec(statement).all():
-            yield MovementApiOut(
-                id=result.id,
-                name=result.name,
-                category_id=result.category_id,
-                timestamp=result.timestamp,
-                amount_default_currency=result.amount,
-                transactions_count=result.transactions_count,
-                # FIXME
-                default_category_id=Movement.read(db, result.id).default_category_id,
-            )
+        for result in db.scalars(statement):
+            yield MovementApiOut.model_validate(result)
 
     @classmethod
     def read_movement(
@@ -229,24 +219,11 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         db: Session,
         user_id: int,
         movement_id: int,
-        **kwargs: Any,
     ) -> MovementApiOut:
         cls.read(db, user_id)
-        statement = User.select_movements(user_id, movement_id=movement_id, **kwargs)
-        try:
-            result = db.exec(statement).one()
-        except NoResultFound:
-            raise ObjectNotFoundError("Movement", movement_id)
-        return MovementApiOut(
-            id=result.id,
-            name=result.name,
-            category_id=result.category_id,
-            timestamp=result.timestamp,
-            amount_default_currency=result.amount,
-            transactions_count=result.transactions_count,
-            # FIXME too
-            default_category_id=Movement.read(db, result.id).default_category_id,
-        )
+        statement = User.select_movements(user_id, movement_id=movement_id)
+        movement = Movement.read_one_from_query(db, statement, movement_id)
+        return MovementApiOut.model_validate(movement)
 
     @classmethod
     def update_all_movements(cls, db: Session, user_id: int) -> None:
@@ -261,7 +238,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     ) -> PLStatement:
         statement = User.select_aggregates(user_id, start_date.year, start_date.month)
         try:
-            result = db.exec(statement).one()
+            result = db.scalars(statement).one()
         except NoResultFound:
             raise ObjectNotFoundError("PLStatement")
         year = int(result.year)
@@ -284,8 +261,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         per_page: int,
     ) -> Iterable[PLStatement]:
         statement = User.select_aggregates(user_id, None, None, page, per_page)
-        results = db.exec(statement).all()
-        for result in results:
+        for result in db.execute(statement):
             year = int(result.year)
             month = int(result.month)
             expenses = result.expenses
@@ -312,7 +288,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         )
         totals: dict[int, Decimal] = defaultdict(Decimal)
 
-        for result in db.exec(statement).all():
+        for result in db.execute(statement).all():
             by_category[result.sign][result.category_id or 0] += result.amount
             totals[result.sign] += result.amount
 

@@ -14,14 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
-from decimal import Decimal
 from typing import Iterable
 
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-from app.features.movement import PLStatement
-from app.features.movement.models import DetailedPLStatementApiOut
+from app.features.movement import PLStatement, DetailedPLStatementApiOut
 from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()
@@ -34,15 +32,6 @@ def get_detailed_pl_statement(
     month: date,
 ) -> DetailedPLStatementApiOut:
     return CRUDUser.get_detailed_pl_statement(db, me.id, month)
-
-
-@router.get("/{month}")
-def get_pl_statement(
-    db: DBSession,
-    me: CurrentUser,
-    month: date,
-) -> PLStatement:
-    return CRUDUser.get_pl_statement(db, me.id, month)
 
 
 @router.get("/")

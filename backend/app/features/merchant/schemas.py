@@ -12,17 +12,20 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from pydantic import BaseModel
 
-from fastapi import APIRouter
-
-from app.database.deps import DBSession
-from app.features.account import CRUDAccount
-from app.features.user import CurrentSuperuser
-
-router = APIRouter()
+from app.common.schemas import ApiInMixin, ApiOutMixin, RegexPattern
 
 
-@router.post("/update-balances")
-def update_balances(db: DBSession, me: CurrentSuperuser) -> None:
-    for account in CRUDAccount.read_many(db, 0, 0):
-        CRUDAccount.update_balance(db, account.id)
+class __Merchant(BaseModel):
+    name: str
+    pattern: RegexPattern
+    default_category_id: int
+
+
+class MerchantApiIn(__Merchant, ApiInMixin):
+    ...
+
+
+class MerchantApiOut(__Merchant, ApiOutMixin):
+    user_id: int

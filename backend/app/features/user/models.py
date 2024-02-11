@@ -13,24 +13,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from datetime import date
 from decimal import Decimal
-import logging
 from typing import Any
 
-from pydantic import EmailStr
-from sqlalchemy.exc import NoResultFound
-from sqlmodel import Relationship, SQLModel, Session, col, func, or_
-from sqlmodel.sql.expression import SelectOfScalar
-from sqlalchemy import select, case, desc, asc
+from sqlalchemy import select, case, desc, asc, Select, or_, func
+from sqlalchemy.orm import Mapped, relationship, Session
 
-from app.common.models import Base, CurrencyCode
-from app.common.utils import filter_query_by_search
+from app.common.models import Base
 from app.features.account import Account
 from app.features.category.models import Category
 from app.features.merchant.models import Merchant
-from app.features.movement import Movement
-from app.features.movement.models import MovementField
+from app.features.movement import Movement, MovementField
 from app.features.transaction import Transaction
 from app.features.userinstitutionlink import UserInstitutionLink
 from app.utils import verify_password, get_password_hash
@@ -38,32 +33,23 @@ from app.utils import verify_password, get_password_hash
 logger = logging.getLogger(__name__)
 
 
-class __UserBase(SQLModel):
-    email: EmailStr
-    full_name: str
-    is_superuser: bool
-    default_currency_code: CurrencyCode
+class User(Base):
+    __tablename__ = "user"
+    hashed_password: Mapped[str]
+    email: Mapped[str]
+    full_name: Mapped[str]
+    is_superuser: Mapped[bool]
+    default_currency_code: Mapped[str]
 
-
-class UserApiOut(__UserBase, Base):
-    ...
-
-
-class UserApiIn(__UserBase):
-    password: str
-
-
-class User(__UserBase, Base, table=True):
-    hashed_password: str
-    email: str
-
-    institution_links: list[UserInstitutionLink] = Relationship(
+    institution_links: Mapped[list[UserInstitutionLink]] = relationship(
         back_populates="user",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        cascade="all, delete",
     )
-    noninstitutionalaccounts: list[Account.NonInstitutionalAccount] = Relationship(
-        back_populates="user",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+    noninstitutionalaccounts: Mapped[list[Account.NonInstitutionalAccount]] = (
+        relationship(
+            back_populates="user",
+            cascade="all, delete",
+        )
     )
 
     @property
@@ -76,10 +62,7 @@ class User(__UserBase, Base, table=True):
 
     @classmethod
     def read_by_email(cls, db: Session, email: str) -> "User":
-        db_user = db.exec(cls.select().where(cls.email == email)).first()
-        if not db_user:
-            raise NoResultFound
-        return db_user
+        return db.scalars(cls.select().where(cls.email == email)).one()
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> "User":
@@ -91,12 +74,14 @@ class User(__UserBase, Base, table=True):
     @classmethod
     def select_user_institution_links(
         cls, user_id: int | None, userinstitutionlink_id: int | None
-    ) -> SelectOfScalar[UserInstitutionLink]:
-        statement = UserInstitutionLink.select_user_institution_links(
-            userinstitutionlink_id
-        )
-
+    ) -> Select[tuple[UserInstitutionLink]]:
+        statement = UserInstitutionLink.select()
         statement = statement.join(cls)
+
+        if userinstitutionlink_id:
+            statement = statement.where(
+                UserInstitutionLink.id == userinstitutionlink_id
+            )
         if user_id:
             statement = statement.where(cls.id == user_id)
 
@@ -105,7 +90,7 @@ class User(__UserBase, Base, table=True):
     @classmethod
     def select_merchants(
         cls, user_id: int, *, merchant_id: int | None = None
-    ) -> SelectOfScalar[Merchant]:
+    ) -> Select[tuple[Merchant]]:
         statement = Merchant.select().where(Merchant.user_id == user_id)
         if merchant_id:
             statement = statement.where(Merchant.id == merchant_id)
@@ -117,7 +102,7 @@ class User(__UserBase, Base, table=True):
         user_id: int | None,
         userinstitutionlink_id: int | None,
         account_id: int | None,
-    ) -> SelectOfScalar[Account]:
+    ) -> Select[tuple[Account]]:
         statement = Account.select_accounts(account_id)
 
         if userinstitutionlink_id:
@@ -155,26 +140,15 @@ class User(__UserBase, Base, table=True):
         is_descending: bool = True,
         is_amount_abs: bool = False,
         order_by: MovementField = MovementField.TIMESTAMP,
-    ) -> Any:
-        amount_sum = func.sum(col(Transaction.amount_default_currency))
-        timestamp_min = func.min(col(Transaction.timestamp))
-        transactions_count = func.count(col(Transaction.id))
-
+    ) -> Select[tuple[Movement]]:
         # SELECT
-        statement = select(
-            col(Movement.id),
-            col(Movement.name),
-            col(Movement.category_id),
-            timestamp_min.label("timestamp"),
-            amount_sum.label("amount"),
-            transactions_count.label("transactions_count"),
-        )
+        statement = Movement.select()
 
         # JOIN
         statement = (
-            statement.join(Account)
-            .join(Movement)
-            .outerjoin(Category)  # consider uncategorised movements
+            statement.join(Transaction)
+            .join(Account)
+            .outerjoin(Category, Category.id == Movement.category_id)
             .outerjoin(Account.InstitutionalAccount)
             .outerjoin(Account.NonInstitutionalAccount)
             .outerjoin(UserInstitutionLink)
@@ -189,32 +163,38 @@ class User(__UserBase, Base, table=True):
             )
         )
         if movement_id:
-            statement = statement.where(col(Movement.id) == movement_id)
+            statement = statement.where(Movement.id == movement_id)
         if search:
-            statement = filter_query_by_search(search, statement, col(Movement.name))
+            # statement = filter_query_by_search(search, statement, Movement.name)
+            raise NotImplementedError
         if category_id is not None:
             # category_id = 0 represents: WHERE category_id = NULL
-            statement = statement.where(
-                col(Movement.category_id) == (category_id or None)
-            )
+            statement = statement.where(Movement.category_id == (category_id or None))
 
         # GROUP BY
-        statement = statement.group_by(col(Movement.id))
+        statement = statement.group_by(Movement.id)
 
         # ORDER BY
         order = desc if is_descending else asc
         if order_by is MovementField.AMOUNT:
-            statement = statement.order_by(order("amount"), col(Movement.id))
+            statement = statement.order_by(
+                order(Movement.amount_default_currency), order(Movement.id)
+            )
         elif order_by is MovementField.TIMESTAMP:
-            statement = statement.order_by(order("timestamp"), col(Movement.id))
+            statement = statement.order_by(
+                order(Movement.timestamp), order(Movement.id)
+            )
 
         # HAVING
         if start_date:
-            statement = statement.having(timestamp_min >= start_date)
+            statement = statement.having(Movement.timestamp >= start_date)
         if end_date:
-            statement = statement.having(timestamp_min < end_date)
+            statement = statement.having(Movement.timestamp < end_date)
+
+        amount_sum = Movement.amount_default_currency
         if is_amount_abs:
             amount_sum = func.abs(amount_sum)
+
         if amount_gt is not None:
             statement = statement.having(amount_sum > amount_gt)
         if amount_lt is not None:
@@ -224,9 +204,9 @@ class User(__UserBase, Base, table=True):
         if amount_le is not None:
             statement = statement.having(amount_sum <= amount_lt)
         if transactions_ge:
-            statement = statement.having(transactions_count >= transactions_ge)
+            statement = statement.having(Movement.transactions_count >= transactions_ge)
         if transactions_le:
-            statement = statement.having(transactions_count <= transactions_le)
+            statement = statement.having(Movement.transactions_count <= transactions_le)
 
         # OFFSET LIMIT
         if per_page:
@@ -243,13 +223,10 @@ class User(__UserBase, Base, table=True):
         month: int | None = None,
         page: int = 0,
         per_page: int = 12,
-    ) -> Any:
+    ) -> Select[tuple[int, int, Decimal, Decimal]]:
         movements_subquery = (
-            select(
-                col(Transaction.movement_id).label("id"),
-                func.min(Transaction.timestamp).label("timestamp"),
-                func.sum(Transaction.amount_default_currency).label("amount"),
-            )
+            select(Movement.id, Movement.timestamp, Movement.amount_default_currency)
+            .join(Transaction)
             .join(Account)
             .outerjoin(Account.InstitutionalAccount)
             .outerjoin(Account.NonInstitutionalAccount)
@@ -261,7 +238,7 @@ class User(__UserBase, Base, table=True):
                     UserInstitutionLink.user_id == user_id,
                 )
             )
-            .group_by(col(Transaction.movement_id))
+            .group_by(Movement.id)
             .subquery()
         )
 
@@ -275,8 +252,8 @@ class User(__UserBase, Base, table=True):
                 func.sum(
                     case(
                         (
-                            movements_subquery.c.amount < 0,
-                            movements_subquery.c.amount,
+                            movements_subquery.c.amount_default_currency < 0,
+                            movements_subquery.c.amount_default_currency,
                         ),
                         else_=0,
                     )
@@ -284,8 +261,8 @@ class User(__UserBase, Base, table=True):
                 func.sum(
                     case(
                         (
-                            movements_subquery.c.amount > 0,
-                            movements_subquery.c.amount,
+                            movements_subquery.c.amount_default_currency > 0,
+                            movements_subquery.c.amount_default_currency,
                         ),
                         else_=0,
                     )
@@ -311,8 +288,8 @@ class User(__UserBase, Base, table=True):
     def select_detailed_aggregates(cls, user_id: int, year: int, month: int) -> Any:
         movements_subquery = (
             select(
-                col(Movement.id),
-                col(Movement.category_id).label("category_id"),
+                Movement.id,
+                Movement.category_id.label("category_id"),
                 func.min(Transaction.timestamp).label("timestamp"),
                 func.sum(Transaction.amount_default_currency).label("amount"),
             )
@@ -328,7 +305,7 @@ class User(__UserBase, Base, table=True):
                     UserInstitutionLink.user_id == user_id,
                 )
             )
-            .group_by(col(Movement.id))
+            .group_by(Movement.id)
             .subquery()
         )
 
@@ -373,7 +350,7 @@ class User(__UserBase, Base, table=True):
         movement_id: int | None = None,
         transaction_id: int | None = None,
         **kwargs: Any,
-    ) -> SelectOfScalar[Transaction]:
+    ) -> Select[tuple[Transaction]]:
         statement = Account.select_transactions(
             account_id, movement_id=movement_id, transaction_id=transaction_id, **kwargs
         )
@@ -388,5 +365,5 @@ class User(__UserBase, Base, table=True):
 
     @classmethod
     def update_all_movements(cls, db: Session, user_id: int) -> None:
-        for m in db.exec(cls.select_movements(user_id)).all():
+        for m in db.scalars(cls.select_movements(user_id)).all():
             Movement.update(db, m.id)
