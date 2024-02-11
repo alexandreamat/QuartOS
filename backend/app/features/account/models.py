@@ -169,8 +169,6 @@ class Other(InstitutionalAccount):
 class NonInstitutionalAccount(Account):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
-    user: Mapped["User"] = relationship(back_populates="noninstitutionalaccounts")
-
     __mapper_args__ = {"polymorphic_abstract": True}
 
 
