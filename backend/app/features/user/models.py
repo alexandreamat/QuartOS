@@ -45,11 +45,11 @@ class User(Base):
         back_populates="user",
         cascade="all, delete",
     )
-    noninstitutionalaccounts: Mapped[
-        list[Account.NonInstitutionalAccount]
-    ] = relationship(
-        back_populates="user",
-        cascade="all, delete",
+    noninstitutionalaccounts: Mapped[list[Account.NonInstitutionalAccount]] = (
+        relationship(
+            back_populates="user",
+            cascade="all, delete",
+        )
     )
 
     @property
@@ -148,7 +148,7 @@ class User(Base):
         statement = (
             statement.join(Transaction)
             .join(Account)
-            .join(Category, Category.id == Movement.category_id)
+            .outerjoin(Category, Category.id == Movement.category_id)
             .outerjoin(Account.InstitutionalAccount)
             .outerjoin(Account.NonInstitutionalAccount)
             .outerjoin(UserInstitutionLink)
@@ -178,18 +178,23 @@ class User(Base):
         order = desc if is_descending else asc
         if order_by is MovementField.AMOUNT:
             statement = statement.order_by(
-                Movement.amount_default_currency, Movement.id
+                order(Movement.amount_default_currency), order(Movement.id)
             )
         elif order_by is MovementField.TIMESTAMP:
-            statement = statement.order_by(Movement.timestamp, Movement.id)
+            statement = statement.order_by(
+                order(Movement.timestamp), order(Movement.id)
+            )
 
         # HAVING
         if start_date:
-            statement = statement.having(Movement.amount_default_currency >= start_date)
+            statement = statement.having(Movement.timestamp >= start_date)
         if end_date:
-            statement = statement.having(Movement.amount_default_currency < end_date)
+            statement = statement.having(Movement.timestamp < end_date)
+
+        amount_sum = Movement.amount_default_currency
         if is_amount_abs:
-            amount_sum = func.abs(Movement.amount_default_currency)
+            amount_sum = func.abs(amount_sum)
+
         if amount_gt is not None:
             statement = statement.having(amount_sum > amount_gt)
         if amount_lt is not None:

@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import logging
 from typing import Iterable, Any, Sequence
 
 from sqlalchemy.orm import Session
@@ -26,6 +27,8 @@ from app.features.transaction import (
 )
 from .models import Movement
 from .schemas import MovementApiIn, MovementApiOut
+
+logger = logging.getLogger(__name__)
 
 
 class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
@@ -51,6 +54,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         Movement.update(db, old_movement.id)
         if not old_movement.transactions:
             cls.delete(db, old_movement_id)
+        db.refresh(movement)
         return MovementApiOut.model_validate(movement)
 
     @classmethod
@@ -98,12 +102,9 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             db, transaction_in, movement_id=movement.id, **kwargs
         )
         Movement.update(db, movement.id)
+        # force SQLAlchemy to refresh tx-mv relationship
+        db.refresh(movement)
         return CRUDMovement.read(db, movement.id)
-
-    @classmethod
-    def read(cls, db: Session, id: int) -> MovementApiOut:
-        movement = Movement.read(db, id)
-        return MovementApiOut.model_validate(movement)
 
     @classmethod
     def add_transactions(

@@ -29,7 +29,7 @@ from app.common.schemas import (
 
 class _AccountBase(BaseModel):
     class InstitutionalAccount(BaseModel):
-        class Type(str, Enum):
+        class InstitutionalAccountType(str, Enum):
             INVESTMENT = "investment"
             CREDIT = "credit"
             DEPOSITORY = "depository"
@@ -37,16 +37,16 @@ class _AccountBase(BaseModel):
             BROKERAGE = "brokerage"
             OTHER = "other"
 
-        type: Type
+        type: InstitutionalAccountType
         mask: str
 
     class NonInstitutionalAccount(BaseModel):
-        class Type(str, Enum):
+        class NonInstitutionalAccountType(str, Enum):
             PERSONAL_LEDGER = "personal ledger"
             CASH = "cash"
             PROPERTY = "property"
 
-        type: Type
+        type: NonInstitutionalAccountType
 
     currency_code: CurrencyCode
     initial_balance: Decimal
@@ -54,11 +54,9 @@ class _AccountBase(BaseModel):
 
 
 class AccountApiIn(_AccountBase, ApiInMixin):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, ApiInMixin):
-        ...
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, ApiInMixin): ...
 
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, ApiInMixin):
-        ...
+    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, ApiInMixin): ...
 
     institutionalaccount: InstitutionalAccount | None = None
     noninstitutionalaccount: NonInstitutionalAccount | None = None
@@ -78,14 +76,12 @@ class AccountApiOut(_AccountBase, ApiOutMixin):
 
 
 class AccountPlaidIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidInMixin):
-        ...
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidInMixin): ...
 
     institutionalaccount: InstitutionalAccount
 
 
 class AccountPlaidOut(_AccountBase, ApiOutMixin):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidOutMixin):
-        ...
+    class InstitutionalAccount(_AccountBase.InstitutionalAccount, PlaidOutMixin): ...
 
     institutionalaccount: InstitutionalAccount

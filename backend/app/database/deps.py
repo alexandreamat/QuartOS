@@ -26,7 +26,7 @@ engine = create_engine(
     str(settings.DATABASE_URL),
     pool_pre_ping=True,
     # echo="debug",
-    echo=True,
+    # echo=True,
     # query_cache_size=0,
 )
 

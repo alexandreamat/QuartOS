@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class ApiInMixin(BaseModel):
-    ...
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ApiOutMixin(BaseModel):
@@ -38,8 +38,7 @@ class PlaidInMixin(ApiInMixin):
     plaid_metadata: str
 
 
-class PlaidOutMixin(PlaidInMixin, ApiOutMixin):
-    ...
+class PlaidOutMixin(PlaidInMixin, ApiOutMixin): ...
 
 
 class SyncableApiOutMixin(ApiOutMixin):
