@@ -15,7 +15,7 @@
 
 import logging
 
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.database.deps import engine
 from app.database.init_db import init_db

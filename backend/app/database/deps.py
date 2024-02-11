@@ -17,7 +17,8 @@ import logging
 from typing import Generator, Annotated
 
 from fastapi import Depends
-from sqlmodel import create_engine, Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 from app.settings import settings
 
@@ -25,7 +26,7 @@ engine = create_engine(
     str(settings.DATABASE_URL),
     pool_pre_ping=True,
     # echo="debug",
-    echo=True,
+    # echo=True,
     # query_cache_size=0,
 )
 

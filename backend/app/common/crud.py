@@ -16,13 +16,14 @@
 import logging
 from typing import Generic, Type, TypeVar, Iterable, Any
 
-from sqlmodel import Session, SQLModel
+from sqlalchemy.orm import Session
 
-from .models import Base, SyncableBase, SyncedBase, SyncedMixin
+from .models import Base, SyncableBase
+from .schemas import PlaidOutMixin, PlaidInMixin, ApiOutMixin, ApiInMixin
 
 ModelType = TypeVar("ModelType", bound=Base)
-InModelType = TypeVar("InModelType", bound=SQLModel)
-OutModelType = TypeVar("OutModelType", bound=Base)
+InModelType = TypeVar("InModelType", bound=ApiInMixin)
+OutModelType = TypeVar("OutModelType", bound=ApiOutMixin)
 
 logger = logging.getLogger(__name__)
 
@@ -67,18 +68,18 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         return id
 
 
-DBSyncableModelType = TypeVar("DBSyncableModelType", bound=SyncableBase)
-PlaidInModel = TypeVar("PlaidInModel", bound=SyncedMixin)
-PlaidOutModel = TypeVar("PlaidOutModel", bound=SyncedBase)
+SyncableModelType = TypeVar("SyncableModelType", bound=SyncableBase)
+PlaidInModelType = TypeVar("PlaidInModelType", bound=PlaidInMixin)
+PlaidOutModelType = TypeVar("PlaidOutModelType", bound=PlaidOutMixin)
 
 
 class CRUDSyncedBase(
-    Generic[DBSyncableModelType, PlaidOutModel, PlaidInModel],
-    CRUDBase[DBSyncableModelType, PlaidOutModel, PlaidInModel],
+    Generic[SyncableModelType, PlaidOutModelType, PlaidInModelType],
+    CRUDBase[SyncableModelType, PlaidOutModelType, PlaidInModelType],
 ):
-    db_model: Type[DBSyncableModelType]
-    out_model: Type[PlaidOutModel]
+    db_model: Type[SyncableModelType]
+    out_model: Type[PlaidOutModelType]
 
     @classmethod
-    def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModel:
+    def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModelType:
         return cls.out_model.model_validate(cls.db_model.read_by_plaid_id(db, id))

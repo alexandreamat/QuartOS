@@ -13,20 +13,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import csv
 from io import BytesIO
-from typing import Iterable
+
+import requests
+import sqlalchemy
+from fastapi import HTTPException, status
+from plaid.model.personal_finance_category import PersonalFinanceCategory
 from requests import HTTPError
 from requests_cache import CachedSession
-import requests
-import csv
+from sqlalchemy.orm import Session
 
-from fastapi import APIRouter, HTTPException, status
-from plaid.model.personal_finance_category import PersonalFinanceCategory
-import sqlalchemy
-from sqlmodel import Session
+from app.features.category import CategoryPlaidIn
 from app.features.category.crud import CRUDSyncableCategory
-
-from app.features.category.models import CategoryPlaidIn, CategoryPlaidOut
 
 
 def create_category_plaid_in(

@@ -15,11 +15,8 @@
 
 from app.common.crud import CRUDBase
 
-from .models import (
-    Merchant,
-    MerchantApiOut,
-    MerchantApiIn,
-)
+from .models import Merchant
+from .schemas import MerchantApiOut, MerchantApiIn
 
 
 class CRUDMerchant(

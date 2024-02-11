@@ -15,12 +15,12 @@
 
 from typing import Iterable
 
-from sqlmodel import Session
+from sqlalchemy.orm import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.features.file import FileApiOut
-from .models import (
-    Transaction,
+from .models import Transaction
+from .schemas import (
     TransactionApiOut,
     TransactionApiIn,
     TransactionPlaidIn,

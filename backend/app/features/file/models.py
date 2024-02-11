@@ -16,7 +16,8 @@
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
-from sqlmodel import SQLModel, Field, Relationship, Session
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 
 from app.common.models import Base
 
@@ -24,25 +25,14 @@ if TYPE_CHECKING:
     from app.features.transaction import Transaction
 
 
-class __FileBase(SQLModel):
-    name: str
+class File(Base):
+    __tablename__ = "file"
+    name: Mapped[str]
+    data: Mapped[bytes]
+    uploaded: Mapped[datetime]
+    transaction_id: Mapped[int] = mapped_column(ForeignKey("transaction.id"))
 
-
-class FileApiOut(__FileBase, Base):
-    uploaded: datetime
-    transaction_id: int
-
-
-class FileApiIn(__FileBase):
-    data: bytes
-
-
-class File(__FileBase, Base, table=True):
-    data: bytes
-    uploaded: datetime
-    transaction_id: int = Field(foreign_key="transaction.id")
-
-    transaction: "Transaction" = Relationship(back_populates="files")
+    transaction: Mapped["Transaction"] = relationship(back_populates="files")
 
     @classmethod
     def create(cls, db: Session, **kwargs: Any) -> "File":

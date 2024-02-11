@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .models import Merchant, MerchantApiIn, MerchantApiOut
 from .crud import CRUDMerchant
+from .models import Merchant
+from .schemas import MerchantApiIn, MerchantApiOut
+
 
 __all__ = ["Merchant", "MerchantApiIn", "MerchantApiOut", "CRUDMerchant"]

@@ -19,15 +19,10 @@ from typing import TYPE_CHECKING
 
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
-from sqlmodel import Relationship, SQLModel, Field
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from app.common.models import (
-    SyncedMixin,
-    SyncedBase,
-    CountryCode,
-    SyncableBase,
-)
-from app.common.models import UrlType, ColorType
+from app.common.models import SyncableBase, UrlType, ColorType
 from app.features.replacementpattern import ReplacementPattern
 from app.features.transactiondeserialiser import TransactionDeserialiser
 
@@ -37,50 +32,28 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class __InstitutionBase(SQLModel):
-    name: str
-    country_code: CountryCode
-    url: HttpUrl | None
-    colour: Color | None = None
-
-
-class InstitutionApiOut(__InstitutionBase, SyncableBase):
-    logo_base64: str | None = None
-    is_synced: bool
-    transactiondeserialiser_id: int | None
-    replacementpattern_id: int | None
-
-
-class InstitutionApiIn(__InstitutionBase):
-    url: HttpUrl
-    logo_base64: str
-
-
-class InstitutionPlaidOut(__InstitutionBase, SyncedBase):
-    logo: bytes | None
-
-
-class InstitutionPlaidIn(__InstitutionBase, SyncedMixin):
-    logo: bytes | None
-
-
-class Institution(__InstitutionBase, SyncableBase, table=True):
-    url: HttpUrl | None = Field(sa_type=UrlType)
-    colour: Color | None = Field(sa_type=ColorType)
-    logo: bytes | None
-    transactiondeserialiser_id: int | None = Field(
-        foreign_key="transactiondeserialiser.id"
+class Institution(SyncableBase):
+    __tablename__ = "institution"
+    name: Mapped[str]
+    country_code: Mapped[str]
+    url: Mapped[HttpUrl | None] = mapped_column(type_=UrlType)
+    colour: Mapped[Color | None] = mapped_column(type_=ColorType)
+    logo: Mapped[bytes | None]
+    transactiondeserialiser_id: Mapped[int | None] = mapped_column(
+        ForeignKey("transactiondeserialiser.id")
     )
-    replacementpattern_id: int | None = Field(foreign_key="replacementpattern.id")
+    replacementpattern_id: Mapped[int | None] = mapped_column(
+        ForeignKey("replacementpattern.id")
+    )
 
-    user_links: list["UserInstitutionLink"] = Relationship(
+    user_links: Mapped[list["UserInstitutionLink"]] = relationship(
         back_populates="institution",
-        sa_relationship_kwargs={"cascade": "all, delete"},
+        cascade="all, delete",
     )
-    transactiondeserialiser: TransactionDeserialiser | None = Relationship(
+    transactiondeserialiser: Mapped[TransactionDeserialiser | None] = relationship(
         back_populates="institutions"
     )
-    replacementpattern: ReplacementPattern | None = Relationship()
+    replacementpattern: Mapped[ReplacementPattern | None] = relationship()
 
     @property
     def is_synced(self) -> bool:

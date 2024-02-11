@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .crud import CRUDFile
-from .models import FileApiOut, FileApiIn, File
+from .models import File
+from .schemas import FileApiOut, FileApiIn
 
 __all__ = ["File", "FileApiIn", "FileApiOut", "CRUDFile"]

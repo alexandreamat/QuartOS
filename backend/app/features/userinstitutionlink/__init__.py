@@ -20,12 +20,14 @@ from .exceptions import (
 )
 from .models import (
     UserInstitutionLink,
+)
+from .plaid import fetch_user_institution_link, fetch_transactions, sync_transactions
+from .schemas import (
     UserInstitutionLinkApiIn,
     UserInstitutionLinkApiOut,
     UserInstitutionLinkPlaidIn,
     UserInstitutionLinkPlaidOut,
 )
-from .plaid import fetch_user_institution_link, fetch_transactions, sync_transactions
 
 __all__ = [
     "CRUDUserInstitutionLink",

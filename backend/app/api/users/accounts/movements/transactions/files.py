@@ -44,7 +44,7 @@ async def create(
         transaction_id=transaction_id,
     )
     data = await file.read()
-    file_in = FileApiIn(filename=file.filename, data=data, name=file.filename)
+    file_in = FileApiIn(data=data, name=file.filename)
     return CRUDFile.create(db, file_in, transaction_id=transaction_id)
 
 

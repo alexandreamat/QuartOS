@@ -12,15 +12,43 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
+from app.common.schemas import (
+    ApiInMixin,
+    PlaidInMixin,
+    PlaidOutMixin,
+    SyncableApiOutMixin,
+)
 
-class Token(BaseModel):
+if TYPE_CHECKING:
+    pass
+
+
+class __UserInstitutionLinkBase(BaseModel):
+    ...
+
+
+class __SyncedUserInstitutionLinkBase(__UserInstitutionLinkBase):
     access_token: str
-    token_type: str
+    cursor: str | None = None
 
 
-class TokenPayload(BaseModel):
-    sub: int
+class UserInstitutionLinkApiIn(__UserInstitutionLinkBase, ApiInMixin):
+    ...
+
+
+class UserInstitutionLinkApiOut(__UserInstitutionLinkBase, SyncableApiOutMixin):
+    institution_id: int
+    user_id: int
+
+
+class UserInstitutionLinkPlaidIn(__SyncedUserInstitutionLinkBase, PlaidInMixin):
+    ...
+
+
+class UserInstitutionLinkPlaidOut(__SyncedUserInstitutionLinkBase, PlaidOutMixin):
+    institution_id: int
+    user_id: int

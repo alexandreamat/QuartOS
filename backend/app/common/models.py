@@ -13,31 +13,27 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
-import re
-from typing import Iterable, TypeVar, Type, Any, Annotated
+from typing import Iterable, TypeVar, Type, Any
 
-import pycountry
-from pydantic import AfterValidator, HttpUrl
+from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
-from sqlalchemy import types
+from sqlalchemy import Select, types, select, String
 from sqlalchemy.exc import NoResultFound
-from sqlmodel import Session, SQLModel, Field, String, select
-from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy.orm import DeclarativeBase, Session, mapped_column, Mapped
 
 from app.common.exceptions import ObjectNotFoundError
 
 BaseType = TypeVar("BaseType", bound="Base")
 SyncableBaseType = TypeVar("SyncableBaseType", bound="SyncableBase")
-SchemaType = TypeVar("SchemaType", bound=SQLModel)
 
 logger = logging.getLogger(__name__)
 
 
-class Base(SQLModel):
-    id: int = Field(primary_key=True)
+class Base(DeclarativeBase):
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     @classmethod
-    def select(cls: Type[BaseType]) -> SelectOfScalar[BaseType]:
+    def select(cls: Type[BaseType]) -> Select[tuple[BaseType]]:
         return select(cls)
 
     @classmethod
@@ -58,11 +54,11 @@ class Base(SQLModel):
     def read_one_from_query(
         cls: Type[BaseType],
         db: Session,
-        statement: SelectOfScalar[BaseType],
+        statement: Select[tuple[BaseType]],
         id: int | None = None,
     ) -> BaseType:
         try:
-            return db.exec(statement).one()
+            return db.scalars(statement).one()
         except NoResultFound:
             raise ObjectNotFoundError(str(cls.__tablename__), id)
 
@@ -78,7 +74,7 @@ class Base(SQLModel):
             statement = statement.offset(offset)
         if limit:
             statement = statement.limit(limit)
-        return db.exec(statement).all()
+        return db.scalars(statement).all()
 
     @classmethod
     def update(cls: Type[BaseType], db: Session, id: int, **kwargs: Any) -> BaseType:
@@ -93,59 +89,20 @@ class Base(SQLModel):
         db.delete(cls.read(db, id))
 
 
-class SyncedMixin(SQLModel):
-    plaid_id: str
-    plaid_metadata: str
-
-
 class SyncableBase(Base):
-    plaid_id: str | None = Field(unique=True)
-    plaid_metadata: str | None
+    __abstract__ = True
+    plaid_id: Mapped[str | None] = mapped_column(unique=True)
+    plaid_metadata: Mapped[str | None]
 
     @classmethod
     def read_by_plaid_id(
         cls: Type[SyncableBaseType], db: Session, plaid_id: str
     ) -> SyncableBaseType:
-        return db.exec(select(cls).where(cls.plaid_id == plaid_id)).one()
+        return db.scalars(select(cls).where(cls.plaid_id == plaid_id)).one()
 
-
-class SyncedBase(SyncableBase):
-    plaid_id: str = Field(unique=True)
-    plaid_metadata: str
-
-
-def validate_currency_code(v: str) -> str:
-    if v not in [currency.alpha_3 for currency in pycountry.currencies]:
-        raise ValueError("Invalid currency code")
-    return v
-
-
-CurrencyCode = Annotated[str, AfterValidator(validate_currency_code)]
-
-
-def validate_code_snippet(v: str) -> str:
-    exec(f"def deserialize_field(row): return {v}")
-    return v
-
-
-CodeSnippet = Annotated[str, AfterValidator(validate_code_snippet)]
-
-
-def validate_regex_pattern(v: str) -> str:
-    re.compile(v)
-    return v
-
-
-RegexPattern = Annotated[str, AfterValidator(validate_regex_pattern)]
-
-
-def validate_country_code(v: str) -> str:
-    if v not in [country.alpha_2 for country in pycountry.countries]:
-        raise ValueError("Invalid country code")
-    return v
-
-
-CountryCode = Annotated[str, AfterValidator(validate_country_code)]
+    @property
+    def is_synced(self) -> bool:
+        return self.plaid_id is not None
 
 
 class UrlType(types.TypeDecorator[HttpUrl]):

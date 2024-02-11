@@ -12,25 +12,17 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from sqlmodel import Field, SQLModel
-
-from app.common.models import Base, RegexPattern
 
 
-class __Merchant(SQLModel):
-    name: str
-    pattern: RegexPattern
-    default_category_id: int
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
+
+from app.common.models import Base
 
 
-class MerchantApiIn(__Merchant):
-    ...
-
-
-class MerchantApiOut(__Merchant, Base):
-    user_id: int
-
-
-class Merchant(__Merchant, Base, table=True):
-    name: str = Field(unique=True)
-    user_id: int = Field(foreign_key="user.id")
+class Merchant(Base):
+    __tablename__ = "merchant"
+    pattern: Mapped[str]
+    default_category_id: Mapped[int]
+    name: Mapped[str] = mapped_column(unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))

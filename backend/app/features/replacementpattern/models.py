@@ -13,23 +13,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlmodel import SQLModel
+from sqlalchemy.orm import Mapped
 
-from app.common.models import Base, RegexPattern
-
-
-class __ReplacementPatternBase(SQLModel):
-    pattern: RegexPattern
-    replacement: str
+from app.common.models import Base
 
 
-class ReplacementPatternApiIn(__ReplacementPatternBase):
-    ...
-
-
-class ReplacementPatternApiOut(__ReplacementPatternBase, Base):
-    ...
-
-
-class ReplacementPattern(__ReplacementPatternBase, Base, table=True):
-    ...
+class ReplacementPattern(Base):
+    __tablename__ = "replacementpattern"
+    pattern: Mapped[str]
+    replacement: Mapped[str]

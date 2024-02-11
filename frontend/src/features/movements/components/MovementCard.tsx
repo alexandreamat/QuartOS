@@ -49,10 +49,7 @@ export function MovementCard(props: {
   const [name, setName] = useState(props.movement?.name || "");
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const categoryId =
-    props.movement?.category_id ||
-    props.movement?.default_category_id ||
-    undefined;
+  const categoryId = props.movement?.category_id || undefined;
 
   const selectedCategoryId = useFormField(
     props.movement?.category_id || undefined,

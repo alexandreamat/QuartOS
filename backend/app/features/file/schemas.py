@@ -13,20 +13,25 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Iterable
+from datetime import datetime
+from typing import TYPE_CHECKING
 
-from fastapi import APIRouter
+from pydantic import BaseModel
 
-from app.database.deps import DBSession
-from app.features.transaction import TransactionApiOut
-from app.features.user.crud import CRUDUser
-from app.features.user.deps import CurrentUser
+from app.common.schemas import ApiOutMixin, ApiInMixin
 
-router = APIRouter()
+if TYPE_CHECKING:
+    pass
 
 
-@router.get("/")
-def read_many(
-    db: DBSession, me: CurrentUser, movement_id: int
-) -> Iterable[TransactionApiOut]:
-    return CRUDUser.read_transactions(db, me.id, movement_id=movement_id)
+class __FileBase(BaseModel):
+    name: str
+
+
+class FileApiOut(__FileBase, ApiOutMixin):
+    uploaded: datetime
+    transaction_id: int
+
+
+class FileApiIn(__FileBase, ApiInMixin):
+    data: bytes

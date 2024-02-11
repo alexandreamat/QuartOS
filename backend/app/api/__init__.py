@@ -15,15 +15,14 @@
 
 from fastapi import APIRouter
 
-from . import accounts
+from . import admin
 from . import auth
+from . import categories
 from . import exchangerate
 from . import institutions
 from . import replacementpatterns
 from . import transactiondeserialisers
-from . import transactions
 from . import users
-from . import categories
 
 router = APIRouter()
 
@@ -34,9 +33,8 @@ routes = (
     (replacementpatterns.router, "replacement-patterns"),
     (institutions.router, "institutions"),
     (users.router, "users"),
-    (accounts.router, "accounts"),
-    (transactions.router, "transactions"),
     (categories.router, "categories"),
+    (admin.router, "admin"),
 )
 
 for r in routes:

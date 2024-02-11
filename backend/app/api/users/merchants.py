@@ -14,14 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Iterable
+
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
-from app.features.merchant.crud import CRUDMerchant
-from app.features.merchant.models import MerchantApiIn, MerchantApiOut
+from app.features.merchant import MerchantApiIn, MerchantApiOut, CRUDMerchant
 from app.features.user.crud import CRUDUser
 from app.features.user.deps import CurrentUser
-
 
 router = APIRouter()
 
@@ -37,11 +36,6 @@ def create(
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[MerchantApiOut]:
     return CRUDUser.read_merchants(db, me.id)
-
-
-@router.get("/{merchant_id}")
-def read(db: DBSession, me: CurrentUser, merchant_id: int) -> MerchantApiOut:
-    return CRUDUser.read_merchant(db, me.id, merchant_id=merchant_id)
 
 
 @router.put("/{merchant_id}")

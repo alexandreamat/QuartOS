@@ -27,11 +27,11 @@ from app.features.user import (
     UserApiIn,
 )
 from . import accounts
+from . import analytics
 from . import institutionlinks
+from . import merchants
 from . import movements
 from . import transactions
-from . import analytics
-from . import merchants
 
 router = APIRouter()
 

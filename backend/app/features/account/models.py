@@ -16,19 +16,12 @@
 from datetime import date
 from decimal import Decimal
 from enum import Enum
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeVar
 
-from sqlmodel import Field, Relationship, SQLModel, Session
-from sqlmodel.sql.expression import SelectOfScalar
+from sqlalchemy import ForeignKey, Select
+from sqlalchemy.orm import Mapped, relationship, mapped_column, Session
 
-from app.common.models import (
-    Base,
-    CurrencyCode,
-    SyncedMixin,
-    SyncableBase,
-    SyncedBase,
-    BaseType,
-)
+from app.common.models import Base, SyncableBase
 from app.features.movement import Movement
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser import TransactionDeserialiser
@@ -38,10 +31,16 @@ if TYPE_CHECKING:
     from app.features.user import User
     from app.features.userinstitutionlink import UserInstitutionLink
 
+ModelType = TypeVar("ModelType", bound=Base)
 
-class _AccountBase(SQLModel):
-    class InstitutionalAccount(SQLModel):
-        class InstitutionalAccountType(str, Enum):
+
+class Account(Base):
+    __tablename__ = "account"
+
+    class InstitutionalAccount(SyncableBase):
+        __tablename__ = "institutionalaccount"
+
+        class Type(str, Enum):
             INVESTMENT = "investment"
             CREDIT = "credit"
             DEPOSITORY = "depository"
@@ -49,72 +48,18 @@ class _AccountBase(SQLModel):
             BROKERAGE = "brokerage"
             OTHER = "other"
 
-        type: InstitutionalAccountType
-        mask: str
+        type: Mapped[Type]
+        mask: Mapped[str]
 
-    class NonInstitutionalAccount(SQLModel):
-        class NonInstitutionalAccountType(str, Enum):
-            PERSONAL_LEDGER = "personal ledger"
-            CASH = "cash"
-            PROPERTY = "property"
+        userinstitutionlink_id: Mapped[int] = mapped_column(
+            ForeignKey("userinstitutionlink.id")
+        )
 
-        type: NonInstitutionalAccountType
-
-    currency_code: CurrencyCode
-    initial_balance: Decimal
-    name: str
-
-
-class AccountApiIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount):
-        ...
-
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount):
-        ...
-
-    institutionalaccount: InstitutionalAccount | None = None
-    noninstitutionalaccount: NonInstitutionalAccount | None = None
-
-
-class AccountApiOut(_AccountBase, Base):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, Base):
-        userinstitutionlink_id: int
-
-    class NonInstitutionalAccount(_AccountBase.NonInstitutionalAccount, Base):
-        user_id: int
-
-    institutionalaccount: InstitutionalAccount | None
-    noninstitutionalaccount: NonInstitutionalAccount | None
-    is_synced: bool
-    balance: Decimal
-
-
-class AccountPlaidIn(_AccountBase):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncedMixin):
-        ...
-
-    institutionalaccount: InstitutionalAccount
-
-
-class AccountPlaidOut(_AccountBase, Base):
-    class InstitutionalAccount(_AccountBase.InstitutionalAccount, SyncedBase):
-        ...
-
-    institutionalaccount: InstitutionalAccount
-
-
-class Account(_AccountBase, Base, table=True):
-    class InstitutionalAccount(
-        _AccountBase.InstitutionalAccount, SyncableBase, table=True
-    ):
-        userinstitutionlink_id: int = Field(foreign_key="userinstitutionlink.id")
-
-        userinstitutionlink: "UserInstitutionLink" = Relationship(
+        userinstitutionlink: Mapped["UserInstitutionLink"] = relationship(
             back_populates="institutionalaccounts"
         )
-        account: "Account" = Relationship(
-            back_populates="institutionalaccount",
-            sa_relationship_kwargs={"uselist": False},
+        account: Mapped["Account"] = relationship(
+            back_populates="institutionalaccount", uselist=False
         )
 
         @property
@@ -133,36 +78,47 @@ class Account(_AccountBase, Base, table=True):
         def is_synced(self) -> bool:
             return True if self.plaid_id else False
 
-    class NonInstitutionalAccount(
-        _AccountBase.NonInstitutionalAccount, Base, table=True
-    ):
-        user_id: int = Field(foreign_key="user.id")
-        user: "User" = Relationship(back_populates="noninstitutionalaccounts")
-        account: "Account" = Relationship(
+    class NonInstitutionalAccount(Base):
+        __tablename__ = "noninstitutionalaccount"
+
+        class Type(str, Enum):
+            PERSONAL_LEDGER = "personal ledger"
+            CASH = "cash"
+            PROPERTY = "property"
+
+        type: Mapped[Type]
+        user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+        user: Mapped["User"] = relationship(back_populates="noninstitutionalaccounts")
+        account: Mapped["Account"] = relationship(
             back_populates="noninstitutionalaccount",
-            sa_relationship_kwargs={"uselist": False},
+            uselist=False,
         )
 
-    institutionalaccount_id: int | None = Field(foreign_key="institutionalaccount.id")
-    noninstitutionalaccount_id: int | None = Field(
-        foreign_key="noninstitutionalaccount.id"
+    currency_code: Mapped[str]
+    initial_balance: Mapped[Decimal]
+    name: Mapped[str]
+
+    institutionalaccount_id: Mapped[int | None] = mapped_column(
+        ForeignKey("institutionalaccount.id")
+    )
+    noninstitutionalaccount_id: Mapped[int | None] = mapped_column(
+        ForeignKey("noninstitutionalaccount.id")
     )
 
-    institutionalaccount: InstitutionalAccount | None = Relationship(
+    institutionalaccount: Mapped[InstitutionalAccount | None] = relationship(
         back_populates="account",
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
+        uselist=False,
+        cascade="all, delete",
     )
-    noninstitutionalaccount: NonInstitutionalAccount | None = Relationship(
+    noninstitutionalaccount: Mapped[NonInstitutionalAccount | None] = relationship(
         back_populates="account",
-        sa_relationship_kwargs={"uselist": False, "cascade": "all, delete"},
+        uselist=False,
+        cascade="all, delete",
     )
 
-    transactions: list[Transaction] = Relationship(
-        back_populates="account",
-        sa_relationship_kwargs={
-            "cascade": "all, delete",
-            "lazy": "dynamic",
-        },
+    transactions: Mapped[list[Transaction]] = relationship(
+        back_populates="account", cascade="all, delete", lazy="dynamic"
     )
 
     @classmethod
@@ -202,20 +158,16 @@ class Account(_AccountBase, Base, table=True):
 
     @classmethod
     def join_subclasses(
-        cls, statement: SelectOfScalar[BaseType]
-    ) -> SelectOfScalar[BaseType]:
-        # fmt: off
-        return ( 
-            statement
-            .outerjoin(cls.NonInstitutionalAccount)
-            .outerjoin(cls.InstitutionalAccount)
-        )
-        # fmt: on
+        cls, statement: Select[tuple[ModelType]]
+    ) -> Select[tuple[ModelType]]:
+        statement = statement.outerjoin(cls.NonInstitutionalAccount)
+        statement = statement.outerjoin(cls.InstitutionalAccount)
+        return statement
 
     @classmethod
     def select_children(
-        cls, account_id: int | None, statement: SelectOfScalar[BaseType]
-    ) -> SelectOfScalar[BaseType]:
+        cls, account_id: int | None, statement: Select[tuple[ModelType]]
+    ) -> Select[tuple[ModelType]]:
         statement = statement.join(cls)
         statement = cls.join_subclasses(statement)
         if account_id is not None:
@@ -223,7 +175,7 @@ class Account(_AccountBase, Base, table=True):
         return statement
 
     @classmethod
-    def select_accounts(cls, account_id: int | None) -> SelectOfScalar["Account"]:
+    def select_accounts(cls, account_id: int | None) -> Select[tuple["Account"]]:
         statement = cls.select()
         statement = cls.join_subclasses(statement)
         if account_id:
@@ -238,7 +190,7 @@ class Account(_AccountBase, Base, table=True):
         movement_id: int | None,
         transaction_id: int | None,
         **kwargs: Any,
-    ) -> SelectOfScalar[Transaction]:
+    ) -> Select[tuple[Transaction]]:
         statement = Movement.select_transactions(
             movement_id, transaction_id=transaction_id, **kwargs
         )

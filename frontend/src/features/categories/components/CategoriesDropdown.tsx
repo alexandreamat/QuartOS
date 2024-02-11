@@ -12,6 +12,7 @@ export default function CategoriesDropdown(props: {
     <Dropdown
       options={options.options}
       loading={options.query.isLoading}
+      disabled={!options.query.isSuccess}
       error={options.query.isError}
       value={props.categoryId.value}
       onChange={(e, data) => props.categoryId.set(data.value as number)}

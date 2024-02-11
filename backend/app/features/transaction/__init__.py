@@ -16,12 +16,14 @@
 from .crud import CRUDTransaction, CRUDSyncableTransaction
 from .models import (
     Transaction,
+)
+from .plaid import create_transaction_plaid_in, reset_transaction_to_metadata
+from .schemas import (
     TransactionApiIn,
     TransactionApiOut,
     TransactionPlaidIn,
     TransactionPlaidOut,
 )
-from .plaid import create_transaction_plaid_in, reset_transaction_to_metadata
 from .utils import get_transactions_from_csv
 
 __all__ = [
