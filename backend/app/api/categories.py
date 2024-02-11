@@ -28,6 +28,11 @@ from app.features.user.deps import CurrentUser
 router = APIRouter()
 
 
+@router.get("/{category_id}")
+def read(db: DBSession, me: CurrentUser, category_id: int) -> CategoryApiOut:
+    return CRUDCategory.read(db, category_id)
+
+
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[CategoryApiOut]:
     return CRUDCategory.read_many(db, 0, 0)

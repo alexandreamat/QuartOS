@@ -86,19 +86,6 @@ const enhancedApi = generatedApi.enhanceEndpoints({
         ...cacheList("transactions", result),
       ],
     },
-    readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdGet:
-      {
-        providesTags: (
-          result,
-          error,
-          { accountId, movementId, transactionId },
-        ) => [
-          "users",
-          { type: "accounts", id: accountId },
-          { type: "movements", id: movementId },
-          { type: "transactions", id: transactionId },
-        ],
-      },
     updateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut:
       {
         invalidatesTags: (

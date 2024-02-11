@@ -100,6 +100,13 @@ def create(
     )
 
 
+@router.get("/{userinstitutionlink_id}")
+def read(
+    db: DBSession, me: CurrentUser, userinstitutionlink_id: int
+) -> UserInstitutionLinkApiOut:
+    return CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
+
+
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[UserInstitutionLinkApiOut]:
     return CRUDUser.read_user_institution_links(db, me.id)

@@ -288,7 +288,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         )
         totals: dict[int, Decimal] = defaultdict(Decimal)
 
-        for result in db.scalars(statement).all():
+        for result in db.execute(statement).all():
             by_category[result.sign][result.category_id or 0] += result.amount
             totals[result.sign] += result.amount
 

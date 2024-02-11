@@ -25,8 +25,8 @@ export function InstitutionLogo(props: {
 }) {
   if (props.loading)
     return (
-      <Placeholder image style={props.style}>
-        <Placeholder.Header />
+      <Placeholder style={{ float: "right", ...props.style }}>
+        <Placeholder.Image square />
       </Placeholder>
     );
 
