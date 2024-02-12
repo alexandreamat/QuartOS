@@ -68,7 +68,7 @@ def upgrade() -> None:
         .values(
             plaid_id=institutionalaccount.c.plaid_id,
             plaid_metadata=institutionalaccount.c.plaid_metadata,
-            type=sa.func.lower(institutionalaccount.c.type, type_=sa.String),
+            type=institutionalaccount.c.type,
             mask=institutionalaccount.c.mask,
             userinstitutionlink_id=institutionalaccount.c.userinstitutionlink_id,
         )
@@ -78,7 +78,7 @@ def upgrade() -> None:
     op.execute(
         account.update()
         .values(
-            type=sa.func.lower(noninstitutionalaccount.c.type, type_=sa.String),
+            type=noninstitutionalaccount.c.type,
             user_id=noninstitutionalaccount.c.user_id,
         )
         .where(account.c.noninstitutionalaccount_id == noninstitutionalaccount.c.id)
