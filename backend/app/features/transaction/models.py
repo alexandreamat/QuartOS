@@ -29,7 +29,6 @@ from app.features.file import File
 if TYPE_CHECKING:
     from app.features.userinstitutionlink import UserInstitutionLink  # noqa
     from app.features.institution import Institution  # noqa
-    from app.features.user import User
     from app.features.account import Account
     from app.features.movement import Movement
 
@@ -66,22 +65,6 @@ class Transaction(SyncableBase):
     @property
     def currency_code(self) -> str:
         return self.account.currency_code
-
-    @property
-    def user(self) -> "User":
-        return self.account.user
-
-    @property
-    def institution(self) -> "Institution | None":
-        return self.account.institution
-
-    @property
-    def userinstitutionlink(self) -> "UserInstitutionLink | None":
-        return self.account.userinstitutionlink
-
-    @property
-    def is_synced(self) -> bool:
-        return self.plaid_id != None
 
     @classmethod
     def get_timestamp_desc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:

@@ -16,8 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# Run migrations
+# Run migrations and start the application on success
 alembic upgrade head
 
-# Start the application
 exec "$@"

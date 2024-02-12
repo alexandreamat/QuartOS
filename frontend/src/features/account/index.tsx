@@ -13,12 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import {
-  AccountApiOut,
-  InstitutionalAccountType,
-  NonInstitutionalAccountType,
-  api,
-} from "app/services/api";
+import { AccountApiOut, AccountType, api } from "app/services/api";
 import CreateNewButton from "components/CreateNewButton";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
@@ -67,17 +62,12 @@ export default function Accounts() {
 
   const groupedAccounts = accounts.reduce(
     (acc, account) => {
-      const type = account.institutionalaccount
-        ? account.institutionalaccount.type
-        : account.noninstitutionalaccount!.type;
+      const type = account.type;
       if (!acc[type]) acc[type] = [];
       acc[type].push(account);
       return acc;
     },
-    {} as Record<
-      InstitutionalAccountType | NonInstitutionalAccountType,
-      AccountApiOut[]
-    >,
+    {} as Record<AccountType, AccountApiOut[]>,
   );
 
   return (
@@ -93,20 +83,12 @@ export default function Accounts() {
           <div key={type}>
             <Divider horizontal section>
               <Header as="h4">
-                <Icon
-                  name={accountTypeToIconName(
-                    type as
-                      | InstitutionalAccountType
-                      | NonInstitutionalAccountType,
-                  )}
-                />
+                <Icon name={accountTypeToIconName(type as AccountType)} />
                 {capitaliseFirstLetter(type)}
               </Header>
             </Divider>
             <Card.Group style={{ margin: 0 }}>
-              {groupedAccounts[
-                type as InstitutionalAccountType | NonInstitutionalAccountType
-              ].map((account) => (
+              {groupedAccounts[type as AccountType].map((account) => (
                 <AccountCard
                   key={account.id}
                   account={account}

@@ -12,15 +12,24 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import logging
 from datetime import date
 from decimal import Decimal
-from typing import Any, Iterable
+from typing import Any, Iterable, Type
 
 from sqlalchemy.orm import Session
 
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.common.exceptions import ObjectNotFoundError
 from app.common.schemas import CurrencyCode
+from app.features.account.schemas import (
+    CashApiIn,
+    CreditApiIn,
+    DepositoryApiIn,
+    LoanApiIn,
+    PersonalLedgerApiIn,
+    PropertyApiIn,
+)
 from app.features.exchangerate import get_exchange_rate
 from app.features.movement import (
     MovementApiOut,
@@ -36,83 +45,60 @@ from app.features.transactiondeserialiser import (
     TransactionDeserialiserApiOut,
     TransactionDeserialiser,
 )
-from .models import Account
+from .models import Account, Cash, Credit, Depository, Loan, PersonalLedger, Property
 from .schemas import (
     AccountApiOut,
     AccountApiIn,
     AccountPlaidIn,
     AccountPlaidOut,
+    CashApiOut,
+    CreditApiOut,
+    CreditPlaidOut,
+    DepositoryApiOut,
+    DepositoryPlaidOut,
+    LoanApiOut,
+    LoanPlaidOut,
+    PersonalLedgerApiOut,
+    PropertyApiOut,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     db_model = Account
-    out_model = AccountApiOut
 
-    class CRUDInstitutionalAccount(
-        CRUDBase[
-            Account.InstitutionalAccount,
-            AccountApiOut.InstitutionalAccount,
-            AccountApiIn.InstitutionalAccount,
-        ]
-    ):
-        db_model = Account.InstitutionalAccount
-        out_model = AccountApiOut.InstitutionalAccount
-
-    class CRUDNonInstitutionalAccount(
-        CRUDBase[
-            Account.NonInstitutionalAccount,
-            AccountApiOut.NonInstitutionalAccount,
-            AccountApiIn.NonInstitutionalAccount,
-        ]
-    ):
-        db_model = Account.NonInstitutionalAccount
-        out_model = AccountApiOut.NonInstitutionalAccount
+    OUT_MODELS: dict[Type[Account], Type[AccountApiOut]] = {
+        Cash: CashApiOut,
+        Credit: CreditApiOut,
+        Depository: DepositoryApiOut,
+        Loan: LoanApiOut,
+        PersonalLedger: PersonalLedgerApiOut,
+        Property: PropertyApiOut,
+    }
+    IN_MODELS: dict[Type[AccountApiIn], Type[Account]] = {
+        CashApiIn: Cash,
+        CreditApiIn: Credit,
+        DepositoryApiIn: Depository,
+        LoanApiIn: Loan,
+        PersonalLedgerApiIn: PersonalLedger,
+        PropertyApiIn: Property,
+    }
 
     @classmethod
-    def create(
-        cls,
-        db: Session,
-        obj_in: AccountApiIn,
-        userinstitutionlink_id: int | None = None,
-        user_id: int | None = None,
-        **kwargs: Any
-    ) -> AccountApiOut:
-        account_in = obj_in
-        account_kw = account_in.model_dump(
-            exclude={"institutionalaccount", "noninstitutionalaccount"}
-        )
-        if account_in.institutionalaccount:
-            institutionalaccount = Account.InstitutionalAccount(
-                userinstitutionlink_id=userinstitutionlink_id,
-                **account_in.institutionalaccount.model_dump(),
-            )
-            account = Account.create(
-                db,
-                institutionalaccount=institutionalaccount,
-                **account_kw,
-                **kwargs,
-            )
-        elif account_in.noninstitutionalaccount:
-            noninstitutionalaccount = Account.NonInstitutionalAccount(
-                user_id=user_id,
-                **account_in.noninstitutionalaccount.model_dump(),
-            )
-            account = Account.create(
-                db,
-                noninstitutionalaccount=noninstitutionalaccount,
-                **account_kw,
-                **kwargs,
-            )
-        else:
-            raise ValueError
-        return AccountApiOut.model_validate(account)
+    def model_validate(cls, account: Account) -> AccountApiOut:
+        return cls.OUT_MODELS[type(account)].model_validate(account)
+
+    @classmethod
+    def create(cls, db: Session, obj_in: AccountApiIn, **kwargs: Any) -> AccountApiOut:
+        obj = cls.IN_MODELS[type(obj_in)].create(db, **obj_in.model_dump(), **kwargs)
+        return cls.model_validate(obj)
 
     @classmethod
     def read_transaction_deserialiser(
         cls, db: Session, id: int
     ) -> TransactionDeserialiserApiOut:
-        deserialiser = Account.read(db, id).transactiondeserialiser
+        deserialiser = Account.read(db, id)
         if not deserialiser:
             raise ObjectNotFoundError(str(TransactionDeserialiser.__tablename__), 0)
         return TransactionDeserialiserApiOut.model_validate(deserialiser)
@@ -123,79 +109,11 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
     @classmethod
     def update(
-        cls,
-        db: Session,
-        id: int,
-        account_in: AccountApiIn,
-        userinstitutionlink_id: int | None = None,
-        user_id: int | None = None,
+        cls, db: Session, id: int, obj_in: AccountApiIn, **kwargs: Any
     ) -> AccountApiOut:
-        account_out = Account.read(db, id)
-        if account_in.institutionalaccount and userinstitutionlink_id:
-            if account_out.institutionalaccount and account_out.institutionalaccount_id:
-                institutionalaccount_out = cls.CRUDInstitutionalAccount.update(
-                    db,
-                    account_out.institutionalaccount_id,
-                    account_in.institutionalaccount,
-                    userinstitutionlink_id=userinstitutionlink_id,
-                )
-            elif (
-                account_out.noninstitutionalaccount
-                and account_out.noninstitutionalaccount_id
-            ):
-                cls.CRUDNonInstitutionalAccount.delete(
-                    db, account_out.noninstitutionalaccount_id
-                )
-                institutionalaccount_out = cls.CRUDInstitutionalAccount.create(
-                    db,
-                    account_in.institutionalaccount,
-                    userinstitutionlink_id=userinstitutionlink_id,
-                )
-            else:
-                raise ValueError
-            institutionalaccount_id = institutionalaccount_out.id
-            noninstitutionalaccount_id = None
-        elif account_in.noninstitutionalaccount and user_id:
-            if (
-                account_out.noninstitutionalaccount
-                and account_out.noninstitutionalaccount_id
-            ):
-                noninstitutionalaccount_out = cls.CRUDNonInstitutionalAccount.update(
-                    db,
-                    account_out.noninstitutionalaccount_id,
-                    account_in.noninstitutionalaccount,
-                    user_id=user_id,
-                )
-            elif (
-                account_out.institutionalaccount and account_out.institutionalaccount_id
-            ):
-                cls.CRUDInstitutionalAccount.delete(
-                    db,
-                    account_out.institutionalaccount_id,
-                )
-                noninstitutionalaccount_out = cls.CRUDNonInstitutionalAccount.create(
-                    db,
-                    account_in.noninstitutionalaccount,
-                    user_id=user_id,
-                )
-            else:
-                raise ValueError
-            institutionalaccount_id = None
-            noninstitutionalaccount_id = noninstitutionalaccount_out.id
-        else:
-            raise ValueError
-        dict_in = account_in.dict(
-            exclude={"institutionalaccount", "noninstitutionalaccount"}
-        )
-        account = Account.update(
-            db,
-            id,
-            **dict_in,
-            institutionalaccount_id=institutionalaccount_id,
-            noninstitutionalaccount_id=noninstitutionalaccount_id,
-        )
+        account_out = super().update(db, id, obj_in, **kwargs)
         cls.update_balance(db, id)
-        return AccountApiOut.model_validate(account)
+        return account_out
 
     @classmethod
     def update_balance(
@@ -205,7 +123,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         timestamp: date | None = None,
     ) -> AccountApiOut:
         account_out = Account.update_balance(db, id, timestamp)
-        return AccountApiOut.model_validate(account_out)
+        return cls.model_validate(account_out)
 
     @classmethod
     def create_many_movements(
@@ -357,54 +275,23 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         return TransactionApiOut.model_validate(transaction)
 
 
-class CRUDSyncableAccount:
-    class CRUDInstitutionalAccount(
-        CRUDSyncedBase[
-            Account.InstitutionalAccount,
-            AccountPlaidOut.InstitutionalAccount,
-            AccountPlaidIn.InstitutionalAccount,
-        ]
-    ):
-        db_model = Account.InstitutionalAccount
-        out_model = AccountPlaidOut.InstitutionalAccount
+class CRUDSyncableAccount(CRUDSyncedBase[Account, AccountPlaidOut, AccountPlaidIn]):
+    db_model = Account
+
+    OUT_MODELS: dict[str, Type[AccountPlaidOut]] = {
+        "credit": CreditPlaidOut,
+        "depository": DepositoryPlaidOut,
+        "loan": LoanPlaidOut,
+    }
 
     @classmethod
-    def read_by_plaid_id(cls, db: Session, id: str) -> AccountPlaidOut:
-        institutionalaccount = Account.InstitutionalAccount.read_by_plaid_id(db, id)
-        account = institutionalaccount.account
-        return AccountPlaidOut.model_validate(account)
-
-    @classmethod
-    def create(
-        cls, db: Session, account_in: AccountPlaidIn, **kwargs: Any
-    ) -> AccountPlaidOut:
-        institutionalaccount_out = cls.CRUDInstitutionalAccount.create(
-            db, account_in.institutionalaccount, **kwargs
-        )
-        account = Account.create(
-            db,
-            **account_in.model_dump(exclude={"institutionalaccount"}),
-            institutionalaccount_id=institutionalaccount_out.id,
-        )
-        return AccountPlaidOut.model_validate(account)
+    def model_validate(cls, account: Account) -> AccountPlaidOut:
+        return cls.OUT_MODELS[account.type].model_validate(account)
 
     @classmethod
     def update(
-        cls, db: Session, account_id: int, account_in: AccountPlaidIn, **kwargs: Any
+        cls, db: Session, id: int, obj_in: AccountPlaidIn, **kwargs: Any
     ) -> AccountPlaidOut:
-        account = Account.read(db, account_id)
-        assert account.institutionalaccount_id
-        institutionalaccount_out = cls.CRUDInstitutionalAccount.update(
-            db,
-            account.institutionalaccount_id,
-            account_in.institutionalaccount,
-            **kwargs,
-        )
-        account = Account.update(
-            db,
-            account_id,
-            **account_in.model_dump(exclude={"institutionalaccount"}),
-            institutionalaccount_id=institutionalaccount_out.id,
-        )
-        account = Account.update_balance(db, account_id)
-        return AccountPlaidOut.model_validate(account)
+        super().update(db, id, obj_in, **kwargs)
+        account = Account.update_balance(db, id)
+        return cls.model_validate(account)

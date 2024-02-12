@@ -16,8 +16,7 @@
 import {
   AccountApiIn,
   AccountApiOut,
-  InstitutionalAccountType,
-  NonInstitutionalAccountType,
+  AccountType,
   api,
 } from "app/services/api";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
@@ -30,7 +29,14 @@ import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { Button, Form, Input, Label, Modal } from "semantic-ui-react";
+import {
+  Button,
+  DropdownItemProps,
+  Form,
+  Input,
+  Label,
+  Modal,
+} from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 import { capitaliseFirstLetter } from "utils/string";
 
@@ -43,8 +49,7 @@ export default function AccountForm(props: {
   const mask = useFormField("");
   const name = useFormField("");
   const currencyCode = useFormField("");
-  const institutionalType = useFormField<InstitutionalAccountType>();
-  const nonInstitutionalType = useFormField<NonInstitutionalAccountType>();
+  const type = useFormField<AccountType>();
   const institutionLinkId = useFormField(0);
   const initialBalanceStr = useFormField("");
 
@@ -65,8 +70,7 @@ export default function AccountForm(props: {
     mask,
     name,
     currencyCode,
-    institutionalType,
-    nonInstitutionalType,
+    type,
     initialBalanceStr,
     institutionLinkId,
     isInstitutional,
@@ -84,16 +88,11 @@ export default function AccountForm(props: {
     name.set(props.account.name);
     currencyCode.set(props.account.currency_code);
     initialBalanceStr.set(props.account.initial_balance);
-    if (props.account.institutionalaccount) {
-      const institutionalAccount = props.account.institutionalaccount;
-      institutionLinkId.set(institutionalAccount.userinstitutionlink_id);
-      institutionalType.set(institutionalAccount.type);
-      mask.set(institutionalAccount.mask);
-      isInstitutional.set(true);
-    }
-    if (props.account.noninstitutionalaccount) {
-      const nonInstitutionalAccount = props.account.noninstitutionalaccount;
-      nonInstitutionalType.set(nonInstitutionalAccount.type);
+    type.set(props.account.type);
+    isInstitutional.set(props.account.is_institutional);
+    if (props.account.is_institutional) {
+      institutionLinkId.set(props.account.userinstitutionlink_id);
+      mask.set(props.account.mask);
     }
   }, [props.account]);
 
@@ -102,20 +101,20 @@ export default function AccountForm(props: {
     props.onClose();
   };
 
-  const institutionalTypeOptions = [
-    "investment",
+  const institutionalTypeOptions: DropdownItemProps[] = [
+    // "investment",
     "credit",
     "depository",
     "loan",
-    "brokerage",
-    "other",
+    // "brokerage",
+    // "other",
   ].map((type, index) => ({
     key: index,
     value: type,
     text: capitaliseFirstLetter(type),
   }));
 
-  const nonInstitutionalTypeOptions = [
+  const nonInstitutionalTypeOptions: DropdownItemProps[] = [
     "personal ledger",
     "cash",
     "property",
@@ -128,9 +127,7 @@ export default function AccountForm(props: {
   async function handleSubmit() {
     const formFields = [
       ...requiredFields,
-      ...(isInstitutional.value
-        ? [institutionalType, institutionLinkId, mask]
-        : [nonInstitutionalType]),
+      ...(isInstitutional.value ? [type, institutionLinkId, mask] : [type]),
     ];
 
     const invalidFields = formFields.reduce(
@@ -144,23 +141,14 @@ export default function AccountForm(props: {
       name: name.value!,
       currency_code: currencyCode.value!,
       initial_balance: Number(initialBalanceStr.value!),
-      institutionalaccount: isInstitutional.value
-        ? {
-            mask: mask.value!,
-            type: institutionalType.value!,
-          }
-        : undefined,
-      noninstitutionalaccount: !isInstitutional.value
-        ? {
-            type: nonInstitutionalType.value!,
-          }
-        : undefined,
+      mask: mask.value!,
+      type: type.value!,
     };
     if (props.account) {
       try {
         await updateAccount({
           accountId: props.account.id,
-          accountApiIn: account,
+          body: account,
           userinstitutionlinkId: institutionLinkId.value!,
         }).unwrap();
       } catch (error) {
@@ -171,7 +159,7 @@ export default function AccountForm(props: {
       try {
         await createAccount({
           userinstitutionlinkId: institutionLinkId.value!,
-          accountApiIn: account,
+          body: account,
         }).unwrap();
       } catch (error) {
         logMutationError(error, createAccountResult);
@@ -204,8 +192,7 @@ export default function AccountForm(props: {
             label="Link to a financial institution"
             checked={isInstitutional.value}
             onChange={(_, data) => {
-              institutionalType.reset();
-              nonInstitutionalType.reset();
+              type.reset();
               isInstitutional.reset();
               isInstitutional.set(data.checked);
             }}
@@ -220,7 +207,7 @@ export default function AccountForm(props: {
               />
               <FormDropdownInput
                 label="Type"
-                field={institutionalType}
+                field={type}
                 options={institutionalTypeOptions}
               />
               <Form.Field required>
@@ -240,7 +227,7 @@ export default function AccountForm(props: {
             <>
               <FormDropdownInput
                 label="Type"
-                field={nonInstitutionalType}
+                field={type}
                 options={nonInstitutionalTypeOptions}
               />
             </>

@@ -36,7 +36,7 @@ export default function AccountIcon(props: {
 
   if (!props.account) return <Icon name="warning" />;
 
-  if (props.account.institutionalaccount)
+  if (props.account.is_institutional) {
     return (
       <InstitutionLogo
         institution={accountQueries.institution}
@@ -44,17 +44,15 @@ export default function AccountIcon(props: {
         loading={accountQueries.isLoading}
       />
     );
-
-  if (props.account.noninstitutionalaccount)
+  } else {
     return (
       <Icon
         color="grey"
-        name={accountTypeToIconName(
-          props.account.noninstitutionalaccount?.type || "other",
-        )}
+        name={accountTypeToIconName(props.account.type)}
         style={props.style}
       />
     );
+  }
 
   return <Icon name="warning" />;
 }
