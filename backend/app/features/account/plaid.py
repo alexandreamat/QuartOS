@@ -60,6 +60,7 @@ def fetch_accounts(
                     name=account.name,
                     currency_code=account.balances.iso_currency_code,
                     initial_balance=Decimal(0),
+                    mask=account.mask or "",
                 )
             case "loan":
                 yield LoanPlaidIn(
@@ -69,4 +70,5 @@ def fetch_accounts(
                     name=account.name,
                     currency_code=account.balances.iso_currency_code,
                     initial_balance=Decimal(0),
+                    mask=account.mask or "",
                 )
