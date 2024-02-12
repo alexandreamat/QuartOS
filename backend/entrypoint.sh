@@ -17,4 +17,6 @@
 
 
 # Run migrations and start the application on success
-alembic upgrade head && exec "$@"
+alembic upgrade head
+
+exec "$@"
