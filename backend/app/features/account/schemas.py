@@ -13,9 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from decimal import Decimal
-from typing import Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, WithJsonSchema
 
 from app.common.schemas import (
     PlaidInMixin,
@@ -27,6 +27,23 @@ from app.common.schemas import (
 )
 
 
+def AnnotatedLiteral(value: str) -> Any:
+    return Annotated[
+        Literal[value],
+        WithJsonSchema(
+            {
+                "enum": [value],
+                "type": {
+                    str: "string",
+                    bool: "boolean",
+                    float: "number",
+                    int: "number",
+                }[type(value)],
+            }
+        ),
+    ]
+
+
 # Bases
 
 
@@ -34,47 +51,54 @@ class __AccountBase(BaseModel):
     currency_code: CurrencyCode
     initial_balance: Decimal
     name: str
+    type: str
 
 
-class __Depository(__AccountBase):
-    type: Literal["depository"]
+class __InstitutionalAccount(__AccountBase):
     mask: str
 
 
-class __Loan(__AccountBase):
-    type: Literal["loan"]
+class __NonInstitutionalAccount(__AccountBase): ...
+
+
+class __Depository(__InstitutionalAccount):
+    type: AnnotatedLiteral("depository")
+
+
+class __Loan(__InstitutionalAccount):
+    type: AnnotatedLiteral("loan")
     # number: str
     # term: timedelta
     # origination_date: date
     # origination_principal_amount: Decimal
 
 
-class __Credit(__AccountBase):
-    type: Literal["credit"]
+class __Credit(__InstitutionalAccount):
+    type: AnnotatedLiteral("credit")
 
 
-class __Investment(__AccountBase):
-    type: Literal["investment"]
+class __Investment(__InstitutionalAccount):
+    type: AnnotatedLiteral("investment")
 
 
-class __Brokerage(__AccountBase):
-    type: Literal["brokerage"]
+class __Brokerage(__InstitutionalAccount):
+    type: AnnotatedLiteral("brokerage")
 
 
-class __Other(__AccountBase):
-    type: Literal["other"]
+class __Other(__InstitutionalAccount):
+    type: AnnotatedLiteral("other")
 
 
-class __Cash(__AccountBase):
-    type: Literal["cash"]
+class __Cash(__NonInstitutionalAccount):
+    type: AnnotatedLiteral("cash")
 
 
-class __PersonalLedger(__AccountBase):
-    type: Literal["personal_ledger"]
+class __PersonalLedger(__NonInstitutionalAccount):
+    type: AnnotatedLiteral("personal ledger")
 
 
-class __Property(__AccountBase):
-    type: Literal["property"]
+class __Property(__NonInstitutionalAccount):
+    type: AnnotatedLiteral("property")
     # address: str
 
 
@@ -85,10 +109,12 @@ class __AccountOut(BaseModel):
 
 class __InstitutionalAccountOut(__AccountOut):
     userinstitutionlink_id: int
+    is_institutional: AnnotatedLiteral(True)
 
 
 class __NonInstitutionalAccountOut(__AccountOut):
     user_id: int
+    is_institutional: AnnotatedLiteral(False)
 
 
 # fmt: off

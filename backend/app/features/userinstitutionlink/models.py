@@ -20,6 +20,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.common.models import SyncableBase
 from app.features.account import Account
+from app.features.account.models import InstitutionalAccount
 
 if TYPE_CHECKING:
     from app.features.institution import Institution
@@ -34,9 +35,9 @@ class UserInstitutionLink(SyncableBase):
     access_token: Mapped[str | None]
     cursor: Mapped[str | None]
 
-    user: Mapped["User"] = relationship(back_populates="institution_links")
+    user: Mapped["User"] = relationship()
     institution: Mapped["Institution"] = relationship(back_populates="user_links")
-    institutionalaccounts: Mapped[list[Account]] = relationship(
+    institutionalaccounts: Mapped[list[InstitutionalAccount]] = relationship(
         back_populates="userinstitutionlink",
         cascade="all, delete",
     )

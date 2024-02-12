@@ -26,7 +26,6 @@ from app.features.transaction import Transaction
 from app.features.transactiondeserialiser.models import TransactionDeserialiser
 
 if TYPE_CHECKING:
-    from app.features.user import User
     from app.features.userinstitutionlink import UserInstitutionLink
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -122,6 +121,7 @@ class Account(SyncableBase):
 
 
 class InstitutionalAccount(Account):
+    is_institutional = True
     mask: Mapped[str]
     userinstitutionlink_id: Mapped[int] = mapped_column(
         ForeignKey("userinstitutionlink.id")
@@ -167,6 +167,7 @@ class Other(InstitutionalAccount):
 
 
 class NonInstitutionalAccount(Account):
+    is_institutional = False
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
     __mapper_args__ = {"polymorphic_abstract": True}

@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import logging
 from datetime import date
 from decimal import Decimal
 from typing import Any, Iterable, Type
@@ -21,6 +22,14 @@ from sqlalchemy.orm import Session
 from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.common.exceptions import ObjectNotFoundError
 from app.common.schemas import CurrencyCode
+from app.features.account.schemas import (
+    CashApiIn,
+    CreditApiIn,
+    DepositoryApiIn,
+    LoanApiIn,
+    PersonalLedgerApiIn,
+    PropertyApiIn,
+)
 from app.features.exchangerate import get_exchange_rate
 from app.features.movement import (
     MovementApiOut,
@@ -36,7 +45,7 @@ from app.features.transactiondeserialiser import (
     TransactionDeserialiserApiOut,
     TransactionDeserialiser,
 )
-from .models import Account
+from .models import Account, Cash, Credit, Depository, Loan, PersonalLedger, Property
 from .schemas import (
     AccountApiOut,
     AccountApiIn,
@@ -53,9 +62,10 @@ from .schemas import (
     PropertyApiOut,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
-    db_model = Account
 
     OUT_MODELS: dict[str, Type[AccountApiOut]] = {
         "cash": CashApiOut,
@@ -69,6 +79,18 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     @classmethod
     def model_validate(cls, account: Account) -> AccountApiOut:
         return cls.OUT_MODELS[account.type].model_validate(account)
+
+    @classmethod
+    def create(cls, db: Session, obj_in: AccountApiIn, **kwargs: Any) -> AccountApiOut:
+        obj = {
+            CashApiIn: Cash,
+            CreditApiIn: Credit,
+            DepositoryApiIn: Depository,
+            LoanApiIn: Loan,
+            PersonalLedgerApiIn: PersonalLedger,
+            PropertyApiIn: Property,
+        }[type(obj_in)].create(db, **obj_in.model_dump(), **kwargs)
+        return cls.model_validate(obj)
 
     @classmethod
     def read_transaction_deserialiser(

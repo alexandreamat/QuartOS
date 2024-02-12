@@ -15,7 +15,7 @@
 
 import logging
 from datetime import date
-from typing import TYPE_CHECKING, Iterable
+from typing import Iterable
 
 import sqlalchemy
 from plaid.model.item import Item
@@ -41,7 +41,6 @@ from app.features.transaction import (
 )
 from .crud import CRUDSyncableUserInstitutionLink
 from .schemas import UserInstitutionLinkPlaidIn, UserInstitutionLinkPlaidOut
-
 
 logger = logging.getLogger(__name__)
 
