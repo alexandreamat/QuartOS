@@ -66,30 +66,30 @@ logger = logging.getLogger(__name__)
 
 
 class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
-
-    OUT_MODELS: dict[str, Type[AccountApiOut]] = {
-        "cash": CashApiOut,
-        "credit": CreditApiOut,
-        "depository": DepositoryApiOut,
-        "loan": LoanApiOut,
-        "personal_ledger": PersonalLedgerApiOut,
-        "property": PropertyApiOut,
+    OUT_MODELS: dict[Type[Account], Type[AccountApiOut]] = {
+        Cash: CashApiOut,
+        Credit: CreditApiOut,
+        Depository: DepositoryApiOut,
+        Loan: LoanApiOut,
+        PersonalLedger: PersonalLedgerApiOut,
+        Property: PropertyApiOut,
+    }
+    IN_MODELS: dict[Type[AccountApiIn], Type[Account]] = {
+        CashApiIn: Cash,
+        CreditApiIn: Credit,
+        DepositoryApiIn: Depository,
+        LoanApiIn: Loan,
+        PersonalLedgerApiIn: PersonalLedger,
+        PropertyApiIn: Property,
     }
 
     @classmethod
     def model_validate(cls, account: Account) -> AccountApiOut:
-        return cls.OUT_MODELS[account.type].model_validate(account)
+        return cls.OUT_MODELS[type(account)].model_validate(account)
 
     @classmethod
     def create(cls, db: Session, obj_in: AccountApiIn, **kwargs: Any) -> AccountApiOut:
-        obj = {
-            CashApiIn: Cash,
-            CreditApiIn: Credit,
-            DepositoryApiIn: Depository,
-            LoanApiIn: Loan,
-            PersonalLedgerApiIn: PersonalLedger,
-            PropertyApiIn: Property,
-        }[type(obj_in)].create(db, **obj_in.model_dump(), **kwargs)
+        obj = cls.IN_MODELS[type(obj_in)].create(db, **obj_in.model_dump(), **kwargs)
         return cls.model_validate(obj)
 
     @classmethod
