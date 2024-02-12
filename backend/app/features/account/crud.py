@@ -66,6 +66,8 @@ logger = logging.getLogger(__name__)
 
 
 class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
+    db_model = Account
+
     OUT_MODELS: dict[Type[Account], Type[AccountApiOut]] = {
         Cash: CashApiOut,
         Credit: CreditApiOut,
