@@ -33,6 +33,10 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
     out_model: Type[OutModelType]
 
     @classmethod
+    def model_validate(cls, obj: ModelType) -> OutModelType:
+        return cls.out_model.model_validate(obj)
+
+    @classmethod
     def create(
         cls,
         db: Session,
@@ -40,26 +44,26 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         **kwargs: Any,
     ) -> OutModelType:
         obj = cls.db_model.create(db, **obj_in.model_dump(), **kwargs)
-        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        obj_out: OutModelType = cls.model_validate(obj)
         return obj_out
 
     @classmethod
     def read(cls, db: Session, id: int) -> OutModelType:
         obj = cls.db_model.read(db, id)
-        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        obj_out: OutModelType = cls.model_validate(obj)
         return obj_out
 
     @classmethod
     def read_many(cls, db: Session, offset: int, limit: int) -> Iterable[OutModelType]:
         for s in cls.db_model.read_many(db, offset, limit):
-            yield cls.out_model.model_validate(s)
+            yield cls.model_validate(s)
 
     @classmethod
     def update(
         cls, db: Session, id: int, obj_in: InModelType, **kwargs: Any
     ) -> OutModelType:
         obj = cls.db_model.update(db, id, **obj_in.model_dump(), **kwargs)
-        obj_out: OutModelType = cls.out_model.model_validate(obj)
+        obj_out: OutModelType = cls.model_validate(obj)
         return obj_out
 
     @classmethod
@@ -82,4 +86,4 @@ class CRUDSyncedBase(
 
     @classmethod
     def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModelType:
-        return cls.out_model.model_validate(cls.db_model.read_by_plaid_id(db, id))
+        return cls.model_validate(cls.db_model.read_by_plaid_id(db, id))

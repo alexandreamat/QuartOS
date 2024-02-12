@@ -25,6 +25,7 @@ from sqlalchemy.orm import Session
 from app.common.crud import CRUDBase
 from app.common.exceptions import ObjectNotFoundError
 from app.features.account import AccountApiOut, Account
+from app.features.account.crud import CRUDAccount
 from app.features.merchant import MerchantApiOut
 from app.features.movement import DetailedPLStatementApiOut
 from app.features.movement import (
@@ -155,7 +156,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
     ) -> AccountApiOut:
         statement = User.select_accounts(user_id, userinstitutionlink_id, account_id)
         account = Account.read_one_from_query(db, statement, account_id)
-        return AccountApiOut.model_validate(account)
+        return CRUDAccount.model_validate(account)
 
     @classmethod
     def read_accounts(
@@ -168,7 +169,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         accounts = db.scalars(statement).all()
 
         for a in accounts:
-            yield AccountApiOut.model_validate(a)
+            yield CRUDAccount.model_validate(a)
 
     @classmethod
     def read_movements(

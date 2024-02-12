@@ -512,7 +512,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/users/me/accounts/`,
           method: "POST",
-          body: queryArg.accountApiIn,
+          body: queryArg.body,
           params: { userinstitutionlink_id: queryArg.userinstitutionlinkId },
         }),
         invalidatesTags: ["users", "accounts"],
@@ -543,7 +543,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/users/me/accounts/${queryArg.accountId}`,
           method: "PUT",
-          body: queryArg.accountApiIn,
+          body: queryArg.body,
           params: { userinstitutionlink_id: queryArg.userinstitutionlinkId },
         }),
         invalidatesTags: ["users", "accounts"],
@@ -1057,13 +1057,38 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   isAmountAbs?: boolean;
 };
 export type ReadManyUsersMeAccountsGetApiResponse =
-  /** status 200 Successful Response */ AccountApiOut[];
+  /** status 200 Successful Response */ (
+    | DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | BrokerageApiOut
+    | InvestmentApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut
+  )[];
 export type ReadManyUsersMeAccountsGetApiArg = void;
 export type CreateUsersMeAccountsPostApiResponse =
-  /** status 200 Successful Response */ AccountApiOut;
+  /** status 200 Successful Response */
+    | DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | BrokerageApiOut
+    | InvestmentApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut;
 export type CreateUsersMeAccountsPostApiArg = {
   userinstitutionlinkId?: number | null;
-  accountApiIn: AccountApiIn;
+  body:
+    | DepositoryApiIn
+    | LoanApiIn
+    | CreditApiIn
+    | BrokerageApiIn
+    | InvestmentApiIn
+    | CashApiIn
+    | PersonalLedgerApiIn
+    | PropertyApiIn;
 };
 export type PreviewUsersMeAccountsPreviewPostApiResponse =
   /** status 200 Successful Response */ TransactionApiIn[];
@@ -1072,14 +1097,38 @@ export type PreviewUsersMeAccountsPreviewPostApiArg = {
   bodyPreviewUsersMeAccountsPreviewPost: BodyPreviewUsersMeAccountsPreviewPost;
 };
 export type ReadUsersMeAccountsAccountIdGetApiResponse =
-  /** status 200 Successful Response */ AccountApiOut;
+  /** status 200 Successful Response */
+    | DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | BrokerageApiOut
+    | InvestmentApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut;
 export type ReadUsersMeAccountsAccountIdGetApiArg = number;
 export type UpdateUsersMeAccountsAccountIdPutApiResponse =
-  /** status 200 Successful Response */ AccountApiOut;
+  /** status 200 Successful Response */
+    | DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | BrokerageApiOut
+    | InvestmentApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut;
 export type UpdateUsersMeAccountsAccountIdPutApiArg = {
   accountId: number;
   userinstitutionlinkId: number | null;
-  accountApiIn: AccountApiIn;
+  body:
+    | DepositoryApiIn
+    | LoanApiIn
+    | CreditApiIn
+    | BrokerageApiIn
+    | InvestmentApiIn
+    | CashApiIn
+    | PersonalLedgerApiIn
+    | PropertyApiIn;
 };
 export type DeleteUsersMeAccountsAccountIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
@@ -1366,54 +1415,161 @@ export type TransactionApiOut = {
   movement_id: number;
   files: FileApiOut[];
 };
-export type InstitutionalAccountType =
-  | "investment"
-  | "credit"
-  | "depository"
-  | "loan"
-  | "brokerage"
-  | "other";
-export type InstitutionalAccount = {
+export type DepositoryApiOut = {
   id: number;
   plaid_id: string | null;
   plaid_metadata: string | null;
   is_synced: boolean;
-  type: InstitutionalAccountType;
-  mask: string;
+  balance: string;
   userinstitutionlink_id: number;
-};
-export type NonInstitutionalAccountType =
-  | "personal ledger"
-  | "cash"
-  | "property";
-export type NonInstitutionalAccount = {
-  id: number;
-  type: NonInstitutionalAccountType;
-  user_id: number;
-};
-export type AccountApiOut = {
-  id: number;
+  is_institutional: true;
   currency_code: string;
   initial_balance: string;
   name: string;
-  institutionalaccount: InstitutionalAccount | null;
-  noninstitutionalaccount: NonInstitutionalAccount | null;
-  is_synced: boolean;
-  balance: string;
-};
-export type InstitutionalAccount2 = {
-  type: InstitutionalAccountType;
+  type: "depository";
   mask: string;
 };
-export type NonInstitutionalAccount2 = {
-  type: NonInstitutionalAccountType;
+export type LoanApiOut = {
+  id: number;
+  plaid_id: string | null;
+  plaid_metadata: string | null;
+  is_synced: boolean;
+  balance: string;
+  userinstitutionlink_id: number;
+  is_institutional: true;
+  currency_code: string;
+  initial_balance: string;
+  name: string;
+  type: "loan";
+  mask: string;
 };
-export type AccountApiIn = {
+export type CreditApiOut = {
+  id: number;
+  plaid_id: string | null;
+  plaid_metadata: string | null;
+  is_synced: boolean;
+  balance: string;
+  userinstitutionlink_id: number;
+  is_institutional: true;
+  currency_code: string;
+  initial_balance: string;
+  name: string;
+  type: "credit";
+  mask: string;
+};
+export type BrokerageApiOut = {
+  id: number;
+  plaid_id: string | null;
+  plaid_metadata: string | null;
+  is_synced: boolean;
+  balance: string;
+  userinstitutionlink_id: number;
+  is_institutional: true;
+  currency_code: string;
+  initial_balance: string;
+  name: string;
+  type: "brokerage";
+  mask: string;
+};
+export type InvestmentApiOut = {
+  id: number;
+  plaid_id: string | null;
+  plaid_metadata: string | null;
+  is_synced: boolean;
+  balance: string;
+  userinstitutionlink_id: number;
+  is_institutional: true;
+  currency_code: string;
+  initial_balance: string;
+  name: string;
+  type: "investment";
+  mask: string;
+};
+export type CashApiOut = {
+  id: number;
+  balance: string;
+  is_synced: boolean;
+  user_id: number;
+  is_institutional: false;
+  currency_code: string;
+  initial_balance: string;
+  name: string;
+  type: "cash";
+};
+export type PersonalLedgerApiOut = {
+  id: number;
+  balance: string;
+  is_synced: boolean;
+  user_id: number;
+  is_institutional: false;
+  currency_code: string;
+  initial_balance: string;
+  name: string;
+  type: "personal ledger";
+};
+export type PropertyApiOut = {
+  id: number;
+  balance: string;
+  is_synced: boolean;
+  user_id: number;
+  is_institutional: false;
+  currency_code: string;
+  initial_balance: string;
+  name: string;
+  type: "property";
+};
+export type DepositoryApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
-  institutionalaccount?: InstitutionalAccount2 | null;
-  noninstitutionalaccount?: NonInstitutionalAccount2 | null;
+  type: "depository";
+  mask: string;
+};
+export type LoanApiIn = {
+  currency_code: string;
+  initial_balance: number | string;
+  name: string;
+  type: "loan";
+  mask: string;
+};
+export type CreditApiIn = {
+  currency_code: string;
+  initial_balance: number | string;
+  name: string;
+  type: "credit";
+  mask: string;
+};
+export type BrokerageApiIn = {
+  currency_code: string;
+  initial_balance: number | string;
+  name: string;
+  type: "brokerage";
+  mask: string;
+};
+export type InvestmentApiIn = {
+  currency_code: string;
+  initial_balance: number | string;
+  name: string;
+  type: "investment";
+  mask: string;
+};
+export type CashApiIn = {
+  currency_code: string;
+  initial_balance: number | string;
+  name: string;
+  type: "cash";
+};
+export type PersonalLedgerApiIn = {
+  currency_code: string;
+  initial_balance: number | string;
+  name: string;
+  type: "personal ledger";
+};
+export type PropertyApiIn = {
+  currency_code: string;
+  initial_balance: number | string;
+  name: string;
+  type: "property";
 };
 export type TransactionApiIn = {
   amount: string;

@@ -95,7 +95,7 @@ def resync_user_institution_link(
         db, userinstitutionlink_out.institution_id
     )
     userinstitutionlink_in = fetch_user_institution_link(
-        userinstitutionlink_out.access_token, me, institution_out
+        userinstitutionlink_out.access_token
     )
     userinstitutionlink_in.cursor = userinstitutionlink_out.cursor
     userinstitutionlink_out = CRUDSyncableUserInstitutionLink.update(
@@ -106,9 +106,7 @@ def resync_user_institution_link(
         institution_id=institution_out.id,
     )
     for account_in in fetch_accounts(userinstitutionlink_out):
-        account_out = CRUDSyncableAccount.read_by_plaid_id(
-            db, account_in.institutionalaccount.plaid_id
-        )
+        account_out = CRUDSyncableAccount.read_by_plaid_id(db, account_in.plaid_id)
         print(account_out)
         account_out = CRUDSyncableAccount.update(db, account_out.id, account_in)
     return userinstitutionlink_out
