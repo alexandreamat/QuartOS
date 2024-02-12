@@ -31,7 +31,9 @@ export default function AccountCard(props: {
   const navigate = useNavigate();
 
   const institutionLinkQueries = useInstitutionLinkQueries(
-    props.account.institutionalaccount?.userinstitutionlink_id,
+    props.account.is_institutional
+      ? props.account.userinstitutionlink_id
+      : undefined,
   );
 
   const [isUploaderOpen, setIsUploaderOpen] = useState(false);
@@ -66,8 +68,7 @@ export default function AccountCard(props: {
         />
         <Card.Header>{props.account.name}</Card.Header>
         <Card.Meta>
-          {props.account.institutionalaccount &&
-            `**** ${props.account.institutionalaccount.mask}`}
+          {props.account.is_institutional && `**** ${props.account.mask}`}
         </Card.Meta>
         <Card.Meta>{institutionLinkQueries.institution?.name}</Card.Meta>
       </Card.Content>
@@ -90,7 +91,7 @@ export default function AccountCard(props: {
           onClick={handleGoToMovements}
         />
 
-        {props.account.institutionalaccount && (
+        {props.account.is_institutional && (
           <ActionButton
             floated="left"
             icon="upload"

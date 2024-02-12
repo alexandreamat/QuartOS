@@ -13,7 +13,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { generatedApi } from "./generatedApi";
+import {
+  generatedApi,
+  CreateUsersMeAccountsPostApiResponse,
+  CreateUsersMeAccountsPostApiArg,
+} from "./generatedApi";
 
 const ALL = "*";
 
@@ -174,5 +178,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
 });
 
 export * from "./generatedApi";
-
+export type AccountApiOut = CreateUsersMeAccountsPostApiResponse;
+export type AccountApiIn = CreateUsersMeAccountsPostApiArg["body"];
+export type AccountType = CreateUsersMeAccountsPostApiResponse["type"];
 export { enhancedApi as api };

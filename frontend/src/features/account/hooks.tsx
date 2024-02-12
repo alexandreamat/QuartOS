@@ -26,23 +26,25 @@ export function useAccountQueries(accountId?: number) {
   );
 
   const institutionLinkQueries = useInstitutionLinkQueries(
-    accountQuery.data?.institutionalaccount?.userinstitutionlink_id,
+    accountQuery.data?.is_institutional
+      ? accountQuery.data.userinstitutionlink_id
+      : undefined,
   );
 
   const isLoading =
     accountQuery.isLoading ||
     (accountQuery.isSuccess &&
-      Boolean(accountQuery.data.institutionalaccount) &&
+      accountQuery.data.is_institutional &&
       institutionLinkQueries.isLoading);
   const isSuccess =
     (accountQuery.isSuccess &&
-      Boolean(accountQuery.data.institutionalaccount) &&
+      accountQuery.data.is_institutional &&
       institutionLinkQueries.isSuccess) ||
     accountQuery.isSuccess;
   const isError =
     accountQuery.isError ||
     (accountQuery.isSuccess &&
-      Boolean(accountQuery.data.institutionalaccount) &&
+      accountQuery.data.is_institutional &&
       institutionLinkQueries.isError);
 
   const error = [
