@@ -15,27 +15,9 @@
 
 from fastapi import APIRouter
 
-from . import admin
-from . import auth
-from . import categories
-from . import exchangerate
-from . import institutions
-from . import replacementpatterns
-from . import transactiondeserialisers
-from . import users
+from app.utils import include_package_routes
+
 
 router = APIRouter()
 
-routes = (
-    (auth.router, "auth"),
-    (exchangerate.router, "exchangerate"),
-    (transactiondeserialisers.router, "transaction-deserialisers"),
-    (replacementpatterns.router, "replacement-patterns"),
-    (institutions.router, "institutions"),
-    (users.router, "users"),
-    (categories.router, "categories"),
-    (admin.router, "admin"),
-)
-
-for r in routes:
-    router.include_router(r[0], prefix=f"/{r[1]}", tags=[r[1]])
+include_package_routes(router, __name__, __path__)

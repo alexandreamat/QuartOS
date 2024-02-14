@@ -41,7 +41,7 @@ export default function AddTransactionsModal(props: {
   const checkboxes = useCheckboxes(initialTransactions, initialTransactions);
 
   const [addTransactions, addTransactionsResult] =
-    api.endpoints.addTransactionsUsersMeMovementsMovementIdTransactionsPut.useMutation();
+    api.endpoints.addUsersMeMovementsMovementIdTransactionsPut.useMutation();
 
   // Refactor useCheckboxes so we don't need this hack
   const additions = [

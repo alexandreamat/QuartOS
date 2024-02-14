@@ -18,6 +18,8 @@ from typing import Iterable
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
+from app.features.movement.crud import CRUDMovement
+from app.features.movement.schemas import MovementApiOut
 from app.features.transaction import TransactionApiOut
 from app.features.user.crud import CRUDUser
 from app.features.user.deps import CurrentUser
@@ -30,3 +32,24 @@ def read_many(
     db: DBSession, me: CurrentUser, movement_id: int
 ) -> Iterable[TransactionApiOut]:
     return CRUDUser.read_transactions(db, me.id, movement_id=movement_id)
+
+
+@router.put("/")
+def add(
+    db: DBSession,
+    me: CurrentUser,
+    movement_id: int,
+    transaction_ids: list[int],
+) -> MovementApiOut:
+    CRUDUser.read_movement(db, me.id, movement_id)
+    for transaction_id in transaction_ids:
+        CRUDUser.read_transaction(db, me.id, transaction_id=transaction_id)
+    return CRUDMovement.add_transactions(db, movement_id, transaction_ids)
+
+
+@router.delete("/{transaction_id}")
+def remove(
+    db: DBSession, me: CurrentUser, movement_id: int, transaction_id: int
+) -> MovementApiOut | None:
+    CRUDUser.read_transaction(db, me.id, transaction_id, movement_id=movement_id)
+    return CRUDMovement.remove_transaction(db, movement_id, transaction_id)

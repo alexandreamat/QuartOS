@@ -22,9 +22,8 @@ from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
     CRUDTransaction,
-    CRUDSyncableTransaction,
-    TransactionPlaidIn,
 )
+from app.features.transaction.models import Transaction
 from .models import Movement
 from .schemas import MovementApiIn, MovementApiOut
 
@@ -50,10 +49,12 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             transaction_in,
             movement_id=movement.id,
         )
-        old_movement = Movement.read(db, old_movement_id)
-        Movement.update(db, old_movement.id)
-        if not old_movement.transactions:
-            cls.delete(db, old_movement_id)
+        if old_movement_id:
+            old_movement = Movement.read(db, old_movement_id)
+            Movement.update(db, old_movement.id)
+            if not old_movement.transactions:
+                cls.delete(db, old_movement_id)
+            db.refresh(movement)
         db.refresh(movement)
         return MovementApiOut.model_validate(movement)
 
@@ -68,42 +69,12 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
 
     @classmethod
     def create(  # type: ignore[override]
-        cls, db: Session, transactions: Sequence[TransactionApiIn | int], **kwargs: Any
+        cls, db: Session, transaction_ids: Sequence[int], **kwargs: Any
     ) -> MovementApiOut:
-        transaction_kwargs = {
-            kw.strip("transaction__"): kwargs.pop(kw)
-            for kw in kwargs
-            if kw.startswith("transaction__")
-        }
         movement = Movement.create(db, name="", **kwargs)
-        for transaction in transactions:
-            if isinstance(transaction, TransactionApiIn):
-                transaction_in = transaction
-                if not movement.name:
-                    movement.name = transaction_in.name
-                cls.create_transaction(
-                    db, movement.id, transaction_in, **transaction_kwargs
-                )
-            else:
-                transaction_id = transaction
-                cls.__add_transaction(db, movement, transaction_id)
+        for transaction_id in transaction_ids:
+            cls.__add_transaction(db, movement, transaction_id)
         Movement.update(db, movement.id)
-        return CRUDMovement.read(db, movement.id)
-
-    @classmethod
-    def create_plaid(
-        cls,
-        db: Session,
-        transaction_in: TransactionPlaidIn,
-        **kwargs: Any,
-    ) -> MovementApiOut:
-        movement = Movement.create(db, name=transaction_in.name)
-        CRUDSyncableTransaction.create(
-            db, transaction_in, movement_id=movement.id, **kwargs
-        )
-        Movement.update(db, movement.id)
-        # force SQLAlchemy to refresh tx-mv relationship
-        db.refresh(movement)
         return CRUDMovement.read(db, movement.id)
 
     @classmethod
@@ -117,60 +88,25 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         return CRUDMovement.read(db, movement_id)
 
     @classmethod
-    def create_transaction(
-        cls,
-        db: Session,
-        movement_id: int,
-        transaction_in: TransactionApiIn,
-        **kwargs: Any,
-    ) -> TransactionApiOut:
-        transaction_out = CRUDTransaction.create(
-            db,
-            transaction_in,
-            movement_id=movement_id,
-            **kwargs,
-        )
-        Movement.update(db, movement_id)
-        return transaction_out
-
-    @classmethod
-    def read_transactions(
-        cls, db: Session, movement_id: int
-    ) -> Iterable[TransactionApiOut]:
-        for t in Movement.read(db, movement_id).transactions:
-            yield TransactionApiOut.model_validate(t)
-
-    @classmethod
-    def update_transaction(
-        cls,
-        db: Session,
-        movement_id: int,
-        transaction_id: int,
-        transaction_in: TransactionApiIn,
-        new_movement_id: int,
-        **kwargs: Any,
-    ) -> TransactionApiOut:
-        movement = Movement.read(db, movement_id)
-        transaction_out = CRUDTransaction.update(
-            db, transaction_id, transaction_in, movement_id=new_movement_id, **kwargs
-        )
-        if not movement.transactions:
-            cls.delete(db, movement.id)
-        Movement.update(db, movement_id)
-        return TransactionApiOut.model_validate(transaction_out)
-
-    @classmethod
-    def delete_transaction(
-        cls, db: Session, movement_id: int, transaction_id: int
-    ) -> None:
-        CRUDTransaction.delete(db, transaction_id)
-        Movement.update(db, movement_id)
-        if not Movement.read(db, movement_id).transactions:
-            cls.delete(db, movement_id)
-
-    @classmethod
     def update_categories(cls, db: Session) -> Iterable[MovementApiOut]:
         for m in cls.read_many(db, 0, 0):
             yield MovementApiOut.model_validate(
                 Movement.update(db, m.id, category_id=m.category_id)
             )
+
+    @classmethod
+    def remove_transaction(
+        cls, db: Session, movement_id: int, transaction_id: int
+    ) -> MovementApiOut | None:
+        stmnt = (
+            Movement.select()
+            .join(Transaction)
+            .where(Movement.id == movement_id)
+            .where(Transaction.id == transaction_id)
+        )
+        movement = db.scalars(stmnt).one()
+        Transaction.update(db, transaction_id, movement_id=None)
+        if len(movement.transactions) <= 1:
+            Movement.delete(db, movement_id)
+            return None
+        return MovementApiOut.model_validate(movement)

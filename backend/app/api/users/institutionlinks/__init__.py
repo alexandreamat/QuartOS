@@ -30,7 +30,7 @@ from app.features.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
     fetch_user_institution_link,
 )
-from . import plaidtransactions
+from app.utils import include_package_routes
 
 router = APIRouter()
 
@@ -132,8 +132,4 @@ def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> int:
     return CRUDUserInstitutionLink.delete(db, userinstitutionlink_id)
 
 
-router.include_router(
-    plaidtransactions.router,
-    prefix="/{userinstitutionlink_id}/transactions/plaid",
-    tags=["transactions"],
-)
+include_package_routes(router, __name__, __path__, "/{userinstitutionlink_id}")

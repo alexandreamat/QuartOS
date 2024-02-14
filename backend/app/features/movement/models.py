@@ -35,13 +35,40 @@ class Movement(Base):
     __tablename__ = "movement"
     name: Mapped[str]
     transactions: Mapped[list[Transaction]] = relationship(
-        back_populates="movement", cascade="all, delete", lazy="selectin"
+        back_populates="movement", lazy="selectin"
     )
     category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"))
     merchant_id: Mapped[int | None] = mapped_column(ForeignKey("merchant.id"))
 
     category: Mapped[Category | None] = relationship(lazy="selectin")
     merchant: Mapped[Merchant | None] = relationship(lazy="selectin")
+
+    @hybrid_property
+    def unique_id(self) -> int:
+        return self.id
+
+    @unique_id.inplace.expression
+    @classmethod
+    def _unique_id_expression(cls) -> ColumnElement[int]:
+        return func.coalesce(Movement.id, -Transaction.id)
+
+    @hybrid_property
+    def unique_name(self) -> str:
+        return self.name
+
+    @unique_name.inplace.expression
+    @classmethod
+    def _unique_name_expression(cls) -> ColumnElement[str]:
+        return func.coalesce(Movement.name, Transaction.name)
+
+    @hybrid_property
+    def unique_category_id(self) -> int | None:
+        return self.category_id
+
+    @unique_category_id.inplace.expression
+    @classmethod
+    def _unique_category_id_expression(cls) -> ColumnElement[int | None]:
+        return func.coalesce(Movement.category_id, Transaction.category_id)
 
     @hybrid_property
     def timestamp(self) -> date:
@@ -69,6 +96,7 @@ class Movement(Base):
         return len(self.transactions)
 
     @transactions_count.inplace.expression
+    @classmethod
     def _transactions_count_expression(cls) -> ColumnElement[int]:
         return func.count(Transaction.id)
 
@@ -99,7 +127,7 @@ class Movement(Base):
     ) -> Select[tuple[Transaction]]:
         statement = Transaction.select_transactions(transaction_id, **kwargs)
 
-        statement = statement.join(cls)
+        statement = statement.outerjoin(cls)
         if movement_id:
             statement = statement.where(cls.id == movement_id)
 

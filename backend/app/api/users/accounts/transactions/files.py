@@ -32,7 +32,6 @@ async def create(
     db: DBSession,
     me: CurrentUser,
     account_id: int,
-    movement_id: int,
     transaction_id: int,
     file: Annotated[UploadFile, _File(...)],
 ) -> FileApiOut:
@@ -40,7 +39,6 @@ async def create(
         db,
         me.id,
         account_id=account_id,
-        movement_id=movement_id,
         transaction_id=transaction_id,
     )
     data = await file.read()
@@ -53,14 +51,12 @@ def read_many(
     db: DBSession,
     me: CurrentUser,
     account_id: int,
-    movement_id: int,
     transaction_id: int,
 ) -> Iterable[FileApiOut]:
     CRUDUser.read_transaction(
         db,
         me.id,
         account_id=account_id,
-        movement_id=movement_id,
         transaction_id=transaction_id,
     )
     return CRUDTransaction.read_files(db, transaction_id)
@@ -77,7 +73,6 @@ def read(
     db: DBSession,
     me: CurrentUser,
     account_id: int,
-    movement_id: int,
     transaction_id: int,
     file_id: int,
 ) -> Response:
@@ -85,7 +80,6 @@ def read(
         db,
         me.id,
         account_id=account_id,
-        movement_id=movement_id,
         transaction_id=transaction_id,
     )
     file_out = CRUDFile.read(db, file_id)
@@ -102,7 +96,6 @@ def delete(
     db: DBSession,
     me: CurrentUser,
     account_id: int,
-    movement_id: int,
     transaction_id: int,
     file_id: int,
 ) -> int:
@@ -110,7 +103,6 @@ def delete(
         db,
         me.id,
         account_id=account_id,
-        movement_id=movement_id,
         transaction_id=transaction_id,
     )
     return CRUDFile.delete(db, file_id)

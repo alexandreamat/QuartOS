@@ -27,8 +27,6 @@ from app.features.category import Category
 from app.features.file import File
 
 if TYPE_CHECKING:
-    from app.features.userinstitutionlink import UserInstitutionLink  # noqa
-    from app.features.institution import Institution  # noqa
     from app.features.account import Account
     from app.features.movement import Movement
 
@@ -39,7 +37,9 @@ class Transaction(SyncableBase):
     timestamp: Mapped[date]
     name: Mapped[str]
     account_id: Mapped[int] = mapped_column(ForeignKey("account.id"))
-    movement_id: Mapped[int] = mapped_column(ForeignKey("movement.id"))
+    movement_id: Mapped[int | None] = mapped_column(
+        ForeignKey("movement.id"), nullable=True
+    )
     category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"))
     amount_default_currency: Mapped[Decimal]
     account_balance: Mapped[Decimal]
@@ -49,7 +49,7 @@ class Transaction(SyncableBase):
     )
 
     account: Mapped["Account"] = relationship(back_populates="transactions")
-    movement: Mapped["Movement"] = relationship(back_populates="transactions")
+    movement: Mapped["Movement | None"] = relationship(back_populates="transactions")
     category: Mapped[Category | None] = relationship()
 
     @property

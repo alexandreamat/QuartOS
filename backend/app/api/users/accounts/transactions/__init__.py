@@ -13,7 +13,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from fastapi import APIRouter, HTTPException, status
+from typing import Annotated, Iterable
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from app.common.exceptions import UnknownError
 
 from app.database.deps import DBSession
 from app.features.account import CRUDAccount
@@ -22,10 +24,42 @@ from app.features.transaction import (
     TransactionApiIn,
     CRUDTransaction,
 )
+from app.features.transaction.utils import get_transactions_from_csv
 from app.features.user import CurrentUser, CRUDUser
-from . import files
+from app.utils import include_package_routes
 
 router = APIRouter()
+
+
+@router.post("/preview")
+def preview(
+    db: DBSession,
+    me: CurrentUser,
+    account_id: int,
+    file: Annotated[UploadFile, File(...)],
+) -> Iterable[TransactionApiIn]:
+    CRUDUser.read_account(db, me.id, None, account_id)
+    deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
+    try:
+        return get_transactions_from_csv(deserialiser, file.file, account_id)
+    except Exception as e:
+        raise UnknownError(e)
+
+
+@router.post("/batch/")
+def create_many(
+    db: DBSession,
+    me: CurrentUser,
+    account_id: int,
+    transactions: list[TransactionApiIn],
+) -> Iterable[TransactionApiOut]:
+    CRUDUser.read_account(db, me.id, None, account_id)
+    yield from CRUDAccount.create_many_transactions(
+        db,
+        account_id,
+        transactions,
+        default_currency_code=me.default_currency_code,
+    )
 
 
 @router.post("/")
@@ -33,19 +67,16 @@ def create(
     db: DBSession,
     me: CurrentUser,
     account_id: int,
-    movement_id: int,
-    transaction_in: TransactionApiIn,
+    transactions: TransactionApiIn,
+    movement_id: int | None = None,
 ) -> TransactionApiOut:
-    # check permissions for account and movement separately because the
-    # movement and the account might not be linked initially
-    CRUDUser.read_movement(db, me.id, movement_id)
     CRUDUser.read_account(db, me.id, None, account_id)
     return CRUDAccount.create_transaction(
         db,
         account_id,
-        movement_id,
-        transaction_in,
-        me.default_currency_code,
+        transactions,
+        movement_id=movement_id,
+        default_currency_code=me.default_currency_code,
     )
 
 
@@ -54,25 +85,17 @@ def update(
     db: DBSession,
     me: CurrentUser,
     account_id: int,
-    movement_id: int,
     transaction_id: int,
     transaction_in: TransactionApiIn,
-    new_movement_id: int,
 ) -> TransactionApiOut:
     CRUDUser.read_transaction(
-        db,
-        me.id,
-        account_id=account_id,
-        movement_id=movement_id,
-        transaction_id=transaction_id,
+        db, me.id, account_id=account_id, transaction_id=transaction_id
     )
     return CRUDAccount.update_transaction(
         db,
         account_id,
-        movement_id,
-        transaction_id,
-        transaction_in,
-        new_movement_id,
+        transaction_id=transaction_id,
+        transaction_in=transaction_in,
         default_currency_code=me.default_currency_code,
     )
 
@@ -82,24 +105,15 @@ def delete(
     db: DBSession,
     me: CurrentUser,
     account_id: int,
-    movement_id: int,
     transaction_id: int,
 ) -> int:
     CRUDUser.read_transaction(
-        db,
-        me.id,
-        account_id=account_id,
-        movement_id=movement_id,
-        transaction_id=transaction_id,
+        db, me.id, account_id=account_id, transaction_id=transaction_id
     )
     if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
-    return CRUDAccount.delete_transaction(db, movement_id, account_id, transaction_id)
+    return CRUDAccount.delete_transaction(db, account_id, transaction_id)
 
 
-router.include_router(
-    files.router,
-    prefix="/{transaction_id}/files",
-    tags=["files"],
-)
+include_package_routes(router, __name__, __path__, "/{transaction_id}")

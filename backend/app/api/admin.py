@@ -25,7 +25,7 @@ from app.features.account.crud import CRUDAccount, CRUDSyncableAccount
 from app.features.account.plaid import fetch_accounts
 from app.features.category.plaid import get_all_plaid_categories
 from app.features.institution.crud import CRUDSyncableInstitution
-from app.features.transaction.crud import CRUDSyncableTransaction
+from app.features.transaction.crud import CRUDSyncableTransaction, CRUDTransaction
 from app.features.transaction.plaid import (
     reset_transaction_to_metadata as _reset_transaction_to_metadata,
 )
@@ -56,6 +56,11 @@ def cateogries_sync(db: DBSession, me: CurrentSuperuser) -> None:
     get_all_plaid_categories(db)
 
 
+@router.put("/transactions/orphan-only-children")
+def orphan_single_transactions(db: DBSession, me: CurrentSuperuser) -> None:
+    CRUDTransaction.orphan_only_children(db)
+
+
 @router.get("/transactions/{transactions_id}")
 def read_transaction(
     db: DBSession, me: CurrentSuperuser, transactions_id: int
@@ -84,7 +89,7 @@ def update_transactions_amount_default_currency(
             )
 
 
-@router.put("/user-institution-links/{userinstitutionlink_id}/resync")
+@router.put("/userinstitutionlinks/{userinstitutionlink_id}/resync")
 def resync_user_institution_link(
     db: DBSession, me: CurrentSuperuser, userinstitutionlink_id: int
 ) -> UserInstitutionLinkPlaidOut:
@@ -113,7 +118,7 @@ def resync_user_institution_link(
 
 
 @router.put(
-    "/user-institution-links/{userinstitutionlink_id}/resync/{start_date}/{end_date}"
+    "/userinstitutionlinks/{userinstitutionlink_id}/resync/{start_date}/{end_date}"
 )
 def resync_transactions(
     db: DBSession,
@@ -159,7 +164,7 @@ def resync_transactions(
 
 
 @router.get(
-    "/user-institution-links/{userinstitutionlink_id}/transactions/{start_date}/{end_date}"
+    "/userinstitutionlinks/{userinstitutionlink_id}/transactions/{start_date}/{end_date}"
 )
 def read_many(
     db: DBSession,
@@ -179,7 +184,7 @@ def read_many(
     )
 
 
-@router.put("/user-institution-links/{userinstitutionlink_id}/reset-to-metadata")
+@router.put("/userinstitutionlinks/{userinstitutionlink_id}/reset-to-metadata")
 def reset_many_transactions_to_metadata(
     db: DBSession, me: CurrentSuperuser, userinstitutionlink_id: int
 ) -> Iterable[TransactionPlaidOut]:
@@ -197,7 +202,7 @@ def reset_many_transactions_to_metadata(
 
 
 @router.put(
-    "/user-institution-links/{userinstitutionlink_id}/transactions/{transaction_id}/reset-to-metadata"
+    "/userinstitutionlinks/{userinstitutionlink_id}/transactions/{transaction_id}/reset-to-metadata"
 )
 def reset_transaction_to_metadata(
     db: DBSession,

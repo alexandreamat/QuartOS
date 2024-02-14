@@ -45,11 +45,11 @@ export default function InstitutionLinkForm(props: {
   const institutionOptions = useInstitutionOptions();
 
   const [createInstitutionLink, createInstitutionLinkResult] =
-    api.endpoints.createUsersMeInstitutionLinksPost.useMutation();
+    api.endpoints.createUsersMeInstitutionlinksPost.useMutation();
   const [updateInstitutionLink, updateInstitutionLinkResult] =
-    api.endpoints.updateUsersMeInstitutionLinksUserinstitutionlinkIdPut.useMutation();
+    api.endpoints.updateUsersMeInstitutionlinksUserinstitutionlinkIdPut.useMutation();
   const [deleteInstitutionLink, deleteInstitutionLinkResult] =
-    api.endpoints.deleteUsersMeInstitutionLinksUserinstitutionlinkIdDelete.useMutation();
+    api.endpoints.deleteUsersMeInstitutionlinksUserinstitutionlinkIdDelete.useMutation();
 
   useEffect(() => {
     if (!props.institutionLink) return;

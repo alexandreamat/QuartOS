@@ -27,7 +27,7 @@ from app.features.movement import (
     CRUDMovement,
 )
 from app.features.user import CurrentUser, CRUDUser
-from . import transactions
+from app.utils import include_package_routes
 
 router = APIRouter()
 
@@ -116,19 +116,6 @@ def update(
     return CRUDUser.update_movement(db, me.id, movement_id, movement_in)
 
 
-@router.put("/{movement_id}/transactions/")
-def add_transactions(
-    db: DBSession,
-    me: CurrentUser,
-    movement_id: int,
-    transaction_ids: list[int],
-) -> MovementApiOut:
-    CRUDUser.read_movement(db, me.id, movement_id)
-    for transaction_id in transaction_ids:
-        CRUDUser.read_transaction(db, me.id, transaction_id=transaction_id)
-    return CRUDMovement.add_transactions(db, movement_id, transaction_ids)
-
-
 @router.delete("/{movement_id}")
 def delete(
     db: DBSession,
@@ -139,6 +126,4 @@ def delete(
     return CRUDMovement.delete(db, movement_id)
 
 
-router.include_router(
-    transactions.router, prefix="/{movement_id}/transactions", tags=["transactions"]
-)
+include_package_routes(router, __name__, __path__, "/{movement_id}")

@@ -44,8 +44,8 @@ export default function Form(props: {
       (props.open && movementId) || skipToken,
     );
 
-  const [createMovements, createMovementsResult] =
-    api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
+  const [removeTransaction, removeTransactionResult] =
+    api.endpoints.removeUsersMeMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
 
   const [deleteMovement, deleteMovementResult] =
     api.endpoints.deleteUsersMeMovementsMovementIdDelete.useMutation();
@@ -62,15 +62,12 @@ export default function Form(props: {
 
   async function handleRemoveTransaction(transaction: TransactionApiOut) {
     try {
-      await createMovements({
-        accountId: transaction.account_id,
-        bodyCreateManyUsersMeAccountsAccountIdMovementsPost: {
-          transactions: [],
-          transaction_ids: [transaction.id],
-        },
+      await removeTransaction({
+        transactionId: transaction.id,
+        movementId: transaction.movement_id!,
       }).unwrap();
     } catch (error) {
-      logMutationError(error, createMovementsResult);
+      logMutationError(error, removeTransactionResult);
       return;
     }
   }
@@ -92,15 +89,12 @@ export default function Form(props: {
       {transactionFormOpen &&
         (movementId ? (
           <TransactionForm.Add
-            open
             onClose={() => setTransactionFormOpen(false)}
             movementId={movementId}
           />
         ) : (
           <TransactionForm.Create
-            open
             onClose={() => setTransactionFormOpen(false)}
-            onSuccess={(m) => setMovementId(m.id)}
           />
         ))}
       <Modal.Header>
@@ -146,7 +140,7 @@ export default function Form(props: {
             />
           </FlexRow>
         )}
-        <QueryErrorMessage query={createMovementsResult} />
+        <QueryErrorMessage query={removeTransactionResult} />
         <QueryErrorMessage query={deleteMovementResult} />
       </Modal.Content>
       <Modal.Actions>

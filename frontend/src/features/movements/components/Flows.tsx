@@ -133,9 +133,7 @@ function Flow(props: {
       )}
       {formOpen && props.transaction && (
         <TransactionForm.Edit
-          open
           onClose={() => setFormOpen(false)}
-          movementId={props.transaction.movement_id}
           transaction={props.transaction}
         />
       )}
