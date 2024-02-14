@@ -122,7 +122,7 @@ class Account(SyncableBase):
 
 class InstitutionalAccount(Account):
     is_institutional = True
-    mask: Mapped[str]
+    mask: Mapped[str | None]
     userinstitutionlink_id: Mapped[int] = mapped_column(
         ForeignKey("userinstitutionlink.id")
     )

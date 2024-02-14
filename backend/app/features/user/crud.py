@@ -211,7 +211,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
             transactions_ge=transactions_ge,
             transactions_le=transactions_le,
         )
-        for result in db.scalars(statement):
+        for result in db.execute(statement):
             yield MovementApiOut.model_validate(result)
 
     @classmethod

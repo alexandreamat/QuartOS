@@ -20,8 +20,9 @@ import MenuDropdownAccount from "features/account/components/MenuDropdownAccount
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuNumericRange from "components/MenuNumericRange";
 import { useState } from "react";
-import { Menu } from "semantic-ui-react";
+import { Button, Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
+import TransactionForm from "./Form";
 
 export type TransactionsBarState = ReturnType<typeof useTransactionBarState>;
 
@@ -42,11 +43,24 @@ export default function Bar(props: {
   barState: TransactionsBarState;
   isMultipleChoiceState?: UseStateType<boolean>;
 }) {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
   return (
     <FlexRow>
       <FlexRow.Auto>
         {/* Correct negative margins that would add unnecessary scroll bar */}
         <Menu secondary style={{ margin: 0 }}>
+          <Menu.Item fitted>
+            <Button
+              icon="plus"
+              circular
+              primary
+              onClick={() => setIsFormOpen(true)}
+            />
+            {isFormOpen && (
+              <TransactionForm.Create onClose={() => setIsFormOpen(false)} />
+            )}
+          </Menu.Item>
           <MenuInputSearch searchState={props.barState.search} />
           <MenuDropdownAccount accountIdState={props.barState.accountId} />
           <MenuDateRange

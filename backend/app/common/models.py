@@ -74,7 +74,8 @@ class Base(DeclarativeBase):
             statement = statement.offset(offset)
         if limit:
             statement = statement.limit(limit)
-        return db.scalars(statement).all()
+        for result in db.scalars(statement).yield_per(50):
+            yield result
 
     @classmethod
     def update(cls: Type[BaseType], db: Session, id: int, **kwargs: Any) -> BaseType:

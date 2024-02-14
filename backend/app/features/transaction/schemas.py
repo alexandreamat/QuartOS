@@ -42,7 +42,7 @@ class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
     account_balance: Decimal
     amount_default_currency: Decimal
     account_id: int
-    movement_id: int
+    movement_id: int | None
     files: list[FileApiOut]
     is_synced: bool
 

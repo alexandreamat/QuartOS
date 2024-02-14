@@ -15,8 +15,10 @@
 
 import hashlib
 from datetime import datetime, timedelta
+import importlib
+import pkgutil
 
-from fastapi import HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 from jose import jwt
 
 from app.settings import settings
@@ -66,4 +68,14 @@ def verify_password(plain_password: str, hashed_password: str) -> None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+def include_package_routes(
+    router: APIRouter, name: str, path: list[str], prefix: str = ""
+) -> None:
+    for _, module_name, __ in pkgutil.iter_modules(path):
+        module = importlib.import_module(f"{name}.{module_name}")
+        router.include_router(
+            module.router, prefix=f"{prefix}/{module_name}", tags=[module_name]
         )

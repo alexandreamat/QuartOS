@@ -13,24 +13,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Annotated, Iterable
+from typing import Iterable
 
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter
 
-from app.common.exceptions import UnknownError
 from app.database.deps import DBSession
 from app.features.account import (
     CRUDAccount,
     AccountApiOut,
     AccountApiIn,
 )
-from app.features.transaction import (
-    TransactionApiIn,
-    get_transactions_from_csv,
-)
 from app.features.user import CRUDUser, CurrentUser
 from app.features.userinstitutionlink import SyncedEntity
-from . import movements
+from app.utils import include_package_routes
 
 router = APIRouter()
 
@@ -38,21 +33,6 @@ router = APIRouter()
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[AccountApiOut]:
     return CRUDUser.read_accounts(db, me.id, None)
-
-
-@router.post("/preview")
-def preview(
-    db: DBSession,
-    me: CurrentUser,
-    account_id: int,
-    file: Annotated[UploadFile, File(...)],
-) -> Iterable[TransactionApiIn]:
-    CRUDUser.read_account(db, me.id, None, account_id)
-    deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
-    try:
-        return get_transactions_from_csv(deserialiser, file.file, account_id)
-    except Exception as e:
-        raise UnknownError(e)
 
 
 @router.post("/")
@@ -107,6 +87,4 @@ def delete(
     return CRUDAccount.delete(db, account_id)
 
 
-router.include_router(
-    movements.router, prefix="/{account_id}/movements", tags=["movements"]
-)
+include_package_routes(router, __name__, __path__, "/{account_id}")

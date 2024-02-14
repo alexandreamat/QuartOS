@@ -143,7 +143,7 @@ export function TransactionCard(
               )}
 
               {/* See movement button and form */}
-              {movementOpen && (
+              {props.transaction.movement_id && movementOpen && (
                 <MovementForm
                   onClose={() => setMovementOpen(false)}
                   movementId={props.transaction.movement_id}
@@ -161,9 +161,7 @@ export function TransactionCard(
               {formOpen && (
                 <TransactionForm.Edit
                   onClose={() => setFormOpen(false)}
-                  movementId={props.transaction.movement_id}
                   transaction={props.transaction}
-                  open
                 />
               )}
               <ActionButton

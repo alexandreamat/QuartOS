@@ -23,9 +23,13 @@ from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.common.exceptions import ObjectNotFoundError
 from app.common.schemas import CurrencyCode
 from app.features.account.schemas import (
+    BrokeragePlaidIn,
+    BrokeragePlaidOut,
     CashApiIn,
     CreditApiIn,
     DepositoryApiIn,
+    InvestmentPlaidIn,
+    InvestmentPlaidOut,
     LoanApiIn,
     PersonalLedgerApiIn,
     PropertyApiIn,
@@ -41,6 +45,7 @@ from app.features.transaction import (
     TransactionPlaidIn,
     Transaction,
 )
+from app.features.transaction.crud import CRUDSyncableTransaction, CRUDTransaction
 from app.features.transactiondeserialiser import (
     TransactionDeserialiserApiOut,
     TransactionDeserialiser,
@@ -53,10 +58,13 @@ from .schemas import (
     AccountPlaidOut,
     CashApiOut,
     CreditApiOut,
+    CreditPlaidIn,
     CreditPlaidOut,
     DepositoryApiOut,
+    DepositoryPlaidIn,
     DepositoryPlaidOut,
     LoanApiOut,
+    LoanPlaidIn,
     LoanPlaidOut,
     PersonalLedgerApiOut,
     PropertyApiOut,
@@ -126,14 +134,13 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         return cls.model_validate(account_out)
 
     @classmethod
-    def create_many_movements(
+    def create_many_transactions(
         cls,
         db: Session,
         account_id: int,
         transactions: list[TransactionApiIn],
-        transaction_ids: list[int],
         default_currency_code: CurrencyCode,
-    ) -> Iterable[MovementApiOut]:
+    ) -> Iterable[TransactionApiOut]:
         min_timestamp = None
         account_out = CRUDAccount.read(db, account_id)
         for transaction_in in transactions:
@@ -141,36 +148,29 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
                 min_timestamp = min(transaction_in.timestamp, min_timestamp)
             else:
                 min_timestamp = transaction_in.timestamp
-            yield CRUDMovement.create(
+            yield CRUDTransaction.create(
                 db,
-                [transaction_in],
-                transaction__account_id=account_id,
-                transaction__account_balance=Decimal(0),
-                transaction__exchange_rate=get_exchange_rate(
+                transaction_in,
+                account_id=account_id,
+                account_balance=Decimal(0),
+                exchange_rate=get_exchange_rate(
                     account_out.currency_code,
                     default_currency_code,
                     transaction_in.timestamp,
                 ),
             )
-        for transaction_id in transaction_ids:
-            transaction_out = cls.read_transaction(db, account_id, None, transaction_id)
-            if min_timestamp:
-                min_timestamp = min(transaction_out.timestamp, min_timestamp)
-            else:
-                min_timestamp = transaction_out.timestamp
-            yield CRUDMovement.create(db, [transaction_id])
         CRUDAccount.update_balance(db, account_id, min_timestamp)
 
     @classmethod
-    def create_movement_plaid(
+    def create_transaction_plaid(
         cls,
         db: Session,
         account_id: int,
         transaction_in: TransactionPlaidIn,
         default_currency_code: CurrencyCode,
-    ) -> MovementApiOut:
+    ) -> TransactionApiOut:
         account_out = CRUDAccount.read(db, account_id)
-        movement_out = CRUDMovement.create_plaid(
+        transaction_out = CRUDSyncableTransaction.create(
             db,
             transaction_in,
             account_id=account_id,
@@ -182,22 +182,22 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
             ),
         )
         CRUDAccount.update_balance(db, account_id, transaction_in.timestamp)
-        return movement_out
+        return transaction_out
 
     @classmethod
     def create_transaction(
         cls,
         db: Session,
         account_id: int,
-        movement_id: int,
         transaction_in: TransactionApiIn,
         default_currency_code: CurrencyCode,
+        movement_id: int | None = None,
     ) -> TransactionApiOut:
         account_out = CRUDAccount.read(db, account_id)
-        transaction_out = CRUDMovement.create_transaction(
+        transaction_out = CRUDTransaction.create(
             db,
-            movement_id,
             transaction_in,
+            movement_id=movement_id,
             account_id=account_id,
             account_balance=Decimal(0),
             exchange_rate=get_exchange_rate(
@@ -214,20 +214,16 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         cls,
         db: Session,
         account_id: int,
-        movement_id: int,
         transaction_id: int,
         transaction_in: TransactionApiIn,
-        new_movement_id: int,
         default_currency_code: CurrencyCode,
+        movement_id: int | None = None,
     ) -> TransactionApiOut:
-        cls.read_transaction(db, account_id, movement_id, transaction_id)
         account_out = CRUDAccount.read(db, account_id)
-        transaction_out = CRUDMovement.update_transaction(
+        transaction_out = CRUDTransaction.update(
             db,
-            movement_id,
             transaction_id,
             transaction_in,
-            new_movement_id,
             account_id=account_id,
             account_balance=Decimal(0),
             exchange_rate=get_exchange_rate(
@@ -235,6 +231,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
                 default_currency_code,
                 transaction_in.timestamp,
             ),
+            movement_id=movement_id,
         )
         CRUDAccount.update_balance(db, account_id, transaction_in.timestamp)
         return transaction_out
@@ -251,42 +248,38 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
 
     @classmethod
     def delete_transaction(
-        cls, db: Session, movement_id: int, account_id: int, transaction_id: int
+        cls, db: Session, account_id: int, transaction_id: int
     ) -> int:
-        transaction_out = cls.read_transaction(
-            db, account_id, movement_id, transaction_id
-        )
-        CRUDMovement.delete_transaction(db, movement_id, transaction_id)
+        transaction_out = CRUDTransaction.read(db, transaction_id)
+        CRUDTransaction.delete(db, transaction_id)
         Account.update_balance(db, account_id, transaction_out.timestamp)
         return transaction_id
-
-    @classmethod
-    def read_transaction(
-        cls,
-        db: Session,
-        account_id: int | None,
-        movement_id: int | None,
-        transaction_id: int,
-    ) -> TransactionApiOut:
-        statement = Account.select_transactions(
-            account_id, movement_id=movement_id, transaction_id=transaction_id
-        )
-        transaction = Transaction.read_one_from_query(db, statement, transaction_id)
-        return TransactionApiOut.model_validate(transaction)
 
 
 class CRUDSyncableAccount(CRUDSyncedBase[Account, AccountPlaidOut, AccountPlaidIn]):
     db_model = Account
 
-    OUT_MODELS: dict[str, Type[AccountPlaidOut]] = {
-        "credit": CreditPlaidOut,
-        "depository": DepositoryPlaidOut,
-        "loan": LoanPlaidOut,
+    OUT_MODELS: dict[Type[Account], Type[AccountPlaidOut]] = {
+        Credit: CreditPlaidOut,
+        Depository: DepositoryPlaidOut,
+        Loan: LoanPlaidOut,
+    }
+    IN_MODELS: dict[Type[AccountPlaidIn], Type[Account]] = {
+        CreditPlaidIn: Credit,
+        DepositoryPlaidIn: Depository,
+        LoanPlaidIn: Loan,
     }
 
     @classmethod
     def model_validate(cls, account: Account) -> AccountPlaidOut:
-        return cls.OUT_MODELS[account.type].model_validate(account)
+        return cls.OUT_MODELS[type(account)].model_validate(account)
+
+    @classmethod
+    def create(
+        cls, db: Session, obj_in: AccountPlaidIn, **kwargs: Any
+    ) -> AccountPlaidOut:
+        obj = cls.IN_MODELS[type(obj_in)].create(db, **obj_in.model_dump(), **kwargs)
+        return cls.model_validate(obj)
 
     @classmethod
     def update(

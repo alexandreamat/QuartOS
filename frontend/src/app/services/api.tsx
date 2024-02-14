@@ -19,13 +19,11 @@ import {
   CreateUsersMeAccountsPostApiArg,
 } from "./generatedApi";
 
-const ALL = "*";
-
 function cacheList<T extends string, R extends { id: number }[]>(
   type: T,
   result?: R,
 ) {
-  return [{ type, id: ALL }, ...(result || []).map(({ id }) => ({ type, id }))];
+  return [{ type, id: "*" }, ...(result || []).map(({ id }) => ({ type, id }))];
 }
 
 const enhancedApi = generatedApi.enhanceEndpoints({
@@ -34,14 +32,13 @@ const enhancedApi = generatedApi.enhanceEndpoints({
     createUsersMeMovementsPost: {
       invalidatesTags: (result, error, arg) => [
         "users",
-        { type: "movements", id: ALL },
+        { type: "movements", id: "*" },
       ],
     },
-    createManyUsersMeAccountsAccountIdMovementsPost: {
-      invalidatesTags: (result, error, { accountId }) => [
+    mergeUsersMeMovementsMergePost: {
+      invalidatesTags: (result, error, arg) => [
         "users",
-        { type: "accounts", id: accountId },
-        ...cacheList("movements", result),
+        { type: "movements", id: "*" },
       ],
     },
     readUsersMeMovementsMovementIdGet: {
@@ -62,7 +59,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
         { type: "movements", id: movementId },
       ],
     },
-    addTransactionsUsersMeMovementsMovementIdTransactionsPut: {
+    addUsersMeMovementsMovementIdTransactionsPut: {
       invalidatesTags: (result, error, { movementId }) => [
         "users",
         { type: "movements", id: movementId },
@@ -71,17 +68,17 @@ const enhancedApi = generatedApi.enhanceEndpoints({
     deleteUsersMeMovementsMovementIdDelete: {
       invalidatesTags: (result, error, arg) => [
         "users",
-        { type: "movements", id: ALL },
+        { type: "movements", id: "*" },
       ],
     },
 
     // TRANSACTIONS CRUD
-    createUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost: {
-      invalidatesTags: (result, error, { accountId, movementId }) => [
+    createUsersMeAccountsAccountIdTransactionsPost: {
+      invalidatesTags: (result, error, { accountId }) => [
         "users",
         { type: "accounts", id: accountId },
-        { type: "movements", id: movementId },
-        { type: "transactions", id: ALL },
+        { type: "movements", id: "*" },
+        { type: "transactions", id: "*" },
       ],
     },
     readManyUsersMeTransactionsGet: {
@@ -90,90 +87,63 @@ const enhancedApi = generatedApi.enhanceEndpoints({
         ...cacheList("transactions", result),
       ],
     },
-    updateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut:
-      {
-        invalidatesTags: (
-          result,
-          error,
-          { accountId, movementId, transactionId },
-        ) => [
-          "users",
-          { type: "accounts", id: accountId },
-          { type: "movements", id: movementId },
-          { type: "transactions", id: transactionId },
-        ],
-      },
-    deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete:
-      {
-        invalidatesTags: (result, error, { accountId, movementId }) => [
-          "users",
-          { type: "accounts", id: accountId },
-          { type: "movements", id: movementId },
-          { type: "transactions", id: ALL },
-        ],
-      },
+    updateUsersMeAccountsAccountIdTransactionsTransactionIdPut: {
+      invalidatesTags: (result, error, { accountId, transactionId }) => [
+        "users",
+        { type: "accounts", id: accountId },
+        { type: "movements", id: "*" },
+        { type: "transactions", id: transactionId },
+      ],
+    },
+    deleteUsersMeAccountsAccountIdTransactionsTransactionIdDelete: {
+      invalidatesTags: (result, error, { accountId }) => [
+        "users",
+        { type: "accounts", id: accountId },
+        { type: "movements", id: "*" },
+        { type: "transactions", id: "*" },
+      ],
+    },
 
     // FILES CRUD
-    createUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
-      {
-        invalidatesTags: (
-          result,
-          error,
-          { accountId, movementId, transactionId },
-        ) => [
-          "users",
-          { type: "accounts", id: accountId },
-          { type: "movements", id: movementId },
-          { type: "transactions", id: transactionId },
-          { type: "files", id: ALL },
-        ],
-      },
-    readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet:
-      {
-        query: ({ accountId, movementId, transactionId, fileId }) => ({
-          url: `/api/users/me/accounts/${accountId}/movements/${movementId}/transactions/${transactionId}/files/${fileId}`,
-          responseHandler: (response) => response.blob(),
-        }),
-        providesTags: (
-          result,
-          error,
-          { accountId, movementId, transactionId, fileId },
-        ) => [
-          "users",
-          { type: "accounts", id: accountId },
-          { type: "movements", id: movementId },
-          { type: "transactions", id: transactionId },
-          { type: "files", id: fileId },
-        ],
-      },
-    readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet:
-      {
-        providesTags: (
-          result,
-          error,
-          { accountId, movementId, transactionId },
-        ) => [
-          "users",
-          { type: "accounts", id: accountId },
-          { type: "movements", id: movementId },
-          { type: "transactions", id: transactionId },
-          ...cacheList("files", result),
-        ],
-      },
-    deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete:
-      {
-        invalidatesTags: (
-          result,
-          error,
-          { accountId, movementId, transactionId },
-        ) => [
-          "users",
-          { type: "accounts", id: accountId },
-          { type: "movements", id: movementId },
-          { type: "transactions", id: transactionId },
-          { type: "files", id: ALL },
-        ],
-      },
+    createUsersMeAccountsAccountIdTransactionsTransactionIdFilesPost: {
+      invalidatesTags: (result, error, { accountId, transactionId }) => [
+        "users",
+        { type: "accounts", id: accountId },
+        { type: "transactions", id: transactionId },
+        { type: "files", id: "*" },
+      ],
+    },
+    readUsersMeAccountsAccountIdTransactionsTransactionIdFilesFileIdGet: {
+      query: ({ accountId, transactionId, fileId }) => ({
+        url: `/api/users/me/accounts/${accountId}/transactions/${transactionId}/files/${fileId}`,
+        responseHandler: (response) => response.blob(),
+      }),
+      providesTags: (result, error, { accountId, transactionId, fileId }) => [
+        "users",
+        { type: "accounts", id: accountId },
+        // { type: "movements", id: movementId },
+        { type: "transactions", id: transactionId },
+        { type: "files", id: fileId },
+      ],
+    },
+    readManyUsersMeAccountsAccountIdTransactionsTransactionIdFilesGet: {
+      providesTags: (result, error, { accountId, transactionId }) => [
+        "users",
+        { type: "accounts", id: accountId },
+        // { type: "movements", id: movementId },
+        { type: "transactions", id: transactionId },
+        ...cacheList("files", result),
+      ],
+    },
+    deleteUsersMeAccountsAccountIdTransactionsTransactionIdFilesFileIdDelete: {
+      invalidatesTags: (result, error, { accountId, transactionId }) => [
+        "users",
+        { type: "accounts", id: accountId },
+        // { type: "movements", id: movementId },
+        { type: "transactions", id: transactionId },
+        { type: "files", id: "*" },
+      ],
+    },
   },
 });
 

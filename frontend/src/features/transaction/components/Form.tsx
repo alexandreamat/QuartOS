@@ -15,12 +15,7 @@
 
 import { BaseQueryFn, skipToken } from "@reduxjs/toolkit/dist/query";
 import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
-import {
-  MovementApiOut,
-  TransactionApiIn,
-  TransactionApiOut,
-  api,
-} from "app/services/api";
+import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDateTimeInput from "components/FormDateTimeInput";
@@ -47,13 +42,11 @@ import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
 import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
-import { capitaliseFirstLetter } from "utils/string";
 
 export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   props: {
     // Common
     title: string;
-    open: boolean;
     onClose: () => void;
   } & (
     | {
@@ -84,11 +77,10 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   const hasMovement = "movementId" in props;
 
   const filesQuery =
-    api.endpoints.readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+    api.endpoints.readManyUsersMeAccountsAccountIdTransactionsTransactionIdFilesGet.useQuery(
       isEdit
         ? {
             accountId: props.transaction.account_id,
-            movementId: props.transaction.movement_id,
             transactionId: props.transaction.id,
           }
         : skipToken,
@@ -131,11 +123,11 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     const timestamp = movement.timestamp;
     form.timestamp.set(timestamp ? stringToDate(timestamp) : new Date());
     form.name.set(movement.name);
-  }, [movementQuery.isSuccess, movementQuery.data, props.open]);
+  }, [movementQuery.isSuccess, movementQuery.data]);
 
   useEffect(() => {
     isEdit && transactionApiOutToForm(props.transaction, form);
-  }, [isEdit, props.open]);
+  }, [isEdit]);
 
   const handleSubmit = async () => {
     const invalidFields = Object.values(form).filter(
@@ -174,7 +166,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
         stringToDate(props.transaction.timestamp).getTime());
 
   return (
-    <Modal open={props.open} onClose={handleClose} size="small">
+    <Modal open onClose={handleClose} size="small">
       <Modal.Header>{props.title}</Modal.Header>
       <Modal.Content>
         <Form>
@@ -261,29 +253,21 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   );
 }
 
-function FormCreate(props: {
-  open: boolean;
-  onClose: () => void;
-  onSuccess: (x: MovementApiOut) => void;
-}) {
-  const [createMovement, createMovementResult] =
-    api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
+function FormCreate(props: { onClose: () => void }) {
+  const [createTransaction, createTransactionResult] =
+    api.endpoints.createManyUsersMeAccountsAccountIdTransactionsBatchPost.useMutation();
 
   const handleSubmit = async (
-    transaction: TransactionApiIn,
+    transactionIn: TransactionApiIn,
     accountId: number,
   ) => {
     try {
-      const [movement] = await createMovement({
+      await createTransaction({
         accountId: accountId,
-        bodyCreateManyUsersMeAccountsAccountIdMovementsPost: {
-          transactions: [transaction],
-          transaction_ids: [],
-        },
+        body: [transactionIn],
       }).unwrap();
-      props.onSuccess(movement);
     } catch (error) {
-      logMutationError(error, createMovementResult);
+      logMutationError(error, createTransactionResult);
       throw error;
     }
   };
@@ -291,22 +275,20 @@ function FormCreate(props: {
   return (
     <TransactionForm
       title="Create a Transaction"
-      open={props.open}
       onClose={props.onClose}
       onSubmit={handleSubmit}
-      submitResult={createMovementResult}
+      submitResult={createTransactionResult}
     />
   );
 }
 
 function FormAdd(props: {
-  open: boolean;
   movementId: number;
   onClose: () => void;
   onAdded?: (x: TransactionApiOut) => void;
 }) {
   const [createTransaction, createTransactionResult] =
-    api.endpoints.createUsersMeAccountsAccountIdMovementsMovementIdTransactionsPost.useMutation();
+    api.endpoints.createUsersMeAccountsAccountIdTransactionsPost.useMutation();
 
   const handleSubmit = async (
     transactionIn: TransactionApiIn,
@@ -328,7 +310,6 @@ function FormAdd(props: {
   return (
     <TransactionForm
       title="Add a Transaction to Movement"
-      open={props.open}
       onClose={props.onClose}
       movementId={props.movementId}
       onSubmit={handleSubmit}
@@ -338,17 +319,15 @@ function FormAdd(props: {
 }
 
 function FormEdit(props: {
-  open: boolean;
   onClose: () => void;
   transaction: TransactionApiOut;
-  movementId: number;
   onEdited?: () => void;
 }) {
   const [updateTransaction, updateTransactionResult] =
-    api.endpoints.updateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdPut.useMutation();
+    api.endpoints.updateUsersMeAccountsAccountIdTransactionsTransactionIdPut.useMutation();
 
   const [deleteTransaction, deleteTransactionResult] =
-    api.endpoints.deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
+    api.endpoints.deleteUsersMeAccountsAccountIdTransactionsTransactionIdDelete.useMutation();
 
   const uploadTransactionFile = useUploadTransactionFile(props.transaction);
 
@@ -359,10 +338,8 @@ function FormEdit(props: {
     try {
       await updateTransaction({
         accountId: accountId,
-        movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
         transactionApiInInput: transactionIn,
-        newMovementId: props.transaction.movement_id,
       }).unwrap();
       props.onEdited && props.onEdited();
     } catch (error) {
@@ -375,7 +352,6 @@ function FormEdit(props: {
     try {
       await deleteTransaction({
         accountId: props.transaction.account_id,
-        movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
       });
     } catch (error) {
@@ -387,9 +363,7 @@ function FormEdit(props: {
   return (
     <TransactionForm
       title="Edit a Transaction"
-      open={props.open}
       onClose={props.onClose}
-      movementId={props.movementId}
       transaction={props.transaction}
       onSubmit={handleSubmit}
       submitResult={updateTransactionResult}

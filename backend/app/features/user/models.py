@@ -18,7 +18,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import select, case, desc, asc, Select, or_, func
+from sqlalchemy import column, select, case, desc, asc, Select, or_, func
 from sqlalchemy.orm import Mapped, Session
 
 from app.common.models import Base
@@ -131,12 +131,21 @@ class User(Base):
         is_amount_abs: bool = False,
         order_by: MovementField = MovementField.TIMESTAMP,
     ) -> Select[tuple[Movement]]:
+
         # SELECT
-        statement = Movement.select()
+
+        statement = select(
+            Movement.transactions_count,
+            Movement.amount_default_currency,
+            Movement.unique_category_id.label("category_id"),
+            Movement.unique_name.label("name"),
+            Movement.unique_id.label("id"),
+            Movement.timestamp,
+        )
 
         # JOIN
         statement = (
-            statement.join(Transaction)
+            statement.outerjoin(Movement)
             .join(Account)
             .outerjoin(Category, Category.id == Movement.category_id)
             .outerjoin(UserInstitutionLink)
@@ -160,17 +169,21 @@ class User(Base):
             statement = statement.where(Movement.category_id == (category_id or None))
 
         # GROUP BY
-        statement = statement.group_by(Movement.id)
+        statement = statement.group_by(
+            Movement.unique_id,
+            Movement.unique_name,
+            Movement.unique_category_id,
+        )
 
         # ORDER BY
         order = desc if is_descending else asc
         if order_by is MovementField.AMOUNT:
             statement = statement.order_by(
-                order(Movement.amount_default_currency), order(Movement.id)
+                order(Movement.amount_default_currency), order(Movement.unique_id)
             )
         elif order_by is MovementField.TIMESTAMP:
             statement = statement.order_by(
-                order(Movement.timestamp), order(Movement.id)
+                order(Movement.timestamp), order(Movement.unique_id)
             )
 
         # HAVING

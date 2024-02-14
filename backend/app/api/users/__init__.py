@@ -26,12 +26,7 @@ from app.features.user import (
     UserApiOut,
     UserApiIn,
 )
-from . import accounts
-from . import analytics
-from . import institutionlinks
-from . import merchants
-from . import movements
-from . import transactions
+from app.utils import include_package_routes
 
 router = APIRouter()
 
@@ -116,15 +111,4 @@ def delete(db: DBSession, me: CurrentSuperuser, user_id: int) -> int:
     return CRUDUser.delete(db, user_id)
 
 
-router.include_router(
-    institutionlinks.router,
-    prefix="/me/institution-links",
-    tags=["institution-links"],
-)
-router.include_router(movements.router, prefix="/me/movements", tags=["movements"])
-router.include_router(
-    transactions.router, prefix="/me/transactions", tags=["transactions"]
-)
-router.include_router(accounts.router, prefix="/me/accounts", tags=["accounts"])
-router.include_router(analytics.router, prefix="/me/analytics", tags=["movements"])
-router.include_router(merchants.router, prefix="/me/merchants", tags=["merchants"])
+include_package_routes(router, __name__, __path__, "/me")

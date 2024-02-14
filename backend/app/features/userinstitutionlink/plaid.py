@@ -161,7 +161,7 @@ def sync_transactions(
         )
         for account_id, transaction_in in sync_result.added:
             try:
-                CRUDAccount.create_movement_plaid(
+                CRUDAccount.create_transaction(
                     db,
                     account_id,
                     transaction_in,
@@ -176,17 +176,13 @@ def sync_transactions(
             CRUDAccount.update_transaction(
                 db,
                 account_id,
-                transaction_out.movement_id,
                 transaction_out.id,
                 transaction_in,
-                transaction_out.movement_id,
                 default_currency_code=default_currency_code,
             )
         for plaid_id in sync_result.removed:
             transaction_out = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)
-            CRUDAccount.delete_transaction(
-                db, transaction_out.movement_id, account_id, transaction_out.id
-            )
+            CRUDAccount.delete_transaction(db, account_id, transaction_out.id)
         user_institution_link_out.cursor = sync_result.new_cursor
         user_institution_link_new = UserInstitutionLinkPlaidIn(
             **user_institution_link_out.model_dump()
