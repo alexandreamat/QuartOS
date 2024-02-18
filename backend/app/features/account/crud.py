@@ -23,27 +23,18 @@ from app.common.crud import CRUDBase, CRUDSyncedBase
 from app.common.exceptions import ObjectNotFoundError
 from app.common.schemas import CurrencyCode
 from app.features.account.schemas import (
-    BrokeragePlaidIn,
-    BrokeragePlaidOut,
     CashApiIn,
     CreditApiIn,
     DepositoryApiIn,
-    InvestmentPlaidIn,
-    InvestmentPlaidOut,
     LoanApiIn,
     PersonalLedgerApiIn,
     PropertyApiIn,
 )
 from app.features.exchangerate import get_exchange_rate
-from app.features.movement import (
-    MovementApiOut,
-    CRUDMovement,
-)
 from app.features.transaction import (
     TransactionApiOut,
     TransactionApiIn,
     TransactionPlaidIn,
-    Transaction,
 )
 from app.features.transaction.crud import CRUDSyncableTransaction, CRUDTransaction
 from app.features.transactiondeserialiser import (

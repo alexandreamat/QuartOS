@@ -21,12 +21,12 @@ from sqlalchemy.orm import Mapped
 
 from app.common.models import Base
 
-BaseType = TypeVar("BaseType", bound=Base)
+T = TypeVar("T")
 
 
 def filter_query_by_search(
-    search: str, statement: Select[tuple[BaseType]], col: Mapped[str]
-) -> Select[tuple[BaseType]]:
+    search: str, statement: Select[tuple[T]], col: Mapped[str]
+) -> Select[tuple[T]]:
     tokens: list[str] = re.findall(r"-?\"[^\"]+\"|-?'[^']+'|\S+", search)
     positive_clauses = []
     negative_clauses = []

@@ -32,17 +32,6 @@ from app.utils import include_package_routes
 router = APIRouter()
 
 
-@router.post("/")
-def create(
-    db: DBSession,
-    me: CurrentUser,
-    transaction_ids: list[int],
-) -> MovementApiOut:
-    for transaction_id in transaction_ids:
-        CRUDUser.read_transaction(db, me.id, transaction_id=transaction_id)
-    return CRUDMovement.create(db, transaction_ids)
-
-
 @router.post("/merge")
 def merge(db: DBSession, me: CurrentUser, movement_ids: list[int]) -> MovementApiOut:
     for movement_id in movement_ids:

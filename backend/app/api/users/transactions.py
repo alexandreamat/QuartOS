@@ -20,7 +20,10 @@ from typing import Iterable
 from fastapi import APIRouter
 
 from app.database.deps import DBSession
+from app.features.movement.schemas import MovementApiOut
 from app.features.transaction import TransactionApiOut
+from app.features.transaction.crud import CRUDTransaction
+from app.features.transaction.schemas import ConsolidatedTransactionApiOut
 from app.features.user import CurrentUser, CRUDUser
 
 router = APIRouter()
@@ -40,10 +43,11 @@ def read_many(
     amount_ge: Decimal | None = None,
     amount_le: Decimal | None = None,
     is_amount_abs: bool = False,
-) -> Iterable[TransactionApiOut]:
+    consolidated: bool = False,
+) -> Iterable[TransactionApiOut | ConsolidatedTransactionApiOut]:
     return CRUDUser.read_transactions(
         db,
-        me.id,
+        user_id=me.id,
         account_id=account_id,
         page=page,
         per_page=per_page,
@@ -54,4 +58,16 @@ def read_many(
         amount_ge=amount_ge,
         amount_le=amount_le,
         is_amount_abs=is_amount_abs,
+        consolidated=consolidated,
     )
+
+
+@router.post("/")
+def consolidate(
+    db: DBSession,
+    me: CurrentUser,
+    transaction_ids: list[int],
+) -> ConsolidatedTransactionApiOut:
+    for transaction_id in transaction_ids:
+        CRUDUser.read_transaction(db, me.id, transaction_id=transaction_id)
+    return CRUDTransaction.consolidate(db, transaction_ids)

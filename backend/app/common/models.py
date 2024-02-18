@@ -17,9 +17,10 @@ from typing import Iterable, TypeVar, Type, Any
 
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
-from sqlalchemy import Select, types, select, String
+from sqlalchemy import ColumnElement, Select, types, select, String, case
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import DeclarativeBase, Session, mapped_column, Mapped
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from app.common.exceptions import ObjectNotFoundError
 
@@ -101,9 +102,14 @@ class SyncableBase(Base):
     ) -> SyncableBaseType:
         return db.scalars(select(cls).where(cls.plaid_id == plaid_id)).one()
 
-    @property
+    @hybrid_property
     def is_synced(self) -> bool:
         return self.plaid_id is not None
+
+    @is_synced.inplace.expression
+    @classmethod
+    def _is_synced_expression(cls) -> ColumnElement[bool]:
+        return case((cls.plaid_id != None, True), else_=False)
 
 
 class UrlType(types.TypeDecorator[HttpUrl]):
