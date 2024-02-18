@@ -342,16 +342,9 @@ class User(Base):
     def select_transactions(
         cls,
         user_id: int,
-        *,
-        account_id: int | None = None,
-        movement_id: int | None = None,
-        transaction_id: int | None = None,
         **kwargs: Any,
-    ) -> Select[tuple[Transaction]]:
-        statement = Account.select_transactions(
-            account_id, movement_id=movement_id, transaction_id=transaction_id, **kwargs
-        )
-
+    ) -> Select[tuple[Any, ...]]:
+        statement = Account.select_transactions(**kwargs)
         statement = statement.outerjoin(UserInstitutionLink).where(
             or_(
                 NonInstitutionalAccount.user_id == user_id,

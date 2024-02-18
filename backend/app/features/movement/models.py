@@ -18,9 +18,9 @@ import re
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import ForeignKey, Select, func, ColumnElement
+from sqlalchemy import ForeignKey
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 
@@ -28,13 +28,15 @@ from app.common.models import Base
 from app.features.category.models import Category
 from app.features.merchant.crud import CRUDMerchant
 from app.features.merchant.models import Merchant
-from app.features.transaction import Transaction
+
+if TYPE_CHECKING:
+    from app.features.transaction import Transaction
 
 
 class Movement(Base):
     __tablename__ = "movement"
     name: Mapped[str]
-    transactions: Mapped[list[Transaction]] = relationship(
+    transactions: Mapped[list["Transaction"]] = relationship(
         back_populates="movement", lazy="selectin"
     )
     category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"))
@@ -44,40 +46,8 @@ class Movement(Base):
     merchant: Mapped[Merchant | None] = relationship(lazy="selectin")
 
     @hybrid_property
-    def unique_id(self) -> int:
-        return self.id
-
-    @unique_id.inplace.expression
-    @classmethod
-    def _unique_id_expression(cls) -> ColumnElement[int]:
-        return func.coalesce(Movement.id, -Transaction.id)
-
-    @hybrid_property
-    def unique_name(self) -> str:
-        return self.name
-
-    @unique_name.inplace.expression
-    @classmethod
-    def _unique_name_expression(cls) -> ColumnElement[str]:
-        return func.coalesce(Movement.name, Transaction.name)
-
-    @hybrid_property
-    def unique_category_id(self) -> int | None:
-        return self.category_id
-
-    @unique_category_id.inplace.expression
-    @classmethod
-    def _unique_category_id_expression(cls) -> ColumnElement[int | None]:
-        return func.coalesce(Movement.category_id, Transaction.category_id)
-
-    @hybrid_property
     def timestamp(self) -> date:
         return min(t.timestamp for t in self.transactions)
-
-    @timestamp.inplace.expression
-    @classmethod
-    def _timestamp_expression(cls) -> ColumnElement[date]:
-        return func.min(Transaction.timestamp)
 
     @hybrid_property
     def amount_default_currency(self) -> Decimal:
@@ -86,19 +56,9 @@ class Movement(Base):
             Decimal(0),
         )
 
-    @amount_default_currency.inplace.expression
-    @classmethod
-    def _amount_default_currency_expression(cls) -> ColumnElement[Decimal]:
-        return func.sum(Transaction.amount_default_currency)
-
     @hybrid_property
     def transactions_count(self) -> int:
         return len(self.transactions)
-
-    @transactions_count.inplace.expression
-    @classmethod
-    def _transactions_count_expression(cls) -> ColumnElement[int]:
-        return func.count(Transaction.id)
 
     @property
     def default_category_id_transactions(self) -> int | None:
@@ -120,18 +80,6 @@ class Movement(Base):
         return (
             self.default_category_id_merchant or self.default_category_id_transactions
         )
-
-    @classmethod
-    def select_transactions(
-        cls, movement_id: int | None, *, transaction_id: int | None, **kwargs: Any
-    ) -> Select[tuple[Transaction]]:
-        statement = Transaction.select_transactions(transaction_id, **kwargs)
-
-        statement = statement.outerjoin(cls)
-        if movement_id:
-            statement = statement.where(cls.id == movement_id)
-
-        return statement
 
     @classmethod
     def update(cls, db: Session, id: int, **kwargs: Any) -> "Movement":

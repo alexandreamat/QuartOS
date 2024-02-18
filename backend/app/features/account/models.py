@@ -21,7 +21,6 @@ from sqlalchemy import ForeignKey, Select
 from sqlalchemy.orm import Mapped, relationship, mapped_column, Session
 
 from app.common.models import Base, SyncableBase
-from app.features.movement import Movement
 from app.features.transaction import Transaction
 from app.features.transactiondeserialiser.models import TransactionDeserialiser
 
@@ -94,19 +93,12 @@ class Account(SyncableBase):
     def select_transactions(
         cls,
         account_id: int | None,
-        *,
-        movement_id: int | None,
-        transaction_id: int | None,
         **kwargs: Any,
-    ) -> Select[tuple[Transaction]]:
-        statement = Movement.select_transactions(
-            movement_id, transaction_id=transaction_id, **kwargs
-        )
-
+    ) -> Select[tuple[Any, ...]]:
+        statement = Transaction.select_transactions(**kwargs)
         statement = statement.join(cls)
         if account_id:
             statement = statement.where(cls.id == account_id)
-
         return statement
 
     @property

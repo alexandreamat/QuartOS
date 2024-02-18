@@ -42,8 +42,6 @@ class PlaidOutMixin(PlaidInMixin, ApiOutMixin): ...
 
 
 class SyncableApiOutMixin(ApiOutMixin):
-    plaid_id: str | None
-    plaid_metadata: str | None
     is_synced: bool
 
 

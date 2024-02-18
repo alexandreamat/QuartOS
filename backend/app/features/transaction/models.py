@@ -13,11 +13,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from asyncio import selector_events
 from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING
+import logging
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import ForeignKey, asc, desc, Select, func
+from sqlalchemy import (
+    ColumnElement,
+    ForeignKey,
+    asc,
+    desc,
+    Select,
+    distinct,
+    func,
+    select,
+    case,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.expression import ClauseElement
 
@@ -25,10 +37,13 @@ from app.common.models import SyncableBase
 from app.common.utils import filter_query_by_search
 from app.features.category import Category
 from app.features.file import File
+from app.features.movement import Movement
 
 if TYPE_CHECKING:
     from app.features.account import Account
-    from app.features.movement import Movement
+
+
+logger = logging.getLogger(__name__)
 
 
 class Transaction(SyncableBase):
@@ -77,7 +92,7 @@ class Transaction(SyncableBase):
     @classmethod
     def select_transactions(
         cls,
-        transaction_id: int | None,
+        transaction_id: int | None = None,
         *,
         page: int = 0,
         per_page: int = 0,
@@ -88,34 +103,80 @@ class Transaction(SyncableBase):
         amount_ge: Decimal | None = None,
         amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
-    ) -> Select[tuple["Transaction"]]:
+        consolidated: bool = False,
+    ) -> Select[tuple[Any, ...]]:
+
+        model = ConsolidatedTransaction if consolidated else cls
+
         # SELECT
-        statement = Transaction.select()
+        if consolidated:
+
+            from app.features.account import Account
+
+            statement = select(
+                ConsolidatedTransaction.id,
+                ConsolidatedTransaction.timestamp,
+                ConsolidatedTransaction.name,
+                ConsolidatedTransaction.category_id,
+                ConsolidatedTransaction.amount,
+                ConsolidatedTransaction.amount_default_currency,
+                ConsolidatedTransaction.account_id_max,
+                ConsolidatedTransaction.account_id_min,
+                ConsolidatedTransaction.transactions_count,
+                ConsolidatedTransaction.movement_id,
+                func.count(distinct(Account.currency_code)).label("currency_codes"),
+            ).outerjoin(Movement)
+        else:
+            statement = select(
+                Transaction.id,
+                Transaction.timestamp,
+                Transaction.name,
+                Transaction.category_id,
+                Transaction.amount,
+                Transaction.amount_default_currency,
+                Transaction.account_id,
+                Transaction.movement_id,
+                Transaction.account_balance,
+                Transaction.is_synced,
+            )
 
         # WHERE
         if transaction_id is not None:
-            statement = statement.where(Transaction.id == transaction_id)
+            statement = statement.where(model.id == transaction_id)
         if timestamp_ge:
-            statement = statement.where(Transaction.timestamp >= timestamp_ge)
+            statement = statement.where(model.timestamp >= timestamp_ge)
         if timestamp_le:
-            statement = statement.where(Transaction.timestamp <= timestamp_le)
+            statement = statement.where(model.timestamp <= timestamp_le)
         if search:
-            statement = filter_query_by_search(search, statement, Transaction.name)
+            statement = filter_query_by_search(search, statement, model.name)
 
         if amount_ge:
             if is_amount_abs:
-                statement = statement.where(func.abs(Transaction.amount) >= amount_ge)
+                statement = statement.where(
+                    func.abs(model.amount_default_currency) >= amount_ge
+                )
             else:
-                statement = statement.where(Transaction.amount >= amount_ge)
+                statement = statement.where(model.amount_default_currency >= amount_ge)
         if amount_le:
             if is_amount_abs:
-                statement = statement.where(func.abs(Transaction.amount) <= amount_le)
+                statement = statement.where(
+                    func.abs(model.amount_default_currency) <= amount_le
+                )
             else:
-                statement = statement.where(Transaction.amount <= amount_le)
+                statement = statement.where(model.amount_default_currency <= amount_le)
+
+        # GROUP BY
+        if consolidated:
+            statement = statement.group_by(
+                ConsolidatedTransaction.id,
+                ConsolidatedTransaction.name,
+                ConsolidatedTransaction.category_id,
+                ConsolidatedTransaction.movement_id,
+            )
 
         # ORDER BY
         order = desc if is_descending else asc
-        statement = statement.order_by(order(cls.timestamp), order(cls.id))
+        statement = statement.order_by(order(model.timestamp), order(model.id))
 
         # OFFSET and LIMIT
         if per_page:
@@ -123,3 +184,22 @@ class Transaction(SyncableBase):
             statement = statement.offset(offset).limit(per_page)
 
         return statement
+
+
+class ConsolidatedTransactionMeta(type):
+    def __getattribute__(cls, __name: str) -> Any:
+        attr = super().__getattribute__(__name)
+        return attr.label(__name)
+
+
+class ConsolidatedTransaction(metaclass=ConsolidatedTransactionMeta):
+    id = func.coalesce(-Movement.id, Transaction.id)
+    name = func.coalesce(Movement.name, Transaction.name)
+    category_id = func.coalesce(Movement.category_id, Transaction.category_id)
+    timestamp = func.min(Transaction.timestamp)
+    amount_default_currency = func.sum(Transaction.amount_default_currency)
+    transactions_count = func.count(Transaction.id)
+    account_id_max = func.max(Transaction.account_id)
+    account_id_min = func.min(Transaction.account_id)
+    movement_id = Movement.id
+    amount = func.sum(Transaction.amount)

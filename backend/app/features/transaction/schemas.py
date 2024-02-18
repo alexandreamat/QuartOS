@@ -15,16 +15,18 @@
 
 from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel
 
 from app.common.schemas import (
+    ApiOutMixin,
     PlaidInMixin,
     PlaidOutMixin,
     SyncableApiOutMixin,
     ApiInMixin,
 )
+from app.features.account.schemas import AnnotatedLiteral
 from app.features.file import FileApiOut
 
 if TYPE_CHECKING:
@@ -32,19 +34,41 @@ if TYPE_CHECKING:
 
 
 class __TransactionBase(BaseModel):
-    amount: Decimal
     timestamp: date
     name: str
     category_id: int | None
+    movement_id: int | None
+    amount_default_currency: Decimal
 
 
 class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
+    amount: Decimal
     account_balance: Decimal
-    amount_default_currency: Decimal
     account_id: int
-    movement_id: int | None
-    files: list[FileApiOut]
     is_synced: bool
+    consolidated: AnnotatedLiteral(False) = False
+
+
+class ConsolidatedTransactionApiOut(__TransactionBase, ApiOutMixin):
+    amount: Decimal | None
+    consolidated: AnnotatedLiteral(True) = True
+    transactions_count: int
+    account_id: int | None
+
+    @classmethod
+    def model_validate(cls, obj: Any, **kwargs: Any) -> "ConsolidatedTransactionApiOut":
+        transaction_dict: dict[str, Any] = obj._asdict()
+
+        if obj.account_id_min == obj.account_id_max:
+            account_id = obj.account_id_min
+        else:
+            account_id = None
+        transaction_dict.update(account_id=account_id)
+
+        amount = None if obj.currency_codes != 1 else obj.amount
+        transaction_dict.update(amount=amount)
+
+        return cls(**transaction_dict)
 
 
 class TransactionApiIn(__TransactionBase, ApiInMixin): ...

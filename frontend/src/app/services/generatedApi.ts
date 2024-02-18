@@ -706,12 +706,12 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "merchants"],
       }),
-      createUsersMeMovementsPost: build.mutation<
-        CreateUsersMeMovementsPostApiResponse,
-        CreateUsersMeMovementsPostApiArg
+      mergeUsersMeMovementsMergePost: build.mutation<
+        MergeUsersMeMovementsMergePostApiResponse,
+        MergeUsersMeMovementsMergePostApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/`,
+          url: `/users/me/movements/merge`,
           method: "POST",
           body: queryArg,
         }),
@@ -748,17 +748,6 @@ const injectedRtkApi = api
         UpdateAllUsersMeMovementsPutApiArg
       >({
         query: () => ({ url: `/users/me/movements/`, method: "PUT" }),
-        invalidatesTags: ["users", "movements"],
-      }),
-      mergeUsersMeMovementsMergePost: build.mutation<
-        MergeUsersMeMovementsMergePostApiResponse,
-        MergeUsersMeMovementsMergePostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/movements/merge`,
-          method: "POST",
-          body: queryArg,
-        }),
         invalidatesTags: ["users", "movements"],
       }),
       readUsersMeMovementsMovementIdGet: build.query<
@@ -837,9 +826,21 @@ const injectedRtkApi = api
             amount_ge: queryArg.amountGe,
             amount_le: queryArg.amountLe,
             is_amount_abs: queryArg.isAmountAbs,
+            consolidated: queryArg.consolidated,
           },
         }),
         providesTags: ["users", "transactions"],
+      }),
+      consolidateUsersMeTransactionsPost: build.mutation<
+        ConsolidateUsersMeTransactionsPostApiResponse,
+        ConsolidateUsersMeTransactionsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/transactions/`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["users", "transactions"],
       }),
     }),
     overrideExisting: false,
@@ -1210,9 +1211,9 @@ export type UpdateUsersMeMerchantsMerchantIdPutApiArg = {
 export type DeleteUsersMeMerchantsMerchantIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
 export type DeleteUsersMeMerchantsMerchantIdDeleteApiArg = number;
-export type CreateUsersMeMovementsPostApiResponse =
+export type MergeUsersMeMovementsMergePostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
-export type CreateUsersMeMovementsPostApiArg = number[];
+export type MergeUsersMeMovementsMergePostApiArg = number[];
 export type ReadManyUsersMeMovementsGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut[];
 export type ReadManyUsersMeMovementsGetApiArg = {
@@ -1235,9 +1236,6 @@ export type ReadManyUsersMeMovementsGetApiArg = {
 export type UpdateAllUsersMeMovementsPutApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateAllUsersMeMovementsPutApiArg = void;
-export type MergeUsersMeMovementsMergePostApiResponse =
-  /** status 200 Successful Response */ MovementApiOut;
-export type MergeUsersMeMovementsMergePostApiArg = number[];
 export type ReadUsersMeMovementsMovementIdGetApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
 export type ReadUsersMeMovementsMovementIdGetApiArg = number;
@@ -1267,7 +1265,10 @@ export type RemoveUsersMeMovementsMovementIdTransactionsTransactionIdDeleteApiAr
     transactionId: number;
   };
 export type ReadManyUsersMeTransactionsGetApiResponse =
-  /** status 200 Successful Response */ TransactionApiOut[];
+  /** status 200 Successful Response */ (
+    | TransactionApiOut
+    | ConsolidatedTransactionApiOut
+  )[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
   accountId?: number | null;
   page?: number;
@@ -1279,27 +1280,25 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   amountGe?: number | string | null;
   amountLe?: number | string | null;
   isAmountAbs?: boolean;
+  consolidated?: boolean;
 };
-export type FileApiOut = {
-  id: number;
-  name: string;
-  uploaded: string;
-  transaction_id: number;
-};
+export type ConsolidateUsersMeTransactionsPostApiResponse =
+  /** status 200 Successful Response */ ConsolidatedTransactionApiOut;
+export type ConsolidateUsersMeTransactionsPostApiArg = number[];
 export type TransactionPlaidOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
+  plaid_id: string;
+  plaid_metadata: string;
   is_synced: boolean;
-  amount: string;
   timestamp: string;
   name: string;
   category_id: number | null;
-  account_balance: string;
-  amount_default_currency: string;
-  account_id: number;
   movement_id: number | null;
-  files: FileApiOut[];
+  amount_default_currency: string;
+  amount: string;
+  account_balance: string;
+  account_id: number;
+  consolidated?: false;
 };
 export type ValidationError = {
   loc: (string | number)[];
@@ -1312,10 +1311,11 @@ export type HttpValidationError = {
 export type TransactionPlaidIn = {
   plaid_id: string;
   plaid_metadata: string;
-  amount: number | string;
   timestamp: string;
   name: string;
   category_id: number | null;
+  movement_id: number | null;
+  amount_default_currency: number | string;
 };
 export type UserInstitutionLinkPlaidOut = {
   id: number;
@@ -1329,10 +1329,11 @@ export type UserInstitutionLinkPlaidOut = {
 export type TransactionPlaidIn2 = {
   plaid_id: string;
   plaid_metadata: string;
-  amount: string;
   timestamp: string;
   name: string;
   category_id: number | null;
+  movement_id: number | null;
+  amount_default_currency: string;
 };
 export type Token = {
   access_token: string;
@@ -1352,16 +1353,12 @@ export type BodyResetAuthResetPasswordPost = {
 };
 export type CategoryApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
   name: string;
   icon_base64: Blob;
 };
 export type InstitutionApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
   name: string;
   country_code: string;
@@ -1426,8 +1423,6 @@ export type UserApiIn = {
 };
 export type DepositoryApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
   balance: string;
   userinstitutionlink_id: number;
@@ -1440,8 +1435,6 @@ export type DepositoryApiOut = {
 };
 export type LoanApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
   balance: string;
   userinstitutionlink_id: number;
@@ -1454,8 +1447,6 @@ export type LoanApiOut = {
 };
 export type CreditApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
   balance: string;
   userinstitutionlink_id: number;
@@ -1468,8 +1459,6 @@ export type CreditApiOut = {
 };
 export type BrokerageApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
   balance: string;
   userinstitutionlink_id: number;
@@ -1482,8 +1471,6 @@ export type BrokerageApiOut = {
 };
 export type InvestmentApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
   balance: string;
   userinstitutionlink_id: number;
@@ -1581,34 +1568,40 @@ export type PropertyApiIn = {
   type: "property";
 };
 export type TransactionApiIn = {
-  amount: string;
   timestamp: string;
   name: string;
   category_id: number | null;
+  movement_id: number | null;
+  amount_default_currency: string;
 };
 export type BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost = {
   file: Blob;
 };
 export type TransactionApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
-  amount: string;
   timestamp: string;
   name: string;
   category_id: number | null;
-  account_balance: string;
-  amount_default_currency: string;
-  account_id: number;
   movement_id: number | null;
-  files: FileApiOut[];
+  amount_default_currency: string;
+  amount: string;
+  account_balance: string;
+  account_id: number;
+  consolidated?: false;
 };
 export type TransactionApiIn2 = {
-  amount: number | string;
   timestamp: string;
   name: string;
   category_id: number | null;
+  movement_id: number | null;
+  amount_default_currency: number | string;
+};
+export type FileApiOut = {
+  id: number;
+  name: string;
+  uploaded: string;
+  transaction_id: number;
 };
 export type BodyCreateUsersMeAccountsAccountIdTransactionsTransactionIdFilesPost =
   {
@@ -1634,8 +1627,6 @@ export type PlStatement = {
 };
 export type UserInstitutionLinkApiOut = {
   id: number;
-  plaid_id: string | null;
-  plaid_metadata: string | null;
   is_synced: boolean;
   institution_id: number;
   user_id: number;
@@ -1665,4 +1656,16 @@ export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
   name: string;
   category_id: number | null;
+};
+export type ConsolidatedTransactionApiOut = {
+  id: number;
+  timestamp: string;
+  name: string;
+  category_id: number | null;
+  movement_id: number | null;
+  amount_default_currency: string;
+  amount: string | null;
+  consolidated?: true;
+  transactions_count: number;
+  account_id: number | null;
 };

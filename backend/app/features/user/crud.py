@@ -36,6 +36,7 @@ from app.features.movement import (
     MovementField,
 )
 from app.features.transaction import TransactionApiOut, Transaction
+from app.features.transaction.schemas import ConsolidatedTransactionApiOut
 from app.features.userinstitutionlink import (
     UserInstitutionLinkApiOut,
     UserInstitutionLink,
@@ -112,20 +113,15 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         cls,
         db: Session,
         user_id: int,
-        *,
-        account_id: int | None = None,
-        movement_id: int | None = None,
+        consolidated: bool = False,
         **kwargs: Any,
-    ) -> Iterable[TransactionApiOut]:
+    ) -> Iterable[TransactionApiOut | ConsolidatedTransactionApiOut]:
         statement = User.select_transactions(
-            user_id,
-            account_id=account_id,
-            movement_id=movement_id,
-            **kwargs,
+            user_id, consolidated=consolidated, **kwargs
         )
-
-        for t in db.scalars(statement):
-            yield TransactionApiOut.model_validate(t)
+        schema = ConsolidatedTransactionApiOut if consolidated else TransactionApiOut
+        for t in db.execute(statement):
+            yield schema.model_validate(t)
 
     @classmethod
     def read_transaction(
@@ -133,17 +129,12 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         db: Session,
         user_id: int,
         transaction_id: int,
-        *,
-        account_id: int | None = None,
-        movement_id: int | None = None,
+        **kwargs: Any,
     ) -> TransactionApiOut:
         statement = User.select_transactions(
-            user_id,
-            account_id=account_id,
-            movement_id=movement_id,
-            transaction_id=transaction_id,
+            user_id, transaction_id=transaction_id, **kwargs
         )
-        transaction = Transaction.read_one_from_query(db, statement, transaction_id)
+        transaction = db.execute(statement).one()
         return TransactionApiOut.model_validate(transaction)
 
     @classmethod
