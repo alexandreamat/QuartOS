@@ -1265,10 +1265,7 @@ export type RemoveUsersMeMovementsMovementIdTransactionsTransactionIdDeleteApiAr
     transactionId: number;
   };
 export type ReadManyUsersMeTransactionsGetApiResponse =
-  /** status 200 Successful Response */ (
-    | TransactionApiOut
-    | ConsolidatedTransactionApiOut
-  )[];
+  /** status 200 Successful Response */ TransactionApiOut[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
   accountId?: number | null;
   page?: number;
@@ -1283,7 +1280,7 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   consolidated?: boolean;
 };
 export type ConsolidateUsersMeTransactionsPostApiResponse =
-  /** status 200 Successful Response */ ConsolidatedTransactionApiOut;
+  /** status 200 Successful Response */ TransactionApiOut;
 export type ConsolidateUsersMeTransactionsPostApiArg = number[];
 export type TransactionPlaidOut = {
   id: number;
@@ -1295,10 +1292,11 @@ export type TransactionPlaidOut = {
   category_id: number | null;
   movement_id: number | null;
   amount_default_currency: string;
-  amount: string;
-  account_balance: string;
-  account_id: number;
-  consolidated?: false;
+  amount: string | null;
+  account_balance: string | null;
+  account_id: number | null;
+  consolidated: boolean;
+  transactions_count: number;
 };
 export type ValidationError = {
   loc: (string | number)[];
@@ -1585,10 +1583,11 @@ export type TransactionApiOut = {
   category_id: number | null;
   movement_id: number | null;
   amount_default_currency: string;
-  amount: string;
-  account_balance: string;
-  account_id: number;
-  consolidated?: false;
+  amount: string | null;
+  account_balance: string | null;
+  account_id: number | null;
+  consolidated: boolean;
+  transactions_count: number;
 };
 export type TransactionApiIn2 = {
   timestamp: string;
@@ -1656,16 +1655,4 @@ export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
   name: string;
   category_id: number | null;
-};
-export type ConsolidatedTransactionApiOut = {
-  id: number;
-  timestamp: string;
-  name: string;
-  category_id: number | null;
-  movement_id: number | null;
-  amount_default_currency: string;
-  amount: string | null;
-  consolidated?: true;
-  transactions_count: number;
-  account_id: number | null;
 };

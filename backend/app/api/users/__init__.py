@@ -18,14 +18,10 @@ from typing import Iterable
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
+from app.crud.user import CRUDUser
 from app.database.deps import DBSession
-from app.features.user import (
-    CurrentUser,
-    CurrentSuperuser,
-    CRUDUser,
-    UserApiOut,
-    UserApiIn,
-)
+from app.deps.user import CurrentSuperuser, CurrentUser
+from app.schemas.user import UserApiIn, UserApiOut
 from app.utils import include_package_routes
 
 router = APIRouter()
@@ -95,13 +91,13 @@ def create(db: DBSession, me: CurrentSuperuser, user_in: UserApiIn) -> UserApiOu
 def read_many(
     db: DBSession,
     me: CurrentSuperuser,
-    offset: int = 0,
-    limit: int = 100,
+    page: int = 0,
+    per_page: int = 0,
 ) -> Iterable[UserApiOut]:
     """
     Retrieve users.
     """
-    return CRUDUser.read_many(db, offset, limit)
+    return CRUDUser.read_many(db, page=page, per_page=per_page)
 
 
 @router.delete("/{user_id}")

@@ -19,10 +19,11 @@ from typing import Annotated, Iterable
 from fastapi import APIRouter, File as _File, UploadFile
 from fastapi.responses import Response
 
+from app.crud.file import CRUDFile
+from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
-from app.features.file import CRUDFile, FileApiIn, FileApiOut
-from app.features.transaction import CRUDTransaction
-from app.features.user import CurrentUser, CRUDUser
+from app.deps.user import CurrentUser
+from app.schemas.file import FileApiIn, FileApiOut
 
 router = APIRouter()
 
@@ -35,11 +36,11 @@ async def create(
     transaction_id: int,
     file: Annotated[UploadFile, _File(...)],
 ) -> FileApiOut:
-    CRUDUser.read_transaction(
+    CRUDTransaction.read(
         db,
-        me.id,
+        transaction_id,
+        user_id=me.id,
         account_id=account_id,
-        transaction_id=transaction_id,
     )
     data = await file.read()
     file_in = FileApiIn(data=data, name=file.filename)
@@ -53,12 +54,7 @@ def read_many(
     account_id: int,
     transaction_id: int,
 ) -> Iterable[FileApiOut]:
-    CRUDUser.read_transaction(
-        db,
-        me.id,
-        account_id=account_id,
-        transaction_id=transaction_id,
-    )
+    CRUDTransaction.read(db, transaction_id, user_id=me.id, account_id=account_id)
     return CRUDTransaction.read_files(db, transaction_id)
 
 
@@ -76,12 +72,7 @@ def read(
     transaction_id: int,
     file_id: int,
 ) -> Response:
-    CRUDUser.read_transaction(
-        db,
-        me.id,
-        account_id=account_id,
-        transaction_id=transaction_id,
-    )
+    CRUDTransaction.read(db, transaction_id, user_id=me.id, account_id=account_id)
     file_out = CRUDFile.read(db, file_id)
     headers = {"Content-Disposition": f"attachment; filename={file_out.name}"}
     mime_type, _ = mimetypes.guess_type(file_out.name)
@@ -99,10 +90,5 @@ def delete(
     transaction_id: int,
     file_id: int,
 ) -> int:
-    CRUDUser.read_transaction(
-        db,
-        me.id,
-        account_id=account_id,
-        transaction_id=transaction_id,
-    )
+    CRUDTransaction.read(db, transaction_id, user_id=me.id, account_id=account_id)
     return CRUDFile.delete(db, file_id)

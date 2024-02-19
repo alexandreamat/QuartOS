@@ -16,7 +16,8 @@
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from app.features.user import CRUDUser, UserApiIn
+from app.crud.user import CRUDUser
+from app.schemas.user import UserApiIn
 from app.settings import settings
 
 

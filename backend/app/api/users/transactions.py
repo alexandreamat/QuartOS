@@ -19,12 +19,12 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
+from app.crud.movement import CRUDMovement
+from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
-from app.features.movement.schemas import MovementApiOut
-from app.features.transaction import TransactionApiOut
-from app.features.transaction.crud import CRUDTransaction
-from app.features.transaction.schemas import ConsolidatedTransactionApiOut
-from app.features.user import CurrentUser, CRUDUser
+from app.deps.user import CurrentUser
+from app.schemas.movement import MovementApiIn
+from app.schemas.transaction import TransactionApiOut
 
 router = APIRouter()
 
@@ -44,8 +44,8 @@ def read_many(
     amount_le: Decimal | None = None,
     is_amount_abs: bool = False,
     consolidated: bool = False,
-) -> Iterable[TransactionApiOut | ConsolidatedTransactionApiOut]:
-    return CRUDUser.read_transactions(
+) -> Iterable[TransactionApiOut]:
+    return CRUDTransaction.read_many(
         db,
         user_id=me.id,
         account_id=account_id,
@@ -67,7 +67,14 @@ def consolidate(
     db: DBSession,
     me: CurrentUser,
     transaction_ids: list[int],
-) -> ConsolidatedTransactionApiOut:
+) -> TransactionApiOut:
+    max_amount = Decimal(0)
     for transaction_id in transaction_ids:
-        CRUDUser.read_transaction(db, me.id, transaction_id=transaction_id)
-    return CRUDTransaction.consolidate(db, transaction_ids)
+        transaction_out = CRUDTransaction.read(db, transaction_id, user_id=me.id)
+        amount = transaction_out.amount or Decimal(0)
+        if amount > max_amount:
+            max_amount = amount
+            name = transaction_out.name
+    movement_in = MovementApiIn(name=name)
+    movement_out = CRUDMovement.create(db, movement_in, transaction_ids=transaction_ids)
+    return TransactionApiOut.model_validate(movement_out)
