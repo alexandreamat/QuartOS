@@ -17,7 +17,6 @@ from fastapi import APIRouter
 
 from app.utils import include_package_routes
 
-
 router = APIRouter()
 
 include_package_routes(router, __name__, __path__)

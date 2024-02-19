@@ -17,14 +17,12 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
+from app.crud.account import CRUDAccount
+from app.crud.userinstitutionlink import CRUDUserInstitutionLink
 from app.database.deps import DBSession
-from app.features.account import (
-    CRUDAccount,
-    AccountApiOut,
-    AccountApiIn,
-)
-from app.features.user import CRUDUser, CurrentUser
-from app.features.userinstitutionlink import SyncedEntity
+from app.deps.user import CurrentUser
+from app.exceptions.userinstitutionlink import SyncedEntity
+from app.schemas.account import AccountApiIn, AccountApiOut
 from app.utils import include_package_routes
 
 router = APIRouter()
@@ -32,7 +30,7 @@ router = APIRouter()
 
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[AccountApiOut]:
-    return CRUDUser.read_accounts(db, me.id, None)
+    return CRUDAccount.read_many(db, user_id=me.id)
 
 
 @router.post("/")
@@ -44,7 +42,7 @@ def create(
 ) -> AccountApiOut:
     if account_in.type in ["depository", "loan", "brokerage", "investment"]:
         assert userinstitutionlink_id
-        CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
+        CRUDUserInstitutionLink.read(db, userinstitutionlink_id, user_id=me.id)
     return CRUDAccount.create(
         db, account_in, userinstitutionlink_id=userinstitutionlink_id, user_id=me.id
     )
@@ -52,7 +50,7 @@ def create(
 
 @router.get("/{account_id}")
 def read(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
-    return CRUDUser.read_account(db, me.id, None, account_id=account_id)
+    return CRUDAccount.read(db, account_id, user_id=me.id)
 
 
 @router.put("/{account_id}")
@@ -65,7 +63,7 @@ def update(
 ) -> AccountApiOut:
     if CRUDAccount.is_synced(db, account_id):
         raise SyncedEntity()
-    CRUDUser.read_account(db, me.id, None, account_id)
+    CRUDAccount.read(db, account_id, user_id=me.id)
     return CRUDAccount.update(
         db,
         account_id,
@@ -81,7 +79,7 @@ def delete(
     me: CurrentUser,
     account_id: int,
 ) -> int:
-    account_out = CRUDUser.read_account(db, me.id, None, account_id)
+    account_out = CRUDAccount.read(db, account_id, user_id=me.id)
     if account_out.is_synced:
         raise SyncedEntity()
     return CRUDAccount.delete(db, account_id)

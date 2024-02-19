@@ -19,14 +19,11 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
+from app.crud.movement import CRUDMovement
+from app.crud.user import CRUDUser
 from app.database.deps import DBSession
-from app.features.movement import (
-    MovementApiOut,
-    MovementApiIn,
-    MovementField,
-    CRUDMovement,
-)
-from app.features.user import CurrentUser, CRUDUser
+from app.deps.user import CurrentUser
+from app.schemas.movement import MovementApiIn, MovementApiOut, MovementField
 from app.utils import include_package_routes
 
 router = APIRouter()
@@ -35,7 +32,7 @@ router = APIRouter()
 @router.post("/merge")
 def merge(db: DBSession, me: CurrentUser, movement_ids: list[int]) -> MovementApiOut:
     for movement_id in movement_ids:
-        CRUDUser.read_movement(db, me.id, movement_id)
+        CRUDMovement.read(db, movement_id, user_id=me.id)
     return CRUDMovement.merge(db, movement_ids)
 
 
@@ -59,9 +56,9 @@ def read_many(
     amount_ge: Decimal | None = None,
     amount_le: Decimal | None = None,
 ) -> Iterable[MovementApiOut]:
-    return CRUDUser.read_movements(
+    return CRUDMovement.read_many(
         db,
-        me.id,
+        user_id=me.id,
         category_id=category_id,
         page=page,
         per_page=per_page,
@@ -86,12 +83,12 @@ def read(
     me: CurrentUser,
     movement_id: int,
 ) -> MovementApiOut:
-    return CRUDUser.read_movement(db, me.id, movement_id)
+    return CRUDMovement.read(db, movement_id, user_id=me.id)
 
 
 @router.put("/")
 def update_all(db: DBSession, me: CurrentUser) -> None:
-    CRUDUser.update_all_movements(db, me.id)
+    CRUDMovement.update_all(db, user_id=me.id)
 
 
 @router.put("/{movement_id}")
@@ -101,7 +98,7 @@ def update(
     movement_id: int,
     movement_in: MovementApiIn,
 ) -> MovementApiOut:
-    CRUDUser.read_movement(db, me.id, movement_id)
+    CRUDMovement.read(db, movement_id, user_id=me.id)
     return CRUDUser.update_movement(db, me.id, movement_id, movement_in)
 
 
@@ -111,7 +108,7 @@ def delete(
     me: CurrentUser,
     movement_id: int,
 ) -> int:
-    CRUDUser.read_movement(db, me.id, movement_id)
+    CRUDMovement.read(db, movement_id, user_id=me.id)
     return CRUDMovement.delete(db, movement_id)
 
 

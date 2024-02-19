@@ -19,32 +19,29 @@ import plaid
 import urllib3
 from fastapi import APIRouter, HTTPException, status
 
-from app.database.deps import DBSession
-from app.features.user import CRUDUser, CurrentUser
-from app.features.userinstitutionlink import (
-    CRUDUserInstitutionLink,
+from app.crud.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
-    sync_transactions as _sync_transactions,
+    CRUDUserInstitutionLink,
 )
+from app.database.deps import DBSession
+from app.deps.user import CurrentUser
+from app.plaid.userinstitutionlink import sync_transactions
 
 router = APIRouter()
 
 
 @router.post("/sync")
 def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
-    institution_link_out = CRUDUser.read_user_institution_link(
-        db, me.id, userinstitutionlink_id
-    )
-    if not institution_link_out.plaid_id:
-        raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED)
-    institution_link_plaid_out = CRUDSyncableUserInstitutionLink.read_by_plaid_id(
-        db, institution_link_out.plaid_id
+    institution_link_plaid_out = CRUDSyncableUserInstitutionLink.read(
+        db,
+        userinstitutionlink_id,
+        user_id=me.id,
     )
     replacement_pattern_out = CRUDUserInstitutionLink.read_replacement_pattern(
         db, userinstitutionlink_id
     )
     try:
-        _sync_transactions(
+        sync_transactions(
             db,
             institution_link_plaid_out,
             replacement_pattern_out,

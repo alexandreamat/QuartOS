@@ -18,9 +18,10 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
+from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
-from app.features.movement import PLStatement, DetailedPLStatementApiOut
-from app.features.user import CurrentUser, CRUDUser
+from app.deps.user import CurrentUser
+from app.schemas.movement import DetailedPLStatementApiOut, PLStatement
 
 router = APIRouter()
 
@@ -31,7 +32,7 @@ def get_detailed_pl_statement(
     me: CurrentUser,
     month: date,
 ) -> DetailedPLStatementApiOut:
-    return CRUDUser.get_detailed_pl_statement(db, me.id, month)
+    return CRUDTransaction.get_detailed_pl_statement(db, me.id, month)
 
 
 @router.get("/")
@@ -41,4 +42,6 @@ def get_many_pl_statements(
     page: int = 0,
     per_page: int = 12,
 ) -> Iterable[PLStatement]:
-    return CRUDUser.get_many_pl_statements(db, me.id, page=page, per_page=per_page)
+    return CRUDTransaction.get_many_pl_statements(
+        db, me.id, page=page, per_page=per_page
+    )

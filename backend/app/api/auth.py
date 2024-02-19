@@ -22,9 +22,10 @@ from jose.exceptions import JWTError
 from sqlalchemy.exc import NoResultFound
 
 from app import utils
+from app.crud.user import CRUDUser
 from app.database.deps import DBSession
-from app.features.auth import Token
-from app.features.user import CRUDUser, UserApiIn
+from app.schemas.auth import Token
+from app.schemas.user import UserApiIn
 from app.settings import settings
 from app.utils import (
     verify_password_reset_token,

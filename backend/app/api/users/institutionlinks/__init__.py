@@ -18,17 +18,21 @@ from typing import Iterable
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import NoResultFound
 
-from app.common.plaid import create_link_token, exchange_public_token
-from app.database.deps import DBSession
-from app.features.account import CRUDSyncableAccount, fetch_accounts
-from app.features.institution import CRUDSyncableInstitution, fetch_institution
-from app.features.user import CRUDUser, CurrentUser
-from app.features.userinstitutionlink import (
-    CRUDUserInstitutionLink,
-    UserInstitutionLinkApiOut,
-    UserInstitutionLinkApiIn,
+from app.crud.account import CRUDSyncableAccount
+from app.crud.institution import CRUDSyncableInstitution
+from app.crud.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
-    fetch_user_institution_link,
+    CRUDUserInstitutionLink,
+)
+from app.database.deps import DBSession
+from app.deps.user import CurrentUser
+from app.plaid.account import fetch_accounts
+from app.plaid.common import create_link_token, exchange_public_token
+from app.plaid.institution import fetch_institution
+from app.plaid.userinstitutionlink import fetch_user_institution_link
+from app.schemas.userinstitutionlink import (
+    UserInstitutionLinkApiIn,
+    UserInstitutionLinkApiOut,
 )
 from app.utils import include_package_routes
 
@@ -42,8 +46,8 @@ def get_link_token(
     userinstitutionlink_id: int | None = None,
 ) -> str:
     if userinstitutionlink_id:
-        userinstitutionlink_out = CRUDUser.read_user_institution_link(
-            db, me.id, userinstitutionlink_id
+        userinstitutionlink_out = CRUDUserInstitutionLink.read(
+            db, userinstitutionlink_id, user_id=me.id
         )
         userinstitutionlink_plaid_out = CRUDSyncableUserInstitutionLink.read(
             db, userinstitutionlink_out.id
@@ -101,12 +105,12 @@ def create(
 def read(
     db: DBSession, me: CurrentUser, userinstitutionlink_id: int
 ) -> UserInstitutionLinkApiOut:
-    return CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
+    return CRUDUserInstitutionLink.read(db, userinstitutionlink_id, user_id=me.id)
 
 
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[UserInstitutionLinkApiOut]:
-    return CRUDUser.read_user_institution_links(db, me.id)
+    return CRUDUserInstitutionLink.read_many(db, user_id=me.id)
 
 
 @router.put("/{userinstitutionlink_id}")
@@ -116,8 +120,8 @@ def update(
     userinstitutionlink_id: int,
     user_institution_link_in: UserInstitutionLinkApiIn,
 ) -> UserInstitutionLinkApiOut:
-    curr_institution_link = CRUDUser.read_user_institution_link(
-        db, me.id, userinstitutionlink_id
+    curr_institution_link = CRUDUserInstitutionLink.read(
+        db, userinstitutionlink_id, user_id=me.id
     )
     if curr_institution_link.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
@@ -128,7 +132,7 @@ def update(
 
 @router.delete("/{userinstitutionlink_id}")
 def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> int:
-    CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
+    CRUDUserInstitutionLink.read(db, userinstitutionlink_id, user_id=me.id)
     return CRUDUserInstitutionLink.delete(db, userinstitutionlink_id)
 
 
