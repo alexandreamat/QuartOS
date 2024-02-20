@@ -18,12 +18,7 @@ from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import (
-    ForeignKey,
-    asc,
-    desc,
-    func,
-)
+from sqlalchemy import ForeignKey, asc, desc
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.expression import ClauseElement
 
@@ -80,22 +75,3 @@ class Transaction(SyncableBase):
     @classmethod
     def get_timestamp_asc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
         return asc(cls.timestamp), asc(cls.id)
-
-
-class ConsolidatedTransactionMeta(type):
-    def __getattribute__(cls, __name: str) -> Any:
-        attr = super().__getattribute__(__name)
-        return attr.label(__name)
-
-
-class ConsolidatedTransaction(metaclass=ConsolidatedTransactionMeta):
-    id = func.coalesce(-Movement.id, Transaction.id)
-    name = func.coalesce(Movement.name, Transaction.name)
-    category_id = func.coalesce(Movement.category_id, Transaction.category_id)
-    timestamp = func.min(Transaction.timestamp)
-    amount_default_currency = func.sum(Transaction.amount_default_currency)
-    transactions_count = func.count(Transaction.id)
-    account_id_max = func.max(Transaction.account_id)
-    account_id_min = func.min(Transaction.account_id)
-    movement_id = Movement.id
-    amount = func.sum(Transaction.amount)

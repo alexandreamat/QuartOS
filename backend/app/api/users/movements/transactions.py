@@ -31,7 +31,9 @@ router = APIRouter()
 def read_many(
     db: DBSession, me: CurrentUser, movement_id: int
 ) -> Iterable[TransactionApiOut]:
-    return CRUDTransaction.read_many(db, user_id=me.id, movement_id=movement_id)
+    return CRUDTransaction.read_many(
+        db, user_id=me.id, consolidated=False, movement_id=movement_id
+    )
 
 
 @router.put("/")
