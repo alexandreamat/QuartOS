@@ -130,3 +130,9 @@ class ColorType(types.TypeDecorator[Color]):
 
     def process_result_value(self, value: str | None, dialect: Any) -> Color | None:
         return Color(value) if value else None
+
+
+class CalculatedColumnsMeta(type):
+    def __getattribute__(cls, __name: str) -> Any:
+        attr = super().__getattribute__(__name)
+        return attr.label(__name)

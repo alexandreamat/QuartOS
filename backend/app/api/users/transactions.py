@@ -24,7 +24,10 @@ from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
 from app.schemas.movement import MovementApiIn
-from app.schemas.transaction import TransactionApiOut
+from app.schemas.transaction import (
+    ConsolidatedTransactionApiOut,
+    TransactionApiOut,
+)
 
 router = APIRouter()
 
@@ -44,7 +47,7 @@ def read_many(
     amount_le: Decimal | None = None,
     is_amount_abs: bool = False,
     consolidated: bool = False,
-) -> Iterable[TransactionApiOut]:
+) -> Iterable[TransactionApiOut | ConsolidatedTransactionApiOut]:
     return CRUDTransaction.read_many(
         db,
         user_id=me.id,
@@ -67,7 +70,7 @@ def consolidate(
     db: DBSession,
     me: CurrentUser,
     transaction_ids: list[int],
-) -> TransactionApiOut:
+) -> ConsolidatedTransactionApiOut:
     max_amount = Decimal(0)
     for transaction_id in transaction_ids:
         transaction_out = CRUDTransaction.read(db, transaction_id, user_id=me.id)
@@ -77,4 +80,4 @@ def consolidate(
             name = transaction_out.name
     movement_in = MovementApiIn(name=name)
     movement_out = CRUDMovement.create(db, movement_in, transaction_ids=transaction_ids)
-    return TransactionApiOut.model_validate(movement_out)
+    return ConsolidatedTransactionApiOut.model_validate(movement_out)

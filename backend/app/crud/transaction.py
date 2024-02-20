@@ -20,20 +20,22 @@ from decimal import Decimal
 from typing import Any, Iterable
 
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import Select, asc, desc, distinct, func, or_, select, case
+from sqlalchemy import Select, asc, desc, func, or_, select, case
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from app.crud.common import CRUDBase, CRUDSyncedBase
 from app.exceptions.common import ObjectNotFoundError
 from app.models.account import Account, NonInstitutionalAccount
+from app.models.consolidatedtransaction import ConsolidatedTransaction
 from app.models.movement import Movement
-from app.models.transaction import ConsolidatedTransaction, Transaction
+from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.file import FileApiOut
 from app.schemas.movement import DetailedPLStatementApiOut, PLStatement
 from app.schemas.transaction import (
+    ConsolidatedTransactionApiOut,
     TransactionApiOut,
     TransactionApiIn,
     TransactionPlaidIn,
@@ -65,39 +67,37 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         consolidated: bool = False,
         per_page: int = 0,
         page: int = 0,
-        **kwargs: Any,
     ) -> Select[tuple[Any, ...]]:
-        model = ConsolidatedTransaction if consolidated else cls
+        model = ConsolidatedTransaction if consolidated else Transaction
 
         # SELECT
+        statement = select(
+            model.id,
+            model.timestamp,
+            model.name,
+            model.category_id,
+            model.amount,
+            model.amount_default_currency,
+        )
         if consolidated:
-            statement = select(
-                ConsolidatedTransaction.id,
-                ConsolidatedTransaction.timestamp,
-                ConsolidatedTransaction.name,
-                ConsolidatedTransaction.category_id,
-                ConsolidatedTransaction.amount,
-                ConsolidatedTransaction.amount_default_currency,
+            statement = statement.select(
                 ConsolidatedTransaction.account_id_max,
                 ConsolidatedTransaction.account_id_min,
                 ConsolidatedTransaction.transactions_count,
                 ConsolidatedTransaction.movement_id,
-                func.count(distinct(Account.currency_code)).label("currency_codes"),
+                ConsolidatedTransaction.currency_codes,
             )
-            statement = statement.outerjoin(Movement)
         else:
-            statement = select(
-                Transaction.id,
-                Transaction.timestamp,
-                Transaction.name,
-                Transaction.category_id,
-                Transaction.amount,
-                Transaction.amount_default_currency,
+            statement = statement.select(
                 Transaction.account_id,
                 Transaction.movement_id,
                 Transaction.account_balance,
                 Transaction.is_synced,
             )
+
+        # JOIN
+        if consolidated:
+            statement = statement.outerjoin(Movement)
         statement = statement.join(Account)
         statement = statement.outerjoin(UserInstitutionLink)
 
@@ -190,16 +190,22 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         return super().delete(db, id)
 
     @classmethod
-    def read_many(cls, db: Session, **kwargs: Any) -> Iterable[TransactionApiOut]:
+    def read_many_consolidated(
+        cls, db: Session, consolidated: bool = False, **kwargs: Any
+    ) -> Iterable[TransactionApiOut | ConsolidatedTransactionApiOut]:
         statement = cls._select(**kwargs)
-        for t in db.execute(statement):
-            yield TransactionApiOut.model_validate(t)
+        schema = ConsolidatedTransactionApiOut if consolidated else TransactionApiOut
+        for transaction in db.execute(statement):
+            yield schema.model_validate(transaction)
 
     @classmethod
-    def read(cls, db: Session, id: int, **kwargs: Any) -> TransactionApiOut:
+    def read_consolidated(
+        cls, db: Session, id: int, consolidated: bool = False, **kwargs: Any
+    ) -> TransactionApiOut | ConsolidatedTransactionApiOut:
         statement = cls._select(id=id, **kwargs)
         transaction = db.execute(statement)
-        return TransactionApiOut.model_validate(transaction)
+        schema = ConsolidatedTransactionApiOut if consolidated else TransactionApiOut
+        return schema.model_validate(transaction)
 
     @classmethod
     def select_aggregates(
