@@ -20,17 +20,16 @@ from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ColumnElement, ForeignKey, distinct, func, case
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 
 from app.crud.merchant import CRUDMerchant
+from app.models.account import Account
 from app.models.category import Category
 from app.models.common import Base
 from app.models.merchant import Merchant
-
-if TYPE_CHECKING:
-    from app.models.transaction import Transaction
+from app.models.transaction import Transaction
 
 
 class Movement(Base):
@@ -49,6 +48,11 @@ class Movement(Base):
     def timestamp(self) -> date:
         return min(t.timestamp for t in self.transactions)
 
+    @timestamp.inplace.expression
+    @classmethod
+    def _timestamp_expression(cls) -> ColumnElement[date]:
+        return func.min(Transaction.timestamp)
+
     @hybrid_property
     def amount_default_currency(self) -> Decimal:
         return sum(
@@ -56,9 +60,68 @@ class Movement(Base):
             Decimal(0),
         )
 
+    @amount_default_currency.inplace.expression
+    @classmethod
+    def _amount_default_currency_expression(cls) -> ColumnElement[Decimal]:
+        return func.sum(Transaction.amount_default_currency)
+
     @hybrid_property
     def transactions_count(self) -> int:
         return len(self.transactions)
+
+    @transactions_count.inplace.expression
+    @classmethod
+    def _transaction_count_expression(cls) -> ColumnElement[int]:
+        return func.count(Transaction.id)
+
+    @hybrid_property
+    def account_id_max(self) -> int:
+        return max((t.account_id for t in self.transactions), default=0)
+
+    @account_id_max.inplace.expression
+    @classmethod
+    def _acount_id_max_expression(cls) -> ColumnElement[int]:
+        return func.max(Transaction.account_id)
+
+    @hybrid_property
+    def account_id_min(self) -> int:
+        return min((t.account_id for t in self.transactions), default=0)
+
+    @account_id_min.inplace.expression
+    @classmethod
+    def _acount_id_min_expression(cls) -> ColumnElement[int]:
+        return func.min(Transaction.account_id)
+
+    @hybrid_property
+    def account_id(self) -> int | None:
+        if self.account_id_max == self.account_id_min:
+            return self.account_id_max
+        return None
+
+    @account_id.inplace.expression
+    @classmethod
+    def _account_id_expression(cls) -> ColumnElement[int | None]:
+        return case((cls.account_id_min == cls.account_id_max, cls.account_id_min))
+
+    @hybrid_property
+    def currency_codes(self) -> int:
+        return len({t.account.currency_code for t in self.transactions})
+
+    @currency_codes.inplace.expression
+    @classmethod
+    def _currency_codes_expression(cls) -> ColumnElement[int]:
+        return func.count(distinct(Account.currency_code))
+
+    @hybrid_property
+    def amount(self) -> Decimal | None:
+        if self.currency_codes == 1:
+            return sum((t.amount for t in self.transactions), start=Decimal(0))
+        return None
+
+    @amount.inplace.expression
+    @classmethod
+    def _amount_expression(cls) -> ColumnElement[Decimal | None]:
+        return case((cls.currency_codes == 1, func.sum(Transaction.amount)))
 
     @property
     def default_category_id_transactions(self) -> int | None:

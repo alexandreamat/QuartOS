@@ -21,7 +21,6 @@ from pydantic import BaseModel
 from app.schemas.account import AnnotatedLiteral
 
 from app.schemas.common import (
-    ApiOutMixin,
     PlaidInMixin,
     PlaidOutMixin,
     SyncableApiOutMixin,
@@ -39,7 +38,7 @@ class __TransactionBase(BaseModel):
 
 
 class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
-    movement_id: int
+    movement_id: int | None
     amount_default_currency: Decimal
     amount: Decimal
     account_balance: Decimal
@@ -50,33 +49,10 @@ class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
 
     @classmethod
     def model_validate(cls, obj: Any, **kwargs: Any) -> "TransactionApiOut":
-        transaction_dict: dict[str, Any] = obj._asdict()
-        return cls(**transaction_dict, consolidated=False, transactions_count=1)
-
-
-class ConsolidatedTransactionApiOut(__TransactionBase, ApiOutMixin):
-    amount_default_currency: Decimal
-    amount: Decimal | None
-    account_balance: Decimal | None
-    account_id: int | None
-    is_synced: bool
-    consolidated: AnnotatedLiteral(True)
-    transactions_count: int
-
-    @classmethod
-    def model_validate(cls, obj: Any, **kwargs: Any) -> "ConsolidatedTransactionApiOut":
-        transaction_dict: dict[str, Any] = obj._asdict()
-
-        if obj.account_id_min == obj.account_id_max:
-            account_id = obj.account_id_min
-        else:
-            account_id = None
-        transaction_dict.update(account_id=account_id)
-
-        amount = None if obj.currency_codes != 1 else obj.amount
-        transaction_dict.update(amount=amount)
-
-        return cls(**transaction_dict, consolidated=True)
+        if hasattr(obj, "_asdict"):
+            transaction_dict: dict[str, Any] = obj._asdict()
+            return cls(**transaction_dict, consolidated=False, transactions_count=1)
+        return super().model_validate(obj, **kwargs)
 
 
 class TransactionApiIn(__TransactionBase, ApiInMixin):

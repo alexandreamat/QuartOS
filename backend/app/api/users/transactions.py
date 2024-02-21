@@ -18,14 +18,15 @@ from decimal import Decimal
 from typing import Iterable
 
 from fastapi import APIRouter
+from app.crud.consolidatedtransaction import CRUDConsolidatedTransaction
 
 from app.crud.movement import CRUDMovement
 from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
-from app.schemas.movement import MovementApiIn
+from app.schemas.consolidatedtransaction import ConsolidatedTransactionApiOut
+from app.schemas.movement import MovementApiIn, MovementApiOut
 from app.schemas.transaction import (
-    ConsolidatedTransactionApiOut,
     TransactionApiOut,
 )
 
@@ -47,8 +48,8 @@ def read_many(
     amount_le: Decimal | None = None,
     is_amount_abs: bool = False,
     consolidated: bool = False,
-) -> Iterable[TransactionApiOut | ConsolidatedTransactionApiOut]:
-    return CRUDTransaction.read_many(
+) -> Iterable[TransactionApiOut | MovementApiOut]:
+    return CRUDConsolidatedTransaction.read_many(
         db,
         user_id=me.id,
         account_id=account_id,

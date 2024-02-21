@@ -27,7 +27,6 @@ from sqlalchemy.orm import Session
 from app.crud.common import CRUDBase, CRUDSyncedBase
 from app.exceptions.common import ObjectNotFoundError
 from app.models.account import Account, NonInstitutionalAccount
-from app.models.consolidatedtransaction import ConsolidatedTransaction
 from app.models.movement import Movement
 from app.models.transaction import Transaction
 from app.models.user import User
@@ -35,7 +34,6 @@ from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.file import FileApiOut
 from app.schemas.movement import DetailedPLStatementApiOut, PLStatement
 from app.schemas.transaction import (
-    ConsolidatedTransactionApiOut,
     TransactionApiOut,
     TransactionApiIn,
     TransactionPlaidIn,
@@ -49,110 +47,6 @@ logger = logging.getLogger(__name__)
 class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]):
     db_model = Transaction
     out_model = TransactionApiOut
-
-    @classmethod
-    def _select(
-        cls,
-        *,
-        id: int | None = None,
-        user_id: int | None = None,
-        account_id: int | None = None,
-        search: str | None = None,
-        timestamp_ge: date | None = None,
-        timestamp_le: date | None = None,
-        is_descending: bool = True,
-        amount_ge: Decimal | None = None,
-        amount_le: Decimal | None = None,
-        is_amount_abs: bool = False,
-        consolidated: bool = False,
-        per_page: int = 0,
-        page: int = 0,
-    ) -> Select[tuple[Any, ...]]:
-        model = ConsolidatedTransaction if consolidated else Transaction
-
-        # SELECT
-        statement = select(
-            model.id,
-            model.timestamp,
-            model.name,
-            model.category_id,
-            model.amount,
-            model.amount_default_currency,
-        )
-        if consolidated:
-            statement = statement.select(
-                ConsolidatedTransaction.account_id_max,
-                ConsolidatedTransaction.account_id_min,
-                ConsolidatedTransaction.transactions_count,
-                ConsolidatedTransaction.movement_id,
-                ConsolidatedTransaction.currency_codes,
-            )
-        else:
-            statement = statement.select(
-                Transaction.account_id,
-                Transaction.movement_id,
-                Transaction.account_balance,
-                Transaction.is_synced,
-            )
-
-        # JOIN
-        if consolidated:
-            statement = statement.outerjoin(Movement)
-        statement = statement.join(Account)
-        statement = statement.outerjoin(UserInstitutionLink)
-
-        # WHERE
-        statement = statement.where(
-            or_(
-                NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
-            )
-        )
-        if account_id:
-            statement = statement.where(Account.id == account_id)
-        if id is not None:
-            statement = statement.where(model.id == id)
-        if timestamp_ge:
-            statement = statement.where(model.timestamp >= timestamp_ge)
-        if timestamp_le:
-            statement = statement.where(model.timestamp <= timestamp_le)
-        if search:
-            statement = filter_query_by_search(search, statement, model.name)
-
-        if amount_ge:
-            if is_amount_abs:
-                statement = statement.where(
-                    func.abs(model.amount_default_currency) >= amount_ge
-                )
-            else:
-                statement = statement.where(model.amount_default_currency >= amount_ge)
-        if amount_le:
-            if is_amount_abs:
-                statement = statement.where(
-                    func.abs(model.amount_default_currency) <= amount_le
-                )
-            else:
-                statement = statement.where(model.amount_default_currency <= amount_le)
-
-        # GROUP BY
-        if consolidated:
-            statement = statement.group_by(
-                ConsolidatedTransaction.id,
-                ConsolidatedTransaction.name,
-                ConsolidatedTransaction.category_id,
-                ConsolidatedTransaction.movement_id,
-            )
-
-        # ORDER BY
-        order = desc if is_descending else asc
-        statement = statement.order_by(order(model.timestamp), order(model.id))
-
-        # OFFSET and LIMIT
-        if per_page:
-            offset = page * per_page
-            statement = statement.offset(offset).limit(per_page)
-
-        return statement
 
     @classmethod
     def is_synced(cls, db: Session, transaction_id: int) -> bool:
@@ -188,24 +82,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
             if len(movement.transactions) <= 2:
                 movement.delete(db, movement.id)
         return super().delete(db, id)
-
-    @classmethod
-    def read_many_consolidated(
-        cls, db: Session, consolidated: bool = False, **kwargs: Any
-    ) -> Iterable[TransactionApiOut | ConsolidatedTransactionApiOut]:
-        statement = cls._select(**kwargs)
-        schema = ConsolidatedTransactionApiOut if consolidated else TransactionApiOut
-        for transaction in db.execute(statement):
-            yield schema.model_validate(transaction)
-
-    @classmethod
-    def read_consolidated(
-        cls, db: Session, id: int, consolidated: bool = False, **kwargs: Any
-    ) -> TransactionApiOut | ConsolidatedTransactionApiOut:
-        statement = cls._select(id=id, **kwargs)
-        transaction = db.execute(statement)
-        schema = ConsolidatedTransactionApiOut if consolidated else TransactionApiOut
-        return schema.model_validate(transaction)
 
     @classmethod
     def select_aggregates(

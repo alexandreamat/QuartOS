@@ -15,8 +15,10 @@
 from datetime import date
 from decimal import Decimal
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel
+from app.schemas.account import AnnotatedLiteral
 
 from app.schemas.common import ApiInMixin, ApiOutMixin
 
@@ -44,10 +46,21 @@ class MovementField(str, Enum):
 
 
 class MovementApiOut(__MovementBase, ApiOutMixin):
-    timestamp: date | None
+    timestamp: date
     transactions_count: int
     amount_default_currency: Decimal
     category_id: int | None
+    amount: Decimal | None
+    # account_balance: Decimal | None
+    account_id: int | None
+    consolidated: AnnotatedLiteral(True)
+
+    @classmethod
+    def model_validate(cls, obj: Any, **kwargs: Any) -> "MovementApiOut":
+        if hasattr(obj, "_asdict"):
+            transaction_dict: dict[str, Any] = obj._asdict()
+            return cls(**transaction_dict, consolidated=True)
+        return super().model_validate(obj, **kwargs)
 
 
 class MovementApiIn(__MovementBase, ApiInMixin): ...
