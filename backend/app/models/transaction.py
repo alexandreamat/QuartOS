@@ -25,9 +25,9 @@ from sqlalchemy.sql.expression import ClauseElement
 from app.models.category import Category
 from app.models.common import SyncableBase
 from app.models.file import File
-from app.models.movement import Movement
 
 if TYPE_CHECKING:
+    from app.models.movement import Movement
     from app.models.account import Account
 
 logger = logging.getLogger(__name__)
