@@ -24,7 +24,6 @@ from app.crud.movement import CRUDMovement
 from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
-from app.schemas.consolidatedtransaction import ConsolidatedTransactionApiOut
 from app.schemas.movement import MovementApiIn, MovementApiOut
 from app.schemas.transaction import (
     TransactionApiOut,
@@ -71,7 +70,7 @@ def consolidate(
     db: DBSession,
     me: CurrentUser,
     transaction_ids: list[int],
-) -> ConsolidatedTransactionApiOut:
+) -> MovementApiOut:
     max_amount = Decimal(0)
     for transaction_id in transaction_ids:
         transaction_out = CRUDTransaction.read(db, transaction_id, user_id=me.id)
@@ -81,4 +80,4 @@ def consolidate(
             name = transaction_out.name
     movement_in = MovementApiIn(name=name)
     movement_out = CRUDMovement.create(db, movement_in, transaction_ids=transaction_ids)
-    return ConsolidatedTransactionApiOut.model_validate(movement_out)
+    return MovementApiOut.model_validate(movement_out)
