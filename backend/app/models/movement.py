@@ -44,6 +44,8 @@ class Movement(Base):
     category: Mapped[Category | None] = relationship(lazy="selectin")
     merchant: Mapped[Merchant | None] = relationship(lazy="selectin")
 
+    consolidated = True
+
     @hybrid_property
     def timestamp(self) -> date:
         return min(t.timestamp for t in self.transactions)

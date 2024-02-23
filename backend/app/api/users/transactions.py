@@ -71,10 +71,10 @@ def consolidate(
     me: CurrentUser,
     transaction_ids: list[int],
 ) -> MovementApiOut:
-    max_amount = Decimal(0)
+    max_amount = Decimal("0")
     for transaction_id in transaction_ids:
         transaction_out = CRUDTransaction.read(db, transaction_id, user_id=me.id)
-        amount = transaction_out.amount or Decimal(0)
+        amount = abs(transaction_out.amount)
         if amount > max_amount:
             max_amount = amount
             name = transaction_out.name

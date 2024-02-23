@@ -41,8 +41,8 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         **kwargs: Any
     ) -> MovementApiOut:
         transaction_ids = transaction_ids or []
-        movement_out = super().create(db, obj_in, **kwargs)
-        return cls.add_transactions(db, movement_out.id, transaction_ids)
+        movement = Movement.create(db, **obj_in.model_dump(), **kwargs)
+        return cls.add_transactions(db, movement.id, transaction_ids)
 
     @classmethod
     def merge(cls, db: Session, movement_ids: list[int]) -> MovementApiOut:
@@ -73,27 +73,19 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
             Movement.update(db, m.id)
 
     @classmethod
-    def __add_transaction(
-        cls, db: Session, id: int, transaction_id: int
-    ) -> MovementApiOut:
-        movement_out = cls.read(db, id)
-        transaction_out = CRUDTransaction.read(db, transaction_id)
-        old_movement_id = transaction_out.movement_id
-        if not movement_out.name:
-            movement_out.name = transaction_out.name
-        transaction_in = TransactionApiIn.model_validate(transaction_out)
-        transaction_out = CRUDTransaction.update(
-            db,
-            transaction_id,
-            transaction_in,
-            movement_id=movement_out.id,
-        )
+    def __add_transaction(cls, db: Session, id: int, transaction_id: int) -> Movement:
+        movement = Movement.read(db, id)
+        transaction = Transaction.read(db, transaction_id)
+        old_movement_id = transaction.movement_id
+        if not movement.name:
+            movement.name = transaction.name
+        transaction = Transaction.update(db, transaction_id, movement_id=movement.id)
         if old_movement_id:
             old_movement = Movement.read(db, old_movement_id)
             Movement.update(db, old_movement.id)
             if not old_movement.transactions:
                 cls.delete(db, old_movement_id)
-        return MovementApiOut.model_validate(movement_out)
+        return movement
 
     @classmethod
     def add_transactions(
@@ -103,6 +95,7 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
         for transaction_id in transaction_ids:
             cls.__add_transaction(db, movement.id, transaction_id)
         Movement.update(db, movement_id)
+        db.refresh(movement)
         return CRUDMovement.read(db, movement_id)
 
     @classmethod

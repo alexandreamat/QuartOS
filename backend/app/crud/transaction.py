@@ -49,6 +49,20 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
     out_model = TransactionApiOut
 
     @classmethod
+    def select(cls, user_id: int = 0, **kwargs: Any) -> Select[tuple[Transaction]]:
+        statement = super().select(**kwargs)
+        if user_id:
+            statement = statement.join(Account)
+            statement = statement.outerjoin(UserInstitutionLink)
+            statement = statement.where(
+                or_(
+                    NonInstitutionalAccount.user_id == user_id,
+                    UserInstitutionLink.user_id == user_id,
+                )
+            )
+        return statement
+
+    @classmethod
     def is_synced(cls, db: Session, transaction_id: int) -> bool:
         return Transaction.read(db, transaction_id).is_synced
 

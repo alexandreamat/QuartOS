@@ -54,6 +54,9 @@ class Transaction(SyncableBase):
     movement: Mapped["Movement | None"] = relationship(back_populates="transactions")
     category: Mapped[Category | None] = relationship()
 
+    consolidated = False
+    transactions_count = 1
+
     @property
     def exchange_rate(self) -> Decimal:
         return self.amount / self.amount_default_currency
