@@ -37,6 +37,7 @@ class ConsolidatedTransaction(metaclass=CalculatedColumnsMeta):
     id = func.coalesce(-Movement.id, Transaction.id)
     name = func.coalesce(Movement.name, Transaction.name)
     category_id = func.coalesce(Movement.category_id, Transaction.category_id)
+    movement_id = Movement.id
 
 
 class CRUDConsolidatedTransaction:
@@ -69,7 +70,7 @@ class CRUDConsolidatedTransaction:
                 Movement.amount_default_currency,
                 Movement.timestamp,
                 Movement.amount,
-                Movement.id.label("movement_id"),
+                ConsolidatedTransaction.movement_id,
                 Movement.account_id,
                 Movement.transactions_count,
             )
@@ -153,7 +154,6 @@ class CRUDConsolidatedTransaction:
         statement = cls.select(consolidated=consolidated, **kwargs)
         schema = MovementApiOut if consolidated else TransactionApiOut
         for transaction in db.execute(statement):
-            logger.error(transaction._asdict())
             yield schema.model_validate(transaction)
 
     @classmethod

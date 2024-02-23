@@ -102,13 +102,14 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         **kwargs: Any,
     ) -> Select[tuple[Account]]:
         statement = super().select(**kwargs)
-        statement = statement.outerjoin(UserInstitutionLink)
-        statement = statement.where(
-            or_(
-                NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
+        if user_id:
+            statement = statement.outerjoin(UserInstitutionLink)
+            statement = statement.where(
+                or_(
+                    NonInstitutionalAccount.user_id == user_id,
+                    UserInstitutionLink.user_id == user_id,
+                )
             )
-        )
         return statement
 
     @classmethod
