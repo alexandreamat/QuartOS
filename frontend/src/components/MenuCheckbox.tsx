@@ -13,20 +13,28 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { Button, Menu } from "semantic-ui-react";
+import { Button, Menu, Popup, SemanticICONS } from "semantic-ui-react";
 import { UseStateType } from "types";
 
 export default function MenuCheckbox(props: {
-  isMultipleChoiceState: UseStateType<boolean>;
+  state: UseStateType<boolean>;
+  icon?: SemanticICONS;
+  tooltip?: string;
 }) {
-  const [isMultipleChoice, setIsMultipleChoice] = props.isMultipleChoiceState;
+  const [isMultipleChoice, setIsMultipleChoice] = props.state;
   return (
     <Menu.Item fitted>
-      <Button
-        icon="check square"
-        toggle
-        active={isMultipleChoice}
-        onClick={() => setIsMultipleChoice((x) => !x)}
+      <Popup
+        disabled={!props.tooltip}
+        trigger={
+          <Button
+            icon={props.icon || "check square"}
+            toggle
+            active={isMultipleChoice}
+            onClick={() => setIsMultipleChoice((x) => !x)}
+          />
+        }
+        content={props.tooltip}
       />
     </Menu.Item>
   );

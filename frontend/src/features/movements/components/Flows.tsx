@@ -102,13 +102,13 @@ function Flow(props: {
         </div>
       }
     />,
-    props.transaction && props.transaction.files.length > 0 && (
-      <ClickableIcon
-        name="file"
-        onClick={() => setFileOpen(true)}
-        loading={props.loading}
-      />
-    ),
+    // props.transaction && props.transaction.files.length > 0 && (
+    //   <ClickableIcon
+    //     name="file"
+    //     onClick={() => setFileOpen(true)}
+    //     loading={props.loading}
+    //   />
+    // ),
     <ClickableIcon
       name="ellipsis horizontal"
       onClick={() => setFormOpen(true)}

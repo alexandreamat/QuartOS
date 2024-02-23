@@ -40,7 +40,6 @@ export function MovementCard(props: {
   onRemoveTransaction?: (x: TransactionApiOut) => void;
   explanationRate?: number;
   selectedAccountId?: number;
-  showFlows?: boolean;
   editable?: boolean;
   onCheckedChange?: (x: boolean) => void;
   checked?: boolean;
@@ -178,15 +177,12 @@ export function MovementCard(props: {
             />
           )}
         </FlexRow>
-
-        {props.showFlows && (
-          <Flows
-            onRemove={props.onRemoveTransaction}
-            selectedAccountId={props.selectedAccountId}
-            loading={props.loading}
-            movementId={props.movement?.id}
-          />
-        )}
+        <Flows
+          onRemove={props.onRemoveTransaction}
+          selectedAccountId={props.selectedAccountId}
+          loading={props.loading}
+          movementId={props.movement?.id}
+        />
       </Card.Content>
       <Card.Content extra>
         <FlexRow gap="1ch" alignItems="baseline">

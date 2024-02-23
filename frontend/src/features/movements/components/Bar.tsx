@@ -75,9 +75,7 @@ export function Bar(props: {
             decimal
             signed
           />
-          <MenuCheckbox
-            isMultipleChoiceState={props.barState.isMultipleChoiceState}
-          />
+          <MenuCheckbox state={props.barState.isMultipleChoiceState} />
         </Menu>
       </FlexRow.Auto>
     </FlexRow>

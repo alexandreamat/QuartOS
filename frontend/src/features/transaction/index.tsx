@@ -44,14 +44,14 @@ export default function Transactions() {
     if (accountIdParam) setAccountId(accountIdParam);
   }, [location, setAccountId]);
 
-  const [createMovement, createMovementResult] =
-    api.endpoints.createUsersMeMovementsPost.useMutation();
+  const [consolidateTransactions, consolidateTransactionsResult] =
+    api.endpoints.consolidateUsersMeTransactionsPost.useMutation();
 
-  async function handleMergeTransactions() {
+  async function handleConsolidateTransactions() {
     try {
-      await createMovement([...checkboxes.checked]).unwrap();
+      await consolidateTransactions([...checkboxes.checked]).unwrap();
     } catch (error) {
-      logMutationError(error, createMovementResult);
+      logMutationError(error, consolidateTransactionsResult);
       return;
     }
     setIsMultipleChoice(false);
@@ -72,11 +72,11 @@ export default function Transactions() {
       {isMultipleChoice && (
         <SpanButton
           disabled={checkboxes.checked.size <= 1}
-          onClick={handleMergeTransactions}
-          loading={createMovementResult.isLoading}
-          negative={createMovementResult.isError}
+          onClick={handleConsolidateTransactions}
+          loading={consolidateTransactionsResult.isLoading}
+          negative={consolidateTransactionsResult.isError}
         >
-          {`Combine ${checkboxes.checked.size} transactions into one movement`}
+          {`Consolidate ${checkboxes.checked.size} transactions into one group`}
         </SpanButton>
       )}
     </FlexColumn>

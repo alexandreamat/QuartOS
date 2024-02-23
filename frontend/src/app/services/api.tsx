@@ -29,7 +29,7 @@ function cacheList<T extends string, R extends { id: number }[]>(
 const enhancedApi = generatedApi.enhanceEndpoints({
   endpoints: {
     // MOVEMENTS CRUD
-    createUsersMeMovementsPost: {
+    consolidateUsersMeTransactionsPost: {
       invalidatesTags: (result, error, arg) => [
         "users",
         { type: "movements", id: "*" },

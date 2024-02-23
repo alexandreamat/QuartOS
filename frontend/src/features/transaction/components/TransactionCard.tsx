@@ -13,7 +13,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
+import {
+  MovementApiOut,
+  TransactionApiIn,
+  TransactionApiOut,
+} from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
@@ -22,61 +26,32 @@ import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import AccountIcon from "features/account/components/Icon";
 import { useAccountQueries } from "features/account/hooks";
 import MovementForm from "features/movements/components/Form";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Card, Checkbox, Header, Popup } from "semantic-ui-react";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import TransactionForm from "./Form";
 import ModalFileViewer from "./ModalFileViewer";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
+import { MovementCard } from "features/movements/components/MovementCard";
 
-export function TransactionCard(
-  props:
-    | {
-        // from transactions or movement
-        transaction?: TransactionApiOut;
-        checked?: boolean;
-        onCheckedChange?: (x: boolean) => void;
-        checkBoxDisabled?: boolean;
-        loading?: boolean;
-        preview?: false;
-      }
-    | {
-        // from preview
-        checked: boolean;
-        onCheckedChange: (x: boolean) => void;
-        transaction?: TransactionApiIn;
-        checkBoxDisabled?: false;
-        accountId: number;
-        loading?: false;
-        preview: true;
-      },
-) {
-  const accountQueries = useAccountQueries(
-    props.preview ? props.accountId : props.transaction?.account_id,
-  );
-
-  const uploadTransactionFile = useUploadTransactionFile(
-    props.preview ? undefined : props.transaction,
-  );
-
+export function TransactionCard(props: {
+  transaction?: TransactionApiOut | TransactionApiIn;
+  checked?: boolean;
+  onCheckedChange?: (x: boolean) => void;
+  checkBoxDisabled?: boolean;
+  loading?: boolean;
+  accountId?: number;
+  onFileDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
+  children?: ReactNode;
+}) {
+  const accountQueries = useAccountQueries(props.accountId);
   const account = accountQueries.account;
-
-  async function handleFileDrop(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    const file = event.dataTransfer?.files[0];
-    if (!file) return;
-    await uploadTransactionFile.onUpload(file);
-  }
-
-  const [movementOpen, setMovementOpen] = useState(false);
-  const [formOpen, setFormOpen] = useState(false);
-  const [fileOpen, setFileOpen] = useState(false);
 
   return (
     <Card
       fluid
       color="teal"
-      onDrop={handleFileDrop}
+      onDrop={props.onFileDrop}
       onDragOver={(e: DragEvent) => e.preventDefault()}
     >
       <Card.Content>
@@ -112,7 +87,7 @@ export function TransactionCard(
             style={{ width: "8em" }}
             loading={props.loading || accountQueries.isLoading}
           />
-          {!props.preview && props.transaction?.category_id && (
+          {props.transaction?.category_id && (
             <CategoryIcon categoryId={props.transaction.category_id} />
           )}
           <FlexRow.Auto>
@@ -123,65 +98,20 @@ export function TransactionCard(
               />
             </Header>
           </FlexRow.Auto>
-          {!props.preview && props.transaction && (
-            <>
-              {/* See files button and form */}
-              {fileOpen && (
-                <ModalFileViewer
-                  transaction={props.transaction}
-                  onClose={() => setFileOpen(false)}
-                />
-              )}
-              {props.transaction?.files.length !== 0 && (
-                <ActionButton
-                  tooltip="See files"
-                  icon="file"
-                  content={props.transaction?.files.length.toFixed(0)}
-                  loading={props.loading}
-                  onClick={() => setFileOpen(true)}
-                />
-              )}
-
-              {/* See movement button and form */}
-              {props.transaction.movement_id && movementOpen && (
-                <MovementForm
-                  onClose={() => setMovementOpen(false)}
-                  movementId={props.transaction.movement_id}
-                  open
-                />
-              )}
-              <ActionButton
-                tooltip="See Movement"
-                icon="arrows alternate horizontal"
-                onClick={() => setMovementOpen(true)}
-                disabled={props.loading}
-              />
-
-              {/* See more button and form */}
-              {formOpen && (
-                <TransactionForm.Edit
-                  onClose={() => setFormOpen(false)}
-                  transaction={props.transaction}
-                />
-              )}
-              <ActionButton
-                icon="ellipsis horizontal"
-                onClick={() => setFormOpen(true)}
-                disabled={props.loading}
-              />
-            </>
-          )}
+          {props.children}
         </FlexRow>
       </Card.Content>
       <Card.Content extra>
         <FlexRow justifyContent="right" gap="1ch" alignItems="baseline">
           <div style={{ color: "black", fontWeight: "bold" }}>Total:</div>
           <Popup
-            disabled={props.preview}
+            disabled={
+              !props.transaction || "account_balance"! in props.transaction
+            }
             position="left center"
             content={
-              !props.preview &&
               props.transaction &&
+              "account_balance" in props.transaction &&
               account && (
                 <p>
                   {`Account balance: ${Number(
@@ -208,3 +138,123 @@ export function TransactionCard(
     </Card>
   );
 }
+
+function TransactionCardPreview(props: {
+  checked: boolean;
+  onCheckedChange: (x: boolean) => void;
+  transaction?: TransactionApiIn;
+  accountId: number;
+}) {
+  return (
+    <TransactionCard
+      accountId={props.accountId}
+      checked={props.checked}
+      transaction={props.transaction}
+    />
+  );
+}
+
+function TransactionCardSimple(props: {
+  transaction?: TransactionApiOut;
+  checked?: boolean;
+  onCheckedChange?: (x: boolean) => void;
+  checkBoxDisabled?: boolean;
+  loading?: boolean;
+}) {
+  const uploadTransactionFile = useUploadTransactionFile(
+    (!props.transaction?.consolidated && props.transaction) || undefined,
+  );
+
+  async function handleFileDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    const file = event.dataTransfer?.files[0];
+    if (!file) return;
+    await uploadTransactionFile.onUpload(file);
+  }
+
+  const [movementOpen, setMovementOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [fileOpen, setFileOpen] = useState(false);
+
+  return (
+    <TransactionCard
+      accountId={props.transaction?.account_id}
+      checkBoxDisabled={props.checkBoxDisabled}
+      checked={props.checked}
+      onFileDrop={handleFileDrop}
+      loading={props.loading}
+      transaction={props.transaction}
+      onCheckedChange={props.onCheckedChange}
+    >
+      {props.transaction && (
+        <>
+          {/* See files button and form */}
+          {fileOpen && (
+            <ModalFileViewer
+              transaction={props.transaction}
+              onClose={() => setFileOpen(false)}
+            />
+          )}
+          {/* {props.transaction?.files.length !== 0 && (
+            <ActionButton
+              tooltip="See files"
+              icon="file"
+              content={props.transaction?.files.length.toFixed(0)}
+              loading={props.loading}
+              onClick={() => setFileOpen(true)}
+            />
+          )} */}
+
+          {/* See movement button and form */}
+          {props.transaction.movement_id && movementOpen && (
+            <MovementForm
+              onClose={() => setMovementOpen(false)}
+              movementId={props.transaction.movement_id}
+              open
+            />
+          )}
+          <ActionButton
+            tooltip="See Movement"
+            icon="arrows alternate horizontal"
+            onClick={() => setMovementOpen(true)}
+            disabled={props.loading}
+          />
+
+          {/* See more button and form */}
+          {formOpen && (
+            <TransactionForm.Edit
+              onClose={() => setFormOpen(false)}
+              transaction={props.transaction}
+            />
+          )}
+          <ActionButton
+            icon="ellipsis horizontal"
+            onClick={() => setFormOpen(true)}
+            disabled={props.loading}
+          />
+        </>
+      )}
+    </TransactionCard>
+  );
+}
+
+function TransactionCardConsolidated(props: {
+  transaction: MovementApiOut;
+  checked?: boolean;
+  onCheckedChange?: (x: boolean) => void;
+  checkBoxDisabled?: boolean;
+  loading?: boolean;
+}) {
+  return (
+    <MovementCard
+      checked={props.checked}
+      loading={props.loading}
+      movement={props.transaction}
+      onCheckedChange={props.onCheckedChange}
+    />
+  );
+}
+
+TransactionCard.Preview = TransactionCardPreview;
+TransactionCard.Simple = TransactionCardSimple;
+TransactionCard.Consolidated = TransactionCardConsolidated;
