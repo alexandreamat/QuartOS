@@ -36,6 +36,7 @@ export function useTransactionBarState() {
     amountGe: useState<number>(),
     amountLe: useState<number>(),
     isAmountAbs: useState(false),
+    consolidate: useState(false),
   };
 }
 
@@ -61,6 +62,13 @@ export default function Bar(props: {
               <TransactionForm.Create onClose={() => setIsFormOpen(false)} />
             )}
           </Menu.Item>
+          <MenuCheckbox
+            state={props.barState.consolidate}
+            icon={
+              props.barState.consolidate[0] ? "object ungroup" : "object group"
+            }
+            tooltip={props.barState.consolidate[0] ? "Ungroup" : "Group"}
+          />
           <MenuInputSearch searchState={props.barState.search} />
           <MenuDropdownAccount accountIdState={props.barState.accountId} />
           <MenuDateRange
@@ -77,7 +85,7 @@ export default function Bar(props: {
             decimal
           />
           {props.isMultipleChoiceState && (
-            <MenuCheckbox isMultipleChoiceState={props.isMultipleChoiceState} />
+            <MenuCheckbox state={props.isMultipleChoiceState} />
           )}
         </Menu>
       </FlexRow.Auto>

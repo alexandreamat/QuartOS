@@ -109,12 +109,12 @@ export default function ModalFileViewer(props: {
               filesQuery.isSuccess && <FileContent blob={fileQuery.data} />
             )}
           </FlexRow.Auto>
-          <ActionButton
+          {/* <ActionButton
             disabled={fileIdx >= props.transaction.files.length - 1}
             icon="arrow right"
             onClick={() => setFileIdx((x) => x + 1)}
             tooltip="Next file"
-          />
+          /> */}
         </FlexRow>
       </Modal.Content>
       <Modal.Actions>

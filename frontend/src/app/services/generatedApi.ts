@@ -1280,7 +1280,7 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   consolidated?: boolean;
 };
 export type ConsolidateUsersMeTransactionsPostApiResponse =
-  /** status 200 Successful Response */ MovementApiOut | TransactionApiOut;
+  /** status 200 Successful Response */ MovementApiOut;
 export type ConsolidateUsersMeTransactionsPostApiArg = number[];
 export type TransactionPlaidOut = {
   id: number;

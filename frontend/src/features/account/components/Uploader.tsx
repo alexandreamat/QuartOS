@@ -172,7 +172,7 @@ export default function Uploader(props: {
             {transactionsIn && (
               <Card.Group style={{ margin: 0 }}>
                 {transactionsIn.map((t, i) => (
-                  <TransactionCard
+                  <TransactionCard.Preview
                     key={i}
                     transaction={t}
                     accountId={props.account.id}
@@ -180,7 +180,6 @@ export default function Uploader(props: {
                     onCheckedChange={(x) => {
                       checkboxes.onChange(i, x);
                     }}
-                    preview
                   />
                 ))}
               </Card.Group>

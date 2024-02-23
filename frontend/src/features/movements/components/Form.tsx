@@ -126,7 +126,6 @@ export default function Form(props: {
                     ? handleRemoveTransaction
                     : undefined
                 }
-                showFlows
                 editable
                 loading={movementQuery.isFetching}
                 movement={movementQuery.data}

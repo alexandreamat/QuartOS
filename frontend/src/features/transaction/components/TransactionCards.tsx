@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
+  MovementApiOut,
   ReadManyUsersMeTransactionsGetApiArg,
   TransactionApiOut,
   api,
@@ -56,19 +57,32 @@ export default function TransactionCards(props: {
   const CardRenderer = ({
     response: t,
     loading,
-  }: PaginatedItemProps<TransactionApiOut>) => (
-    <TransactionCard
-      transaction={t}
-      checked={t && props.checkboxes.checked.has(t.id)}
-      checkBoxDisabled={t && props.checkboxes.disabled.has(t.id)}
-      onCheckedChange={
-        props.isMultipleChoice && t
-          ? (x) => props.checkboxes.onChange(t.id, x)
-          : undefined
-      }
-      loading={loading}
-    />
-  );
+  }: PaginatedItemProps<TransactionApiOut | MovementApiOut>) =>
+    t?.consolidated ? (
+      <TransactionCard.Consolidated
+        transaction={t}
+        checked={t && props.checkboxes.checked.has(t.id)}
+        checkBoxDisabled={t && props.checkboxes.disabled.has(t.id)}
+        onCheckedChange={
+          props.isMultipleChoice && t
+            ? (x) => props.checkboxes.onChange(t.id, x)
+            : undefined
+        }
+        loading={loading}
+      />
+    ) : (
+      <TransactionCard.Simple
+        transaction={t}
+        checked={t && props.checkboxes.checked.has(t.id)}
+        checkBoxDisabled={t && props.checkboxes.disabled.has(t.id)}
+        onCheckedChange={
+          props.isMultipleChoice && t
+            ? (x) => props.checkboxes.onChange(t.id, x)
+            : undefined
+        }
+        loading={loading}
+      />
+    );
 
   return (
     <Card.Group style={{ margin: 1, overflow: "hidden" }}>
