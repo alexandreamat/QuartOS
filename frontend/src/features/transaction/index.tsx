@@ -36,7 +36,8 @@ export default function Transactions() {
   const barState = useTransactionBarState();
   const [_, setAccountId] = barState.accountId;
 
-  const checkboxes = useCheckboxes();
+  const transactionCheckboxes = useCheckboxes();
+  const movementCheckboxes = useCheckboxes();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -46,16 +47,30 @@ export default function Transactions() {
 
   const [consolidateTransactions, consolidateTransactionsResult] =
     api.endpoints.consolidateUsersMeTransactionsPost.useMutation();
+  const [mergeMovements, mergeMovementsResult] =
+    api.endpoints.mergeUsersMeMovementsMergePost.useMutation();
+  const [addTransactions, addTransactionsResult] =
+    api.endpoints.addUsersMeMovementsMovementIdTransactionsPut.useMutation();
 
   async function handleConsolidateTransactions() {
     try {
-      await consolidateTransactions([...checkboxes.checked]).unwrap();
+      const movementIds = [...movementCheckboxes.checked];
+      const transactionIds = [...transactionCheckboxes.checked];
+      if (!movementIds.length && !transactionIds.length) return;
+      if (movementIds.length) {
+        let movementId;
+        if (movementIds.length === 1) movementId = movementIds[0];
+        else movementId = (await mergeMovements(movementIds).unwrap()).id;
+        if (transactionIds.length)
+          await addTransactions({ movementId, body: transactionIds });
+      } else await consolidateTransactions(transactionIds).unwrap();
     } catch (error) {
       logMutationError(error, consolidateTransactionsResult);
       return;
     }
     setIsMultipleChoice(false);
-    checkboxes.reset();
+    transactionCheckboxes.reset();
+    movementCheckboxes.reset();
   }
 
   return (
@@ -64,19 +79,26 @@ export default function Transactions() {
       <FlexColumn.Auto reference={reference}>
         <TransactionCards
           barState={barState}
-          checkboxes={checkboxes}
+          transactionCheckboxes={transactionCheckboxes}
+          movementCheckboxes={movementCheckboxes}
           isMultipleChoice={isMultipleChoice}
           reference={reference}
         />
       </FlexColumn.Auto>
       {isMultipleChoice && (
         <SpanButton
-          disabled={checkboxes.checked.size <= 1}
+          disabled={
+            transactionCheckboxes.checked.size +
+              movementCheckboxes.checked.size <=
+            1
+          }
           onClick={handleConsolidateTransactions}
           loading={consolidateTransactionsResult.isLoading}
           negative={consolidateTransactionsResult.isError}
         >
-          {`Consolidate ${checkboxes.checked.size} transactions into one group`}
+          {`Consolidate ${
+            transactionCheckboxes.checked.size + movementCheckboxes.checked.size
+          } transactions into one group`}
         </SpanButton>
       )}
     </FlexColumn>

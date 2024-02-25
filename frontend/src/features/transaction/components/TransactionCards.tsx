@@ -31,7 +31,8 @@ import { TransactionCard } from "./TransactionCard";
 export default function TransactionCards(props: {
   barState: TransactionsBarState;
   isMultipleChoice?: boolean;
-  checkboxes: Checkboxes;
+  transactionCheckboxes: Checkboxes;
+  movementCheckboxes: Checkboxes;
   reference: MutableRefObject<HTMLDivElement | null>;
 }) {
   const [search] = props.barState.search;
@@ -42,6 +43,7 @@ export default function TransactionCards(props: {
   const [amountLe] = props.barState.amountLe;
   const [isAmountAbs] = props.barState.isAmountAbs;
   const [accountId] = props.barState.accountId;
+  const [consolidated] = props.barState.consolidated;
 
   const params: ReadManyUsersMeTransactionsGetApiArg = {
     timestampGe: timestampGe && formatDateParam(timestampGe),
@@ -52,6 +54,7 @@ export default function TransactionCards(props: {
     amountLe,
     isAmountAbs,
     accountId,
+    consolidated,
   };
 
   const CardRenderer = ({
@@ -61,11 +64,11 @@ export default function TransactionCards(props: {
     t?.consolidated ? (
       <TransactionCard.Consolidated
         transaction={t}
-        checked={t && props.checkboxes.checked.has(t.id)}
-        checkBoxDisabled={t && props.checkboxes.disabled.has(t.id)}
+        checked={t && props.movementCheckboxes.checked.has(t.id)}
+        checkBoxDisabled={t && props.movementCheckboxes.disabled.has(t.id)}
         onCheckedChange={
           props.isMultipleChoice && t
-            ? (x) => props.checkboxes.onChange(t.id, x)
+            ? (x) => props.movementCheckboxes.onChange(t.id, x)
             : undefined
         }
         loading={loading}
@@ -73,11 +76,11 @@ export default function TransactionCards(props: {
     ) : (
       <TransactionCard.Simple
         transaction={t}
-        checked={t && props.checkboxes.checked.has(t.id)}
-        checkBoxDisabled={t && props.checkboxes.disabled.has(t.id)}
+        checked={t && props.transactionCheckboxes.checked.has(t.id)}
+        checkBoxDisabled={t && props.transactionCheckboxes.disabled.has(t.id)}
         onCheckedChange={
           props.isMultipleChoice && t
-            ? (x) => props.checkboxes.onChange(t.id, x)
+            ? (x) => props.transactionCheckboxes.onChange(t.id, x)
             : undefined
         }
         loading={loading}

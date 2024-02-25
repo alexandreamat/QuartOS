@@ -36,7 +36,7 @@ export function useTransactionBarState() {
     amountGe: useState<number>(),
     amountLe: useState<number>(),
     isAmountAbs: useState(false),
-    consolidate: useState(false),
+    consolidated: useState(false),
   };
 }
 
@@ -63,11 +63,11 @@ export default function Bar(props: {
             )}
           </Menu.Item>
           <MenuCheckbox
-            state={props.barState.consolidate}
+            state={props.barState.consolidated}
             icon={
-              props.barState.consolidate[0] ? "object ungroup" : "object group"
+              props.barState.consolidated[0] ? "object ungroup" : "object group"
             }
-            tooltip={props.barState.consolidate[0] ? "Ungroup" : "Group"}
+            tooltip={props.barState.consolidated[0] ? "Ungroup" : "Group"}
           />
           <MenuInputSearch searchState={props.barState.search} />
           <MenuDropdownAccount accountIdState={props.barState.accountId} />

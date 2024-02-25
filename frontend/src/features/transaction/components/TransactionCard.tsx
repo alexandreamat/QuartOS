@@ -206,19 +206,24 @@ function TransactionCardSimple(props: {
           )} */}
 
           {/* See movement button and form */}
-          {props.transaction.movement_id && movementOpen && (
-            <MovementForm
-              onClose={() => setMovementOpen(false)}
-              movementId={props.transaction.movement_id}
-              open
-            />
+
+          {props.transaction.movement_id && (
+            <>
+              <ActionButton
+                tooltip="See Movement"
+                icon="arrows alternate horizontal"
+                onClick={() => setMovementOpen(true)}
+                disabled={props.loading}
+              />
+              {movementOpen && (
+                <MovementForm
+                  onClose={() => setMovementOpen(false)}
+                  movementId={props.transaction.movement_id}
+                  open
+                />
+              )}
+            </>
           )}
-          <ActionButton
-            tooltip="See Movement"
-            icon="arrows alternate horizontal"
-            onClick={() => setMovementOpen(true)}
-            disabled={props.loading}
-          />
 
           {/* See more button and form */}
           {formOpen && (
