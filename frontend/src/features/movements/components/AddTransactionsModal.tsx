@@ -74,7 +74,8 @@ export default function AddTransactionsModal(props: {
           <FlexColumn.Auto reference={reference}>
             <TransactionCards
               barState={barState}
-              checkboxes={checkboxes}
+              transactionCheckboxes={checkboxes}
+              movementCheckboxes={useCheckboxes()}
               isMultipleChoice
               reference={reference}
             />

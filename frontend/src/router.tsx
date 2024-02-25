@@ -75,14 +75,6 @@ export default [
     requires_superuser: false,
   },
   {
-    path: "/movements/:accountId?",
-    link: "/movements",
-    label: "Movements",
-    icon: "arrows alternate horizontal",
-    component: Movements,
-    requires_superuser: false,
-  },
-  {
     path: "/pl-statements",
     label: "P&L Statements",
     icon: "dollar",
