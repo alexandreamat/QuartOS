@@ -45,13 +45,12 @@ class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
     account_id: int
     is_synced: bool
     consolidated: AnnotatedLiteral(False)
-    transactions_count: AnnotatedLiteral(1)
 
     @classmethod
     def model_validate(cls, obj: Any, **kwargs: Any) -> "TransactionApiOut":
         if hasattr(obj, "_asdict"):
             transaction_dict: dict[str, Any] = obj._asdict()
-            return cls(**transaction_dict, consolidated=False, transactions_count=1)
+            return cls(**transaction_dict, consolidated=False)
         return super().model_validate(obj, **kwargs)
 
 

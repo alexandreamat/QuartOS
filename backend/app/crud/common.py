@@ -40,8 +40,11 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         cls, *, id: int | None = None, page: int = 0, per_page: int = 0, **kwargs: Any
     ) -> Select[tuple[ModelType]]:
         statement = select(cls.db_model)
+        for kw, arg in kwargs.items():
+            statement = statement.where(getattr(cls.db_model, kw) == arg)
         if id:
             statement = statement.where(cls.db_model.id == id)
+        statement = statement.group_by(cls.db_model.id)
         if per_page:
             offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
