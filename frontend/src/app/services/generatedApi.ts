@@ -723,23 +723,7 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/me/movements/`,
-          params: {
-            page: queryArg.page,
-            per_page: queryArg.perPage,
-            start_date: queryArg.startDate,
-            end_date: queryArg.endDate,
-            search: queryArg.search,
-            is_amount_abs: queryArg.isAmountAbs,
-            transactions_ge: queryArg.transactionsGe,
-            transactions_le: queryArg.transactionsLe,
-            is_descending: queryArg.isDescending,
-            sort_by: queryArg.sortBy,
-            category_id: queryArg.categoryId,
-            amount_gt: queryArg.amountGt,
-            amount_lt: queryArg.amountLt,
-            amount_ge: queryArg.amountGe,
-            amount_le: queryArg.amountLe,
-          },
+          params: { page: queryArg.page, per_page: queryArg.perPage },
         }),
         providesTags: ["users", "movements"],
       }),
@@ -1219,19 +1203,6 @@ export type ReadManyUsersMeMovementsGetApiResponse =
 export type ReadManyUsersMeMovementsGetApiArg = {
   page?: number;
   perPage?: number;
-  startDate?: string | null;
-  endDate?: string | null;
-  search?: string | null;
-  isAmountAbs?: boolean;
-  transactionsGe?: number | null;
-  transactionsLe?: number | null;
-  isDescending?: boolean;
-  sortBy?: MovementField;
-  categoryId?: number | null;
-  amountGt?: number | string | null;
-  amountLt?: number | string | null;
-  amountGe?: number | string | null;
-  amountLe?: number | string | null;
 };
 export type UpdateAllUsersMeMovementsPutApiResponse =
   /** status 200 Successful Response */ any;
@@ -1296,7 +1267,6 @@ export type TransactionPlaidOut = {
   account_balance: string;
   account_id: number;
   consolidated: false;
-  transactions_count: 1;
 };
 export type ValidationError = {
   loc: (string | number)[];
@@ -1584,7 +1554,6 @@ export type TransactionApiOut = {
   account_balance: string;
   account_id: number;
   consolidated: false;
-  transactions_count: 1;
 };
 export type TransactionApiIn2 = {
   timestamp: string;
@@ -1650,7 +1619,6 @@ export type MovementApiOut = {
   account_id: number | null;
   consolidated: true;
 };
-export type MovementField = "timestamp" | "amount";
 export type MovementApiIn = {
   name: string;
   category_id?: number | null;

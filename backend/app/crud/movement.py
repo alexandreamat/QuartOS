@@ -15,13 +15,15 @@
 import logging
 from typing import Any, Iterable
 
-from sqlalchemy import Select
+from sqlalchemy import Select, or_
 from sqlalchemy.orm import Session
 
 from app.crud.common import CRUDBase
 from app.crud.transaction import CRUDTransaction
+from app.models.account import Account, NonInstitutionalAccount
 from app.models.movement import Movement
 from app.models.transaction import Transaction
+from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.movement import MovementApiIn, MovementApiOut
 from app.schemas.transaction import TransactionApiIn
 
@@ -65,7 +67,19 @@ class CRUDMovement(CRUDBase[Movement, MovementApiOut, MovementApiIn]):
     def select(
         cls, *, user_id: int | None = None, **kwargs: Any
     ) -> Select[tuple[Movement]]:
-        return super().select(user_id=user_id, **kwargs)
+        statement = super().select(**kwargs)
+        if user_id:
+            statement = statement.join(Transaction)
+            statement = statement.join(Account)
+            statement = statement.outerjoin(UserInstitutionLink)
+            statement = statement.where(
+                or_(
+                    NonInstitutionalAccount.user_id == user_id,
+                    UserInstitutionLink.user_id == user_id,
+                )
+            )
+        logger.error(statement.compile(compile_kwargs={"literal_binds": True}))
+        return statement
 
     @classmethod
     def update_all(cls, db: Session, user_id: int) -> None:

@@ -18,7 +18,8 @@ from datetime import date
 from decimal import Decimal
 import logging
 from typing import Any, Iterable
-from sqlalchemy import Select, asc, desc, func, or_, select
+import pydantic_core
+from sqlalchemy import Row, Select, asc, desc, func, or_, select, case
 from sqlalchemy.orm import Session
 from app.models.account import Account, NonInstitutionalAccount
 from app.models.common import CalculatedColumnsMeta
@@ -35,9 +36,18 @@ logger = logging.getLogger(__name__)
 
 class ConsolidatedTransaction(metaclass=CalculatedColumnsMeta):
     id = func.coalesce(-Movement.id, Transaction.id)
-    name = func.coalesce(Movement.name, Transaction.name)
-    category_id = func.coalesce(Movement.category_id, Transaction.category_id)
-    movement_id = Movement.id
+    name = func.coalesce(func.min(Movement.name), func.min(Transaction.name))
+    category_id = func.coalesce(
+        func.min(Movement.category_id), func.min(Transaction.category_id)
+    )
+    movement_id = func.min(Movement.id)
+    amount_default_currency = Movement.amount_default_currency.expression
+    timestamp = Movement.timestamp.expression
+    amount = Movement.amount.expression
+    account_id = Movement.account_id.expression
+    transactions_count = Movement.transactions_count.expression
+    account_balance = func.min(Transaction.account_balance)
+    is_synced = case((func.min(Transaction.plaid_id) != None, True), else_=False)
 
 
 class CRUDConsolidatedTransaction:
@@ -62,31 +72,19 @@ class CRUDConsolidatedTransaction:
         model = ConsolidatedTransaction if consolidated else Transaction
 
         # SELECT
-        if consolidated:
-            statement = select(
-                ConsolidatedTransaction.id,
-                ConsolidatedTransaction.name,
-                ConsolidatedTransaction.category_id,
-                Movement.amount_default_currency,
-                Movement.timestamp,
-                Movement.amount,
-                ConsolidatedTransaction.movement_id,
-                Movement.account_id,
-                Movement.transactions_count,
-            )
-        else:
-            statement = select(
-                Transaction.id,
-                Transaction.name,
-                Transaction.category_id,
-                Transaction.amount_default_currency,
-                Transaction.timestamp,
-                Transaction.amount,
-                Transaction.movement_id,
-                Transaction.account_id,
-                Transaction.account_balance,
-                Transaction.is_synced,
-            )
+        statement = select(
+            model.id,
+            model.name,
+            model.category_id,
+            model.movement_id,
+            model.amount_default_currency,
+            model.timestamp,
+            model.amount,
+            model.account_id,
+            model.transactions_count,
+            model.account_balance,
+            model.is_synced,
+        )
 
         # JOIN
         if consolidated:
@@ -129,12 +127,7 @@ class CRUDConsolidatedTransaction:
 
         # GROUP BY
         if consolidated:
-            statement = statement.group_by(
-                ConsolidatedTransaction.id,
-                ConsolidatedTransaction.name,
-                ConsolidatedTransaction.category_id,
-                ConsolidatedTransaction.movement_id,
-            )
+            statement = statement.group_by(ConsolidatedTransaction.id)
 
         # ORDER BY
         order = desc if is_descending else asc
@@ -148,19 +141,44 @@ class CRUDConsolidatedTransaction:
         return statement
 
     @classmethod
-    def read_many(
-        cls, db: Session, consolidated: bool = False, **kwargs: Any
-    ) -> Iterable[TransactionApiOut | MovementApiOut]:
-        statement = cls.select(consolidated=consolidated, **kwargs)
-        schema = MovementApiOut if consolidated else TransactionApiOut
-        for transaction in db.execute(statement):
-            yield schema.model_validate(transaction)
+    def model_validate(
+        cls, transaction: Row[tuple[Any, ...]]
+    ) -> TransactionApiOut | MovementApiOut:
+        try:
+            return TransactionApiOut(
+                id=transaction.id,
+                name=transaction.name,
+                category_id=transaction.category_id,
+                movement_id=transaction.movement_id,
+                amount_default_currency=transaction.amount_default_currency,
+                timestamp=transaction.timestamp,
+                amount=transaction.amount,
+                account_id=transaction.account_id,
+                account_balance=transaction.account_balance,
+                is_synced=transaction.is_synced,
+                consolidated=False,
+            )
+        except pydantic_core.ValidationError as e:
+            return MovementApiOut(
+                id=-transaction.id,
+                name=transaction.name,
+                category_id=transaction.category_id,
+                amount_default_currency=transaction.amount_default_currency,
+                timestamp=transaction.timestamp,
+                amount=transaction.amount,
+                account_id=transaction.account_id,
+                transactions_count=transaction.transactions_count,
+                consolidated=True,
+            )
 
     @classmethod
-    def read(
-        cls, db: Session, id: int, consolidated: bool = False, **kwargs: Any
-    ) -> TransactionApiOut | MovementApiOut:
-        statement = cls.select(id=id, **kwargs)
-        transaction = db.execute(statement)
-        schema = MovementApiOut if consolidated else TransactionApiOut
-        return schema.model_validate(transaction)
+    def read_many(
+        cls, db: Session, **kwargs: Any
+    ) -> Iterable[TransactionApiOut | MovementApiOut]:
+        for transaction in db.execute(cls.select(**kwargs)):
+            yield cls.model_validate(transaction)
+
+    @classmethod
+    def read(cls, db: Session, **kwargs: Any) -> TransactionApiOut | MovementApiOut:
+        transaction = db.execute(cls.select(**kwargs)).one()
+        return cls.model_validate(transaction)

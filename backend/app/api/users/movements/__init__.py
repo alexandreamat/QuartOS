@@ -38,43 +38,9 @@ def merge(db: DBSession, me: CurrentUser, movement_ids: list[int]) -> MovementAp
 
 @router.get("/")
 def read_many(
-    db: DBSession,
-    me: CurrentUser,
-    page: int = 0,
-    per_page: int = 20,
-    start_date: date | None = None,
-    end_date: date | None = None,
-    search: str | None = None,
-    is_amount_abs: bool = False,
-    transactions_ge: int | None = None,
-    transactions_le: int | None = None,
-    is_descending: bool = True,
-    sort_by: MovementField = MovementField.TIMESTAMP,
-    category_id: int | None = None,
-    amount_gt: Decimal | None = None,
-    amount_lt: Decimal | None = None,
-    amount_ge: Decimal | None = None,
-    amount_le: Decimal | None = None,
+    db: DBSession, me: CurrentUser, page: int = 0, per_page: int = 20
 ) -> Iterable[MovementApiOut]:
-    return CRUDMovement.read_many(
-        db,
-        user_id=me.id,
-        category_id=category_id,
-        page=page,
-        per_page=per_page,
-        start_date=start_date,
-        end_date=end_date,
-        search=search,
-        is_descending=is_descending,
-        transactions_ge=transactions_ge,
-        transactions_le=transactions_le,
-        order_by=sort_by,
-        is_amount_abs=is_amount_abs,
-        amount_gt=amount_gt,
-        amount_lt=amount_lt,
-        amount_ge=amount_ge,
-        amount_le=amount_le,
-    )
+    return CRUDMovement.read_many(db, user_id=me.id, page=page, per_page=per_page)
 
 
 @router.get("/{movement_id}")

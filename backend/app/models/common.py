@@ -135,4 +135,6 @@ class ColorType(types.TypeDecorator[Color]):
 class CalculatedColumnsMeta(type):
     def __getattribute__(cls, __name: str) -> Any:
         attr = super().__getattribute__(__name)
-        return attr.label(__name)
+        if hasattr(attr, "label"):
+            return attr.label(__name)
+        return attr
