@@ -17,7 +17,6 @@
 from datetime import date
 from decimal import Decimal
 import logging
-from nis import cat
 from typing import Any, Iterable
 import pydantic_core
 from sqlalchemy import Row, Select, asc, desc, func, or_, select, case
@@ -125,7 +124,6 @@ class CRUDConsolidatedTransaction:
             offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
 
-        logger.error(statement.compile(compile_kwargs={"literal_binds": True}))
         return statement
 
     @classmethod
