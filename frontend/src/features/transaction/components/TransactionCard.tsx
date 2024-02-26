@@ -219,7 +219,6 @@ function TransactionCardSimple(props: {
                 <MovementForm
                   onClose={() => setMovementOpen(false)}
                   movementId={props.transaction.movement_id}
-                  open
                 />
               )}
             </>

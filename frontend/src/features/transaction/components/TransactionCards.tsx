@@ -49,12 +49,12 @@ export default function TransactionCards(props: {
     timestampGe: timestampGe && formatDateParam(timestampGe),
     timestampLe: timestampLe && formatDateParam(timestampLe),
     search,
-    isDescending,
     amountGe,
     amountLe,
     isAmountAbs,
     accountId,
     consolidated,
+    orderBy: isDescending ? "timestamp__desc" : "timestamp__asc",
   };
 
   const CardRenderer = ({

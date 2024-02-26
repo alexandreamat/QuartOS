@@ -18,7 +18,7 @@ import { Doughnut } from "react-chartjs-2";
 import { CategoryApiOut, MovementApiOut, api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import Form from "features/movements/components/Form";
+import MovementForm from "features/movements/components/Form";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Grid, Header, Icon, Loader } from "semantic-ui-react";
@@ -131,11 +131,9 @@ export default function PLStatement() {
 
   return (
     <FlexColumn>
-      <Form
-        open={isFormOpen}
-        onClose={handleCloseEditForm}
-        movementId={movementId}
-      />
+      {isFormOpen && (
+        <MovementForm onClose={handleCloseEditForm} movementId={movementId} />
+      )}
       <div>
         <Button
           icon

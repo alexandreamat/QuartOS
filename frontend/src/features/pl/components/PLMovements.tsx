@@ -15,7 +15,7 @@
 
 import { MovementApiOut, PlStatement, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import { MovementCard } from "features/movements/components/MovementCard";
+import { TransactionCard } from "features/transaction/components/TransactionCard";
 import { Card, Loader } from "semantic-ui-react";
 
 export default function PLMovements(props: {
@@ -24,23 +24,23 @@ export default function PLMovements(props: {
   onOpenEditForm: (x: MovementApiOut) => void;
   categoryId?: number;
 }) {
-  const movementsQuery = api.endpoints.readManyUsersMeMovementsGet.useQuery({
-    startDate: props.aggregate.start_date,
-    endDate: props.aggregate.end_date,
-    categoryId: props.categoryId,
-    amountGt: props.showIncome ? 0 : undefined,
-    amountLt: props.showIncome ? undefined : 0,
-    sortBy: "amount",
-    isDescending: props.showIncome,
-  });
+  const transactionsQuery =
+    api.endpoints.readManyUsersMeTransactionsGet.useQuery({
+      timestampGe: props.aggregate.start_date,
+      timestampLe: props.aggregate.end_date,
+      categoryId: props.categoryId,
+      amountGt: props.showIncome ? 0 : undefined,
+      amountLt: props.showIncome ? undefined : 0,
+      orderBy: props.showIncome ? "amount__desc" : "amount__asc",
+    });
 
-  if (movementsQuery.isLoading || movementsQuery.isUninitialized)
+  if (transactionsQuery.isLoading || transactionsQuery.isUninitialized)
     return <Loader active size="huge" />;
 
-  if (movementsQuery.isError)
-    return <QueryErrorMessage query={movementsQuery} />;
+  if (transactionsQuery.isError)
+    return <QueryErrorMessage query={transactionsQuery} />;
 
-  const movements = movementsQuery.data;
+  const transactions = transactionsQuery.data;
 
   const totalAmount = props.showIncome
     ? Number(props.aggregate.income)
@@ -50,16 +50,24 @@ export default function PLMovements(props: {
 
   return (
     <Card.Group style={{ margin: 0 }}>
-      {movements.map((movement) => {
-        cumulativeAmount += Number(movement.amount_default_currency);
+      {transactions.map((t) => {
+        cumulativeAmount += Number(t.amount_default_currency);
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
+        if (t.consolidated)
+          return (
+            <TransactionCard.Consolidated
+              key={t.id}
+              transaction={t}
+              // explanationRate={explanationRate}
+              // hideCategory={props.categoryId !== undefined}
+            />
+          );
         return (
-          <MovementCard
-            key={movement.id}
-            movement={movement}
-            onOpenEditForm={() => props.onOpenEditForm(movement)}
-            explanationRate={explanationRate}
-            hideCategory={props.categoryId !== undefined}
+          <TransactionCard.Simple
+            key={t.id}
+            transaction={t}
+            // explanationRate={explanationRate}
+            // hideCategory={props.categoryId !== undefined}
           />
         );
       })}
