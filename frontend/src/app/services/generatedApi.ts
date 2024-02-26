@@ -801,16 +801,19 @@ const injectedRtkApi = api
           url: `/users/me/transactions/`,
           params: {
             account_id: queryArg.accountId,
+            category_id: queryArg.categoryId,
             page: queryArg.page,
             per_page: queryArg.perPage,
-            timestamp_ge: queryArg.timestampGe,
-            timestamp_le: queryArg.timestampLe,
+            timestamp__ge: queryArg.timestampGe,
+            timestamp__le: queryArg.timestampLe,
             search: queryArg.search,
-            is_descending: queryArg.isDescending,
-            amount_ge: queryArg.amountGe,
-            amount_le: queryArg.amountLe,
+            amount__ge: queryArg.amountGe,
+            amount__le: queryArg.amountLe,
+            amount__gt: queryArg.amountGt,
+            amount__lt: queryArg.amountLt,
             is_amount_abs: queryArg.isAmountAbs,
             consolidated: queryArg.consolidated,
+            order_by: queryArg.orderBy,
           },
         }),
         providesTags: ["users", "transactions"],
@@ -1239,16 +1242,19 @@ export type ReadManyUsersMeTransactionsGetApiResponse =
   /** status 200 Successful Response */ (TransactionApiOut | MovementApiOut)[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
   accountId?: number | null;
+  categoryId?: number | null;
   page?: number;
   perPage?: number;
   timestampGe?: string | null;
   timestampLe?: string | null;
   search?: string | null;
-  isDescending?: boolean;
   amountGe?: number | string | null;
   amountLe?: number | string | null;
+  amountGt?: number | string | null;
+  amountLt?: number | string | null;
   isAmountAbs?: boolean;
   consolidated?: boolean;
+  orderBy?: string | null;
 };
 export type ConsolidateUsersMeTransactionsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;

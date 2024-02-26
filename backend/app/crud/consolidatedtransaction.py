@@ -17,6 +17,7 @@
 from datetime import date
 from decimal import Decimal
 import logging
+from nis import cat
 from typing import Any, Iterable
 import pydantic_core
 from sqlalchemy import Row, Select, asc, desc, func, or_, select, case
@@ -55,19 +56,14 @@ class CRUDConsolidatedTransaction:
     def select(
         cls,
         *,
-        id: int | None = None,
         user_id: int | None = None,
-        account_id: int | None = None,
         search: str | None = None,
-        timestamp_ge: date | None = None,
-        timestamp_le: date | None = None,
-        is_descending: bool = True,
-        amount_ge: Decimal | None = None,
-        amount_le: Decimal | None = None,
         is_amount_abs: bool = False,
         consolidated: bool = False,
         per_page: int = 0,
         page: int = 0,
+        order_by: str | None = None,
+        **kwargs: Any,
     ) -> Select[tuple[Any, ...]]:
         model = ConsolidatedTransaction if consolidated else Transaction
 
@@ -85,6 +81,11 @@ class CRUDConsolidatedTransaction:
             model.account_balance,
             model.is_synced,
         )
+        amount = (
+            func.abs(model.amount_default_currency)
+            if is_amount_abs
+            else model.amount_default_currency
+        )
 
         # JOIN
         if consolidated:
@@ -99,45 +100,32 @@ class CRUDConsolidatedTransaction:
                 UserInstitutionLink.user_id == user_id,
             )
         )
-        if account_id:
-            statement = statement.where(Account.id == account_id)
-        if id is not None:
-            statement = statement.where(model.id == id)
-        if timestamp_ge:
-            statement = statement.where(model.timestamp >= timestamp_ge)
-        if timestamp_le:
-            statement = statement.where(model.timestamp <= timestamp_le)
         if search:
             statement = filter_query_by_search(search, statement, model.name)
 
-        if amount_ge:
-            if is_amount_abs:
-                statement = statement.where(
-                    func.abs(model.amount_default_currency) >= amount_ge
-                )
-            else:
-                statement = statement.where(model.amount_default_currency >= amount_ge)
-        if amount_le:
-            if is_amount_abs:
-                statement = statement.where(
-                    func.abs(model.amount_default_currency) <= amount_le
-                )
-            else:
-                statement = statement.where(model.amount_default_currency <= amount_le)
+        for kw, arg in kwargs.items():
+            if arg is None:
+                continue
+            attr, op = kw.split("__")
+            f = getattr(getattr(model, attr), f"__{op}__" if op else "__eq__")
+            statement = statement.where(f(arg))
 
         # GROUP BY
         if consolidated:
             statement = statement.group_by(ConsolidatedTransaction.id)
 
         # ORDER BY
-        order = desc if is_descending else asc
-        statement = statement.order_by(order(model.timestamp), order(model.id))
+        if order_by:
+            attr, op = order_by.split("__")
+            f = {"asc": asc, "desc": desc}[op]
+            statement = statement.order_by(f(getattr(model, attr)), f(model.id))
 
         # OFFSET and LIMIT
         if per_page:
             offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
 
+        logger.error(statement.compile(compile_kwargs={"literal_binds": True}))
         return statement
 
     @classmethod
