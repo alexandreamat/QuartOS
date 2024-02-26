@@ -15,7 +15,6 @@
 
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { TransactionApiOut, api } from "app/services/api";
-import ActionButton from "components/ActionButton";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import CreateNewButton from "components/CreateNewButton";
 import FlexRow from "components/FlexRow";
@@ -28,11 +27,8 @@ import AddTransactionsModal from "./AddTransactionsModal";
 import { MovementCard } from "./MovementCard";
 
 export default function Form(props: {
-  open: boolean;
   onClose: () => void;
   movementId?: number;
-  onGoToPrev?: () => void;
-  onGoToNext?: () => void;
 }) {
   const [transactionFormOpen, setTransactionFormOpen] = useState(false);
   const [transactionsModalOpen, setTransactionsModalOpen] = useState(false);
@@ -41,7 +37,7 @@ export default function Form(props: {
 
   const movementQuery =
     api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
-      (props.open && movementId) || skipToken,
+      movementId || skipToken,
     );
 
   const [removeTransaction, removeTransactionResult] =
@@ -85,7 +81,7 @@ export default function Form(props: {
   }
 
   return (
-    <Modal open={props.open} onClose={handleClose} size="fullscreen">
+    <Modal open onClose={handleClose} size="fullscreen">
       {transactionFormOpen &&
         (movementId ? (
           <TransactionForm.Add
@@ -112,12 +108,6 @@ export default function Form(props: {
           <QueryErrorMessage query={movementQuery} />
         ) : (
           <FlexRow gap="10px" alignItems="center">
-            <ActionButton
-              disabled={!props.onGoToPrev}
-              icon="arrow left"
-              onClick={props.onGoToPrev}
-              tooltip="Previous movement"
-            />
             <FlexRow.Auto>
               <MovementCard
                 onRemoveTransaction={
@@ -131,12 +121,6 @@ export default function Form(props: {
                 movement={movementQuery.data}
               />
             </FlexRow.Auto>
-            <ActionButton
-              disabled={!props.onGoToNext}
-              icon="arrow right"
-              onClick={props.onGoToNext}
-              tooltip="Next movement"
-            />
           </FlexRow>
         )}
         <QueryErrorMessage query={removeTransactionResult} />

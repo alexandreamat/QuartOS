@@ -32,6 +32,7 @@ import { Flows } from "./Flows";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
 import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
 import useFormField from "hooks/useFormField";
+import Form from "./Form";
 
 export function MovementCard(props: {
   movement?: MovementApiOut;
@@ -47,6 +48,7 @@ export function MovementCard(props: {
 }) {
   const [name, setName] = useState(props.movement?.name || "");
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const categoryId = props.movement?.category_id || undefined;
 
@@ -169,11 +171,15 @@ export function MovementCard(props: {
               )
             ))}
 
-          {props.onOpenEditForm && (
-            <MutateActionButton
-              onOpenEditForm={props.onOpenEditForm}
-              disabled={props.loading}
-              content={props.movement?.transactions_count.toFixed(0)}
+          <MutateActionButton
+            onOpenEditForm={() => setIsFormOpen(true)}
+            disabled={props.loading}
+            content={props.movement?.transactions_count.toFixed(0)}
+          />
+          {isFormOpen && (
+            <Form
+              onClose={() => setIsFormOpen(false)}
+              movementId={props.movement?.id}
             />
           )}
         </FlexRow>

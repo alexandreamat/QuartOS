@@ -18,7 +18,6 @@ import Dashboard from "features/dashboard";
 import Institutions from "features/institution";
 import InstitutionLinks from "features/institutionlink";
 import Merchants from "features/merchants";
-import Movements from "features/movements";
 import PL from "features/pl";
 import PLStatement from "features/pl/components/PLStatement";
 import Transactions from "features/transaction";
