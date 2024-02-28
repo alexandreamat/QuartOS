@@ -13,11 +13,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date
 from decimal import Decimal
+import logging
 from typing import Iterable
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from app.crud.consolidatedtransaction import CRUDConsolidatedTransaction
 
 from app.crud.movement import CRUDMovement
@@ -25,57 +25,26 @@ from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
 from app.schemas.movement import MovementApiIn, MovementApiOut
-from app.schemas.transaction import (
-    TransactionApiOut,
-)
+from app.schemas.transaction import TransactionApiOut, TransactionQueryArg
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.get("/")
 def read_many(
-    db: DBSession,
-    me: CurrentUser,
-    account_id: int | None = None,
-    category_id: int | None = None,
-    page: int = 0,
-    per_page: int = 0,
-    timestamp__ge: date | None = None,
-    timestamp__le: date | None = None,
-    search: str | None = None,
-    amount__ge: Decimal | None = None,
-    amount__le: Decimal | None = None,
-    amount__gt: Decimal | None = None,
-    amount__lt: Decimal | None = None,
-    is_amount_abs: bool = False,
-    consolidated: bool = False,
-    order_by: str | None = None,
+    db: DBSession, me: CurrentUser, arg: TransactionQueryArg = Depends()
 ) -> Iterable[TransactionApiOut | MovementApiOut]:
     return CRUDConsolidatedTransaction.read_many(
         db,
         user_id=me.id,
-        account_id=account_id,
-        category_id=category_id,
-        page=page,
-        per_page=per_page,
-        search=search,
-        timestamp__ge=timestamp__ge,
-        timestamp__le=timestamp__le,
-        amount__ge=amount__ge,
-        amount__le=amount__le,
-        amount__gt=amount__gt,
-        amount__lt=amount__lt,
-        order_by=order_by,
-        is_amount_abs=is_amount_abs,
-        consolidated=consolidated,
+        **arg.model_dump(),
     )
 
 
 @router.post("/")
 def consolidate(
-    db: DBSession,
-    me: CurrentUser,
-    transaction_ids: list[int],
+    db: DBSession, me: CurrentUser, transaction_ids: list[int]
 ) -> MovementApiOut:
     max_amount = Decimal("0")
     for transaction_id in transaction_ids:
