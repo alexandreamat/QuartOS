@@ -70,6 +70,8 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
         deleteResult: TypedUseMutationResult<R, A, Q>;
         onUpload: (file: File) => void;
         uploadResult: TypedUseMutationResult<R, A, Q>;
+        onUngroup: () => Promise<void>;
+        ungroupResult: TypedUseMutationResult<R, A, Q>;
       }
   ),
 ) {
@@ -233,10 +235,22 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
       </Modal.Content>
       <Modal.Actions>
         {isEdit && (
-          <ConfirmDeleteButtonModal
-            onDelete={handleDelete}
-            query={props.deleteResult}
-          />
+          <>
+            <ConfirmDeleteButtonModal
+              onDelete={handleDelete}
+              query={props.deleteResult}
+            />
+            <Button
+              negative
+              floated="left"
+              labelPosition="left"
+              content="Remove from group"
+              loading={props.ungroupResult.isLoading}
+              disabled={props.transaction.movement_id === undefined}
+              icon="object ungroup"
+              onClick={props.onUngroup}
+            />
+          </>
         )}
         <Button onClick={handleClose}>Cancel</Button>
         <Button
@@ -329,6 +343,9 @@ function FormEdit(props: {
   const [deleteTransaction, deleteTransactionResult] =
     api.endpoints.deleteUsersMeAccountsAccountIdTransactionsTransactionIdDelete.useMutation();
 
+  const [ungroup, ungroupResult] =
+    api.endpoints.removeUsersMeMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
+
   const uploadTransactionFile = useUploadTransactionFile(props.transaction);
 
   async function handleSubmit(
@@ -360,6 +377,19 @@ function FormEdit(props: {
     }
   }
 
+  async function handleRemove() {
+    if (!props.transaction.movement_id) return;
+    try {
+      await ungroup({
+        movementId: props.transaction.movement_id,
+        transactionId: props.transaction.id,
+      }).unwrap();
+    } catch (error) {
+      logMutationError(error, ungroupResult);
+      throw error;
+    }
+  }
+
   return (
     <TransactionForm
       title="Edit a Transaction"
@@ -374,6 +404,8 @@ function FormEdit(props: {
         props.onEdited && props.onEdited();
       }}
       uploadResult={uploadTransactionFile.result}
+      onUngroup={handleRemove}
+      ungroupResult={ungroupResult}
     />
   );
 }
