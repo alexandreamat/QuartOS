@@ -17,6 +17,7 @@ import {
   MovementApiOut,
   TransactionApiIn,
   TransactionApiOut,
+  api,
 } from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
@@ -24,7 +25,6 @@ import FlexRow from "components/FlexRow";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import AccountIcon from "features/account/components/Icon";
-import { useAccountQueries } from "features/account/hooks";
 import MovementForm from "features/movements/components/Form";
 import { ReactNode, useState } from "react";
 import { Card, Checkbox, Header, Popup } from "semantic-ui-react";
@@ -32,20 +32,27 @@ import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import TransactionForm from "./Form";
 import ModalFileViewer from "./ModalFileViewer";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
-import { MovementCard } from "features/movements/components/MovementCard";
+import { Flows } from "features/movements/components/Flows";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export function TransactionCard(props: {
-  transaction?: TransactionApiOut | TransactionApiIn;
+  timestamp?: string;
+  categoryId?: number;
+  name?: string;
+  amount?: number;
+  accountBalance?: number;
   checked?: boolean;
   onCheckedChange?: (x: boolean) => void;
   checkBoxDisabled?: boolean;
   loading?: boolean;
   accountId?: number;
   onFileDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
+  buttons?: ReactNode;
   children?: ReactNode;
 }) {
-  const accountQueries = useAccountQueries(props.accountId);
-  const account = accountQueries.account;
+  const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
+    props.accountId || skipToken,
+  );
 
   return (
     <Card
@@ -68,67 +75,64 @@ export function TransactionCard(props: {
           )}
           <Card.Meta>
             <FormattedTimestamp
-              timestamp={props.transaction?.timestamp}
+              timestamp={props.timestamp}
               loading={props.loading}
               style={{ width: "9em" }}
             />
           </Card.Meta>
-          <AccountIcon
-            account={account}
-            loading={props.loading || accountQueries.isLoading}
-            style={{
-              height: "90%",
-              width: "2.2em",
-              alignSelf: "center",
-            }}
-          />
-          <LineWithHiddenOverflow
-            content={account?.name}
-            style={{ width: "8em" }}
-            loading={props.loading || accountQueries.isLoading}
-          />
-          {props.transaction?.category_id && (
-            <CategoryIcon categoryId={props.transaction.category_id} />
+          {props.accountId && (
+            <AccountIcon
+              account={accountQuery.data}
+              loading={props.loading || accountQuery.isLoading}
+              style={{
+                height: "90%",
+                width: "2.2em",
+                alignSelf: "center",
+              }}
+            />
           )}
+          {props.accountId && (
+            <LineWithHiddenOverflow
+              content={accountQuery.data?.name}
+              style={{ width: "8em" }}
+              loading={props.loading || accountQuery.isLoading}
+            />
+          )}
+          {props.categoryId && <CategoryIcon categoryId={props.categoryId} />}
           <FlexRow.Auto>
             <Header as="h5">
               <LineWithHiddenOverflow
-                content={props.transaction?.name}
+                content={props.name}
                 loading={props.loading}
               />
             </Header>
           </FlexRow.Auto>
-          {props.children}
+          {props.buttons}
         </FlexRow>
+        {props.children}
       </Card.Content>
       <Card.Content extra>
         <FlexRow justifyContent="right" gap="1ch" alignItems="baseline">
           <div style={{ color: "black", fontWeight: "bold" }}>Total:</div>
           <Popup
-            disabled={
-              !props.transaction || "account_balance"! in props.transaction
-            }
+            disabled={!props.accountBalance || !accountQuery.data}
             position="left center"
             content={
-              props.transaction &&
-              "account_balance" in props.transaction &&
-              account && (
-                <p>
-                  {`Account balance: ${Number(
-                    props.transaction.account_balance,
-                  ).toLocaleString(undefined, {
-                    style: "currency",
-                    currency: account.currency_code,
-                  })}`}
-                </p>
-              )
+              <p>
+                {`Account balance: ${Number(
+                  props.accountBalance,
+                ).toLocaleString(undefined, {
+                  style: "currency",
+                  currency: accountQuery.data?.currency_code,
+                })}`}
+              </p>
             }
             trigger={
               <div>
                 <CurrencyLabel
-                  amount={Number(props.transaction?.amount)}
-                  currencyCode={account?.currency_code}
-                  loading={accountQueries.isLoading || props.loading}
+                  amount={props.amount}
+                  currencyCode={accountQuery.data?.currency_code}
+                  loading={accountQuery.isLoading || props.loading}
                 />
               </div>
             }
@@ -149,7 +153,10 @@ function TransactionCardPreview(props: {
     <TransactionCard
       accountId={props.accountId}
       checked={props.checked}
-      transaction={props.transaction}
+      amount={Number(props.transaction?.amount)}
+      categoryId={props.transaction?.category_id || undefined}
+      name={props.transaction?.name}
+      timestamp={props.transaction?.timestamp}
     />
   );
 }
@@ -183,19 +190,23 @@ function TransactionCardSimple(props: {
       checked={props.checked}
       onFileDrop={handleFileDrop}
       loading={props.loading}
-      transaction={props.transaction}
+      accountBalance={Number(props.transaction?.account_balance)}
+      amount={Number(props.transaction?.amount)}
+      categoryId={props.transaction?.category_id || undefined}
+      name={props.transaction?.name}
+      timestamp={props.transaction?.timestamp}
       onCheckedChange={props.onCheckedChange}
-    >
-      {props.transaction && (
-        <>
-          {/* See files button and form */}
-          {fileOpen && (
-            <ModalFileViewer
-              transaction={props.transaction}
-              onClose={() => setFileOpen(false)}
-            />
-          )}
-          {/* {props.transaction?.files.length !== 0 && (
+      buttons={
+        props.transaction && (
+          <>
+            {/* See files button and form */}
+            {fileOpen && (
+              <ModalFileViewer
+                transaction={props.transaction}
+                onClose={() => setFileOpen(false)}
+              />
+            )}
+            {/* {props.transaction?.files.length !== 0 && (
             <ActionButton
               tooltip="See files"
               icon="file"
@@ -205,44 +216,45 @@ function TransactionCardSimple(props: {
             />
           )} */}
 
-          {/* See movement button and form */}
+            {/* See movement button and form */}
 
-          {props.transaction.movement_id && (
-            <>
-              <ActionButton
-                tooltip="See Movement"
-                icon="arrows alternate horizontal"
-                onClick={() => setMovementOpen(true)}
-                disabled={props.loading}
-              />
-              {movementOpen && (
-                <MovementForm
-                  onClose={() => setMovementOpen(false)}
-                  movementId={props.transaction.movement_id}
+            {props.transaction.movement_id && (
+              <>
+                <ActionButton
+                  tooltip="See Movement"
+                  icon="arrows alternate horizontal"
+                  onClick={() => setMovementOpen(true)}
+                  disabled={props.loading}
                 />
-              )}
-            </>
-          )}
+                {movementOpen && (
+                  <MovementForm
+                    onClose={() => setMovementOpen(false)}
+                    movementId={props.transaction.movement_id}
+                  />
+                )}
+              </>
+            )}
 
-          {/* See more button and form */}
-          {formOpen && (
-            <TransactionForm.Edit
-              onClose={() => setFormOpen(false)}
-              transaction={props.transaction}
+            {/* See more button and form */}
+            {formOpen && (
+              <TransactionForm.Edit
+                onClose={() => setFormOpen(false)}
+                transaction={props.transaction}
+              />
+            )}
+            <ActionButton
+              icon="ellipsis horizontal"
+              onClick={() => setFormOpen(true)}
+              disabled={props.loading}
             />
-          )}
-          <ActionButton
-            icon="ellipsis horizontal"
-            onClick={() => setFormOpen(true)}
-            disabled={props.loading}
-          />
-        </>
-      )}
-    </TransactionCard>
+          </>
+        )
+      }
+    />
   );
 }
 
-function TransactionCardConsolidated(props: {
+function TransactionCardGroup(props: {
   transaction: MovementApiOut;
   checked?: boolean;
   onCheckedChange?: (x: boolean) => void;
@@ -250,15 +262,22 @@ function TransactionCardConsolidated(props: {
   loading?: boolean;
 }) {
   return (
-    <MovementCard
+    <TransactionCard
+      accountId={props.transaction.account_id || undefined}
+      checkBoxDisabled={props.checkBoxDisabled}
       checked={props.checked}
       loading={props.loading}
-      movement={props.transaction}
       onCheckedChange={props.onCheckedChange}
-    />
+      amount={Number(props.transaction.amount_default_currency)}
+      timestamp={props.transaction.timestamp}
+      name={props.transaction.name}
+      categoryId={props.transaction.category_id || undefined}
+    >
+      <Flows loading={props.loading} movementId={props.transaction.id} />
+    </TransactionCard>
   );
 }
 
 TransactionCard.Preview = TransactionCardPreview;
 TransactionCard.Simple = TransactionCardSimple;
-TransactionCard.Consolidated = TransactionCardConsolidated;
+TransactionCard.Group = TransactionCardGroup;
