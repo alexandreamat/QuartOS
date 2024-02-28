@@ -49,10 +49,18 @@ export function TransactionCard(props: {
   onFileDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
   buttons?: ReactNode;
   children?: ReactNode;
+  currency?: "default" | "account";
 }) {
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
     props.accountId || skipToken,
   );
+  const me = api.endpoints.readMeUsersMeGet.useQuery();
+
+  const currencyCode =
+    props.currency === "default"
+      ? me.data?.default_currency_code
+      : accountQuery.data?.currency_code;
+  if (props.currency === "default") console.log(currencyCode);
 
   return (
     <Card
@@ -118,20 +126,23 @@ export function TransactionCard(props: {
             disabled={!props.accountBalance || !accountQuery.data}
             position="left center"
             content={
-              <p>
-                {`Account balance: ${Number(
-                  props.accountBalance,
-                ).toLocaleString(undefined, {
-                  style: "currency",
-                  currency: accountQuery.data?.currency_code,
-                })}`}
-              </p>
+              accountQuery.data?.currency_code && (
+                <p>
+                  {`Account balance: ${props.accountBalance?.toLocaleString(
+                    undefined,
+                    {
+                      style: "currency",
+                      currency: accountQuery.data?.currency_code,
+                    },
+                  )}`}
+                </p>
+              )
             }
             trigger={
               <div>
                 <CurrencyLabel
                   amount={props.amount}
-                  currencyCode={accountQuery.data?.currency_code}
+                  currencyCode={currencyCode}
                   loading={accountQuery.isLoading || props.loading}
                 />
               </div>
@@ -167,6 +178,7 @@ function TransactionCardSimple(props: {
   onCheckedChange?: (x: boolean) => void;
   checkBoxDisabled?: boolean;
   loading?: boolean;
+  currency?: "default" | "account";
 }) {
   const uploadTransactionFile = useUploadTransactionFile(
     (!props.transaction?.consolidated && props.transaction) || undefined,
@@ -191,7 +203,12 @@ function TransactionCardSimple(props: {
       onFileDrop={handleFileDrop}
       loading={props.loading}
       accountBalance={Number(props.transaction?.account_balance)}
-      amount={Number(props.transaction?.amount)}
+      amount={Number(
+        props.currency === "account"
+          ? props.transaction?.amount
+          : props.transaction?.amount_default_currency,
+      )}
+      currency={props.currency}
       categoryId={props.transaction?.category_id || undefined}
       name={props.transaction?.name}
       timestamp={props.transaction?.timestamp}
@@ -261,6 +278,7 @@ function TransactionCardGroup(props: {
   checkBoxDisabled?: boolean;
   loading?: boolean;
 }) {
+  console.log(props.transaction?.consolidated);
   return (
     <TransactionCard
       accountId={props.transaction.account_id || undefined}
@@ -272,6 +290,7 @@ function TransactionCardGroup(props: {
       timestamp={props.transaction.timestamp}
       name={props.transaction.name}
       categoryId={props.transaction.category_id || undefined}
+      currency="default"
     >
       <Flows loading={props.loading} movementId={props.transaction.id} />
     </TransactionCard>

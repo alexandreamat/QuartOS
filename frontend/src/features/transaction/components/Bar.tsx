@@ -28,7 +28,6 @@ export type TransactionsBarState = ReturnType<typeof useTransactionBarState>;
 
 export function useTransactionBarState() {
   return {
-    accountId: useState<number | undefined>(),
     search: useState<string>(),
     timestampGe: useState<Date>(),
     timestampLe: useState<Date>(),
@@ -43,6 +42,7 @@ export function useTransactionBarState() {
 export default function Bar(props: {
   barState: TransactionsBarState;
   isMultipleChoiceState?: UseStateType<boolean>;
+  accountIdState?: UseStateType<number | undefined>;
 }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -70,7 +70,9 @@ export default function Bar(props: {
             tooltip={props.barState.consolidated[0] ? "Ungroup" : "Group"}
           />
           <MenuInputSearch searchState={props.barState.search} />
-          <MenuDropdownAccount accountIdState={props.barState.accountId} />
+          {props.accountIdState && (
+            <MenuDropdownAccount accountIdState={props.accountIdState} />
+          )}
           <MenuDateRange
             dateGeState={props.barState.timestampGe}
             dateLeState={props.barState.timestampLe}

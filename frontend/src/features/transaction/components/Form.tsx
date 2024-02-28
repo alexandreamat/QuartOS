@@ -240,16 +240,17 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
               onDelete={handleDelete}
               query={props.deleteResult}
             />
-            <Button
-              negative
-              floated="left"
-              labelPosition="left"
-              content="Remove from group"
-              loading={props.ungroupResult.isLoading}
-              disabled={props.transaction.movement_id === undefined}
-              icon="object ungroup"
-              onClick={props.onUngroup}
-            />
+            {props.transaction.movement_id && (
+              <Button
+                negative
+                floated="left"
+                labelPosition="left"
+                content="Remove from group"
+                loading={props.ungroupResult.isLoading}
+                icon="object ungroup"
+                onClick={props.onUngroup}
+              />
+            )}
           </>
         )}
         <Button onClick={handleClose}>Cancel</Button>

@@ -33,6 +33,7 @@ export default function TransactionCards(props: {
   isMultipleChoice?: boolean;
   transactionCheckboxes: Checkboxes;
   movementCheckboxes: Checkboxes;
+  accountId?: number;
   reference: MutableRefObject<HTMLDivElement | null>;
 }) {
   const [search] = props.barState.search;
@@ -42,16 +43,24 @@ export default function TransactionCards(props: {
   const [amountGe] = props.barState.amountGe;
   const [amountLe] = props.barState.amountLe;
   const [isAmountAbs] = props.barState.isAmountAbs;
-  const [accountId] = props.barState.accountId;
   const [consolidated] = props.barState.consolidated;
+
+  let amountKey = "amount";
+  if (consolidated) amountKey = `${amountKey}DefaultCurrency`;
+  let amountGeKey = `${amountKey}Ge`;
+  let amountLeKey = `${amountKey}Le`;
+  if (isAmountAbs) {
+    amountGeKey = `${amountGeKey}Abs`;
+    amountLeKey = `${amountLeKey}Abs`;
+  }
 
   const params: ReadManyUsersMeTransactionsGetApiArg = {
     timestampGe: timestampGe && formatDateParam(timestampGe),
     timestampLe: timestampLe && formatDateParam(timestampLe),
     search,
-    [isAmountAbs ? "amountGeAbs" : "amountGe"]: amountGe,
-    amountLe,
-    accountIdEq: accountId,
+    [amountGeKey]: amountGe,
+    [amountLeKey]: amountLe,
+    accountIdEq: props.accountId,
     consolidated,
     orderBy: isDescending ? "timestamp__desc" : "timestamp__asc",
   };
@@ -83,6 +92,7 @@ export default function TransactionCards(props: {
             : undefined
         }
         loading={loading}
+        currency={consolidated ? "default" : "account"}
       />
     );
 

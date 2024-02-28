@@ -32,9 +32,11 @@ export default function Transactions() {
 
   const isMultipleChoiceState = useState(false);
   const [isMultipleChoice, setIsMultipleChoice] = isMultipleChoiceState;
+  const accountIdState = useState<number>();
+  const [accountId, setAccountId] = accountIdState;
 
   const barState = useTransactionBarState();
-  const [_, setAccountId] = barState.accountId;
+  const [consolidated, _] = barState.consolidated;
 
   const transactionCheckboxes = useCheckboxes();
   const movementCheckboxes = useCheckboxes();
@@ -75,10 +77,15 @@ export default function Transactions() {
 
   return (
     <FlexColumn style={{ height: "100%" }}>
-      <Bar barState={barState} isMultipleChoiceState={isMultipleChoiceState} />
+      <Bar
+        barState={barState}
+        isMultipleChoiceState={isMultipleChoiceState}
+        accountIdState={consolidated ? undefined : accountIdState}
+      />
       <FlexColumn.Auto reference={reference}>
         <TransactionCards
           barState={barState}
+          accountId={accountId}
           transactionCheckboxes={transactionCheckboxes}
           movementCheckboxes={movementCheckboxes}
           isMultipleChoice={isMultipleChoice}
