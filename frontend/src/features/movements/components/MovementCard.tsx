@@ -184,7 +184,6 @@ export function MovementCard(props: {
           )}
         </FlexRow>
         <Flows
-          onRemove={props.onRemoveTransaction}
           selectedAccountId={props.selectedAccountId}
           loading={props.loading}
           movementId={props.movement?.id}

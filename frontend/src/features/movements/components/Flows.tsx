@@ -33,7 +33,6 @@ const stepPadding = "10px";
 
 function Flow(props: {
   transaction?: TransactionApiOut;
-  onRemove?: () => void;
   loading?: boolean;
   style?: CSSProperties;
   reverse?: boolean;
@@ -114,13 +113,6 @@ function Flow(props: {
       onClick={() => setFormOpen(true)}
       loading={props.loading}
     />,
-    props.onRemove && (
-      <ClickableIcon
-        name="remove circle"
-        onClick={props.onRemove}
-        loading={props.loading}
-      />
-    ),
   ];
 
   return (
@@ -145,7 +137,6 @@ function Flow(props: {
 }
 
 function StepFlows(props: {
-  onRemove?: (x: TransactionApiOut) => void;
   selectedAccountId?: number;
   transactions?: TransactionApiOut[];
   loading?: boolean;
@@ -169,9 +160,6 @@ function StepFlows(props: {
             <Flow
               key={t.id}
               transaction={t}
-              onRemove={
-                props.onRemove && (() => props.onRemove && props.onRemove(t))
-              }
               style={{
                 fontWeight:
                   t.account_id === props.selectedAccountId ? "bold" : "normal",
@@ -186,7 +174,6 @@ function StepFlows(props: {
 }
 
 export function Flows(props: {
-  onRemove?: (x: TransactionApiOut) => void;
   selectedAccountId?: number;
   movementId?: number;
   loading?: boolean;
@@ -200,7 +187,6 @@ export function Flows(props: {
     <Step.Group fluid widths={2}>
       <StepFlows
         loading={props.loading}
-        onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
         transactions={transactionsQuery.data}
         filterPredicate={(t) => Number(t.amount) < 0}
@@ -208,7 +194,6 @@ export function Flows(props: {
       />
       <StepFlows
         loading={props.loading}
-        onRemove={props.onRemove}
         selectedAccountId={props.selectedAccountId}
         transactions={transactionsQuery.data}
         filterPredicate={(t) => Number(t.amount) >= 0}
