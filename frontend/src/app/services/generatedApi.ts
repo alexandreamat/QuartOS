@@ -800,72 +800,61 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/users/me/transactions/`,
           params: {
+            order_by: queryArg.orderBy,
+            per_page: queryArg.perPage,
+            page: queryArg.page,
+            id__eq: queryArg.idEq,
+            id__gt: queryArg.idGt,
+            id__ge: queryArg.idGe,
+            id__le: queryArg.idLe,
+            id__lt: queryArg.idLt,
+            is_synced__eq: queryArg.isSyncedEq,
+            is_synced__gt: queryArg.isSyncedGt,
+            is_synced__ge: queryArg.isSyncedGe,
+            is_synced__le: queryArg.isSyncedLe,
+            is_synced__lt: queryArg.isSyncedLt,
+            timestamp__eq: queryArg.timestampEq,
+            timestamp__gt: queryArg.timestampGt,
+            timestamp__ge: queryArg.timestampGe,
+            timestamp__le: queryArg.timestampLe,
+            timestamp__lt: queryArg.timestampLt,
+            name__eq: queryArg.nameEq,
+            name__gt: queryArg.nameGt,
+            name__ge: queryArg.nameGe,
+            name__le: queryArg.nameLe,
+            name__lt: queryArg.nameLt,
+            category_id__eq: queryArg.categoryIdEq,
+            category_id__gt: queryArg.categoryIdGt,
+            category_id__ge: queryArg.categoryIdGe,
+            category_id__le: queryArg.categoryIdLe,
+            category_id__lt: queryArg.categoryIdLt,
             movement_id__eq: queryArg.movementIdEq,
             movement_id__gt: queryArg.movementIdGt,
             movement_id__ge: queryArg.movementIdGe,
             movement_id__le: queryArg.movementIdLe,
             movement_id__lt: queryArg.movementIdLt,
-            order_by: queryArg.orderBy,
             amount_default_currency__eq: queryArg.amountDefaultCurrencyEq,
-            amount_default_currency__eq__abs:
-              queryArg.amountDefaultCurrencyEqAbs,
             amount_default_currency__gt: queryArg.amountDefaultCurrencyGt,
-            amount_default_currency__gt__abs:
-              queryArg.amountDefaultCurrencyGtAbs,
             amount_default_currency__ge: queryArg.amountDefaultCurrencyGe,
-            amount_default_currency__ge__abs:
-              queryArg.amountDefaultCurrencyGeAbs,
             amount_default_currency__le: queryArg.amountDefaultCurrencyLe,
-            amount_default_currency__le__abs:
-              queryArg.amountDefaultCurrencyLeAbs,
             amount_default_currency__lt: queryArg.amountDefaultCurrencyLt,
-            amount_default_currency__lt__abs:
-              queryArg.amountDefaultCurrencyLtAbs,
             amount__eq: queryArg.amountEq,
-            amount__eq__abs: queryArg.amountEqAbs,
             amount__gt: queryArg.amountGt,
-            amount__gt__abs: queryArg.amountGtAbs,
             amount__ge: queryArg.amountGe,
-            amount__ge__abs: queryArg.amountGeAbs,
             amount__le: queryArg.amountLe,
-            amount__le__abs: queryArg.amountLeAbs,
             amount__lt: queryArg.amountLt,
-            amount__lt__abs: queryArg.amountLtAbs,
             account_balance__eq: queryArg.accountBalanceEq,
-            account_balance__eq__abs: queryArg.accountBalanceEqAbs,
             account_balance__gt: queryArg.accountBalanceGt,
-            account_balance__gt__abs: queryArg.accountBalanceGtAbs,
             account_balance__ge: queryArg.accountBalanceGe,
-            account_balance__ge__abs: queryArg.accountBalanceGeAbs,
             account_balance__le: queryArg.accountBalanceLe,
-            account_balance__le__abs: queryArg.accountBalanceLeAbs,
             account_balance__lt: queryArg.accountBalanceLt,
-            account_balance__lt__abs: queryArg.accountBalanceLtAbs,
             account_id__eq: queryArg.accountIdEq,
-            account_id__eq__abs: queryArg.accountIdEqAbs,
             account_id__gt: queryArg.accountIdGt,
-            account_id__gt__abs: queryArg.accountIdGtAbs,
             account_id__ge: queryArg.accountIdGe,
-            account_id__ge__abs: queryArg.accountIdGeAbs,
             account_id__le: queryArg.accountIdLe,
-            account_id__le__abs: queryArg.accountIdLeAbs,
             account_id__lt: queryArg.accountIdLt,
-            account_id__lt__abs: queryArg.accountIdLtAbs,
-            is_synced__eq: queryArg.isSyncedEq,
-            is_synced__eq__abs: queryArg.isSyncedEqAbs,
-            is_synced__gt: queryArg.isSyncedGt,
-            is_synced__gt__abs: queryArg.isSyncedGtAbs,
-            is_synced__ge: queryArg.isSyncedGe,
-            is_synced__ge__abs: queryArg.isSyncedGeAbs,
-            is_synced__le: queryArg.isSyncedLe,
-            is_synced__le__abs: queryArg.isSyncedLeAbs,
-            is_synced__lt: queryArg.isSyncedLt,
-            is_synced__lt__abs: queryArg.isSyncedLtAbs,
-            consolidated__eq: queryArg.consolidatedEq,
-            consolidated__gt: queryArg.consolidatedGt,
-            consolidated__ge: queryArg.consolidatedGe,
-            consolidated__le: queryArg.consolidatedLe,
-            consolidated__lt: queryArg.consolidatedLt,
+            search: queryArg.search,
+            consolidated: queryArg.consolidated,
           },
         }),
         providesTags: ["users", "transactions"],
@@ -1293,67 +1282,61 @@ export type RemoveUsersMeMovementsMovementIdTransactionsTransactionIdDeleteApiAr
 export type ReadManyUsersMeTransactionsGetApiResponse =
   /** status 200 Successful Response */ (TransactionApiOut | MovementApiOut)[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
+  orderBy?: string | null;
+  perPage?: number;
+  page?: number;
+  idEq?: number | null;
+  idGt?: number | null;
+  idGe?: number | null;
+  idLe?: number | null;
+  idLt?: number | null;
+  isSyncedEq?: boolean | null;
+  isSyncedGt?: boolean | null;
+  isSyncedGe?: boolean | null;
+  isSyncedLe?: boolean | null;
+  isSyncedLt?: boolean | null;
+  timestampEq?: string | null;
+  timestampGt?: string | null;
+  timestampGe?: string | null;
+  timestampLe?: string | null;
+  timestampLt?: string | null;
+  nameEq?: string | null;
+  nameGt?: string | null;
+  nameGe?: string | null;
+  nameLe?: string | null;
+  nameLt?: string | null;
+  categoryIdEq?: number | null;
+  categoryIdGt?: number | null;
+  categoryIdGe?: number | null;
+  categoryIdLe?: number | null;
+  categoryIdLt?: number | null;
   movementIdEq?: number | null;
   movementIdGt?: number | null;
   movementIdGe?: number | null;
   movementIdLe?: number | null;
   movementIdLt?: number | null;
-  orderBy?: string | null;
   amountDefaultCurrencyEq?: number | string | null;
-  amountDefaultCurrencyEqAbs?: number | string | null;
   amountDefaultCurrencyGt?: number | string | null;
-  amountDefaultCurrencyGtAbs?: number | string | null;
   amountDefaultCurrencyGe?: number | string | null;
-  amountDefaultCurrencyGeAbs?: number | string | null;
   amountDefaultCurrencyLe?: number | string | null;
-  amountDefaultCurrencyLeAbs?: number | string | null;
   amountDefaultCurrencyLt?: number | string | null;
-  amountDefaultCurrencyLtAbs?: number | string | null;
   amountEq?: number | string | null;
-  amountEqAbs?: number | string | null;
   amountGt?: number | string | null;
-  amountGtAbs?: number | string | null;
   amountGe?: number | string | null;
-  amountGeAbs?: number | string | null;
   amountLe?: number | string | null;
-  amountLeAbs?: number | string | null;
   amountLt?: number | string | null;
-  amountLtAbs?: number | string | null;
   accountBalanceEq?: number | string | null;
-  accountBalanceEqAbs?: number | string | null;
   accountBalanceGt?: number | string | null;
-  accountBalanceGtAbs?: number | string | null;
   accountBalanceGe?: number | string | null;
-  accountBalanceGeAbs?: number | string | null;
   accountBalanceLe?: number | string | null;
-  accountBalanceLeAbs?: number | string | null;
   accountBalanceLt?: number | string | null;
-  accountBalanceLtAbs?: number | string | null;
   accountIdEq?: number | null;
-  accountIdEqAbs?: number | null;
   accountIdGt?: number | null;
-  accountIdGtAbs?: number | null;
   accountIdGe?: number | null;
-  accountIdGeAbs?: number | null;
   accountIdLe?: number | null;
-  accountIdLeAbs?: number | null;
   accountIdLt?: number | null;
-  accountIdLtAbs?: number | null;
-  isSyncedEq?: boolean | null;
-  isSyncedEqAbs?: boolean | null;
-  isSyncedGt?: boolean | null;
-  isSyncedGtAbs?: boolean | null;
-  isSyncedGe?: boolean | null;
-  isSyncedGeAbs?: boolean | null;
-  isSyncedLe?: boolean | null;
-  isSyncedLeAbs?: boolean | null;
-  isSyncedLt?: boolean | null;
-  isSyncedLtAbs?: boolean | null;
-  consolidatedEq?: false | null;
-  consolidatedGt?: false | null;
-  consolidatedGe?: false | null;
-  consolidatedLe?: false | null;
-  consolidatedLt?: false | null;
+  search?: string;
+  consolidated?: boolean;
 };
 export type ConsolidateUsersMeTransactionsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
