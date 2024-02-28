@@ -14,14 +14,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import re
-from typing import TypeVar, Annotated
+from typing import Any, Never, Type, TypeVar, Annotated
 
 import pycountry
-from pydantic import AfterValidator, BaseModel, ConfigDict
+from pydantic import AfterValidator, BaseModel, ConfigDict, create_model
 
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 
 logger = logging.getLogger(__name__)
+
+
+class QueryArgMeta(type(BaseModel)):
+    def __new__(cls, name: str, bases: Never, dct: dict[str, Any]) -> Type[BaseModel]:
+        kwargs: dict[str, Any] = {}
+        for k, v in dct["__schema__"].__annotations__.items():
+            for op in ["eq", "gt", "ge", "le", "lt"]:
+                if hasattr(v, f"__{op}__"):
+                    kwargs[f"{k}__{op}"] = (v | None, None)
+                    if hasattr(v, f"__abs__"):
+                        kwargs[f"{k}__{op}__abs"] = (v | None, None)
+
+        return create_model(name, **kwargs)
 
 
 class ApiInMixin(BaseModel):

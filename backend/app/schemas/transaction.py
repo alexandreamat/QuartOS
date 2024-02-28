@@ -23,6 +23,7 @@ from app.schemas.account import AnnotatedLiteral
 from app.schemas.common import (
     PlaidInMixin,
     PlaidOutMixin,
+    QueryArgMeta,
     SyncableApiOutMixin,
     ApiInMixin,
 )
@@ -62,3 +63,7 @@ class TransactionPlaidIn(TransactionApiIn, PlaidInMixin): ...
 
 
 class TransactionPlaidOut(TransactionApiOut, PlaidOutMixin): ...
+
+
+class TransactionQueryArg(BaseModel, metaclass=QueryArgMeta):
+    __schema__ = TransactionApiOut
