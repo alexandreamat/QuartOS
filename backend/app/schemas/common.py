@@ -33,6 +33,10 @@ class QueryArgMeta(type(BaseModel)):
                     kwargs[f"{k}__{op}"] = (v | None, None)
                     if hasattr(v, f"__abs__"):
                         kwargs[f"{k}__{op}__abs"] = (v | None, None)
+            for op in ["asc", "desc"]:
+                kwargs[f"{k}__{op}"] = (v | None, None)
+                if hasattr(v, f"__abs__"):
+                    kwargs[f"{k}__{op}__abs"] = (v | None, None)
 
         return create_model(name, **kwargs)
 
