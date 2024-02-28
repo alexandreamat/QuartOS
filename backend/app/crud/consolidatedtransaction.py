@@ -57,7 +57,6 @@ class CRUDConsolidatedTransaction:
         *,
         user_id: int | None = None,
         search: str | None = None,
-        is_amount_abs: bool = False,
         consolidated: bool = False,
         per_page: int = 0,
         page: int = 0,
@@ -80,11 +79,6 @@ class CRUDConsolidatedTransaction:
             model.account_balance,
             model.is_synced,
         )
-        amount = (
-            func.abs(model.amount_default_currency)
-            if is_amount_abs
-            else model.amount_default_currency
-        )
 
         # JOIN
         if consolidated:
@@ -102,12 +96,16 @@ class CRUDConsolidatedTransaction:
         if search:
             statement = filter_query_by_search(search, statement, model.name)
 
+        # Handle kwargs like amount__gt, amount__le__abs, timestamp__eq...
         for kw, arg in kwargs.items():
             if arg is None:
                 continue
-            attr, op = kw.split("__")
-            f = getattr(getattr(model, attr), f"__{op}__" if op else "__eq__")
-            statement = statement.where(f(arg))
+            attr_name, *ops = kw.split("__")
+            attr = getattr(model, attr_name)
+            if len(ops) == 2:
+                f = {"abs": abs}[ops[1]]
+                attr = f(attr)
+            statement = statement.where(getattr(attr, f"__{ops[0]}__")(arg))
 
         # GROUP BY
         if consolidated:
