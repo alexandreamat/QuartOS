@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import re
-from typing import Any, Literal, Never, Optional, Type, TypeVar, Annotated, get_origin
+from typing import Any, Literal, Never, Type, TypeVar, Annotated, get_origin
 
 import pycountry
 from pydantic import AfterValidator, BaseModel, ConfigDict, create_model

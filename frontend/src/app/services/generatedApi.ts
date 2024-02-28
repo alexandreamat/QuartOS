@@ -1335,7 +1335,7 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   accountIdGe?: number | null;
   accountIdLe?: number | null;
   accountIdLt?: number | null;
-  search?: string;
+  search?: string | null;
   consolidated?: boolean;
 };
 export type ConsolidateUsersMeTransactionsPostApiResponse =

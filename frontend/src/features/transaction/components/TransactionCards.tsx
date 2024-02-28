@@ -49,10 +49,9 @@ export default function TransactionCards(props: {
     timestampGe: timestampGe && formatDateParam(timestampGe),
     timestampLe: timestampLe && formatDateParam(timestampLe),
     search,
-    amountGe,
+    [isAmountAbs ? "amountGeAbs" : "amountGe"]: amountGe,
     amountLe,
-    isAmountAbs,
-    accountId,
+    accountIdEq: accountId,
     consolidated,
     orderBy: isDescending ? "timestamp__desc" : "timestamp__asc",
   };
@@ -62,7 +61,7 @@ export default function TransactionCards(props: {
     loading,
   }: PaginatedItemProps<TransactionApiOut | MovementApiOut>) =>
     t?.consolidated ? (
-      <TransactionCard.Consolidated
+      <TransactionCard.Group
         transaction={t}
         checked={t && props.movementCheckboxes.checked.has(t.id)}
         checkBoxDisabled={t && props.movementCheckboxes.disabled.has(t.id)}
