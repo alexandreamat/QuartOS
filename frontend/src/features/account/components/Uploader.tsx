@@ -44,7 +44,7 @@ export default function Uploader(props: {
 
   const lastTransactionQuery =
     api.endpoints.readManyUsersMeTransactionsGet.useQuery({
-      accountId: props.account.id,
+      accountIdEq: props.account.id,
       perPage: 1,
       page: 0,
     });

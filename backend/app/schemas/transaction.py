@@ -67,5 +67,5 @@ class TransactionPlaidOut(TransactionApiOut, PlaidOutMixin): ...
 
 class TransactionQueryArg(BaseModel, metaclass=QueryArgMeta):
     __schema__ = TransactionApiOut
-    search: str
+    search: str | None = None
     consolidated: bool

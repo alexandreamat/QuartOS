@@ -28,7 +28,7 @@ export default function PLMovements(props: {
     api.endpoints.readManyUsersMeTransactionsGet.useQuery({
       timestampGe: props.aggregate.start_date,
       timestampLe: props.aggregate.end_date,
-      categoryId: props.categoryId,
+      categoryIdEq: props.categoryId,
       amountGt: props.showIncome ? 0 : undefined,
       amountLt: props.showIncome ? undefined : 0,
       orderBy: props.showIncome ? "amount__desc" : "amount__asc",
@@ -55,7 +55,7 @@ export default function PLMovements(props: {
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         if (t.consolidated)
           return (
-            <TransactionCard.Consolidated
+            <TransactionCard.Group
               key={t.id}
               transaction={t}
               // explanationRate={explanationRate}
