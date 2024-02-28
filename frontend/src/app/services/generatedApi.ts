@@ -800,20 +800,72 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/users/me/transactions/`,
           params: {
-            account_id: queryArg.accountId,
-            category_id: queryArg.categoryId,
-            page: queryArg.page,
-            per_page: queryArg.perPage,
-            timestamp__ge: queryArg.timestampGe,
-            timestamp__le: queryArg.timestampLe,
-            search: queryArg.search,
-            amount__ge: queryArg.amountGe,
-            amount__le: queryArg.amountLe,
-            amount__gt: queryArg.amountGt,
-            amount__lt: queryArg.amountLt,
-            is_amount_abs: queryArg.isAmountAbs,
-            consolidated: queryArg.consolidated,
+            movement_id__eq: queryArg.movementIdEq,
+            movement_id__gt: queryArg.movementIdGt,
+            movement_id__ge: queryArg.movementIdGe,
+            movement_id__le: queryArg.movementIdLe,
+            movement_id__lt: queryArg.movementIdLt,
             order_by: queryArg.orderBy,
+            amount_default_currency__eq: queryArg.amountDefaultCurrencyEq,
+            amount_default_currency__eq__abs:
+              queryArg.amountDefaultCurrencyEqAbs,
+            amount_default_currency__gt: queryArg.amountDefaultCurrencyGt,
+            amount_default_currency__gt__abs:
+              queryArg.amountDefaultCurrencyGtAbs,
+            amount_default_currency__ge: queryArg.amountDefaultCurrencyGe,
+            amount_default_currency__ge__abs:
+              queryArg.amountDefaultCurrencyGeAbs,
+            amount_default_currency__le: queryArg.amountDefaultCurrencyLe,
+            amount_default_currency__le__abs:
+              queryArg.amountDefaultCurrencyLeAbs,
+            amount_default_currency__lt: queryArg.amountDefaultCurrencyLt,
+            amount_default_currency__lt__abs:
+              queryArg.amountDefaultCurrencyLtAbs,
+            amount__eq: queryArg.amountEq,
+            amount__eq__abs: queryArg.amountEqAbs,
+            amount__gt: queryArg.amountGt,
+            amount__gt__abs: queryArg.amountGtAbs,
+            amount__ge: queryArg.amountGe,
+            amount__ge__abs: queryArg.amountGeAbs,
+            amount__le: queryArg.amountLe,
+            amount__le__abs: queryArg.amountLeAbs,
+            amount__lt: queryArg.amountLt,
+            amount__lt__abs: queryArg.amountLtAbs,
+            account_balance__eq: queryArg.accountBalanceEq,
+            account_balance__eq__abs: queryArg.accountBalanceEqAbs,
+            account_balance__gt: queryArg.accountBalanceGt,
+            account_balance__gt__abs: queryArg.accountBalanceGtAbs,
+            account_balance__ge: queryArg.accountBalanceGe,
+            account_balance__ge__abs: queryArg.accountBalanceGeAbs,
+            account_balance__le: queryArg.accountBalanceLe,
+            account_balance__le__abs: queryArg.accountBalanceLeAbs,
+            account_balance__lt: queryArg.accountBalanceLt,
+            account_balance__lt__abs: queryArg.accountBalanceLtAbs,
+            account_id__eq: queryArg.accountIdEq,
+            account_id__eq__abs: queryArg.accountIdEqAbs,
+            account_id__gt: queryArg.accountIdGt,
+            account_id__gt__abs: queryArg.accountIdGtAbs,
+            account_id__ge: queryArg.accountIdGe,
+            account_id__ge__abs: queryArg.accountIdGeAbs,
+            account_id__le: queryArg.accountIdLe,
+            account_id__le__abs: queryArg.accountIdLeAbs,
+            account_id__lt: queryArg.accountIdLt,
+            account_id__lt__abs: queryArg.accountIdLtAbs,
+            is_synced__eq: queryArg.isSyncedEq,
+            is_synced__eq__abs: queryArg.isSyncedEqAbs,
+            is_synced__gt: queryArg.isSyncedGt,
+            is_synced__gt__abs: queryArg.isSyncedGtAbs,
+            is_synced__ge: queryArg.isSyncedGe,
+            is_synced__ge__abs: queryArg.isSyncedGeAbs,
+            is_synced__le: queryArg.isSyncedLe,
+            is_synced__le__abs: queryArg.isSyncedLeAbs,
+            is_synced__lt: queryArg.isSyncedLt,
+            is_synced__lt__abs: queryArg.isSyncedLtAbs,
+            consolidated__eq: queryArg.consolidatedEq,
+            consolidated__gt: queryArg.consolidatedGt,
+            consolidated__ge: queryArg.consolidatedGe,
+            consolidated__le: queryArg.consolidatedLe,
+            consolidated__lt: queryArg.consolidatedLt,
           },
         }),
         providesTags: ["users", "transactions"],
@@ -1241,20 +1293,67 @@ export type RemoveUsersMeMovementsMovementIdTransactionsTransactionIdDeleteApiAr
 export type ReadManyUsersMeTransactionsGetApiResponse =
   /** status 200 Successful Response */ (TransactionApiOut | MovementApiOut)[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
-  accountId?: number | null;
-  categoryId?: number | null;
-  page?: number;
-  perPage?: number;
-  timestampGe?: string | null;
-  timestampLe?: string | null;
-  search?: string | null;
-  amountGe?: number | string | null;
-  amountLe?: number | string | null;
-  amountGt?: number | string | null;
-  amountLt?: number | string | null;
-  isAmountAbs?: boolean;
-  consolidated?: boolean;
+  movementIdEq?: number | null;
+  movementIdGt?: number | null;
+  movementIdGe?: number | null;
+  movementIdLe?: number | null;
+  movementIdLt?: number | null;
   orderBy?: string | null;
+  amountDefaultCurrencyEq?: number | string | null;
+  amountDefaultCurrencyEqAbs?: number | string | null;
+  amountDefaultCurrencyGt?: number | string | null;
+  amountDefaultCurrencyGtAbs?: number | string | null;
+  amountDefaultCurrencyGe?: number | string | null;
+  amountDefaultCurrencyGeAbs?: number | string | null;
+  amountDefaultCurrencyLe?: number | string | null;
+  amountDefaultCurrencyLeAbs?: number | string | null;
+  amountDefaultCurrencyLt?: number | string | null;
+  amountDefaultCurrencyLtAbs?: number | string | null;
+  amountEq?: number | string | null;
+  amountEqAbs?: number | string | null;
+  amountGt?: number | string | null;
+  amountGtAbs?: number | string | null;
+  amountGe?: number | string | null;
+  amountGeAbs?: number | string | null;
+  amountLe?: number | string | null;
+  amountLeAbs?: number | string | null;
+  amountLt?: number | string | null;
+  amountLtAbs?: number | string | null;
+  accountBalanceEq?: number | string | null;
+  accountBalanceEqAbs?: number | string | null;
+  accountBalanceGt?: number | string | null;
+  accountBalanceGtAbs?: number | string | null;
+  accountBalanceGe?: number | string | null;
+  accountBalanceGeAbs?: number | string | null;
+  accountBalanceLe?: number | string | null;
+  accountBalanceLeAbs?: number | string | null;
+  accountBalanceLt?: number | string | null;
+  accountBalanceLtAbs?: number | string | null;
+  accountIdEq?: number | null;
+  accountIdEqAbs?: number | null;
+  accountIdGt?: number | null;
+  accountIdGtAbs?: number | null;
+  accountIdGe?: number | null;
+  accountIdGeAbs?: number | null;
+  accountIdLe?: number | null;
+  accountIdLeAbs?: number | null;
+  accountIdLt?: number | null;
+  accountIdLtAbs?: number | null;
+  isSyncedEq?: boolean | null;
+  isSyncedEqAbs?: boolean | null;
+  isSyncedGt?: boolean | null;
+  isSyncedGtAbs?: boolean | null;
+  isSyncedGe?: boolean | null;
+  isSyncedGeAbs?: boolean | null;
+  isSyncedLe?: boolean | null;
+  isSyncedLeAbs?: boolean | null;
+  isSyncedLt?: boolean | null;
+  isSyncedLtAbs?: boolean | null;
+  consolidatedEq?: false | null;
+  consolidatedGt?: false | null;
+  consolidatedGe?: false | null;
+  consolidatedLe?: false | null;
+  consolidatedLt?: false | null;
 };
 export type ConsolidateUsersMeTransactionsPostApiResponse =
   /** status 200 Successful Response */ MovementApiOut;
