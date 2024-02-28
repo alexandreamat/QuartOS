@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import re
-from typing import Any, Never, Type, TypeVar, Annotated
+from typing import Any, Literal, Never, Optional, Type, TypeVar, Annotated, get_origin
 
 import pycountry
 from pydantic import AfterValidator, BaseModel, ConfigDict, create_model
@@ -27,13 +27,27 @@ logger = logging.getLogger(__name__)
 class QueryArgMeta(type(BaseModel)):
     def __new__(cls, name: str, bases: Never, dct: dict[str, Any]) -> Type[BaseModel]:
         kwargs: dict[str, Any] = {}
-        for k, v in dct["__schema__"].__annotations__.items():
+
+        kwargs["order_by"] = (str | None, None)
+        kwargs["per_page"] = (int, 0)
+        kwargs["page"] = (int, 0)
+
+        schema: BaseModel = dct["__schema__"]
+        for name, info in schema.model_fields.items():
+            type_ = info.annotation
+            if not type_:
+                continue
+            if get_origin(type_) == Literal:
+                continue
             for op in ["eq", "gt", "ge", "le", "lt"]:
-                if hasattr(v, f"__{op}__"):
-                    kwargs[f"{k}__{op}"] = (v | None, None)
-                    if hasattr(v, f"__abs__"):
-                        kwargs[f"{k}__{op}__abs"] = (v | None, None)
-            kwargs["order_by"] = (str | None, None)
+                if hasattr(info, f"__{op}__"):
+                    kwargs[f"{name}__{op}"] = (type_ | None, None)
+                    if hasattr(info, f"__abs__"):
+                        kwargs[f"{name}__{op}__abs"] = (type_ | None, None)
+
+        annotations: dict[str, Type[Any]] = dct.get("__annotations__", {})
+        for name, type_ in annotations.items():
+            kwargs[name] = (type_, dct.get(name))
 
         return create_model(name, **kwargs)
 
