@@ -19,7 +19,17 @@ from decimal import Decimal
 import logging
 from typing import Any, Iterable
 import pydantic_core
-from sqlalchemy import Row, Select, asc, desc, func, or_, select, case
+from sqlalchemy import (
+    ColumnExpressionArgument,
+    Row,
+    Select,
+    asc,
+    desc,
+    func,
+    or_,
+    select,
+    case,
+)
 from sqlalchemy.orm import Session
 from app.models.account import Account, NonInstitutionalAccount
 from app.models.common import CalculatedColumnsMeta
@@ -48,6 +58,21 @@ class ConsolidatedTransaction(metaclass=CalculatedColumnsMeta):
     transactions_count = Movement.transactions_count.expression
     account_balance = func.min(Transaction.account_balance)
     is_synced = case((func.min(Transaction.plaid_id) != None, True), else_=False)
+
+
+def query_expressions(
+    model: Any, **kwargs: Any
+) -> Iterable[ColumnExpressionArgument[bool]]:
+    # Handle kwargs like amount__gt, amount__le__abs, timestamp__eq...
+    for kw, arg in kwargs.items():
+        if arg is None:
+            continue
+        attr_name, *ops = kw.split("__")
+        attr = getattr(model, attr_name)
+        if len(ops) == 2:
+            f = {"abs": abs}[ops[1]]
+            attr = f(attr)
+        yield getattr(attr, f"__{ops[0]}__")(arg)
 
 
 class CRUDConsolidatedTransaction:
@@ -96,20 +121,18 @@ class CRUDConsolidatedTransaction:
         if search:
             statement = filter_query_by_search(search, statement, model.name)
 
-        # Handle kwargs like amount__gt, amount__le__abs, timestamp__eq...
-        for kw, arg in kwargs.items():
-            if arg is None:
-                continue
-            attr_name, *ops = kw.split("__")
-            attr = getattr(model, attr_name)
-            if len(ops) == 2:
-                f = {"abs": abs}[ops[1]]
-                attr = f(attr)
-            statement = statement.where(getattr(attr, f"__{ops[0]}__")(arg))
+        if not consolidated:
+            for exp in query_expressions(model, **kwargs):
+                statement = statement.where(exp)
 
         # GROUP BY
         if consolidated:
             statement = statement.group_by(ConsolidatedTransaction.id)
+
+        # HAVING
+        if consolidated:
+            for exp in query_expressions(model, **kwargs):
+                statement = statement.having(exp)
 
         # ORDER BY
         if order_by:
