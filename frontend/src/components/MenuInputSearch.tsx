@@ -17,7 +17,7 @@ import { Input, Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
 
 export default function MenuInputSearch(props: {
-  searchState: UseStateType<string | undefined>;
+  searchState: UseStateType<string>;
 }) {
   const [search, setSearch] = props.searchState;
   return (
@@ -26,9 +26,7 @@ export default function MenuInputSearch(props: {
         icon="search"
         placeholder="Search..."
         value={search}
-        onChange={(_, data) =>
-          setSearch(data.value.length ? data.value : undefined)
-        }
+        onChange={(_, data) => setSearch(data.value)}
       />
     </Menu.Item>
   );

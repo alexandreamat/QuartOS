@@ -145,7 +145,7 @@ export default function InstitutionLinkForm(props: {
         {props.institutionLink && (
           <ConfirmDeleteButtonModal
             query={deleteInstitutionLinkResult}
-            onDelete={handleDelete}
+            onSubmit={handleDelete}
             confirmContent={
               "All associated account and transaction data WILL BE LOST. Are you sure?"
             }

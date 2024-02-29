@@ -84,12 +84,6 @@ export default function AccountCard(props: {
           floated="left"
           onClick={handleGoToTransactions}
         />
-        <ActionButton
-          icon="arrows alternate horizontal"
-          tooltip="See movements"
-          floated="left"
-          onClick={handleGoToMovements}
-        />
 
         {props.account.is_institutional && (
           <ActionButton

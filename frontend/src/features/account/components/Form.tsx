@@ -245,7 +245,7 @@ export default function AccountForm(props: {
       <Modal.Actions>
         <ConfirmDeleteButtonModal
           disabled={props.account?.is_synced}
-          onDelete={handleDelete}
+          onSubmit={handleDelete}
           query={deleteAccountResult}
         />
         <Button onClick={handleClose}>Cancel</Button>
