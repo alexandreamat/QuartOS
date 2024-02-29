@@ -39,7 +39,6 @@ from app.schemas.transaction import (
     TransactionPlaidIn,
     TransactionPlaidOut,
 )
-from app.utils.common import filter_query_by_search
 
 logger = logging.getLogger(__name__)
 
