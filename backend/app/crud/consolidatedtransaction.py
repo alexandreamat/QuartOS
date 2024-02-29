@@ -16,6 +16,7 @@
 
 from datetime import date
 from decimal import Decimal
+import itertools
 import logging
 from typing import Any, Iterable
 import pydantic_core
@@ -39,7 +40,7 @@ from app.models.transaction import Transaction
 from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.movement import MovementApiOut
 from app.schemas.transaction import TransactionApiOut
-from app.utils.common import filter_query_by_search
+from app.utils.common import get_search_expressions
 
 logger = logging.getLogger(__name__)
 
@@ -60,10 +61,11 @@ class ConsolidatedTransaction(metaclass=CalculatedColumnsMeta):
     is_synced = case((func.min(Transaction.plaid_id) != None, True), else_=False)
 
 
-def query_expressions(
+def get_query_expressions(
     model: Any, **kwargs: Any
 ) -> Iterable[ColumnExpressionArgument[bool]]:
     # Handle kwargs like amount__gt, amount__le__abs, timestamp__eq...
+    # to construct model.amount > arg, abs(model.amount) <= arg, ...
     for kw, arg in kwargs.items():
         if arg is None:
             continue
@@ -89,6 +91,10 @@ class CRUDConsolidatedTransaction:
         **kwargs: Any,
     ) -> Select[tuple[Any, ...]]:
         model = ConsolidatedTransaction if consolidated else Transaction
+
+        exprs = get_query_expressions(model, **kwargs)
+        if search:
+            exprs = itertools.chain(get_search_expressions(search, model.name))
 
         # SELECT
         statement = select(
@@ -118,11 +124,9 @@ class CRUDConsolidatedTransaction:
                 UserInstitutionLink.user_id == user_id,
             )
         )
-        if search:
-            statement = filter_query_by_search(search, statement, model.name)
 
         if not consolidated:
-            for exp in query_expressions(model, **kwargs):
+            for exp in exprs:
                 statement = statement.where(exp)
 
         # GROUP BY
@@ -131,7 +135,7 @@ class CRUDConsolidatedTransaction:
 
         # HAVING
         if consolidated:
-            for exp in query_expressions(model, **kwargs):
+            for exp in exprs:
                 statement = statement.having(exp)
 
         # ORDER BY

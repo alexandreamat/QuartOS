@@ -14,17 +14,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from typing import TypeVar
+from typing import Iterable
 
-from sqlalchemy import Select, and_, or_
+from sqlalchemy import ColumnExpressionArgument, and_, or_
 from sqlalchemy.orm import Mapped
 
-T = TypeVar("T")
 
-
-def filter_query_by_search(
-    search: str, statement: Select[tuple[T]], col: Mapped[str]
-) -> Select[tuple[T]]:
+def get_search_expressions(
+    search: str, col: Mapped[str]
+) -> Iterable[ColumnExpressionArgument[bool]]:
     tokens: list[str] = re.findall(r"-?\"[^\"]+\"|-?'[^']+'|\S+", search)
     positive_clauses = []
     negative_clauses = []
@@ -39,7 +37,6 @@ def filter_query_by_search(
         else:
             positive_clauses.append(clause)
     if positive_clauses:
-        statement = statement.where(or_(*positive_clauses))
+        yield or_(*positive_clauses)
     if negative_clauses:
-        statement = statement.where(and_(*negative_clauses))
-    return statement
+        yield and_(*negative_clauses)
