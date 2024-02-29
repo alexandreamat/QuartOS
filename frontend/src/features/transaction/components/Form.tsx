@@ -15,7 +15,13 @@
 
 import { BaseQueryFn, skipToken } from "@reduxjs/toolkit/dist/query";
 import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
-import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
+import {
+  MovementApiIn,
+  MovementApiOut,
+  TransactionApiIn,
+  TransactionApiOut,
+  api,
+} from "app/services/api";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import FormCurrencyInput from "components/FormCurrencyInput";
 import FormDateTimeInput from "components/FormDateTimeInput";
@@ -42,6 +48,7 @@ import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
 import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
+import CurrencyLabel from "components/CurrencyLabel";
 
 export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   props: {
@@ -55,12 +62,6 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
         submitResult: TypedUseMutationResult<R, A, Q>;
       }
     | {
-        // Add new tx to movement
-        movementId: number;
-        onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
-        submitResult: TypedUseMutationResult<R, A, Q>;
-      }
-    | {
         // Edit existing tx
         movementId: number;
         transaction: TransactionApiOut;
@@ -70,8 +71,8 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
         deleteResult: TypedUseMutationResult<R, A, Q>;
         onUpload: (file: File) => void;
         uploadResult: TypedUseMutationResult<R, A, Q>;
-        onUngroup: () => Promise<void>;
-        ungroupResult: TypedUseMutationResult<R, A, Q>;
+        onRemoveFromGroup: () => Promise<void>;
+        removeFromGroupResult: TypedUseMutationResult<R, A, Q>;
       }
   ),
 ) {
@@ -237,7 +238,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
         {isEdit && (
           <>
             <ConfirmDeleteButtonModal
-              onDelete={handleDelete}
+              onSubmit={handleDelete}
               query={props.deleteResult}
             />
             {props.transaction.movement_id && (
@@ -246,9 +247,9 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
                 floated="left"
                 labelPosition="left"
                 content="Remove from group"
-                loading={props.ungroupResult.isLoading}
+                loading={props.removeFromGroupResult.isLoading}
                 icon="object ungroup"
-                onClick={props.onUngroup}
+                onClick={props.onRemoveFromGroup}
               />
             )}
           </>
@@ -405,12 +406,127 @@ function FormEdit(props: {
         props.onEdited && props.onEdited();
       }}
       uploadResult={uploadTransactionFile.result}
-      onUngroup={handleRemove}
-      ungroupResult={ungroupResult}
+      onRemoveFromGroup={handleRemove}
+      removeFromGroupResult={ungroupResult}
     />
+  );
+}
+
+function TransactionGroupForm(props: {
+  transaction: MovementApiOut;
+  onClose: (transaction?: MovementApiOut) => void;
+}) {
+  const [update, updateResult] =
+    api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
+
+  const [ungroup, ungroupResult] =
+    api.endpoints.deleteUsersMeMovementsMovementIdDelete.useMutation();
+
+  const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
+    props.transaction.account_id || skipToken,
+  );
+
+  const me = api.endpoints.readMeUsersMeGet.useQuery();
+
+  const form = {
+    name: useFormField(props.transaction.name, "name"),
+    categoryId: useFormField(
+      props.transaction.category_id || undefined,
+      "category",
+    ),
+  };
+
+  async function handleUpdate() {
+    if (!form.name.value) return;
+
+    try {
+      const result = await update({
+        movementId: props.transaction.id,
+        movementApiIn: {
+          name: form.name.value,
+          category_id: form.categoryId.value,
+        },
+      }).unwrap();
+      props.onClose(result);
+    } catch (error) {
+      logMutationError(error, updateResult);
+      throw error;
+    }
+  }
+
+  async function handleUngroup() {
+    try {
+      await ungroup(props.transaction.id);
+      props.onClose();
+    } catch (error) {
+      logMutationError(error, ungroupResult);
+      throw error;
+    }
+  }
+
+  return (
+    <Modal open onClose={() => props.onClose()} size="small">
+      <Modal.Header>Edit a Transaction Group</Modal.Header>
+      <Modal.Content>
+        <Form>
+          <Form.Field>
+            <label>Account</label>
+            {accountQuery.data ? accountQuery.data.name : "Multiple"}
+          </Form.Field>
+          <CategoriesDropdown.Form categoryId={form.categoryId} />
+          <Form.Field>
+            <label>Amount</label>
+            <CurrencyLabel
+              currencyCode={me.data?.default_currency_code}
+              amount={Number(props.transaction.amount_default_currency)}
+              loading={me.isLoading}
+            />
+          </Form.Field>
+          <Form.Field>
+            <label>Amount (original currency)</label>
+            {props.transaction.amount !== null &&
+            props.transaction.account_id ? (
+              <CurrencyLabel
+                currencyCode={accountQuery.data?.currency_code}
+                amount={Number(props.transaction.amount)}
+                loading={accountQuery.isLoading}
+              />
+            ) : (
+              <p>Multiple currencies</p>
+            )}
+          </Form.Field>
+          <FormTextInput field={form.name} />
+          <Form.Field>
+            <label>Date</label>
+            {stringToDate(props.transaction.timestamp).toLocaleDateString()}
+          </Form.Field>
+          <FormValidationError fields={Object.values(form)} />
+          <QueryErrorMessage query={updateResult} />
+        </Form>
+      </Modal.Content>
+      <Modal.Actions>
+        <ConfirmDeleteButtonModal
+          onSubmit={handleUngroup}
+          query={ungroupResult}
+          label="Ungroup"
+          icon="object ungroup"
+        />
+        <Button onClick={() => props.onClose()}>Cancel</Button>
+        <Button
+          disabled={!Object.values(form).some((field) => field.hasChanged)}
+          content="Save"
+          type="submit"
+          labelPosition="right"
+          icon="checkmark"
+          onClick={handleUpdate}
+          positive
+        />
+      </Modal.Actions>
+    </Modal>
   );
 }
 
 TransactionForm.Create = FormCreate;
 TransactionForm.Add = FormAdd;
 TransactionForm.Edit = FormEdit;
+FormEdit.Group = TransactionGroupForm;

@@ -36,7 +36,7 @@ export default function Transactions() {
   const [accountId, setAccountId] = accountIdState;
 
   const barState = useTransactionBarState();
-  const [consolidated, _] = barState.consolidated;
+  const [consolidated, setConsolidated] = barState.consolidated;
 
   const transactionCheckboxes = useCheckboxes();
   const movementCheckboxes = useCheckboxes();
@@ -46,6 +46,11 @@ export default function Transactions() {
     const accountIdParam = Number(params.get("accountId")) || undefined;
     if (accountIdParam) setAccountId(accountIdParam);
   }, [location, setAccountId]);
+
+  useEffect(() => {
+    if (consolidated) setAccountId(undefined);
+    else setIsMultipleChoice(false);
+  }, [consolidated, setAccountId]);
 
   const [consolidateTransactions, consolidateTransactionsResult] =
     api.endpoints.consolidateUsersMeTransactionsPost.useMutation();
@@ -79,7 +84,7 @@ export default function Transactions() {
     <FlexColumn style={{ height: "100%" }}>
       <Bar
         barState={barState}
-        isMultipleChoiceState={isMultipleChoiceState}
+        isMultipleChoiceState={consolidated ? isMultipleChoiceState : undefined}
         accountIdState={consolidated ? undefined : accountIdState}
       />
       <FlexColumn.Auto reference={reference}>

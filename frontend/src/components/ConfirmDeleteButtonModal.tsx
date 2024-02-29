@@ -16,7 +16,7 @@
 import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
 import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
 import { useState } from "react";
-import { Button, Confirm } from "semantic-ui-react";
+import { Button, Confirm, SemanticICONS } from "semantic-ui-react";
 import { renderErrorMessage } from "utils/error";
 
 export default function ConfirmDeleteButtonModal<
@@ -24,10 +24,12 @@ export default function ConfirmDeleteButtonModal<
   A,
   Q extends BaseQueryFn,
 >(props: {
-  onDelete: () => Promise<void>;
+  onSubmit: () => Promise<void>;
   confirmContent?: string;
   disabled?: boolean;
   query: TypedUseMutationResult<R, A, Q>;
+  label?: string;
+  icon?: SemanticICONS;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   return (
@@ -36,10 +38,10 @@ export default function ConfirmDeleteButtonModal<
         negative
         floated="left"
         labelPosition="left"
-        content="Delete"
+        content={props.label !== undefined ? props.label : "Delete"}
         loading={props.query.isLoading}
         disabled={props.disabled}
-        icon="trash"
+        icon={props.icon !== undefined ? props.icon : "trash"}
         onClick={() => setConfirmOpen(true)}
       />
       <Confirm
@@ -53,7 +55,7 @@ export default function ConfirmDeleteButtonModal<
         onCancel={() => setConfirmOpen(false)}
         onConfirm={async () => {
           try {
-            await props.onDelete();
+            await props.onSubmit();
           } catch (error) {
             console.error(error);
             return;

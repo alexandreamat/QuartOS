@@ -25,14 +25,13 @@ import FlexRow from "components/FlexRow";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import AccountIcon from "features/account/components/Icon";
-import MovementForm from "features/movements/components/Form";
 import { ReactNode, useState } from "react";
 import { Card, Checkbox, Header, Popup } from "semantic-ui-react";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import TransactionForm from "./Form";
 import ModalFileViewer from "./ModalFileViewer";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
-import { Flows } from "features/movements/components/Flows";
+import { Flows } from "features/transaction/components/Flows";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export function TransactionCard(props: {
@@ -60,7 +59,6 @@ export function TransactionCard(props: {
     props.currency === "default"
       ? me.data?.default_currency_code
       : accountQuery.data?.currency_code;
-  if (props.currency === "default") console.log(currencyCode);
 
   return (
     <Card
@@ -235,7 +233,7 @@ function TransactionCardSimple(props: {
 
             {/* See movement button and form */}
 
-            {props.transaction.movement_id && (
+            {/* {props.transaction.movement_id && (
               <>
                 <ActionButton
                   tooltip="See Movement"
@@ -244,13 +242,13 @@ function TransactionCardSimple(props: {
                   disabled={props.loading}
                 />
                 {movementOpen && (
-                  <MovementForm
+                  <TransactionForm.Edit.Group
                     onClose={() => setMovementOpen(false)}
-                    movementId={props.transaction.movement_id}
+                    transaction={props.transaction.movement_id}
                   />
                 )}
               </>
-            )}
+            )} */}
 
             {/* See more button and form */}
             {formOpen && (
@@ -278,7 +276,8 @@ function TransactionCardGroup(props: {
   checkBoxDisabled?: boolean;
   loading?: boolean;
 }) {
-  console.log(props.transaction?.consolidated);
+  const [formOpen, setFormOpen] = useState(false);
+
   return (
     <TransactionCard
       accountId={props.transaction.account_id || undefined}
@@ -291,6 +290,21 @@ function TransactionCardGroup(props: {
       name={props.transaction.name}
       categoryId={props.transaction.category_id || undefined}
       currency="default"
+      buttons={
+        <>
+          {formOpen && (
+            <TransactionForm.Edit.Group
+              onClose={() => setFormOpen(false)}
+              transaction={props.transaction}
+            />
+          )}
+          <ActionButton
+            icon="ellipsis horizontal"
+            onClick={() => setFormOpen(true)}
+            disabled={props.loading}
+          />
+        </>
+      }
     >
       <Flows loading={props.loading} movementId={props.transaction.id} />
     </TransactionCard>

@@ -119,7 +119,7 @@ export default function ModalFileViewer(props: {
       </Modal.Content>
       <Modal.Actions>
         <ConfirmDeleteButtonModal
-          onDelete={handleDeleteFile}
+          onSubmit={handleDeleteFile}
           query={deleteFileResult}
         />
         <Button positive onClick={props.onClose}>
