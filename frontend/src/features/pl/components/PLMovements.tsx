@@ -19,19 +19,21 @@ import { TransactionCard } from "features/transaction/components/TransactionCard
 import { Card, Loader } from "semantic-ui-react";
 
 export default function PLMovements(props: {
-  aggregate: PlStatement;
+  plStatement: PlStatement;
   showIncome: boolean;
   onOpenEditForm: (x: MovementApiOut) => void;
   categoryId?: number;
 }) {
   const transactionsQuery =
     api.endpoints.readManyUsersMeTransactionsGet.useQuery({
-      timestampGe: props.aggregate.start_date,
-      timestampLe: props.aggregate.end_date,
+      timestampGe: props.plStatement.start_date,
+      timestampLt: props.plStatement.end_date,
       categoryIdEq: props.categoryId,
-      amountGt: props.showIncome ? 0 : undefined,
-      amountLt: props.showIncome ? undefined : 0,
-      orderBy: props.showIncome ? "amount__desc" : "amount__asc",
+      [`amountDefaultCurrency${props.showIncome ? "Gt" : "Lt"}` as const]: 0,
+      orderBy: `amount_default_currency__${
+        props.showIncome ? "desc" : "asc"
+      }` as const,
+      consolidated: true,
     });
 
   if (transactionsQuery.isLoading || transactionsQuery.isUninitialized)
@@ -43,8 +45,8 @@ export default function PLMovements(props: {
   const transactions = transactionsQuery.data;
 
   const totalAmount = props.showIncome
-    ? Number(props.aggregate.income)
-    : Number(props.aggregate.expenses);
+    ? Number(props.plStatement.income)
+    : Number(props.plStatement.expenses);
 
   let cumulativeAmount = 0;
 

@@ -32,7 +32,7 @@ function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
   }
   return (
     <PLCard
-      aggregate={props.plStatement}
+      detailedPlStatement={props.plStatement}
       onGoToDetail={handleGoToDetail}
       loading={props.loading}
     />
