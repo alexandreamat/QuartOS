@@ -20,11 +20,11 @@ from typing import Iterable
 from fastapi import APIRouter, Depends
 from app.crud.consolidatedtransaction import CRUDConsolidatedTransaction
 
-from app.crud.movement import CRUDMovement
+from app.crud.transactiongroup import CRUDTransactionGroup
 from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
-from app.schemas.movement import MovementApiIn, MovementApiOut
+from app.schemas.transactiongroup import TransactionGroupApiIn, TransactionGroupApiOut
 from app.schemas.transaction import TransactionApiOut, TransactionQueryArg
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ router = APIRouter()
 @router.get("/")
 def read_many(
     db: DBSession, me: CurrentUser, arg: TransactionQueryArg = Depends()
-) -> Iterable[TransactionApiOut | MovementApiOut]:
+) -> Iterable[TransactionApiOut | TransactionGroupApiOut]:
     return CRUDConsolidatedTransaction.read_many(
         db,
         user_id=me.id,
@@ -45,7 +45,7 @@ def read_many(
 @router.post("/")
 def consolidate(
     db: DBSession, me: CurrentUser, transaction_ids: list[int]
-) -> MovementApiOut:
+) -> TransactionGroupApiOut:
     max_amount = Decimal("0")
     for transaction_id in transaction_ids:
         transaction_out = CRUDTransaction.read(db, transaction_id, user_id=me.id)
@@ -53,6 +53,8 @@ def consolidate(
         if amount > max_amount:
             max_amount = amount
             name = transaction_out.name
-    movement_in = MovementApiIn(name=name)
-    movement_out = CRUDMovement.create(db, movement_in, transaction_ids=transaction_ids)
-    return MovementApiOut.model_validate(movement_out)
+    transaction_group_in = TransactionGroupApiIn(name=name)
+    transaction_group_out = CRUDTransactionGroup.create(
+        db, transaction_group_in, transaction_ids=transaction_ids
+    )
+    return TransactionGroupApiOut.model_validate(transaction_group_out)

@@ -32,11 +32,11 @@ from app.models.merchant import Merchant
 from app.models.transaction import Transaction
 
 
-class Movement(Base):
-    __tablename__ = "movement"
+class TransactionGroup(Base):
+    __tablename__ = "transaction_group"
     name: Mapped[str]
     transactions: Mapped[list["Transaction"]] = relationship(
-        back_populates="movement", lazy="selectin"
+        back_populates="transaction_group", lazy="selectin"
     )
     category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"))
     merchant_id: Mapped[int | None] = mapped_column(ForeignKey("merchant.id"))
@@ -147,7 +147,7 @@ class Movement(Base):
         )
 
     @classmethod
-    def update(cls, db: Session, id: int, **kwargs: Any) -> "Movement":
+    def update(cls, db: Session, id: int, **kwargs: Any) -> "TransactionGroup":
         m = super().update(db, id, **kwargs)
         if not m.merchant_id:
             m.merchant_id = m.get_merchant_id(db)
@@ -156,7 +156,7 @@ class Movement(Base):
         return m
 
     @classmethod
-    def create(cls, db: Session, **kwargs: Any) -> "Movement":
+    def create(cls, db: Session, **kwargs: Any) -> "TransactionGroup":
         m = super().create(db, **kwargs)
         if not m.merchant_id:
             m.merchant_id = m.get_merchant_id(db)

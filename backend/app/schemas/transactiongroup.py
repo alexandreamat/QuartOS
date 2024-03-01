@@ -35,17 +35,17 @@ class DetailedPLStatementApiOut(PLStatement):
     expenses_by_category: dict[int, Decimal]
 
 
-class __MovementBase(BaseModel):
+class __TransactionGroupBase(BaseModel):
     name: str
     category_id: int | None = None
 
 
-class MovementField(str, Enum):
+class TransactionGroupField(str, Enum):
     TIMESTAMP = "timestamp"
     AMOUNT = "amount"
 
 
-class MovementApiOut(__MovementBase, ApiOutMixin):
+class TransactionGroupApiOut(__TransactionGroupBase, ApiOutMixin):
     timestamp: date
     transactions_count: int
     amount_default_currency: Decimal
@@ -56,11 +56,11 @@ class MovementApiOut(__MovementBase, ApiOutMixin):
     consolidated: AnnotatedLiteral(True)
 
     @classmethod
-    def model_validate(cls, obj: Any, **kwargs: Any) -> "MovementApiOut":
+    def model_validate(cls, obj: Any, **kwargs: Any) -> "TransactionGroupApiOut":
         if hasattr(obj, "_asdict"):
             transaction_dict: dict[str, Any] = obj._asdict()
             return cls(**transaction_dict, consolidated=True)
         return super().model_validate(obj, **kwargs)
 
 
-class MovementApiIn(__MovementBase, ApiInMixin): ...
+class TransactionGroupApiIn(__TransactionGroupBase, ApiInMixin): ...

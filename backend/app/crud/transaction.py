@@ -27,12 +27,12 @@ from sqlalchemy.orm import Session
 from app.crud.common import CRUDBase, CRUDSyncedBase
 from app.exceptions.common import ObjectNotFoundError
 from app.models.account import Account, NonInstitutionalAccount
-from app.models.movement import Movement
+from app.models.transactiongroup import TransactionGroup
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.file import FileApiOut
-from app.schemas.movement import DetailedPLStatementApiOut, PLStatement
+from app.schemas.transactiongroup import DetailedPLStatementApiOut, PLStatement
 from app.schemas.transaction import (
     TransactionApiOut,
     TransactionApiIn,
@@ -73,27 +73,27 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
     @classmethod
     def orphan_only_children(cls, db: Session) -> None:
         for t in db.scalars(cls.select()).all():
-            if not t.movement_id or not t.movement:
+            if not t.transaction_group_id or not t.transaction_group:
                 continue
-            if len(t.movement.transactions) > 1:
+            if len(t.transaction_group.transactions) > 1:
                 continue
-            t.movement.delete(db, t.movement_id)
+            t.transaction_group.delete(db, t.transaction_group_id)
 
     @classmethod
     def update(
         cls, db: Session, id: int, obj_in: TransactionApiIn, **kwargs: Any
     ) -> TransactionApiOut:
         transaction = Transaction.update(db, id, **obj_in.model_dump(), **kwargs)
-        if movement := transaction.movement:
-            movement.update(db, movement.id)
+        if transaction_group := transaction.transaction_group:
+            transaction_group.update(db, transaction_group.id)
         return TransactionApiOut.model_validate(transaction)
 
     @classmethod
     def delete(cls, db: Session, id: int) -> int:
-        movement = Transaction.read(db, id).movement
-        if movement:
-            if len(movement.transactions) <= 2:
-                movement.delete(db, movement.id)
+        transaction_group = Transaction.read(db, id).transaction_group
+        if transaction_group:
+            if len(transaction_group.transactions) <= 2:
+                transaction_group.delete(db, transaction_group.id)
         return super().delete(db, id)
 
     @classmethod
@@ -105,8 +105,12 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         page: int = 0,
         per_page: int = 12,
     ) -> Select[tuple[int, int, Decimal, Decimal]]:
-        movements_subquery = (
-            select(Movement.id, Movement.timestamp, Movement.amount_default_currency)
+        transaction_groups_subquery = (
+            select(
+                TransactionGroup.id,
+                TransactionGroup.timestamp,
+                TransactionGroup.amount_default_currency,
+            )
             .join(Transaction)
             .join(Account)
             .outerjoin(UserInstitutionLink)
@@ -117,12 +121,12 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
                     UserInstitutionLink.user_id == user_id,
                 )
             )
-            .group_by(Movement.id)
+            .group_by(TransactionGroup.id)
             .subquery()
         )
 
-        year_extract = func.extract("year", movements_subquery.c.timestamp)
-        month_extract = func.extract("month", movements_subquery.c.timestamp)
+        year_extract = func.extract("year", transaction_groups_subquery.c.timestamp)
+        month_extract = func.extract("month", transaction_groups_subquery.c.timestamp)
 
         pl_statements_query = (
             select(
@@ -131,8 +135,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
                 func.sum(
                     case(
                         (
-                            movements_subquery.c.amount_default_currency < 0,
-                            movements_subquery.c.amount_default_currency,
+                            transaction_groups_subquery.c.amount_default_currency < 0,
+                            transaction_groups_subquery.c.amount_default_currency,
                         ),
                         else_=0,
                     )
@@ -140,8 +144,8 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
                 func.sum(
                     case(
                         (
-                            movements_subquery.c.amount_default_currency > 0,
-                            movements_subquery.c.amount_default_currency,
+                            transaction_groups_subquery.c.amount_default_currency > 0,
+                            transaction_groups_subquery.c.amount_default_currency,
                         ),
                         else_=0,
                     )
@@ -165,15 +169,15 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
 
     @classmethod
     def select_detailed_pl_statements(cls, user_id: int, year: int, month: int) -> Any:
-        movements_subquery = (
+        transaction_groups_subquery = (
             select(
-                Movement.id,
-                Movement.category_id.label("category_id"),
+                TransactionGroup.id,
+                TransactionGroup.category_id.label("category_id"),
                 func.min(Transaction.timestamp).label("timestamp"),
                 func.sum(Transaction.amount_default_currency).label("amount"),
             )
             .join(Account)
-            .join(Movement)
+            .join(TransactionGroup)
             .outerjoin(UserInstitutionLink)
             .outerjoin(User)
             .where(
@@ -182,33 +186,33 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
                     UserInstitutionLink.user_id == user_id,
                 )
             )
-            .group_by(Movement.id)
+            .group_by(TransactionGroup.id)
             .subquery()
         )
 
-        year_extract = func.extract("year", movements_subquery.c.timestamp)
-        month_extract = func.extract("month", movements_subquery.c.timestamp)
-        amount_sign = func.sign(movements_subquery.c.amount)
-        amount_sum = func.sum(movements_subquery.c.amount)
+        year_extract = func.extract("year", transaction_groups_subquery.c.timestamp)
+        month_extract = func.extract("month", transaction_groups_subquery.c.timestamp)
+        amount_sign = func.sign(transaction_groups_subquery.c.amount)
+        amount_sum = func.sum(transaction_groups_subquery.c.amount)
 
         detailed_pl_statements_query = (
             select(
                 year_extract.label("year"),
                 month_extract.label("month"),
                 amount_sign.label("sign"),
-                movements_subquery.c.category_id.label("category_id"),
+                transaction_groups_subquery.c.category_id.label("category_id"),
                 amount_sum.label("amount"),
             )
             .group_by(
                 "year",
                 "month",
                 amount_sign,
-                movements_subquery.c.category_id,
+                transaction_groups_subquery.c.category_id,
             )
             .order_by(
                 desc("year"),
                 desc("month"),
-                asc(movements_subquery.c.category_id),
+                asc(transaction_groups_subquery.c.category_id),
                 asc("sign"),
             )
         )

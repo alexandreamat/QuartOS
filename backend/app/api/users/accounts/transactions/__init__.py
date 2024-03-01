@@ -66,14 +66,14 @@ def create(
     me: CurrentUser,
     account_id: int,
     transactions: TransactionApiIn,
-    movement_id: int | None = None,
+    transaction_group_id: int | None = None,
 ) -> TransactionApiOut:
     CRUDAccount.read(db, account_id, user_id=me.id)
     return CRUDAccount.create_transaction(
         db,
         account_id,
         transactions,
-        movement_id=movement_id,
+        transaction_group_id=transaction_group_id,
         default_currency_code=me.default_currency_code,
     )
 

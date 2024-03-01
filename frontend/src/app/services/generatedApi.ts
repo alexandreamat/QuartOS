@@ -494,7 +494,7 @@ const injectedRtkApi = api
           url: `/users/me/accounts/${queryArg.accountId}/transactions/`,
           method: "POST",
           body: queryArg.transactionApiInInput,
-          params: { movement_id: queryArg.movementId },
+          params: { transaction_group_id: queryArg.transactionGroupId },
         }),
         invalidatesTags: ["users", "accounts", "transactions"],
       }),
@@ -734,27 +734,27 @@ const injectedRtkApi = api
         query: () => ({ url: `/users/me/movements/`, method: "PUT" }),
         invalidatesTags: ["users", "movements"],
       }),
-      readUsersMeMovementsMovementIdGet: build.query<
-        ReadUsersMeMovementsMovementIdGetApiResponse,
-        ReadUsersMeMovementsMovementIdGetApiArg
+      readUsersMeMovementsTransactionGroupIdGet: build.query<
+        ReadUsersMeMovementsTransactionGroupIdGetApiResponse,
+        ReadUsersMeMovementsTransactionGroupIdGetApiArg
       >({
         query: (queryArg) => ({ url: `/users/me/movements/${queryArg}` }),
         providesTags: ["users", "movements"],
       }),
-      updateUsersMeMovementsMovementIdPut: build.mutation<
-        UpdateUsersMeMovementsMovementIdPutApiResponse,
-        UpdateUsersMeMovementsMovementIdPutApiArg
+      updateUsersMeMovementsTransactionGroupIdPut: build.mutation<
+        UpdateUsersMeMovementsTransactionGroupIdPutApiResponse,
+        UpdateUsersMeMovementsTransactionGroupIdPutApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/${queryArg.movementId}`,
+          url: `/users/me/movements/${queryArg.transactionGroupId}`,
           method: "PUT",
-          body: queryArg.movementApiIn,
+          body: queryArg.transactionGroupApiIn,
         }),
         invalidatesTags: ["users", "movements"],
       }),
-      deleteUsersMeMovementsMovementIdDelete: build.mutation<
-        DeleteUsersMeMovementsMovementIdDeleteApiResponse,
-        DeleteUsersMeMovementsMovementIdDeleteApiArg
+      deleteUsersMeMovementsTransactionGroupIdDelete: build.mutation<
+        DeleteUsersMeMovementsTransactionGroupIdDeleteApiResponse,
+        DeleteUsersMeMovementsTransactionGroupIdDeleteApiArg
       >({
         query: (queryArg) => ({
           url: `/users/me/movements/${queryArg}`,
@@ -762,33 +762,33 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "movements"],
       }),
-      readManyUsersMeMovementsMovementIdTransactionsGet: build.query<
-        ReadManyUsersMeMovementsMovementIdTransactionsGetApiResponse,
-        ReadManyUsersMeMovementsMovementIdTransactionsGetApiArg
+      readManyUsersMeMovementsTransactionGroupIdTransactionsGet: build.query<
+        ReadManyUsersMeMovementsTransactionGroupIdTransactionsGetApiResponse,
+        ReadManyUsersMeMovementsTransactionGroupIdTransactionsGetApiArg
       >({
         query: (queryArg) => ({
           url: `/users/me/movements/${queryArg}/transactions/`,
         }),
         providesTags: ["users", "movements", "transactions"],
       }),
-      addUsersMeMovementsMovementIdTransactionsPut: build.mutation<
-        AddUsersMeMovementsMovementIdTransactionsPutApiResponse,
-        AddUsersMeMovementsMovementIdTransactionsPutApiArg
+      addUsersMeMovementsTransactionGroupIdTransactionsPut: build.mutation<
+        AddUsersMeMovementsTransactionGroupIdTransactionsPutApiResponse,
+        AddUsersMeMovementsTransactionGroupIdTransactionsPutApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/${queryArg.movementId}/transactions/`,
+          url: `/users/me/movements/${queryArg.transactionGroupId}/transactions/`,
           method: "PUT",
           body: queryArg.body,
         }),
         invalidatesTags: ["users", "movements", "transactions"],
       }),
-      removeUsersMeMovementsMovementIdTransactionsTransactionIdDelete:
+      removeUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDelete:
         build.mutation<
-          RemoveUsersMeMovementsMovementIdTransactionsTransactionIdDeleteApiResponse,
-          RemoveUsersMeMovementsMovementIdTransactionsTransactionIdDeleteApiArg
+          RemoveUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDeleteApiResponse,
+          RemoveUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDeleteApiArg
         >({
           query: (queryArg) => ({
-            url: `/users/me/movements/${queryArg.movementId}/transactions/${queryArg.transactionId}`,
+            url: `/users/me/movements/${queryArg.transactionGroupId}/transactions/${queryArg.transactionId}`,
             method: "DELETE",
           }),
           invalidatesTags: ["users", "movements", "transactions"],
@@ -825,12 +825,12 @@ const injectedRtkApi = api
             category_id__ge: queryArg.categoryIdGe,
             category_id__le: queryArg.categoryIdLe,
             category_id__lt: queryArg.categoryIdLt,
-            movement_id__eq: queryArg.movementIdEq,
-            movement_id__ne: queryArg.movementIdNe,
-            movement_id__gt: queryArg.movementIdGt,
-            movement_id__ge: queryArg.movementIdGe,
-            movement_id__le: queryArg.movementIdLe,
-            movement_id__lt: queryArg.movementIdLt,
+            transaction_group_id__eq: queryArg.transactionGroupIdEq,
+            transaction_group_id__ne: queryArg.transactionGroupIdNe,
+            transaction_group_id__gt: queryArg.transactionGroupIdGt,
+            transaction_group_id__ge: queryArg.transactionGroupIdGe,
+            transaction_group_id__le: queryArg.transactionGroupIdLe,
+            transaction_group_id__lt: queryArg.transactionGroupIdLt,
             amount_default_currency__eq: queryArg.amountDefaultCurrencyEq,
             amount_default_currency__ne: queryArg.amountDefaultCurrencyNe,
             amount_default_currency__gt: queryArg.amountDefaultCurrencyGt,
@@ -1131,7 +1131,7 @@ export type CreateUsersMeAccountsAccountIdTransactionsPostApiResponse =
   /** status 200 Successful Response */ TransactionApiOut;
 export type CreateUsersMeAccountsAccountIdTransactionsPostApiArg = {
   accountId: number;
-  movementId?: number | null;
+  transactionGroupId?: number | null;
   transactionApiInInput: TransactionApiIn2;
 };
 export type UpdateUsersMeAccountsAccountIdTransactionsTransactionIdPutApiResponse =
@@ -1242,10 +1242,10 @@ export type DeleteUsersMeMerchantsMerchantIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
 export type DeleteUsersMeMerchantsMerchantIdDeleteApiArg = number;
 export type MergeUsersMeMovementsMergePostApiResponse =
-  /** status 200 Successful Response */ MovementApiOut;
+  /** status 200 Successful Response */ TransactionGroupApiOut;
 export type MergeUsersMeMovementsMergePostApiArg = number[];
 export type ReadManyUsersMeMovementsGetApiResponse =
-  /** status 200 Successful Response */ MovementApiOut[];
+  /** status 200 Successful Response */ TransactionGroupApiOut[];
 export type ReadManyUsersMeMovementsGetApiArg = {
   page?: number;
   perPage?: number;
@@ -1253,36 +1253,40 @@ export type ReadManyUsersMeMovementsGetApiArg = {
 export type UpdateAllUsersMeMovementsPutApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateAllUsersMeMovementsPutApiArg = void;
-export type ReadUsersMeMovementsMovementIdGetApiResponse =
-  /** status 200 Successful Response */ MovementApiOut;
-export type ReadUsersMeMovementsMovementIdGetApiArg = number;
-export type UpdateUsersMeMovementsMovementIdPutApiResponse =
-  /** status 200 Successful Response */ MovementApiOut;
-export type UpdateUsersMeMovementsMovementIdPutApiArg = {
-  movementId: number;
-  movementApiIn: MovementApiIn;
+export type ReadUsersMeMovementsTransactionGroupIdGetApiResponse =
+  /** status 200 Successful Response */ TransactionGroupApiOut;
+export type ReadUsersMeMovementsTransactionGroupIdGetApiArg = number;
+export type UpdateUsersMeMovementsTransactionGroupIdPutApiResponse =
+  /** status 200 Successful Response */ TransactionGroupApiOut;
+export type UpdateUsersMeMovementsTransactionGroupIdPutApiArg = {
+  transactionGroupId: number;
+  transactionGroupApiIn: TransactionGroupApiIn;
 };
-export type DeleteUsersMeMovementsMovementIdDeleteApiResponse =
+export type DeleteUsersMeMovementsTransactionGroupIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
-export type DeleteUsersMeMovementsMovementIdDeleteApiArg = number;
-export type ReadManyUsersMeMovementsMovementIdTransactionsGetApiResponse =
+export type DeleteUsersMeMovementsTransactionGroupIdDeleteApiArg = number;
+export type ReadManyUsersMeMovementsTransactionGroupIdTransactionsGetApiResponse =
   /** status 200 Successful Response */ TransactionApiOut[];
-export type ReadManyUsersMeMovementsMovementIdTransactionsGetApiArg = number;
-export type AddUsersMeMovementsMovementIdTransactionsPutApiResponse =
-  /** status 200 Successful Response */ MovementApiOut;
-export type AddUsersMeMovementsMovementIdTransactionsPutApiArg = {
-  movementId: number;
+export type ReadManyUsersMeMovementsTransactionGroupIdTransactionsGetApiArg =
+  number;
+export type AddUsersMeMovementsTransactionGroupIdTransactionsPutApiResponse =
+  /** status 200 Successful Response */ TransactionGroupApiOut;
+export type AddUsersMeMovementsTransactionGroupIdTransactionsPutApiArg = {
+  transactionGroupId: number;
   body: number[];
 };
-export type RemoveUsersMeMovementsMovementIdTransactionsTransactionIdDeleteApiResponse =
-  /** status 200 Successful Response */ MovementApiOut | null;
-export type RemoveUsersMeMovementsMovementIdTransactionsTransactionIdDeleteApiArg =
+export type RemoveUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDeleteApiResponse =
+  /** status 200 Successful Response */ TransactionGroupApiOut | null;
+export type RemoveUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDeleteApiArg =
   {
-    movementId: number;
+    transactionGroupId: number;
     transactionId: number;
   };
 export type ReadManyUsersMeTransactionsGetApiResponse =
-  /** status 200 Successful Response */ (TransactionApiOut | MovementApiOut)[];
+  /** status 200 Successful Response */ (
+    | TransactionApiOut
+    | TransactionGroupApiOut
+  )[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
   perPage?: number;
   page?: number;
@@ -1321,12 +1325,12 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   categoryIdGe?: number | null;
   categoryIdLe?: number | null;
   categoryIdLt?: number | null;
-  movementIdEq?: number | null;
-  movementIdNe?: number | null;
-  movementIdGt?: number | null;
-  movementIdGe?: number | null;
-  movementIdLe?: number | null;
-  movementIdLt?: number | null;
+  transactionGroupIdEq?: number | null;
+  transactionGroupIdNe?: number | null;
+  transactionGroupIdGt?: number | null;
+  transactionGroupIdGe?: number | null;
+  transactionGroupIdLe?: number | null;
+  transactionGroupIdLt?: number | null;
   amountDefaultCurrencyEq?: number | string | null;
   amountDefaultCurrencyNe?: number | string | null;
   amountDefaultCurrencyGt?: number | string | null;
@@ -1355,7 +1359,7 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   consolidated?: boolean;
 };
 export type ConsolidateUsersMeTransactionsPostApiResponse =
-  /** status 200 Successful Response */ MovementApiOut;
+  /** status 200 Successful Response */ TransactionGroupApiOut;
 export type ConsolidateUsersMeTransactionsPostApiArg = number[];
 export type TransactionPlaidOut = {
   id: number;
@@ -1365,7 +1369,7 @@ export type TransactionPlaidOut = {
   timestamp: string;
   name: string;
   category_id: number | null;
-  movement_id: number | null;
+  transaction_group_id: number | null;
   amount_default_currency: string;
   amount: string;
   account_balance: string;
@@ -1652,7 +1656,7 @@ export type TransactionApiOut = {
   timestamp: string;
   name: string;
   category_id: number | null;
-  movement_id: number | null;
+  transaction_group_id: number | null;
   amount_default_currency: string;
   amount: string;
   account_balance: string;
@@ -1712,7 +1716,7 @@ export type MerchantApiIn = {
   pattern: string;
   default_category_id: number;
 };
-export type MovementApiOut = {
+export type TransactionGroupApiOut = {
   id: number;
   name: string;
   category_id: number | null;
@@ -1723,7 +1727,7 @@ export type MovementApiOut = {
   account_id: number | null;
   consolidated: true;
 };
-export type MovementApiIn = {
+export type TransactionGroupApiIn = {
   name: string;
   category_id?: number | null;
 };
