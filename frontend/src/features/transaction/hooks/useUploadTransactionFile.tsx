@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
-  BodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost,
+  BodyCreateUsersMeAccountsAccountIdTransactionsTransactionIdFilesPost,
   TransactionApiOut,
   api,
 } from "app/services/api";
@@ -22,7 +22,7 @@ import { logMutationError } from "utils/error";
 
 export function useUploadTransactionFile(transaction?: TransactionApiOut) {
   const [uploadFile, uploadFileResult] =
-    api.endpoints.createUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost.useMutation();
+    api.endpoints.createUsersMeAccountsAccountIdTransactionsTransactionIdFilesPost.useMutation();
 
   async function handleUploadFile(file: File) {
     if (!transaction) return;
@@ -32,10 +32,9 @@ export function useUploadTransactionFile(transaction?: TransactionApiOut) {
     try {
       await uploadFile({
         accountId: transaction.account_id,
-        movementId: transaction.movement_id,
         transactionId: transaction.id,
-        bodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost:
-          formData as unknown as BodyCreateUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesPost,
+        bodyCreateUsersMeAccountsAccountIdTransactionsTransactionIdFilesPost:
+          formData as unknown as BodyCreateUsersMeAccountsAccountIdTransactionsTransactionIdFilesPost,
       }).unwrap();
     } catch (error) {
       logMutationError(error, uploadFileResult);

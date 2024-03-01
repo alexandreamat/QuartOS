@@ -13,20 +13,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# 1. Import base model
-from app.common.models import Base
-
 # 2. Import inheritors of the base model
-from app.features.account import Account
-from app.features.category import Category
-from app.features.institution import Institution
-from app.features.merchant import Merchant
-from app.features.movement import Movement
-from app.features.replacementpattern import ReplacementPattern
-from app.features.transaction import Transaction
-from app.features.transactiondeserialiser import TransactionDeserialiser
-from app.features.user import User
-from app.features.userinstitutionlink import UserInstitutionLink
+from app.models.account import Account
+from app.models.category import Category
+
+# 1. Import base model
+from app.models.common import Base
+from app.models.institution import Institution
+from app.models.merchant import Merchant
+from app.models.transactiongroup import TransactionGroup
+from app.models.replacementpattern import ReplacementPattern
+from app.models.transaction import Transaction
+from app.models.transactiondeserialiser import TransactionDeserialiser
+from app.models.user import User
+from app.models.userinstitutionlink import UserInstitutionLink
 
 # 3. Import this file from Alembic
 __all__ = [
@@ -37,7 +37,7 @@ __all__ = [
     "Institution",
     "UserInstitutionLink",
     "Account",
-    "Movement",
+    "TransactionGroup",
     "Transaction",
     "Merchant",
     "Category",

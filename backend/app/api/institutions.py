@@ -17,15 +17,11 @@ from typing import Iterable
 
 from fastapi import APIRouter, HTTPException, status
 
+from app.crud.institution import CRUDInstitution, CRUDSyncableInstitution
 from app.database.deps import DBSession
-from app.features.institution import (
-    CRUDInstitution,
-    CRUDSyncableInstitution,
-    InstitutionApiOut,
-    InstitutionApiIn,
-    fetch_institution,
-)
-from app.features.user.deps import CurrentSuperuser
+from app.deps.user import CurrentSuperuser
+from app.plaid.institution import fetch_institution
+from app.schemas.institution import InstitutionApiIn, InstitutionApiOut
 
 INSTITUTIONS = "institutions"
 
@@ -55,7 +51,7 @@ def read(db: DBSession, institution_id: int) -> InstitutionApiOut:
 
 @router.get("/")
 def read_many(db: DBSession) -> Iterable[InstitutionApiOut]:
-    return CRUDInstitution.read_many(db, 0, 0)
+    return CRUDInstitution.read_many(db)
 
 
 @router.put("/{institution_id}/sync")

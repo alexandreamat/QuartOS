@@ -60,12 +60,12 @@ function CurrencyExchangeTip(props: {
 }
 
 export default function CurrencyExchangeTips(props: {
-  movementId: number;
+  transactionGroupId: number;
   currencyCode: string;
 }) {
   const query =
-    api.endpoints.readManyUsersMeMovementsMovementIdTransactionsGet.useQuery(
-      props.movementId,
+    api.endpoints.readManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGet.useQuery(
+      props.transactionGroupId,
     );
   return (
     <div style={{ lineHeight: 2 }}>

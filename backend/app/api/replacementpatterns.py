@@ -17,13 +17,13 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
+from app.crud.replacementpattern import CRUDReplacementPattern
 from app.database.deps import DBSession
-from app.features.replacementpattern import (
-    CRUDReplacementPattern,
+from app.deps.user import CurrentSuperuser
+from app.schemas.replacementpattern import (
     ReplacementPatternApiIn,
     ReplacementPatternApiOut,
 )
-from app.features.user import CurrentSuperuser
 
 router = APIRouter()
 
@@ -44,7 +44,7 @@ def read(db: DBSession, id: int) -> ReplacementPatternApiOut:
 
 @router.get("/")
 def read_many(db: DBSession) -> Iterable[ReplacementPatternApiOut]:
-    return CRUDReplacementPattern.read_many(db, 0, 0)
+    return CRUDReplacementPattern.read_many(db)
 
 
 @router.put("/{id}")

@@ -20,35 +20,57 @@ import MenuDropdownAccount from "features/account/components/MenuDropdownAccount
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuNumericRange from "components/MenuNumericRange";
 import { useState } from "react";
-import { Menu } from "semantic-ui-react";
+import { Button, Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
+import TransactionForm from "./Form";
 
 export type TransactionsBarState = ReturnType<typeof useTransactionBarState>;
 
 export function useTransactionBarState() {
   return {
-    accountId: useState<number | undefined>(),
-    search: useState<string>(),
+    search: useState<string>(""),
     timestampGe: useState<Date>(),
     timestampLe: useState<Date>(),
     isDescending: useState(true),
     amountGe: useState<number>(),
     amountLe: useState<number>(),
     isAmountAbs: useState(false),
+    consolidated: useState(false),
   };
 }
 
 export default function Bar(props: {
   barState: TransactionsBarState;
   isMultipleChoiceState?: UseStateType<boolean>;
+  accountIdState?: UseStateType<number | undefined>;
+  consolidateState?: UseStateType<number | undefined>;
 }) {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
   return (
     <FlexRow>
       <FlexRow.Auto>
         {/* Correct negative margins that would add unnecessary scroll bar */}
         <Menu secondary style={{ margin: 0 }}>
+          <Menu.Item fitted>
+            <Button
+              icon="plus"
+              circular
+              primary
+              onClick={() => setIsFormOpen(true)}
+            />
+            {isFormOpen && (
+              <TransactionForm.Create onClose={() => setIsFormOpen(false)} />
+            )}
+          </Menu.Item>
+          <MenuCheckbox
+            state={props.barState.consolidated}
+            icon={
+              props.barState.consolidated[0] ? "object ungroup" : "object group"
+            }
+            tooltip={props.barState.consolidated[0] ? "Ungroup" : "Group"}
+          />
           <MenuInputSearch searchState={props.barState.search} />
-          <MenuDropdownAccount accountIdState={props.barState.accountId} />
           <MenuDateRange
             dateGeState={props.barState.timestampGe}
             dateLeState={props.barState.timestampLe}
@@ -62,8 +84,11 @@ export default function Bar(props: {
             signed
             decimal
           />
+          {props.accountIdState && (
+            <MenuDropdownAccount accountIdState={props.accountIdState} />
+          )}
           {props.isMultipleChoiceState && (
-            <MenuCheckbox isMultipleChoiceState={props.isMultipleChoiceState} />
+            <MenuCheckbox state={props.isMultipleChoiceState} />
           )}
         </Menu>
       </FlexRow.Auto>

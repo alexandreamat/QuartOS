@@ -17,13 +17,13 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
+from app.crud.transactiondeserialiser import CRUDTransactionDeserialiser
 from app.database.deps import DBSession
-from app.features.transactiondeserialiser import (
-    CRUDTransactionDeserialiser,
+from app.deps.user import CurrentSuperuser
+from app.schemas.transactiondeserialiser import (
     TransactionDeserialiserApiIn,
     TransactionDeserialiserApiOut,
 )
-from app.features.user import CurrentSuperuser
 
 router = APIRouter()
 
@@ -53,7 +53,7 @@ def read_many(db: DBSession) -> Iterable[TransactionDeserialiserApiOut]:
     """
     Retrieve deserialisers.
     """
-    return CRUDTransactionDeserialiser.read_many(db, 0, 0)
+    return CRUDTransactionDeserialiser.read_many(db)
 
 
 @router.put("/{id}")

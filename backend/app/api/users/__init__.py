@@ -18,20 +18,11 @@ from typing import Iterable
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
+from app.crud.user import CRUDUser
 from app.database.deps import DBSession
-from app.features.user import (
-    CurrentUser,
-    CurrentSuperuser,
-    CRUDUser,
-    UserApiOut,
-    UserApiIn,
-)
-from . import accounts
-from . import analytics
-from . import institutionlinks
-from . import merchants
-from . import movements
-from . import transactions
+from app.deps.user import CurrentSuperuser, CurrentUser
+from app.schemas.user import UserApiIn, UserApiOut
+from app.utils import include_package_routes
 
 router = APIRouter()
 
@@ -100,13 +91,13 @@ def create(db: DBSession, me: CurrentSuperuser, user_in: UserApiIn) -> UserApiOu
 def read_many(
     db: DBSession,
     me: CurrentSuperuser,
-    offset: int = 0,
-    limit: int = 100,
+    page: int = 0,
+    per_page: int = 0,
 ) -> Iterable[UserApiOut]:
     """
     Retrieve users.
     """
-    return CRUDUser.read_many(db, offset, limit)
+    return CRUDUser.read_many(db, page=page, per_page=per_page)
 
 
 @router.delete("/{user_id}")
@@ -116,15 +107,4 @@ def delete(db: DBSession, me: CurrentSuperuser, user_id: int) -> int:
     return CRUDUser.delete(db, user_id)
 
 
-router.include_router(
-    institutionlinks.router,
-    prefix="/me/institution-links",
-    tags=["institution-links"],
-)
-router.include_router(movements.router, prefix="/me/movements", tags=["movements"])
-router.include_router(
-    transactions.router, prefix="/me/transactions", tags=["transactions"]
-)
-router.include_router(accounts.router, prefix="/me/accounts", tags=["accounts"])
-router.include_router(analytics.router, prefix="/me/analytics", tags=["movements"])
-router.include_router(merchants.router, prefix="/me/merchants", tags=["merchants"])
+include_package_routes(router, __name__, __path__, "/me")

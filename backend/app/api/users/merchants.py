@@ -17,10 +17,10 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
+from app.crud.merchant import CRUDMerchant
 from app.database.deps import DBSession
-from app.features.merchant import MerchantApiIn, MerchantApiOut, CRUDMerchant
-from app.features.user.crud import CRUDUser
-from app.features.user.deps import CurrentUser
+from app.deps.user import CurrentUser
+from app.schemas.merchant import MerchantApiIn, MerchantApiOut
 
 router = APIRouter()
 
@@ -35,18 +35,18 @@ def create(
 
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[MerchantApiOut]:
-    return CRUDUser.read_merchants(db, me.id)
+    return CRUDMerchant.read_many(db, user_id=me.id)
 
 
 @router.put("/{merchant_id}")
 def update(
     db: DBSession, me: CurrentUser, merchant_id: int, merchant_in: MerchantApiIn
 ) -> MerchantApiOut:
-    CRUDUser.read_merchant(db, me.id, merchant_id)
+    CRUDMerchant.read(db, merchant_id, user_id=me.id)
     return CRUDMerchant.update(db, merchant_id, merchant_in)
 
 
 @router.delete("/{merchant_id}")
 def delete(db: DBSession, me: CurrentUser, merchant_id: int) -> int:
-    CRUDUser.read_merchant(db, me.id, merchant_id)
+    CRUDMerchant.read(db, merchant_id, user_id=me.id)
     return CRUDMerchant.delete(db, merchant_id)

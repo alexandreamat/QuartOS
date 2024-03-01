@@ -49,10 +49,9 @@ export default function ModalFileViewer(props: {
   const [fileIdx, setFileIdx] = useState(0);
 
   const filesQuery =
-    api.endpoints.readManyUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesGet.useQuery(
+    api.endpoints.readManyUsersMeAccountsAccountIdTransactionsTransactionIdFilesGet.useQuery(
       {
         accountId: props.transaction.account_id,
-        movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
       },
     );
@@ -60,11 +59,10 @@ export default function ModalFileViewer(props: {
   const selectedFile = filesQuery.data ? filesQuery.data[fileIdx] : undefined;
 
   const fileQuery =
-    api.endpoints.readUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdGet.useQuery(
+    api.endpoints.readUsersMeAccountsAccountIdTransactionsTransactionIdFilesFileIdGet.useQuery(
       selectedFile
         ? {
             accountId: props.transaction.account_id,
-            movementId: props.transaction.movement_id,
             transactionId: props.transaction.id,
             fileId: selectedFile.id,
           }
@@ -72,7 +70,7 @@ export default function ModalFileViewer(props: {
     );
 
   const [deleteFile, deleteFileResult] =
-    api.endpoints.deleteUsersMeAccountsAccountIdMovementsMovementIdTransactionsTransactionIdFilesFileIdDelete.useMutation();
+    api.endpoints.deleteUsersMeAccountsAccountIdTransactionsTransactionIdFilesFileIdDelete.useMutation();
 
   async function handleDeleteFile() {
     if (!selectedFile || !filesQuery.data) return;
@@ -80,7 +78,6 @@ export default function ModalFileViewer(props: {
     try {
       await deleteFile({
         accountId: props.transaction.account_id,
-        movementId: props.transaction.movement_id,
         transactionId: props.transaction.id,
         fileId: selectedFile.id,
       }).unwrap();
@@ -112,17 +109,17 @@ export default function ModalFileViewer(props: {
               filesQuery.isSuccess && <FileContent blob={fileQuery.data} />
             )}
           </FlexRow.Auto>
-          <ActionButton
+          {/* <ActionButton
             disabled={fileIdx >= props.transaction.files.length - 1}
             icon="arrow right"
             onClick={() => setFileIdx((x) => x + 1)}
             tooltip="Next file"
-          />
+          /> */}
         </FlexRow>
       </Modal.Content>
       <Modal.Actions>
         <ConfirmDeleteButtonModal
-          onDelete={handleDeleteFile}
+          onSubmit={handleDeleteFile}
           query={deleteFileResult}
         />
         <Button positive onClick={props.onClose}>

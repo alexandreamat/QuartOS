@@ -18,12 +18,10 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
+from app.crud.category import CRUDCategory
 from app.database.deps import DBSession
-from app.features.category import (
-    CRUDCategory,
-    CategoryApiOut,
-)
-from app.features.user.deps import CurrentUser
+from app.deps.user import CurrentUser
+from app.schemas.category import CategoryApiOut
 
 router = APIRouter()
 
@@ -35,4 +33,4 @@ def read(db: DBSession, me: CurrentUser, category_id: int) -> CategoryApiOut:
 
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[CategoryApiOut]:
-    return CRUDCategory.read_many(db, 0, 0)
+    return CRUDCategory.read_many(db)

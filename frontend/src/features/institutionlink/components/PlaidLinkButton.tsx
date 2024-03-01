@@ -31,7 +31,7 @@ export default function PlaidLinkButton(props: {
   institutionLink?: UserInstitutionLinkApiOut;
 }) {
   const linkTokenQuery =
-    api.endpoints.getLinkTokenUsersMeInstitutionLinksLinkTokenGet.useQuery(
+    api.endpoints.getLinkTokenUsersMeInstitutionlinksLinkTokenGet.useQuery(
       props.institutionLink?.id || 0,
     );
 
@@ -74,7 +74,7 @@ export default function PlaidLinkButton(props: {
   });
 
   const [setPublicToken, setPublicTokenResult] =
-    api.endpoints.setPublicTokenUsersMeInstitutionLinksPublicTokenPost.useMutation();
+    api.endpoints.setPublicTokenUsersMeInstitutionlinksPublicTokenPost.useMutation();
 
   return (
     <Segment placeholder>
