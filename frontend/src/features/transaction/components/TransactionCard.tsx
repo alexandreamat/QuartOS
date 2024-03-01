@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
-  MovementApiOut,
+  TransactionGroupApiOut,
   TransactionApiIn,
   TransactionApiOut,
   api,
@@ -189,7 +189,7 @@ function TransactionCardSimple(props: {
     await uploadTransactionFile.onUpload(file);
   }
 
-  const [movementOpen, setMovementOpen] = useState(false);
+  const [transactionGroupOpen, setTransactionGroupOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [fileOpen, setFileOpen] = useState(false);
 
@@ -231,20 +231,20 @@ function TransactionCardSimple(props: {
             />
           )} */}
 
-            {/* See movement button and form */}
+            {/* See transactionGroup button and form */}
 
-            {/* {props.transaction.movement_id && (
+            {/* {props.transaction.transaction_group_id && (
               <>
                 <ActionButton
-                  tooltip="See Movement"
+                  tooltip="See TransactionGroup"
                   icon="arrows alternate horizontal"
-                  onClick={() => setMovementOpen(true)}
+                  onClick={() => setTransactionGroupOpen(true)}
                   disabled={props.loading}
                 />
-                {movementOpen && (
+                {transactionGroupOpen && (
                   <TransactionForm.Edit.Group
-                    onClose={() => setMovementOpen(false)}
-                    transaction={props.transaction.movement_id}
+                    onClose={() => setTransactionGroupOpen(false)}
+                    transaction={props.transaction.transaction_group_id}
                   />
                 )}
               </>
@@ -270,7 +270,7 @@ function TransactionCardSimple(props: {
 }
 
 function TransactionCardGroup(props: {
-  transaction: MovementApiOut;
+  transaction: TransactionGroupApiOut;
   checked?: boolean;
   onCheckedChange?: (x: boolean) => void;
   checkBoxDisabled?: boolean;
@@ -306,7 +306,10 @@ function TransactionCardGroup(props: {
         </>
       }
     >
-      <Flows loading={props.loading} movementId={props.transaction.id} />
+      <Flows
+        loading={props.loading}
+        transactionGroupId={props.transaction.id}
+      />
     </TransactionCard>
   );
 }

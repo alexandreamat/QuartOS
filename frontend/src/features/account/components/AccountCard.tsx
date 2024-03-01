@@ -50,8 +50,8 @@ export default function AccountCard(props: {
     navigate(`/transactions/?accountId=${props.account.id}`);
   }
 
-  function handleGoToMovements() {
-    navigate(`/movements/?accountId=${props.account.id}`);
+  function handleGoToTransactionGroups() {
+    navigate(`/transactionGroups/?accountId=${props.account.id}`);
   }
 
   return (

@@ -39,7 +39,7 @@ export default function Transactions() {
   const [consolidated, setConsolidated] = barState.consolidated;
 
   const transactionCheckboxes = useCheckboxes();
-  const movementCheckboxes = useCheckboxes();
+  const transactionGroupCheckboxes = useCheckboxes();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -54,22 +54,26 @@ export default function Transactions() {
 
   const [consolidateTransactions, consolidateTransactionsResult] =
     api.endpoints.consolidateUsersMeTransactionsPost.useMutation();
-  const [mergeMovements, mergeMovementsResult] =
-    api.endpoints.mergeUsersMeMovementsMergePost.useMutation();
+  const [mergeTransactionGroups, mergeTransactionGroupsResult] =
+    api.endpoints.mergeUsersMeTransactiongroupsMergePost.useMutation();
   const [addTransactions, addTransactionsResult] =
-    api.endpoints.addUsersMeMovementsMovementIdTransactionsPut.useMutation();
+    api.endpoints.addUsersMeTransactiongroupsTransactionGroupIdTransactionsPut.useMutation();
 
   async function handleConsolidateTransactions() {
     try {
-      const movementIds = [...movementCheckboxes.checked];
+      const transactionGroupIds = [...transactionGroupCheckboxes.checked];
       const transactionIds = [...transactionCheckboxes.checked];
-      if (!movementIds.length && !transactionIds.length) return;
-      if (movementIds.length) {
-        let movementId;
-        if (movementIds.length === 1) movementId = movementIds[0];
-        else movementId = (await mergeMovements(movementIds).unwrap()).id;
+      if (!transactionGroupIds.length && !transactionIds.length) return;
+      if (transactionGroupIds.length) {
+        let transactionGroupId;
+        if (transactionGroupIds.length === 1)
+          transactionGroupId = transactionGroupIds[0];
+        else
+          transactionGroupId = (
+            await mergeTransactionGroups(transactionGroupIds).unwrap()
+          ).id;
         if (transactionIds.length)
-          await addTransactions({ movementId, body: transactionIds });
+          await addTransactions({ transactionGroupId, body: transactionIds });
       } else await consolidateTransactions(transactionIds).unwrap();
     } catch (error) {
       logMutationError(error, consolidateTransactionsResult);
@@ -77,7 +81,7 @@ export default function Transactions() {
     }
     setIsMultipleChoice(false);
     transactionCheckboxes.reset();
-    movementCheckboxes.reset();
+    transactionGroupCheckboxes.reset();
   }
 
   return (
@@ -92,7 +96,7 @@ export default function Transactions() {
           barState={barState}
           accountId={accountId}
           transactionCheckboxes={transactionCheckboxes}
-          movementCheckboxes={movementCheckboxes}
+          transactionGroupCheckboxes={transactionGroupCheckboxes}
           isMultipleChoice={isMultipleChoice}
           reference={reference}
         />
@@ -101,7 +105,7 @@ export default function Transactions() {
         <SpanButton
           disabled={
             transactionCheckboxes.checked.size +
-              movementCheckboxes.checked.size <=
+              transactionGroupCheckboxes.checked.size <=
             1
           }
           onClick={handleConsolidateTransactions}
@@ -109,7 +113,8 @@ export default function Transactions() {
           negative={consolidateTransactionsResult.isError}
         >
           {`Consolidate ${
-            transactionCheckboxes.checked.size + movementCheckboxes.checked.size
+            transactionCheckboxes.checked.size +
+            transactionGroupCheckboxes.checked.size
           } transactions into one group`}
         </SpanButton>
       )}

@@ -16,8 +16,8 @@
 import { BaseQueryFn, skipToken } from "@reduxjs/toolkit/dist/query";
 import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
 import {
-  MovementApiIn,
-  MovementApiOut,
+  TransactionGroupApiIn,
+  TransactionGroupApiOut,
   TransactionApiIn,
   TransactionApiOut,
   api,
@@ -63,7 +63,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
       }
     | {
         // Edit existing tx
-        movementId: number;
+        transactionGroupId: number;
         transaction: TransactionApiOut;
         onSubmit: (x: TransactionApiIn, y: number) => Promise<void>;
         submitResult: TypedUseMutationResult<R, A, Q>;
@@ -77,7 +77,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   ),
 ) {
   const isEdit = "transaction" in props;
-  const hasMovement = "movementId" in props;
+  const hasTransactionGroup = "transactionGroupId" in props;
 
   const filesQuery =
     api.endpoints.readManyUsersMeAccountsAccountIdTransactionsTransactionIdFilesGet.useQuery(
@@ -110,9 +110,9 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     form.accountId.value || skipToken,
   );
 
-  const movementQuery =
-    api.endpoints.readUsersMeMovementsMovementIdGet.useQuery(
-      hasMovement ? props.movementId : skipToken,
+  const transactionGroupQuery =
+    api.endpoints.readUsersMeTransactiongroupsTransactionGroupIdGet.useQuery(
+      hasTransactionGroup ? props.transactionGroupId : skipToken,
     );
 
   const disableSynced = isEdit && props.transaction.is_synced;
@@ -121,12 +121,12 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
 
   useEffect(() => {
     if (isEdit) return;
-    if (!movementQuery.isSuccess) return;
-    const movement = movementQuery.data;
-    const timestamp = movement.timestamp;
+    if (!transactionGroupQuery.isSuccess) return;
+    const transactionGroup = transactionGroupQuery.data;
+    const timestamp = transactionGroup.timestamp;
     form.timestamp.set(timestamp ? stringToDate(timestamp) : new Date());
-    form.name.set(movement.name);
-  }, [movementQuery.isSuccess, movementQuery.data]);
+    form.name.set(transactionGroup.name);
+  }, [transactionGroupQuery.isSuccess, transactionGroupQuery.data]);
 
   useEffect(() => {
     isEdit && transactionApiOutToForm(props.transaction, form);
@@ -186,12 +186,13 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
             currency={accountQuery.data?.currency_code}
             readOnly={disableSynced}
           />
-          {movementQuery.isSuccess && accountQuery.data?.currency_code && (
-            <CurrencyExchangeTips
-              movementId={movementQuery.data.id}
-              currencyCode={accountQuery.data.currency_code}
-            />
-          )}
+          {transactionGroupQuery.isSuccess &&
+            accountQuery.data?.currency_code && (
+              <CurrencyExchangeTips
+                transactionGroupId={transactionGroupQuery.data.id}
+                currencyCode={accountQuery.data.currency_code}
+              />
+            )}
           <FormTextInput field={form.name} readOnly={disableSynced} />
           <FormDateTimeInput field={form.timestamp} readOnly={disableSynced} />
           <FormValidationError fields={Object.values(form)} />
@@ -241,7 +242,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
               onSubmit={handleDelete}
               query={props.deleteResult}
             />
-            {props.transaction.movement_id && (
+            {props.transaction.transaction_group_id && (
               <Button
                 negative
                 floated="left"
@@ -299,7 +300,7 @@ function FormCreate(props: { onClose: () => void }) {
 }
 
 function FormAdd(props: {
-  movementId: number;
+  transactionGroupId: number;
   onClose: () => void;
   onAdded?: (x: TransactionApiOut) => void;
 }) {
@@ -313,7 +314,7 @@ function FormAdd(props: {
     try {
       const transactionOut = await createTransaction({
         accountId: accountId,
-        movementId: props.movementId,
+        transactionGroupId: props.transactionGroupId,
         transactionApiInInput: transactionIn,
       }).unwrap();
       props.onAdded && props.onAdded(transactionOut);
@@ -325,9 +326,9 @@ function FormAdd(props: {
 
   return (
     <TransactionForm
-      title="Add a Transaction to Movement"
+      title="Add a Transaction to TransactionGroup"
       onClose={props.onClose}
-      movementId={props.movementId}
+      transactionGroupId={props.transactionGroupId}
       onSubmit={handleSubmit}
       submitResult={createTransactionResult}
     />
@@ -346,7 +347,7 @@ function FormEdit(props: {
     api.endpoints.deleteUsersMeAccountsAccountIdTransactionsTransactionIdDelete.useMutation();
 
   const [ungroup, ungroupResult] =
-    api.endpoints.removeUsersMeMovementsMovementIdTransactionsTransactionIdDelete.useMutation();
+    api.endpoints.removeUsersMeTransactiongroupsTransactionGroupIdTransactionsTransactionIdDelete.useMutation();
 
   const uploadTransactionFile = useUploadTransactionFile(props.transaction);
 
@@ -380,10 +381,10 @@ function FormEdit(props: {
   }
 
   async function handleRemove() {
-    if (!props.transaction.movement_id) return;
+    if (!props.transaction.transaction_group_id) return;
     try {
       await ungroup({
-        movementId: props.transaction.movement_id,
+        transactionGroupId: props.transaction.transaction_group_id,
         transactionId: props.transaction.id,
       }).unwrap();
     } catch (error) {
@@ -413,14 +414,14 @@ function FormEdit(props: {
 }
 
 function TransactionGroupForm(props: {
-  transaction: MovementApiOut;
-  onClose: (transaction?: MovementApiOut) => void;
+  transaction: TransactionGroupApiOut;
+  onClose: (transaction?: TransactionGroupApiOut) => void;
 }) {
   const [update, updateResult] =
-    api.endpoints.updateUsersMeMovementsMovementIdPut.useMutation();
+    api.endpoints.updateUsersMeTransactiongroupsTransactionGroupIdPut.useMutation();
 
   const [ungroup, ungroupResult] =
-    api.endpoints.deleteUsersMeMovementsMovementIdDelete.useMutation();
+    api.endpoints.deleteUsersMeTransactiongroupsTransactionGroupIdDelete.useMutation();
 
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
     props.transaction.account_id || skipToken,
@@ -441,8 +442,8 @@ function TransactionGroupForm(props: {
 
     try {
       const result = await update({
-        movementId: props.transaction.id,
-        movementApiIn: {
+        transactionGroupId: props.transaction.id,
+        transactionGroupApiIn: {
           name: form.name.value,
           category_id: form.categoryId.value,
         },

@@ -70,14 +70,14 @@ const MerchantsTable = (props: {
   onOpenCreateForm: () => void;
   data: MerchantApiOut[];
 }) => {
-  const [updateAllMovements, updateAllMovementsResult] =
-    api.endpoints.updateAllUsersMeMovementsPut.useMutation();
+  const [updateAllTransactionGroups, updateAllTransactionGroupsResult] =
+    api.endpoints.updateAllUsersMeTransactiongroupsPut.useMutation();
 
-  async function handleUpdateAllMovements() {
+  async function handleUpdateAllTransactionGroups() {
     try {
-      await updateAllMovements().unwrap();
+      await updateAllTransactionGroups().unwrap();
     } catch (error) {
-      logMutationError(error, updateAllMovementsResult);
+      logMutationError(error, updateAllTransactionGroupsResult);
       return;
     }
   }
@@ -97,11 +97,11 @@ const MerchantsTable = (props: {
         <Table.Row>
           <Table.HeaderCell colSpan={7}>
             <Button
-              onClick={handleUpdateAllMovements}
-              loading={updateAllMovementsResult.isLoading}
-              negative={updateAllMovementsResult.isError}
+              onClick={handleUpdateAllTransactionGroups}
+              loading={updateAllTransactionGroupsResult.isLoading}
+              negative={updateAllTransactionGroupsResult.isError}
             >
-              Update All Movements
+              Update All TransactionGroups
             </Button>
             <CreateNewButton onCreate={props.onOpenCreateForm} />
           </Table.HeaderCell>
