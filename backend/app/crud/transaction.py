@@ -72,7 +72,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
 
     @classmethod
     def orphan_only_children(cls, db: Session) -> None:
-        for t in db.scalars(cls.select()).all():
+        for t in db.scalars(cls.select()).yield_per(50):
             if not t.transaction_group_id or not t.transaction_group:
                 continue
             if len(t.transaction_group.transactions) > 1:
