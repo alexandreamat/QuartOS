@@ -35,10 +35,10 @@ from sqlalchemy.orm import Session
 from app.models.account import Account, NonInstitutionalAccount
 from app.models.common import CalculatedColumnsMeta
 
-from app.models.movement import Movement
+from app.models.transactiongroup import TransactionGroup
 from app.models.transaction import Transaction
 from app.models.userinstitutionlink import UserInstitutionLink
-from app.schemas.movement import MovementApiOut
+from app.schemas.transactiongroup import TransactionGroupApiOut
 from app.schemas.transaction import TransactionApiOut
 from app.utils.common import get_search_expressions
 
@@ -46,17 +46,17 @@ logger = logging.getLogger(__name__)
 
 
 class ConsolidatedTransaction(metaclass=CalculatedColumnsMeta):
-    id = func.coalesce(-Movement.id, Transaction.id)
-    name = func.coalesce(func.min(Movement.name), func.min(Transaction.name))
+    id = func.coalesce(-TransactionGroup.id, Transaction.id)
+    name = func.coalesce(func.min(TransactionGroup.name), func.min(Transaction.name))
     category_id = func.coalesce(
-        func.min(Movement.category_id), func.min(Transaction.category_id)
+        func.min(TransactionGroup.category_id), func.min(Transaction.category_id)
     )
-    movement_id = func.min(Movement.id)
-    amount_default_currency = Movement.amount_default_currency.expression
-    timestamp = Movement.timestamp.expression
-    amount = Movement.amount.expression
-    account_id = Movement.account_id.expression
-    transactions_count = Movement.transactions_count.expression
+    transaction_group_id = func.min(TransactionGroup.id)
+    amount_default_currency = TransactionGroup.amount_default_currency.expression
+    timestamp = TransactionGroup.timestamp.expression
+    amount = TransactionGroup.amount.expression
+    account_id = TransactionGroup.account_id.expression
+    transactions_count = TransactionGroup.transactions_count.expression
     account_balance = func.min(Transaction.account_balance)
     is_synced = case((func.min(Transaction.plaid_id) != None, True), else_=False)
 
@@ -101,7 +101,7 @@ class CRUDConsolidatedTransaction:
             model.id,
             model.name,
             model.category_id,
-            model.movement_id,
+            model.transaction_group_id,
             model.amount_default_currency,
             model.timestamp,
             model.amount,
@@ -113,7 +113,7 @@ class CRUDConsolidatedTransaction:
 
         # JOIN
         if consolidated:
-            statement = statement.outerjoin(Movement)
+            statement = statement.outerjoin(TransactionGroup)
         statement = statement.join(Account)
         statement = statement.outerjoin(UserInstitutionLink)
 
@@ -154,13 +154,13 @@ class CRUDConsolidatedTransaction:
     @classmethod
     def model_validate(
         cls, transaction: Row[tuple[Any, ...]]
-    ) -> TransactionApiOut | MovementApiOut:
+    ) -> TransactionApiOut | TransactionGroupApiOut:
         try:
             return TransactionApiOut(
                 id=transaction.id,
                 name=transaction.name,
                 category_id=transaction.category_id,
-                movement_id=transaction.movement_id,
+                transaction_group_id=transaction.transaction_group_id,
                 amount_default_currency=transaction.amount_default_currency,
                 timestamp=transaction.timestamp,
                 amount=transaction.amount,
@@ -170,7 +170,7 @@ class CRUDConsolidatedTransaction:
                 consolidated=False,
             )
         except pydantic_core.ValidationError as e:
-            return MovementApiOut(
+            return TransactionGroupApiOut(
                 id=-transaction.id,
                 name=transaction.name,
                 category_id=transaction.category_id,
@@ -185,11 +185,13 @@ class CRUDConsolidatedTransaction:
     @classmethod
     def read_many(
         cls, db: Session, **kwargs: Any
-    ) -> Iterable[TransactionApiOut | MovementApiOut]:
+    ) -> Iterable[TransactionApiOut | TransactionGroupApiOut]:
         for transaction in db.execute(cls.select(**kwargs)):
             yield cls.model_validate(transaction)
 
     @classmethod
-    def read(cls, db: Session, **kwargs: Any) -> TransactionApiOut | MovementApiOut:
+    def read(
+        cls, db: Session, **kwargs: Any
+    ) -> TransactionApiOut | TransactionGroupApiOut:
         transaction = db.execute(cls.select(**kwargs)).one()
         return cls.model_validate(transaction)

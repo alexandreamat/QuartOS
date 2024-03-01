@@ -21,7 +21,7 @@ from fastapi import APIRouter
 from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
-from app.schemas.movement import DetailedPLStatementApiOut, PLStatement
+from app.schemas.transactiongroup import DetailedPLStatementApiOut, PLStatement
 
 router = APIRouter()
 

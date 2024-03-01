@@ -17,11 +17,11 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
-from app.crud.movement import CRUDMovement
+from app.crud.transactiongroup import CRUDTransactionGroup
 from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
-from app.schemas.movement import MovementApiOut
+from app.schemas.transactiongroup import TransactionGroupApiOut
 from app.schemas.transaction import TransactionApiOut
 
 router = APIRouter()
@@ -29,10 +29,10 @@ router = APIRouter()
 
 @router.get("/")
 def read_many(
-    db: DBSession, me: CurrentUser, movement_id: int
+    db: DBSession, me: CurrentUser, transaction_group_id: int
 ) -> Iterable[TransactionApiOut]:
     return CRUDTransaction.read_many(
-        db, user_id=me.id, consolidated=False, movement_id=movement_id
+        db, user_id=me.id, consolidated=False, transaction_group_id=transaction_group_id
     )
 
 
@@ -40,18 +40,24 @@ def read_many(
 def add(
     db: DBSession,
     me: CurrentUser,
-    movement_id: int,
+    transaction_group_id: int,
     transaction_ids: list[int],
-) -> MovementApiOut:
-    CRUDMovement.read(db, movement_id, user_id=me.id)
+) -> TransactionGroupApiOut:
+    CRUDTransactionGroup.read(db, transaction_group_id, user_id=me.id)
     for transaction_id in transaction_ids:
         CRUDTransaction.read(db, transaction_id, user_id=me.id)
-    return CRUDMovement.add_transactions(db, movement_id, transaction_ids)
+    return CRUDTransactionGroup.add_transactions(
+        db, transaction_group_id, transaction_ids
+    )
 
 
 @router.delete("/{transaction_id}")
 def remove(
-    db: DBSession, me: CurrentUser, movement_id: int, transaction_id: int
-) -> MovementApiOut | None:
-    CRUDTransaction.read(db, transaction_id, user_id=me.id, movement_id=movement_id)
-    return CRUDMovement.remove_transaction(db, movement_id, transaction_id)
+    db: DBSession, me: CurrentUser, transaction_group_id: int, transaction_id: int
+) -> TransactionGroupApiOut | None:
+    CRUDTransaction.read(
+        db, transaction_id, user_id=me.id, transaction_group_id=transaction_group_id
+    )
+    return CRUDTransactionGroup.remove_transaction(
+        db, transaction_group_id, transaction_id
+    )

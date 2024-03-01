@@ -39,7 +39,7 @@ class __TransactionBase(BaseModel):
 
 
 class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
-    movement_id: int | None
+    transaction_group_id: int | None
     amount_default_currency: Decimal
     amount: Decimal
     account_balance: Decimal

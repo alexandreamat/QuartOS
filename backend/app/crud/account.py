@@ -210,13 +210,13 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         account_id: int,
         transaction_in: TransactionApiIn,
         default_currency_code: CurrencyCode,
-        movement_id: int | None = None,
+        transaction_group_id: int | None = None,
     ) -> TransactionApiOut:
         account_out = CRUDAccount.read(db, account_id)
         transaction_out = CRUDTransaction.create(
             db,
             transaction_in,
-            movement_id=movement_id,
+            transaction_group_id=transaction_group_id,
             account_id=account_id,
             account_balance=Decimal(0),
             exchange_rate=get_exchange_rate(
@@ -236,7 +236,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         transaction_id: int,
         transaction_in: TransactionApiIn,
         default_currency_code: CurrencyCode,
-        movement_id: int | None = None,
+        transaction_group_id: int | None = None,
     ) -> TransactionApiOut:
         account_out = CRUDAccount.read(db, account_id)
         transaction_out = CRUDTransaction.update(
@@ -250,7 +250,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
                 default_currency_code,
                 transaction_in.timestamp,
             ),
-            movement_id=movement_id,
+            transaction_group_id=transaction_group_id,
         )
         CRUDAccount.update_balance(db, account_id, transaction_in.timestamp)
         return transaction_out

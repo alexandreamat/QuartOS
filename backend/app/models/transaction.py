@@ -27,7 +27,7 @@ from app.models.common import SyncableBase
 from app.models.file import File
 
 if TYPE_CHECKING:
-    from app.models.movement import Movement
+    from app.models.transactiongroup import TransactionGroup
     from app.models.account import Account
 
 logger = logging.getLogger(__name__)
@@ -39,8 +39,8 @@ class Transaction(SyncableBase):
     timestamp: Mapped[date]
     name: Mapped[str]
     account_id: Mapped[int] = mapped_column(ForeignKey("account.id"))
-    movement_id: Mapped[int | None] = mapped_column(
-        ForeignKey("movement.id"), nullable=True
+    transaction_group_id: Mapped[int | None] = mapped_column(
+        ForeignKey("transaction_group.id"), nullable=True
     )
     category_id: Mapped[int | None] = mapped_column(ForeignKey("category.id"))
     amount_default_currency: Mapped[Decimal]
@@ -51,7 +51,9 @@ class Transaction(SyncableBase):
     )
 
     account: Mapped["Account"] = relationship(back_populates="transactions")
-    movement: Mapped["Movement | None"] = relationship(back_populates="transactions")
+    transaction_group: Mapped["TransactionGroup | None"] = relationship(
+        back_populates="transactions"
+    )
     category: Mapped[Category | None] = relationship()
 
     consolidated = False

@@ -17,11 +17,11 @@ import logging
 from sqlalchemy.orm import Session
 
 from app.crud.common import CRUDBase
-from app.models.movement import Movement
+from app.models.transactiongroup import TransactionGroup
 from app.models.user import User
-from app.schemas.movement import (
-    MovementApiIn,
-    MovementApiOut,
+from app.schemas.transactiongroup import (
+    TransactionGroupApiIn,
+    TransactionGroupApiOut,
 )
 from app.schemas.user import UserApiOut, UserApiIn
 
@@ -41,13 +41,15 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         return UserApiOut.model_validate(User.authenticate(db, email, password))
 
     @classmethod
-    def update_movement(
+    def update_transaction_group(
         cls,
         db: Session,
         user_id: int,
-        movement_id: int,
-        movement_in: MovementApiIn,
-    ) -> MovementApiOut:
+        transaction_group_id: int,
+        transaction_group_in: TransactionGroupApiIn,
+    ) -> TransactionGroupApiOut:
         user_out = cls.read(db, user_id)
-        movement = Movement.update(db, movement_id, **movement_in.model_dump())
-        return MovementApiOut.model_validate(movement)
+        transaction_group = TransactionGroup.update(
+            db, transaction_group_id, **transaction_group_in.model_dump()
+        )
+        return TransactionGroupApiOut.model_validate(transaction_group)
