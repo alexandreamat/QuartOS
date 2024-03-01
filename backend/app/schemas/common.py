@@ -98,7 +98,7 @@ class QueryArgMeta(type(BaseModel)):
             if info.annotation in (int, float, Decimal, datetime, date)
             for order in [f"asc", f"desc"]
         ]
-        return Literal[*args], None  # type: ignore
+        return Literal[*args, None], None  # type: ignore
 
 
 class ApiInMixin(BaseModel):
