@@ -12,9 +12,25 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from collections import defaultdict
+from datetime import date, datetime
+from decimal import Decimal
 import logging
+from numbers import Number
 import re
-from typing import Any, Literal, Never, Type, TypeVar, Annotated, get_origin
+import types
+from typing import (
+    Any,
+    Literal,
+    Never,
+    Optional,
+    Type,
+    TypeVar,
+    Annotated,
+    Union,
+    get_origin,
+)
+from annotated_types import SupportsLt
 
 import pycountry
 from pydantic import AfterValidator, BaseModel, ConfigDict, create_model
@@ -28,7 +44,7 @@ class QueryArgMeta(type(BaseModel)):
     def __new__(cls, name: str, bases: Never, dct: dict[str, Any]) -> Type[BaseModel]:
         kwargs: dict[str, Any] = {}
 
-        kwargs["order_by"] = (str | None, None)
+        # kwargs["order_by"] = (str | None, None)
         kwargs["per_page"] = (int, 0)
         kwargs["page"] = (int, 0)
 
@@ -37,9 +53,35 @@ class QueryArgMeta(type(BaseModel)):
             type_ = info.annotation
             if not type_:
                 continue
+
             if get_origin(type_) == Literal:
                 continue
-            for op in ["eq", "gt", "ge", "le", "lt"]:
+
+            # Process Optional[T] or T | None
+            if issubclass(info.annotation.__class__, types.UnionType):
+                if len(type_.__args__) == 2 and type_.__args__[1] == type(None):
+                    type_ = type_.__args__[0]
+                else:
+                    continue
+
+            # Assign possible operations
+            if type_ in (int, float, Decimal, datetime, date):
+                ops = ["eq", "ne", "gt", "ge", "le", "lt"]
+            elif type_ in (str, bool):
+                ops = ["eq", "ne"]
+            else:
+                continue
+
+            if type_ in (int, float, Decimal, datetime, date):
+                try:
+                    kwargs["order_by"][0].__args__ += (f"{name}__asc", f"{name}__desc")
+                except KeyError:
+                    kwargs["order_by"] = (
+                        Literal[f"{name}__asc", f"{name}__desc"],
+                        None,
+                    )
+
+            for op in ops:
                 if hasattr(info, f"__{op}__"):
                     kwargs[f"{name}__{op}"] = (type_ | None, None)
                     if hasattr(info, f"__abs__"):
