@@ -1308,7 +1308,8 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
     | "account_balance__asc"
     | "account_balance__desc"
     | "account_id__asc"
-    | "account_id__desc";
+    | "account_id__desc"
+    | null;
   idEq?: number | null;
   idNe?: number | null;
   idGt?: number | null;
