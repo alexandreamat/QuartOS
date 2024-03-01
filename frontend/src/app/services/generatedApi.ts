@@ -735,8 +735,8 @@ const injectedRtkApi = api
         invalidatesTags: ["users", "transactiongroups"],
       }),
       readUsersMeTransactiongroupsTransactionGroupIdGet: build.query<
-        readUsersMeTransactiongroupsTransactionGroupIdGetApiResponse,
-        readUsersMeTransactiongroupsTransactionGroupIdGetApiArg
+        ReadUsersMeTransactiongroupsTransactionGroupIdGetApiResponse,
+        ReadUsersMeTransactiongroupsTransactionGroupIdGetApiArg
       >({
         query: (queryArg) => ({
           url: `/users/me/transactiongroups/${queryArg}`,
@@ -1062,14 +1062,14 @@ export type ReadManyUsersMeAccountsGetApiResponse =
 export type ReadManyUsersMeAccountsGetApiArg = void;
 export type CreateUsersMeAccountsPostApiResponse =
   /** status 200 Successful Response */
-  | DepositoryApiOut
-  | LoanApiOut
-  | CreditApiOut
-  | BrokerageApiOut
-  | InvestmentApiOut
-  | CashApiOut
-  | PersonalLedgerApiOut
-  | PropertyApiOut;
+    | DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | BrokerageApiOut
+    | InvestmentApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut;
 export type CreateUsersMeAccountsPostApiArg = {
   userinstitutionlinkId?: number | null;
   body:
@@ -1084,25 +1084,25 @@ export type CreateUsersMeAccountsPostApiArg = {
 };
 export type ReadUsersMeAccountsAccountIdGetApiResponse =
   /** status 200 Successful Response */
-  | DepositoryApiOut
-  | LoanApiOut
-  | CreditApiOut
-  | BrokerageApiOut
-  | InvestmentApiOut
-  | CashApiOut
-  | PersonalLedgerApiOut
-  | PropertyApiOut;
+    | DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | BrokerageApiOut
+    | InvestmentApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut;
 export type ReadUsersMeAccountsAccountIdGetApiArg = number;
 export type UpdateUsersMeAccountsAccountIdPutApiResponse =
   /** status 200 Successful Response */
-  | DepositoryApiOut
-  | LoanApiOut
-  | CreditApiOut
-  | BrokerageApiOut
-  | InvestmentApiOut
-  | CashApiOut
-  | PersonalLedgerApiOut
-  | PropertyApiOut;
+    | DepositoryApiOut
+    | LoanApiOut
+    | CreditApiOut
+    | BrokerageApiOut
+    | InvestmentApiOut
+    | CashApiOut
+    | PersonalLedgerApiOut
+    | PropertyApiOut;
 export type UpdateUsersMeAccountsAccountIdPutApiArg = {
   accountId: number;
   userinstitutionlinkId: number | null;
@@ -1257,9 +1257,9 @@ export type ReadManyUsersMeTransactiongroupsGetApiArg = {
 export type UpdateAllUsersMeTransactiongroupsPutApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateAllUsersMeTransactiongroupsPutApiArg = void;
-export type readUsersMeTransactiongroupsTransactionGroupIdGetApiResponse =
+export type ReadUsersMeTransactiongroupsTransactionGroupIdGetApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut;
-export type readUsersMeTransactiongroupsTransactionGroupIdGetApiArg = number;
+export type ReadUsersMeTransactiongroupsTransactionGroupIdGetApiArg = number;
 export type UpdateUsersMeTransactiongroupsTransactionGroupIdPutApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut;
 export type UpdateUsersMeTransactiongroupsTransactionGroupIdPutApiArg = {
