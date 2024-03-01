@@ -15,7 +15,7 @@ export const addTagTypes = [
   "institutionlinks",
   "plaidtransactions",
   "merchants",
-  "movements",
+  "transactiongroups",
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -706,92 +706,96 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["users", "merchants"],
       }),
-      mergeUsersMeMovementsMergePost: build.mutation<
-        MergeUsersMeMovementsMergePostApiResponse,
-        MergeUsersMeMovementsMergePostApiArg
+      mergeUsersMeTransactiongroupsMergePost: build.mutation<
+        MergeUsersMeTransactiongroupsMergePostApiResponse,
+        MergeUsersMeTransactiongroupsMergePostApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/merge`,
+          url: `/users/me/transactiongroups/merge`,
           method: "POST",
           body: queryArg,
         }),
-        invalidatesTags: ["users", "movements"],
+        invalidatesTags: ["users", "transactiongroups"],
       }),
-      readManyUsersMeMovementsGet: build.query<
-        ReadManyUsersMeMovementsGetApiResponse,
-        ReadManyUsersMeMovementsGetApiArg
+      readManyUsersMeTransactiongroupsGet: build.query<
+        ReadManyUsersMeTransactiongroupsGetApiResponse,
+        ReadManyUsersMeTransactiongroupsGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/`,
+          url: `/users/me/transactiongroups/`,
           params: { page: queryArg.page, per_page: queryArg.perPage },
         }),
-        providesTags: ["users", "movements"],
+        providesTags: ["users", "transactiongroups"],
       }),
-      updateAllUsersMeMovementsPut: build.mutation<
-        UpdateAllUsersMeMovementsPutApiResponse,
-        UpdateAllUsersMeMovementsPutApiArg
+      updateAllUsersMeTransactiongroupsPut: build.mutation<
+        UpdateAllUsersMeTransactiongroupsPutApiResponse,
+        UpdateAllUsersMeTransactiongroupsPutApiArg
       >({
-        query: () => ({ url: `/users/me/movements/`, method: "PUT" }),
-        invalidatesTags: ["users", "movements"],
+        query: () => ({ url: `/users/me/transactiongroups/`, method: "PUT" }),
+        invalidatesTags: ["users", "transactiongroups"],
       }),
-      readUsersMeMovementsTransactionGroupIdGet: build.query<
-        ReadUsersMeMovementsTransactionGroupIdGetApiResponse,
-        ReadUsersMeMovementsTransactionGroupIdGetApiArg
-      >({
-        query: (queryArg) => ({ url: `/users/me/movements/${queryArg}` }),
-        providesTags: ["users", "movements"],
-      }),
-      updateUsersMeMovementsTransactionGroupIdPut: build.mutation<
-        UpdateUsersMeMovementsTransactionGroupIdPutApiResponse,
-        UpdateUsersMeMovementsTransactionGroupIdPutApiArg
+      readUsersMeTransactiongroupsTransactionGroupIdGet: build.query<
+        readUsersMeTransactiongroupsTransactionGroupIdGetApiResponse,
+        readUsersMeTransactiongroupsTransactionGroupIdGetApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/${queryArg.transactionGroupId}`,
+          url: `/users/me/transactiongroups/${queryArg}`,
+        }),
+        providesTags: ["users", "transactiongroups"],
+      }),
+      updateUsersMeTransactiongroupsTransactionGroupIdPut: build.mutation<
+        UpdateUsersMeTransactiongroupsTransactionGroupIdPutApiResponse,
+        UpdateUsersMeTransactiongroupsTransactionGroupIdPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/transactiongroups/${queryArg.transactionGroupId}`,
           method: "PUT",
           body: queryArg.transactionGroupApiIn,
         }),
-        invalidatesTags: ["users", "movements"],
+        invalidatesTags: ["users", "transactiongroups"],
       }),
-      deleteUsersMeMovementsTransactionGroupIdDelete: build.mutation<
-        DeleteUsersMeMovementsTransactionGroupIdDeleteApiResponse,
-        DeleteUsersMeMovementsTransactionGroupIdDeleteApiArg
+      deleteUsersMeTransactiongroupsTransactionGroupIdDelete: build.mutation<
+        DeleteUsersMeTransactiongroupsTransactionGroupIdDeleteApiResponse,
+        DeleteUsersMeTransactiongroupsTransactionGroupIdDeleteApiArg
       >({
         query: (queryArg) => ({
-          url: `/users/me/movements/${queryArg}`,
+          url: `/users/me/transactiongroups/${queryArg}`,
           method: "DELETE",
         }),
-        invalidatesTags: ["users", "movements"],
+        invalidatesTags: ["users", "transactiongroups"],
       }),
-      readManyUsersMeMovementsTransactionGroupIdTransactionsGet: build.query<
-        ReadManyUsersMeMovementsTransactionGroupIdTransactionsGetApiResponse,
-        ReadManyUsersMeMovementsTransactionGroupIdTransactionsGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/movements/${queryArg}/transactions/`,
-        }),
-        providesTags: ["users", "movements", "transactions"],
-      }),
-      addUsersMeMovementsTransactionGroupIdTransactionsPut: build.mutation<
-        AddUsersMeMovementsTransactionGroupIdTransactionsPutApiResponse,
-        AddUsersMeMovementsTransactionGroupIdTransactionsPutApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/movements/${queryArg.transactionGroupId}/transactions/`,
-          method: "PUT",
-          body: queryArg.body,
-        }),
-        invalidatesTags: ["users", "movements", "transactions"],
-      }),
-      removeUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDelete:
-        build.mutation<
-          RemoveUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDeleteApiResponse,
-          RemoveUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDeleteApiArg
+      readManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGet:
+        build.query<
+          ReadManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGetApiResponse,
+          ReadManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGetApiArg
         >({
           query: (queryArg) => ({
-            url: `/users/me/movements/${queryArg.transactionGroupId}/transactions/${queryArg.transactionId}`,
+            url: `/users/me/transactiongroups/${queryArg}/transactions/`,
+          }),
+          providesTags: ["users", "transactiongroups", "transactions"],
+        }),
+      addUsersMeTransactiongroupsTransactionGroupIdTransactionsPut:
+        build.mutation<
+          AddUsersMeTransactiongroupsTransactionGroupIdTransactionsPutApiResponse,
+          AddUsersMeTransactiongroupsTransactionGroupIdTransactionsPutApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/users/me/transactiongroups/${queryArg.transactionGroupId}/transactions/`,
+            method: "PUT",
+            body: queryArg.body,
+          }),
+          invalidatesTags: ["users", "transactiongroups", "transactions"],
+        }),
+      removeUsersMeTransactiongroupsTransactionGroupIdTransactionsTransactionIdDelete:
+        build.mutation<
+          RemoveUsersMeTransactiongroupsTransactionGroupIdTransactionsTransactionIdDeleteApiResponse,
+          RemoveUsersMeTransactiongroupsTransactionGroupIdTransactionsTransactionIdDeleteApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/users/me/transactiongroups/${queryArg.transactionGroupId}/transactions/${queryArg.transactionId}`,
             method: "DELETE",
           }),
-          invalidatesTags: ["users", "movements", "transactions"],
+          invalidatesTags: ["users", "transactiongroups", "transactions"],
         }),
       readManyUsersMeTransactionsGet: build.query<
         ReadManyUsersMeTransactionsGetApiResponse,
@@ -1058,14 +1062,14 @@ export type ReadManyUsersMeAccountsGetApiResponse =
 export type ReadManyUsersMeAccountsGetApiArg = void;
 export type CreateUsersMeAccountsPostApiResponse =
   /** status 200 Successful Response */
-    | DepositoryApiOut
-    | LoanApiOut
-    | CreditApiOut
-    | BrokerageApiOut
-    | InvestmentApiOut
-    | CashApiOut
-    | PersonalLedgerApiOut
-    | PropertyApiOut;
+  | DepositoryApiOut
+  | LoanApiOut
+  | CreditApiOut
+  | BrokerageApiOut
+  | InvestmentApiOut
+  | CashApiOut
+  | PersonalLedgerApiOut
+  | PropertyApiOut;
 export type CreateUsersMeAccountsPostApiArg = {
   userinstitutionlinkId?: number | null;
   body:
@@ -1080,25 +1084,25 @@ export type CreateUsersMeAccountsPostApiArg = {
 };
 export type ReadUsersMeAccountsAccountIdGetApiResponse =
   /** status 200 Successful Response */
-    | DepositoryApiOut
-    | LoanApiOut
-    | CreditApiOut
-    | BrokerageApiOut
-    | InvestmentApiOut
-    | CashApiOut
-    | PersonalLedgerApiOut
-    | PropertyApiOut;
+  | DepositoryApiOut
+  | LoanApiOut
+  | CreditApiOut
+  | BrokerageApiOut
+  | InvestmentApiOut
+  | CashApiOut
+  | PersonalLedgerApiOut
+  | PropertyApiOut;
 export type ReadUsersMeAccountsAccountIdGetApiArg = number;
 export type UpdateUsersMeAccountsAccountIdPutApiResponse =
   /** status 200 Successful Response */
-    | DepositoryApiOut
-    | LoanApiOut
-    | CreditApiOut
-    | BrokerageApiOut
-    | InvestmentApiOut
-    | CashApiOut
-    | PersonalLedgerApiOut
-    | PropertyApiOut;
+  | DepositoryApiOut
+  | LoanApiOut
+  | CreditApiOut
+  | BrokerageApiOut
+  | InvestmentApiOut
+  | CashApiOut
+  | PersonalLedgerApiOut
+  | PropertyApiOut;
 export type UpdateUsersMeAccountsAccountIdPutApiArg = {
   accountId: number;
   userinstitutionlinkId: number | null;
@@ -1241,43 +1245,45 @@ export type UpdateUsersMeMerchantsMerchantIdPutApiArg = {
 export type DeleteUsersMeMerchantsMerchantIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
 export type DeleteUsersMeMerchantsMerchantIdDeleteApiArg = number;
-export type MergeUsersMeMovementsMergePostApiResponse =
+export type MergeUsersMeTransactiongroupsMergePostApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut;
-export type MergeUsersMeMovementsMergePostApiArg = number[];
-export type ReadManyUsersMeMovementsGetApiResponse =
+export type MergeUsersMeTransactiongroupsMergePostApiArg = number[];
+export type ReadManyUsersMeTransactiongroupsGetApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut[];
-export type ReadManyUsersMeMovementsGetApiArg = {
+export type ReadManyUsersMeTransactiongroupsGetApiArg = {
   page?: number;
   perPage?: number;
 };
-export type UpdateAllUsersMeMovementsPutApiResponse =
+export type UpdateAllUsersMeTransactiongroupsPutApiResponse =
   /** status 200 Successful Response */ any;
-export type UpdateAllUsersMeMovementsPutApiArg = void;
-export type ReadUsersMeMovementsTransactionGroupIdGetApiResponse =
+export type UpdateAllUsersMeTransactiongroupsPutApiArg = void;
+export type readUsersMeTransactiongroupsTransactionGroupIdGetApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut;
-export type ReadUsersMeMovementsTransactionGroupIdGetApiArg = number;
-export type UpdateUsersMeMovementsTransactionGroupIdPutApiResponse =
+export type readUsersMeTransactiongroupsTransactionGroupIdGetApiArg = number;
+export type UpdateUsersMeTransactiongroupsTransactionGroupIdPutApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut;
-export type UpdateUsersMeMovementsTransactionGroupIdPutApiArg = {
+export type UpdateUsersMeTransactiongroupsTransactionGroupIdPutApiArg = {
   transactionGroupId: number;
   transactionGroupApiIn: TransactionGroupApiIn;
 };
-export type DeleteUsersMeMovementsTransactionGroupIdDeleteApiResponse =
+export type DeleteUsersMeTransactiongroupsTransactionGroupIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
-export type DeleteUsersMeMovementsTransactionGroupIdDeleteApiArg = number;
-export type ReadManyUsersMeMovementsTransactionGroupIdTransactionsGetApiResponse =
-  /** status 200 Successful Response */ TransactionApiOut[];
-export type ReadManyUsersMeMovementsTransactionGroupIdTransactionsGetApiArg =
+export type DeleteUsersMeTransactiongroupsTransactionGroupIdDeleteApiArg =
   number;
-export type AddUsersMeMovementsTransactionGroupIdTransactionsPutApiResponse =
+export type ReadManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGetApiResponse =
+  /** status 200 Successful Response */ TransactionApiOut[];
+export type ReadManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGetApiArg =
+  number;
+export type AddUsersMeTransactiongroupsTransactionGroupIdTransactionsPutApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut;
-export type AddUsersMeMovementsTransactionGroupIdTransactionsPutApiArg = {
-  transactionGroupId: number;
-  body: number[];
-};
-export type RemoveUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDeleteApiResponse =
+export type AddUsersMeTransactiongroupsTransactionGroupIdTransactionsPutApiArg =
+  {
+    transactionGroupId: number;
+    body: number[];
+  };
+export type RemoveUsersMeTransactiongroupsTransactionGroupIdTransactionsTransactionIdDeleteApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut | null;
-export type RemoveUsersMeMovementsTransactionGroupIdTransactionsTransactionIdDeleteApiArg =
+export type RemoveUsersMeTransactiongroupsTransactionGroupIdTransactionsTransactionIdDeleteApiArg =
   {
     transactionGroupId: number;
     transactionId: number;

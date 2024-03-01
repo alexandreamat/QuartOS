@@ -15,14 +15,14 @@
 
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { Doughnut } from "react-chartjs-2";
-import { CategoryApiOut, MovementApiOut, api } from "app/services/api";
+import { CategoryApiOut, TransactionGroupApiOut, api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Grid, Header, Icon, Loader } from "semantic-ui-react";
 import PLCard from "./PLCard";
-import PLMovements from "./PLMovements";
+import PLTransactions from "./PLTransactions";
 import {
   Chart,
   ArcElement,
@@ -42,7 +42,8 @@ export default function PLStatement() {
   const { startDate } = useParams();
 
   const [showIncome, setShowIncome] = useState(true);
-  const [movement, setMovement] = useState<MovementApiOut>();
+  const [transactionGroup, setTransactionGroup] =
+    useState<TransactionGroupApiOut>();
   const [selectedCategoryIdx, setSelectedCategoryIdx] = useState<number>();
 
   const detailedStatementQuery =
@@ -120,10 +121,10 @@ export default function PLStatement() {
 
   return (
     <FlexColumn>
-      {movement && (
+      {transactionGroup && (
         <TransactionForm.Edit.Group
-          onClose={() => setMovement(undefined)}
-          transaction={movement}
+          onClose={() => setTransactionGroup(undefined)}
+          transaction={transactionGroup}
         />
       )}
       <div>
@@ -176,10 +177,10 @@ export default function PLStatement() {
                 </FlexRow.Auto>
               </FlexRow>
             )}
-            <PLMovements
+            <PLTransactions
               plStatement={detailedStatementQuery.data}
               showIncome={showIncome}
-              onOpenEditForm={setMovement}
+              onOpenEditForm={setTransactionGroup}
               categoryId={selectedCategoryId}
             />
           </Grid.Column>

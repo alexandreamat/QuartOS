@@ -175,12 +175,12 @@ function StepFlows(props: {
 
 export function Flows(props: {
   selectedAccountId?: number;
-  movementId?: number;
+  transactionGroupId?: number;
   loading?: boolean;
 }) {
   const transactionsQuery =
-    api.endpoints.readManyUsersMeMovementsMovementIdTransactionsGet.useQuery(
-      props.movementId || skipToken,
+    api.endpoints.readManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGet.useQuery(
+      props.transactionGroupId || skipToken,
     );
 
   return (

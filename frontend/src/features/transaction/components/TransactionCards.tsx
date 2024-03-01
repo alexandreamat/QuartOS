@@ -14,7 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
-  MovementApiOut,
+  TransactionGroupApiOut,
   ReadManyUsersMeTransactionsGetApiArg,
   TransactionApiOut,
   api,
@@ -32,7 +32,7 @@ export default function TransactionCards(props: {
   barState: TransactionsBarState;
   isMultipleChoice?: boolean;
   transactionCheckboxes: Checkboxes;
-  movementCheckboxes: Checkboxes;
+  transactionGroupCheckboxes: Checkboxes;
   accountId?: number;
   reference: MutableRefObject<HTMLDivElement | null>;
 }) {
@@ -68,15 +68,17 @@ export default function TransactionCards(props: {
   const CardRenderer = ({
     response: t,
     loading,
-  }: PaginatedItemProps<TransactionApiOut | MovementApiOut>) =>
+  }: PaginatedItemProps<TransactionApiOut | TransactionGroupApiOut>) =>
     t?.consolidated ? (
       <TransactionCard.Group
         transaction={t}
-        checked={t && props.movementCheckboxes.checked.has(t.id)}
-        checkBoxDisabled={t && props.movementCheckboxes.disabled.has(t.id)}
+        checked={t && props.transactionGroupCheckboxes.checked.has(t.id)}
+        checkBoxDisabled={
+          t && props.transactionGroupCheckboxes.disabled.has(t.id)
+        }
         onCheckedChange={
           props.isMultipleChoice && t
-            ? (x) => props.movementCheckboxes.onChange(t.id, x)
+            ? (x) => props.transactionGroupCheckboxes.onChange(t.id, x)
             : undefined
         }
         loading={loading}

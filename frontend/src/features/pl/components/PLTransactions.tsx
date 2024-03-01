@@ -13,15 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { MovementApiOut, PlStatement, api } from "app/services/api";
+import { TransactionGroupApiOut, PlStatement, api } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
 import { Card, Loader } from "semantic-ui-react";
 
-export default function PLMovements(props: {
+export default function PLTransactions(props: {
   plStatement: PlStatement;
   showIncome: boolean;
-  onOpenEditForm: (x: MovementApiOut) => void;
+  onOpenEditForm: (x: TransactionGroupApiOut) => void;
   categoryId?: number;
 }) {
   const transactionsQuery =
