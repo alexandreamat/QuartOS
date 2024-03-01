@@ -97,7 +97,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         return super().delete(db, id)
 
     @classmethod
-    def select_aggregates(
+    def select_pl_statements(
         cls,
         user_id: int,
         year: int | None = None,
@@ -124,7 +124,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         year_extract = func.extract("year", movements_subquery.c.timestamp)
         month_extract = func.extract("month", movements_subquery.c.timestamp)
 
-        aggregates_query = (
+        pl_statements_query = (
             select(
                 year_extract.label("year"),
                 month_extract.label("month"),
@@ -152,19 +152,19 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         )
 
         if year:
-            aggregates_query = aggregates_query.having(year_extract == year)
+            pl_statements_query = pl_statements_query.having(year_extract == year)
 
         if month:
-            aggregates_query = aggregates_query.having(month_extract == month)
+            pl_statements_query = pl_statements_query.having(month_extract == month)
 
         if per_page:
             offset = page * per_page
-            aggregates_query = aggregates_query.offset(offset).limit(per_page)
+            pl_statements_query = pl_statements_query.offset(offset).limit(per_page)
 
-        return aggregates_query
+        return pl_statements_query
 
     @classmethod
-    def select_detailed_aggregates(cls, user_id: int, year: int, month: int) -> Any:
+    def select_detailed_pl_statements(cls, user_id: int, year: int, month: int) -> Any:
         movements_subquery = (
             select(
                 Movement.id,
@@ -191,7 +191,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         amount_sign = func.sign(movements_subquery.c.amount)
         amount_sum = func.sum(movements_subquery.c.amount)
 
-        aggregates_query = (
+        detailed_pl_statements_query = (
             select(
                 year_extract.label("year"),
                 month_extract.label("month"),
@@ -213,10 +213,14 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
             )
         )
 
-        aggregates_query = aggregates_query.having(year_extract == year)
-        aggregates_query = aggregates_query.having(month_extract == month)
+        detailed_pl_statements_query = detailed_pl_statements_query.having(
+            year_extract == year
+        )
+        detailed_pl_statements_query = detailed_pl_statements_query.having(
+            month_extract == month
+        )
 
-        return aggregates_query
+        return detailed_pl_statements_query
 
     @classmethod
     def get_pl_statement(
@@ -225,7 +229,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         user_id: int,
         start_date: date,
     ) -> PLStatement:
-        statement = cls.select_aggregates(user_id, start_date.year, start_date.month)
+        statement = cls.select_pl_statements(user_id, start_date.year, start_date.month)
         try:
             result = db.scalars(statement).one()
         except NoResultFound:
@@ -249,7 +253,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         page: int,
         per_page: int,
     ) -> Iterable[PLStatement]:
-        statement = cls.select_aggregates(user_id, None, None, page, per_page)
+        statement = cls.select_pl_statements(user_id, None, None, page, per_page)
         for result in db.execute(statement):
             year = int(result.year)
             month = int(result.month)
@@ -269,7 +273,7 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
         user_id: int,
         start_date: date,
     ) -> DetailedPLStatementApiOut:
-        statement = cls.select_detailed_aggregates(
+        statement = cls.select_detailed_pl_statements(
             user_id, start_date.year, start_date.month
         )
         by_category: dict[int, dict[int | None, Decimal]] = defaultdict(

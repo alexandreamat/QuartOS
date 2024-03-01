@@ -18,7 +18,6 @@ import { Doughnut } from "react-chartjs-2";
 import { CategoryApiOut, MovementApiOut, api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import MovementForm from "features/movements/components/Form";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button, Grid, Header, Icon, Loader } from "semantic-ui-react";
@@ -34,6 +33,7 @@ import {
 } from "chart.js";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
 import FlexRow from "components/FlexRow";
+import TransactionForm from "features/transaction/components/Form";
 
 Chart.register(Colors, ArcElement, Tooltip, Legend);
 
@@ -41,9 +41,8 @@ export default function PLStatement() {
   const navigate = useNavigate();
   const { startDate } = useParams();
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [showIncome, setShowIncome] = useState(true);
-  const [movementId, setMovementId] = useState(0);
+  const [movement, setMovement] = useState<MovementApiOut>();
   const [selectedCategoryIdx, setSelectedCategoryIdx] = useState<number>();
 
   const detailedStatementQuery =
@@ -61,16 +60,6 @@ export default function PLStatement() {
   function handleClickExpenses() {
     setSelectedCategoryIdx(undefined);
     setShowIncome(false);
-  }
-
-  function handleOpenEditForm(movement: MovementApiOut) {
-    setMovementId(movement.id);
-    setIsFormOpen(true);
-  }
-
-  function handleCloseEditForm() {
-    setIsFormOpen(false);
-    setMovementId(0);
   }
 
   if (
@@ -131,8 +120,11 @@ export default function PLStatement() {
 
   return (
     <FlexColumn>
-      {isFormOpen && (
-        <MovementForm onClose={handleCloseEditForm} movementId={movementId} />
+      {movement && (
+        <TransactionForm.Edit.Group
+          onClose={() => setMovement(undefined)}
+          transaction={movement}
+        />
       )}
       <div>
         <Button
@@ -147,7 +139,7 @@ export default function PLStatement() {
       </div>
       <FlexColumn.Auto>
         <PLCard
-          aggregate={detailedStatementQuery.data}
+          detailedPlStatement={detailedStatementQuery.data}
           showIncome={showIncome}
           onClickIncome={handleClickIncome}
           onClickExpenses={handleClickExpenses}
@@ -185,9 +177,9 @@ export default function PLStatement() {
               </FlexRow>
             )}
             <PLMovements
-              aggregate={detailedStatementQuery.data}
+              plStatement={detailedStatementQuery.data}
               showIncome={showIncome}
-              onOpenEditForm={handleOpenEditForm}
+              onOpenEditForm={setMovement}
               categoryId={selectedCategoryId}
             />
           </Grid.Column>
