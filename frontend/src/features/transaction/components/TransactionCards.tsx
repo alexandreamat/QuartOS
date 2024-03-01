@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
+  TransactionGroupApiOut,
   ReadManyUsersMeTransactionsGetApiArg,
   TransactionApiOut,
   api,
@@ -30,7 +31,9 @@ import { TransactionCard } from "./TransactionCard";
 export default function TransactionCards(props: {
   barState: TransactionsBarState;
   isMultipleChoice?: boolean;
-  checkboxes: Checkboxes;
+  transactionCheckboxes: Checkboxes;
+  transactionGroupCheckboxes: Checkboxes;
+  accountId?: number;
   reference: MutableRefObject<HTMLDivElement | null>;
 }) {
   const [search] = props.barState.search;
@@ -40,35 +43,60 @@ export default function TransactionCards(props: {
   const [amountGe] = props.barState.amountGe;
   const [amountLe] = props.barState.amountLe;
   const [isAmountAbs] = props.barState.isAmountAbs;
-  const [accountId] = props.barState.accountId;
+  const [consolidated] = props.barState.consolidated;
+
+  let amountKey = "amount";
+  if (consolidated) amountKey = `${amountKey}DefaultCurrency`;
+  let amountGeKey = `${amountKey}Ge`;
+  let amountLeKey = `${amountKey}Le`;
+  if (isAmountAbs) {
+    amountGeKey = `${amountGeKey}Abs`;
+    amountLeKey = `${amountLeKey}Abs`;
+  }
 
   const params: ReadManyUsersMeTransactionsGetApiArg = {
     timestampGe: timestampGe && formatDateParam(timestampGe),
     timestampLe: timestampLe && formatDateParam(timestampLe),
     search,
-    isDescending,
-    amountGe,
-    amountLe,
-    isAmountAbs,
-    accountId,
+    [amountGeKey]: amountGe,
+    [amountLeKey]: amountLe,
+    accountIdEq: props.accountId,
+    consolidated,
+    orderBy: isDescending ? "timestamp__desc" : "timestamp__asc",
   };
 
   const CardRenderer = ({
     response: t,
     loading,
-  }: PaginatedItemProps<TransactionApiOut>) => (
-    <TransactionCard
-      transaction={t}
-      checked={t && props.checkboxes.checked.has(t.id)}
-      checkBoxDisabled={t && props.checkboxes.disabled.has(t.id)}
-      onCheckedChange={
-        props.isMultipleChoice && t
-          ? (x) => props.checkboxes.onChange(t.id, x)
-          : undefined
-      }
-      loading={loading}
-    />
-  );
+  }: PaginatedItemProps<TransactionApiOut | TransactionGroupApiOut>) =>
+    t?.consolidated ? (
+      <TransactionCard.Group
+        transaction={t}
+        checked={t && props.transactionGroupCheckboxes.checked.has(t.id)}
+        checkBoxDisabled={
+          t && props.transactionGroupCheckboxes.disabled.has(t.id)
+        }
+        onCheckedChange={
+          props.isMultipleChoice && t
+            ? (x) => props.transactionGroupCheckboxes.onChange(t.id, x)
+            : undefined
+        }
+        loading={loading}
+      />
+    ) : (
+      <TransactionCard.Simple
+        transaction={t}
+        checked={t && props.transactionCheckboxes.checked.has(t.id)}
+        checkBoxDisabled={t && props.transactionCheckboxes.disabled.has(t.id)}
+        onCheckedChange={
+          props.isMultipleChoice && t
+            ? (x) => props.transactionCheckboxes.onChange(t.id, x)
+            : undefined
+        }
+        loading={loading}
+        currency={consolidated ? "default" : "account"}
+      />
+    );
 
   return (
     <Card.Group style={{ margin: 1, overflow: "hidden" }}>

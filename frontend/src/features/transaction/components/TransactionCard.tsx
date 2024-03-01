@@ -13,70 +13,58 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { TransactionApiIn, TransactionApiOut, api } from "app/services/api";
+import {
+  TransactionGroupApiOut,
+  TransactionApiIn,
+  TransactionApiOut,
+  api,
+} from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
 import FormattedTimestamp from "components/FormattedTimestamp";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import AccountIcon from "features/account/components/Icon";
-import { useAccountQueries } from "features/account/hooks";
-import MovementForm from "features/movements/components/Form";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { Card, Checkbox, Header, Popup } from "semantic-ui-react";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import TransactionForm from "./Form";
 import ModalFileViewer from "./ModalFileViewer";
 import { CategoryIcon } from "features/categories/components/CategoryIcon";
+import { Flows } from "features/transaction/components/Flows";
+import { skipToken } from "@reduxjs/toolkit/dist/query";
 
-export function TransactionCard(
-  props:
-    | {
-        // from transactions or movement
-        transaction?: TransactionApiOut;
-        checked?: boolean;
-        onCheckedChange?: (x: boolean) => void;
-        checkBoxDisabled?: boolean;
-        loading?: boolean;
-        preview?: false;
-      }
-    | {
-        // from preview
-        checked: boolean;
-        onCheckedChange: (x: boolean) => void;
-        transaction?: TransactionApiIn;
-        checkBoxDisabled?: false;
-        accountId: number;
-        loading?: false;
-        preview: true;
-      },
-) {
-  const accountQueries = useAccountQueries(
-    props.preview ? props.accountId : props.transaction?.account_id,
+export function TransactionCard(props: {
+  timestamp?: string;
+  categoryId?: number;
+  name?: string;
+  amount?: number;
+  accountBalance?: number;
+  checked?: boolean;
+  onCheckedChange?: (x: boolean) => void;
+  checkBoxDisabled?: boolean;
+  loading?: boolean;
+  accountId?: number;
+  onFileDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
+  buttons?: ReactNode;
+  children?: ReactNode;
+  currency?: "default" | "account";
+}) {
+  const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
+    props.accountId || skipToken,
   );
+  const me = api.endpoints.readMeUsersMeGet.useQuery();
 
-  const uploadTransactionFile = useUploadTransactionFile(
-    props.preview ? undefined : props.transaction,
-  );
-
-  const account = accountQueries.account;
-
-  async function handleFileDrop(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
-    const file = event.dataTransfer?.files[0];
-    if (!file) return;
-    await uploadTransactionFile.onUpload(file);
-  }
-
-  const [movementOpen, setMovementOpen] = useState(false);
-  const [formOpen, setFormOpen] = useState(false);
-  const [fileOpen, setFileOpen] = useState(false);
+  const currencyCode =
+    props.currency === "default"
+      ? me.data?.default_currency_code
+      : accountQuery.data?.currency_code;
 
   return (
     <Card
       fluid
       color="teal"
-      onDrop={handleFileDrop}
+      onDrop={props.onFileDrop}
       onDragOver={(e: DragEvent) => e.preventDefault()}
     >
       <Card.Content>
@@ -93,114 +81,67 @@ export function TransactionCard(
           )}
           <Card.Meta>
             <FormattedTimestamp
-              timestamp={props.transaction?.timestamp}
+              timestamp={props.timestamp}
               loading={props.loading}
               style={{ width: "9em" }}
             />
           </Card.Meta>
-          <AccountIcon
-            account={account}
-            loading={props.loading || accountQueries.isLoading}
-            style={{
-              height: "90%",
-              width: "2.2em",
-              alignSelf: "center",
-            }}
-          />
-          <LineWithHiddenOverflow
-            content={account?.name}
-            style={{ width: "8em" }}
-            loading={props.loading || accountQueries.isLoading}
-          />
-          {!props.preview && props.transaction?.category_id && (
-            <CategoryIcon categoryId={props.transaction.category_id} />
+          {props.accountId && (
+            <AccountIcon
+              account={accountQuery.data}
+              loading={props.loading || accountQuery.isLoading}
+              style={{
+                height: "90%",
+                width: "2.2em",
+                alignSelf: "center",
+              }}
+            />
           )}
+          {props.accountId && (
+            <LineWithHiddenOverflow
+              content={accountQuery.data?.name}
+              style={{ width: "8em" }}
+              loading={props.loading || accountQuery.isLoading}
+            />
+          )}
+          {props.categoryId && <CategoryIcon categoryId={props.categoryId} />}
           <FlexRow.Auto>
             <Header as="h5">
               <LineWithHiddenOverflow
-                content={props.transaction?.name}
+                content={props.name}
                 loading={props.loading}
               />
             </Header>
           </FlexRow.Auto>
-          {!props.preview && props.transaction && (
-            <>
-              {/* See files button and form */}
-              {fileOpen && (
-                <ModalFileViewer
-                  transaction={props.transaction}
-                  onClose={() => setFileOpen(false)}
-                />
-              )}
-              {props.transaction?.files.length !== 0 && (
-                <ActionButton
-                  tooltip="See files"
-                  icon="file"
-                  content={props.transaction?.files.length.toFixed(0)}
-                  loading={props.loading}
-                  onClick={() => setFileOpen(true)}
-                />
-              )}
-
-              {/* See movement button and form */}
-              {movementOpen && (
-                <MovementForm
-                  onClose={() => setMovementOpen(false)}
-                  movementId={props.transaction.movement_id}
-                  open
-                />
-              )}
-              <ActionButton
-                tooltip="See Movement"
-                icon="arrows alternate horizontal"
-                onClick={() => setMovementOpen(true)}
-                disabled={props.loading}
-              />
-
-              {/* See more button and form */}
-              {formOpen && (
-                <TransactionForm.Edit
-                  onClose={() => setFormOpen(false)}
-                  movementId={props.transaction.movement_id}
-                  transaction={props.transaction}
-                  open
-                />
-              )}
-              <ActionButton
-                icon="ellipsis horizontal"
-                onClick={() => setFormOpen(true)}
-                disabled={props.loading}
-              />
-            </>
-          )}
+          {props.buttons}
         </FlexRow>
+        {props.children}
       </Card.Content>
       <Card.Content extra>
         <FlexRow justifyContent="right" gap="1ch" alignItems="baseline">
           <div style={{ color: "black", fontWeight: "bold" }}>Total:</div>
           <Popup
-            disabled={props.preview}
+            disabled={!props.accountBalance || !accountQuery.data}
             position="left center"
             content={
-              !props.preview &&
-              props.transaction &&
-              account && (
+              accountQuery.data?.currency_code && (
                 <p>
-                  {`Account balance: ${Number(
-                    props.transaction.account_balance,
-                  ).toLocaleString(undefined, {
-                    style: "currency",
-                    currency: account.currency_code,
-                  })}`}
+                  {`Account balance: ${props.accountBalance?.toLocaleString(
+                    undefined,
+                    {
+                      style: "currency",
+                      currency: accountQuery.data?.currency_code,
+                    },
+                  )}`}
                 </p>
               )
             }
             trigger={
               <div>
                 <CurrencyLabel
-                  amount={Number(props.transaction?.amount)}
-                  currencyCode={account?.currency_code}
-                  loading={accountQueries.isLoading || props.loading}
+                  amount={props.amount}
+                  currencyCode={currencyCode}
+                  loading={accountQuery.isLoading || props.loading}
                 />
               </div>
             }
@@ -210,3 +151,169 @@ export function TransactionCard(
     </Card>
   );
 }
+
+function TransactionCardPreview(props: {
+  checked: boolean;
+  onCheckedChange: (x: boolean) => void;
+  transaction?: TransactionApiIn;
+  accountId: number;
+}) {
+  return (
+    <TransactionCard
+      accountId={props.accountId}
+      checked={props.checked}
+      amount={Number(props.transaction?.amount)}
+      categoryId={props.transaction?.category_id || undefined}
+      name={props.transaction?.name}
+      timestamp={props.transaction?.timestamp}
+    />
+  );
+}
+
+function TransactionCardSimple(props: {
+  transaction?: TransactionApiOut;
+  checked?: boolean;
+  onCheckedChange?: (x: boolean) => void;
+  checkBoxDisabled?: boolean;
+  loading?: boolean;
+  currency?: "default" | "account";
+}) {
+  const uploadTransactionFile = useUploadTransactionFile(
+    (!props.transaction?.consolidated && props.transaction) || undefined,
+  );
+
+  async function handleFileDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    const file = event.dataTransfer?.files[0];
+    if (!file) return;
+    await uploadTransactionFile.onUpload(file);
+  }
+
+  const [transactionGroupOpen, setTransactionGroupOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [fileOpen, setFileOpen] = useState(false);
+
+  return (
+    <TransactionCard
+      accountId={props.transaction?.account_id}
+      checkBoxDisabled={props.checkBoxDisabled}
+      checked={props.checked}
+      onFileDrop={handleFileDrop}
+      loading={props.loading}
+      accountBalance={Number(props.transaction?.account_balance)}
+      amount={Number(
+        props.currency === "account"
+          ? props.transaction?.amount
+          : props.transaction?.amount_default_currency,
+      )}
+      currency={props.currency}
+      categoryId={props.transaction?.category_id || undefined}
+      name={props.transaction?.name}
+      timestamp={props.transaction?.timestamp}
+      onCheckedChange={props.onCheckedChange}
+      buttons={
+        props.transaction && (
+          <>
+            {/* See files button and form */}
+            {fileOpen && (
+              <ModalFileViewer
+                transaction={props.transaction}
+                onClose={() => setFileOpen(false)}
+              />
+            )}
+            {/* {props.transaction?.files.length !== 0 && (
+            <ActionButton
+              tooltip="See files"
+              icon="file"
+              content={props.transaction?.files.length.toFixed(0)}
+              loading={props.loading}
+              onClick={() => setFileOpen(true)}
+            />
+          )} */}
+
+            {/* See transactionGroup button and form */}
+
+            {/* {props.transaction.transaction_group_id && (
+              <>
+                <ActionButton
+                  tooltip="See TransactionGroup"
+                  icon="arrows alternate horizontal"
+                  onClick={() => setTransactionGroupOpen(true)}
+                  disabled={props.loading}
+                />
+                {transactionGroupOpen && (
+                  <TransactionForm.Edit.Group
+                    onClose={() => setTransactionGroupOpen(false)}
+                    transaction={props.transaction.transaction_group_id}
+                  />
+                )}
+              </>
+            )} */}
+
+            {/* See more button and form */}
+            {formOpen && (
+              <TransactionForm.Edit
+                onClose={() => setFormOpen(false)}
+                transaction={props.transaction}
+              />
+            )}
+            <ActionButton
+              icon="ellipsis horizontal"
+              onClick={() => setFormOpen(true)}
+              disabled={props.loading}
+            />
+          </>
+        )
+      }
+    />
+  );
+}
+
+function TransactionCardGroup(props: {
+  transaction: TransactionGroupApiOut;
+  checked?: boolean;
+  onCheckedChange?: (x: boolean) => void;
+  checkBoxDisabled?: boolean;
+  loading?: boolean;
+}) {
+  const [formOpen, setFormOpen] = useState(false);
+
+  return (
+    <TransactionCard
+      accountId={props.transaction.account_id || undefined}
+      checkBoxDisabled={props.checkBoxDisabled}
+      checked={props.checked}
+      loading={props.loading}
+      onCheckedChange={props.onCheckedChange}
+      amount={Number(props.transaction.amount_default_currency)}
+      timestamp={props.transaction.timestamp}
+      name={props.transaction.name}
+      categoryId={props.transaction.category_id || undefined}
+      currency="default"
+      buttons={
+        <>
+          {formOpen && (
+            <TransactionForm.Edit.Group
+              onClose={() => setFormOpen(false)}
+              transaction={props.transaction}
+            />
+          )}
+          <ActionButton
+            icon="ellipsis horizontal"
+            onClick={() => setFormOpen(true)}
+            disabled={props.loading}
+          />
+        </>
+      }
+    >
+      <Flows
+        loading={props.loading}
+        transactionGroupId={props.transaction.id}
+      />
+    </TransactionCard>
+  );
+}
+
+TransactionCard.Preview = TransactionCardPreview;
+TransactionCard.Simple = TransactionCardSimple;
+TransactionCard.Group = TransactionCardGroup;

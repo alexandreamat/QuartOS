@@ -20,40 +20,45 @@ from typing import Iterable
 from fastapi import APIRouter
 from sqlalchemy.exc import NoResultFound
 
-from app.database.deps import DBSession
-from app.features.account.crud import CRUDAccount, CRUDSyncableAccount
-from app.features.account.plaid import fetch_accounts
-from app.features.category.plaid import get_all_plaid_categories
-from app.features.institution.crud import CRUDSyncableInstitution
-from app.features.transaction.crud import CRUDSyncableTransaction
-from app.features.transaction.plaid import (
-    reset_transaction_to_metadata as _reset_transaction_to_metadata,
-)
-from app.features.transaction.schemas import TransactionPlaidIn, TransactionPlaidOut
-from app.features.user import CurrentSuperuser
-from app.features.user.crud import CRUDUser
-from app.features.userinstitutionlink.crud import (
+from app.crud.account import CRUDAccount, CRUDSyncableAccount
+from app.crud.institution import CRUDSyncableInstitution
+from app.crud.transaction import CRUDSyncableTransaction, CRUDTransaction
+from app.crud.user import CRUDUser
+from app.crud.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
     CRUDUserInstitutionLink,
 )
-from app.features.userinstitutionlink.plaid import (
+from app.database.deps import DBSession
+from app.deps.user import CurrentSuperuser
+from app.plaid.account import fetch_accounts
+from app.plaid.category import get_all_plaid_categories
+from app.plaid.transaction import (
+    reset_transaction_to_metadata as _reset_transaction_to_metadata,
+)
+from app.plaid.userinstitutionlink import (
     fetch_transactions,
     fetch_user_institution_link,
 )
-from app.features.userinstitutionlink.schemas import UserInstitutionLinkPlaidOut
+from app.schemas.transaction import TransactionPlaidIn, TransactionPlaidOut
+from app.schemas.userinstitutionlink import UserInstitutionLinkPlaidOut
 
 router = APIRouter()
 
 
 @router.put("/accounts/update-balances")
 def accounts_update_balances(db: DBSession, me: CurrentSuperuser) -> None:
-    for account in CRUDAccount.read_many(db, 0, 0):
+    for account in CRUDAccount.read_many(db):
         CRUDAccount.update_balance(db, account.id)
 
 
 @router.put("/categories/sync")
 def cateogries_sync(db: DBSession, me: CurrentSuperuser) -> None:
     get_all_plaid_categories(db)
+
+
+@router.put("/transactions/orphan-only-children")
+def orphan_single_transactions(db: DBSession, me: CurrentSuperuser) -> None:
+    CRUDTransaction.orphan_only_children(db)
 
 
 @router.get("/transactions/{transactions_id}")
@@ -77,14 +82,14 @@ def update_transaction(
 def update_transactions_amount_default_currency(
     db: DBSession, me: CurrentSuperuser
 ) -> None:
-    for u in CRUDUser.read_many(db, 0, 0):
-        for a in CRUDUser.read_accounts(db, u.id, None):
+    for u in CRUDUser.read_many(db):
+        for a in CRUDAccount.read_many(db, user_id=u.id):
             CRUDAccount.update_transactions_amount_default_currency(
                 db, a.id, u.default_currency_code
             )
 
 
-@router.put("/user-institution-links/{userinstitutionlink_id}/resync")
+@router.put("/userinstitutionlinks/{userinstitutionlink_id}/resync")
 def resync_user_institution_link(
     db: DBSession, me: CurrentSuperuser, userinstitutionlink_id: int
 ) -> UserInstitutionLinkPlaidOut:
@@ -113,7 +118,7 @@ def resync_user_institution_link(
 
 
 @router.put(
-    "/user-institution-links/{userinstitutionlink_id}/resync/{start_date}/{end_date}"
+    "/userinstitutionlinks/{userinstitutionlink_id}/resync/{start_date}/{end_date}"
 )
 def resync_transactions(
     db: DBSession,
@@ -159,7 +164,7 @@ def resync_transactions(
 
 
 @router.get(
-    "/user-institution-links/{userinstitutionlink_id}/transactions/{start_date}/{end_date}"
+    "/userinstitutionlinks/{userinstitutionlink_id}/transactions/{start_date}/{end_date}"
 )
 def read_many(
     db: DBSession,
@@ -179,25 +184,25 @@ def read_many(
     )
 
 
-@router.put("/user-institution-links/{userinstitutionlink_id}/reset-to-metadata")
+@router.put("/userinstitutionlinks/{userinstitutionlink_id}/reset-to-metadata")
 def reset_many_transactions_to_metadata(
     db: DBSession, me: CurrentSuperuser, userinstitutionlink_id: int
 ) -> Iterable[TransactionPlaidOut]:
     replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
         db, userinstitutionlink_id
     )
-    for t in CRUDSyncableUserInstitutionLink.read_transactions(
-        db, userinstitutionlink_id
+    for t in CRUDSyncableTransaction.read_many(
+        db, userinstitutionlink_id=userinstitutionlink_id
     ):
         yield _reset_transaction_to_metadata(db, t.id, replacement_pattern)
-    for a in CRUDSyncableUserInstitutionLink.read_syncable_accounts(
-        db, userinstitutionlink_id
+    for a in CRUDSyncableAccount.read_many(
+        db, userinstitutionlink_id=userinstitutionlink_id
     ):
         CRUDAccount.update_balance(db, a.id)
 
 
 @router.put(
-    "/user-institution-links/{userinstitutionlink_id}/transactions/{transaction_id}/reset-to-metadata"
+    "/userinstitutionlinks/{userinstitutionlink_id}/transactions/{transaction_id}/reset-to-metadata"
 )
 def reset_transaction_to_metadata(
     db: DBSession,

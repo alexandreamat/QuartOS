@@ -13,46 +13,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Annotated, Iterable
+from typing import Iterable
 
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter
 
-from app.common.exceptions import UnknownError
+from app.crud.account import CRUDAccount
+from app.crud.userinstitutionlink import CRUDUserInstitutionLink
 from app.database.deps import DBSession
-from app.features.account import (
-    CRUDAccount,
-    AccountApiOut,
-    AccountApiIn,
-)
-from app.features.transaction import (
-    TransactionApiIn,
-    get_transactions_from_csv,
-)
-from app.features.user import CRUDUser, CurrentUser
-from app.features.userinstitutionlink import SyncedEntity
-from . import movements
+from app.deps.user import CurrentUser
+from app.exceptions.userinstitutionlink import SyncedEntity
+from app.schemas.account import AccountApiIn, AccountApiOut
+from app.utils import include_package_routes
 
 router = APIRouter()
 
 
 @router.get("/")
 def read_many(db: DBSession, me: CurrentUser) -> Iterable[AccountApiOut]:
-    return CRUDUser.read_accounts(db, me.id, None)
-
-
-@router.post("/preview")
-def preview(
-    db: DBSession,
-    me: CurrentUser,
-    account_id: int,
-    file: Annotated[UploadFile, File(...)],
-) -> Iterable[TransactionApiIn]:
-    CRUDUser.read_account(db, me.id, None, account_id)
-    deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
-    try:
-        return get_transactions_from_csv(deserialiser, file.file, account_id)
-    except Exception as e:
-        raise UnknownError(e)
+    return CRUDAccount.read_many(db, user_id=me.id)
 
 
 @router.post("/")
@@ -64,7 +42,7 @@ def create(
 ) -> AccountApiOut:
     if account_in.type in ["depository", "loan", "brokerage", "investment"]:
         assert userinstitutionlink_id
-        CRUDUser.read_user_institution_link(db, me.id, userinstitutionlink_id)
+        CRUDUserInstitutionLink.read(db, userinstitutionlink_id, user_id=me.id)
     return CRUDAccount.create(
         db, account_in, userinstitutionlink_id=userinstitutionlink_id, user_id=me.id
     )
@@ -72,7 +50,7 @@ def create(
 
 @router.get("/{account_id}")
 def read(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
-    return CRUDUser.read_account(db, me.id, None, account_id=account_id)
+    return CRUDAccount.read(db, account_id, user_id=me.id)
 
 
 @router.put("/{account_id}")
@@ -85,7 +63,7 @@ def update(
 ) -> AccountApiOut:
     if CRUDAccount.is_synced(db, account_id):
         raise SyncedEntity()
-    CRUDUser.read_account(db, me.id, None, account_id)
+    CRUDAccount.read(db, account_id, user_id=me.id)
     return CRUDAccount.update(
         db,
         account_id,
@@ -101,12 +79,10 @@ def delete(
     me: CurrentUser,
     account_id: int,
 ) -> int:
-    account_out = CRUDUser.read_account(db, me.id, None, account_id)
+    account_out = CRUDAccount.read(db, account_id, user_id=me.id)
     if account_out.is_synced:
         raise SyncedEntity()
     return CRUDAccount.delete(db, account_id)
 
 
-router.include_router(
-    movements.router, prefix="/{account_id}/movements", tags=["movements"]
-)
+include_package_routes(router, __name__, __path__, "/{account_id}")

@@ -18,7 +18,6 @@ import Dashboard from "features/dashboard";
 import Institutions from "features/institution";
 import InstitutionLinks from "features/institutionlink";
 import Merchants from "features/merchants";
-import Movements from "features/movements";
 import PL from "features/pl";
 import PLStatement from "features/pl/components/PLStatement";
 import Transactions from "features/transaction";
@@ -72,14 +71,6 @@ export default [
     label: "Transactions",
     icon: "exchange",
     component: Transactions,
-    requires_superuser: false,
-  },
-  {
-    path: "/movements/:accountId?",
-    link: "/movements",
-    label: "Movements",
-    icon: "arrows alternate horizontal",
-    component: Movements,
     requires_superuser: false,
   },
   {

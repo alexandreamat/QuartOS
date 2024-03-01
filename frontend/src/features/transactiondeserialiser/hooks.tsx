@@ -16,7 +16,7 @@
 import { api } from "app/services/api";
 
 export function useTransactionDeserialiserOptions() {
-  const query = api.endpoints.readManyTransactionDeserialisersGet.useQuery();
+  const query = api.endpoints.readManyTransactiondeserialisersGet.useQuery();
 
   const options = query.data?.map((deserialiser) => {
     return {

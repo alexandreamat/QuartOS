@@ -41,6 +41,7 @@ app = FastAPI(
     openapi_url="/openapi.json",
     root_path_in_servers=True,
     root_path="/api",
+    swagger_ui_parameters={"docExpansion": None, "persistAuthorization": True},
 )
 app.include_router(router)
 

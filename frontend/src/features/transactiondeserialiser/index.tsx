@@ -31,7 +31,7 @@ function TransactionDeserialiser(props: {
   onOpenEditForm: (x: TransactionDeserialiserApiOut) => void;
 }) {
   const [deleteTransactionDeserialiser, deleteTransactionDeserialiserResult] =
-    api.endpoints.deleteTransactionDeserialisersIdDelete.useMutation();
+    api.endpoints.deleteTransactiondeserialisersIdDelete.useMutation();
 
   const handleDelete = async (
     transactionDeserialiser: TransactionDeserialiserApiOut,
@@ -90,7 +90,7 @@ export default function TransactionDeserialisers() {
   const [selectedTransactionDeserialiser, setSelectedTransactionDeserialiser] =
     useState<TransactionDeserialiserApiOut | undefined>(undefined);
 
-  const query = api.endpoints.readManyTransactionDeserialisersGet.useQuery();
+  const query = api.endpoints.readManyTransactiondeserialisersGet.useQuery();
 
   function handleOpenEditForm(
     transactionDeserialiser: TransactionDeserialiserApiOut,
@@ -129,9 +129,9 @@ export default function TransactionDeserialisers() {
         </Menu.Item>
       </Menu>
       <FlexColumn.Auto>
-        {deserialisers.map((transactionDeserialiser) => (
+        {deserialisers.map((transactiondeserialiser) => (
           <TransactionDeserialiser
-            transactionDeserialiser={transactionDeserialiser}
+            transactionDeserialiser={transactiondeserialiser}
             onOpenEditForm={handleOpenEditForm}
           />
         ))}

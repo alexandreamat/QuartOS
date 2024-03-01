@@ -13,45 +13,48 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date
 from decimal import Decimal
+import logging
 from typing import Iterable
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from app.crud.consolidatedtransaction import CRUDConsolidatedTransaction
 
+from app.crud.transactiongroup import CRUDTransactionGroup
+from app.crud.transaction import CRUDTransaction
 from app.database.deps import DBSession
-from app.features.transaction import TransactionApiOut
-from app.features.user import CurrentUser, CRUDUser
+from app.deps.user import CurrentUser
+from app.schemas.transactiongroup import TransactionGroupApiIn, TransactionGroupApiOut
+from app.schemas.transaction import TransactionApiOut, TransactionQueryArg
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.get("/")
 def read_many(
-    db: DBSession,
-    me: CurrentUser,
-    account_id: int | None = None,
-    page: int = 0,
-    per_page: int = 0,
-    timestamp_ge: date | None = None,
-    timestamp_le: date | None = None,
-    search: str | None = None,
-    is_descending: bool = True,
-    amount_ge: Decimal | None = None,
-    amount_le: Decimal | None = None,
-    is_amount_abs: bool = False,
-) -> Iterable[TransactionApiOut]:
-    return CRUDUser.read_transactions(
+    db: DBSession, me: CurrentUser, arg: TransactionQueryArg = Depends()
+) -> Iterable[TransactionApiOut | TransactionGroupApiOut]:
+    return CRUDConsolidatedTransaction.read_many(
         db,
-        me.id,
-        account_id=account_id,
-        page=page,
-        per_page=per_page,
-        search=search,
-        timestamp_ge=timestamp_ge,
-        timestamp_le=timestamp_le,
-        is_descending=is_descending,
-        amount_ge=amount_ge,
-        amount_le=amount_le,
-        is_amount_abs=is_amount_abs,
+        user_id=me.id,
+        **arg.model_dump(),
     )
+
+
+@router.post("/")
+def consolidate(
+    db: DBSession, me: CurrentUser, transaction_ids: list[int]
+) -> TransactionGroupApiOut:
+    max_amount = Decimal("0")
+    for transaction_id in transaction_ids:
+        transaction_out = CRUDTransaction.read(db, transaction_id, user_id=me.id)
+        amount = abs(transaction_out.amount)
+        if amount > max_amount:
+            max_amount = amount
+            name = transaction_out.name
+    transaction_group_in = TransactionGroupApiIn(name=name)
+    transaction_group_out = CRUDTransactionGroup.create(
+        db, transaction_group_in, transaction_ids=transaction_ids
+    )
+    return TransactionGroupApiOut.model_validate(transaction_group_out)

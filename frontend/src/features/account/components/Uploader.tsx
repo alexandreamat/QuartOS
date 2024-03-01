@@ -15,7 +15,7 @@
 
 import {
   AccountApiOut,
-  BodyPreviewUsersMeAccountsPreviewPost,
+  BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost,
   api,
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
@@ -44,13 +44,13 @@ export default function Uploader(props: {
 
   const lastTransactionQuery =
     api.endpoints.readManyUsersMeTransactionsGet.useQuery({
-      accountId: props.account.id,
+      accountIdEq: props.account.id,
       perPage: 1,
       page: 0,
     });
 
   const [upload, uploadResult] =
-    api.endpoints.previewUsersMeAccountsPreviewPost.useMutation();
+    api.endpoints.previewUsersMeAccountsAccountIdTransactionsPreviewPost.useMutation();
 
   const transactionsIn = uploadResult.data || [];
 
@@ -82,8 +82,8 @@ export default function Uploader(props: {
     try {
       await upload({
         accountId: props.account.id,
-        bodyPreviewUsersMeAccountsPreviewPost:
-          formData as unknown as BodyPreviewUsersMeAccountsPreviewPost,
+        bodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost:
+          formData as unknown as BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost,
       }).unwrap();
     } catch (error) {
       logMutationError(error, uploadResult);
@@ -106,8 +106,8 @@ export default function Uploader(props: {
     });
   }, [transactionsIn, lastTransaction]);
 
-  const [createMovements, createMovementsResult] =
-    api.endpoints.createManyUsersMeAccountsAccountIdMovementsPost.useMutation();
+  const [createTransactions, createTransactionsResult] =
+    api.endpoints.createManyUsersMeAccountsAccountIdTransactionsBatchPost.useMutation();
 
   async function handleCreateTransactions() {
     if (!transactionsIn) return;
@@ -116,15 +116,12 @@ export default function Uploader(props: {
       checkboxes.checked.has(i),
     );
     try {
-      await createMovements({
+      await createTransactions({
         accountId: props.account.id,
-        bodyCreateManyUsersMeAccountsAccountIdMovementsPost: {
-          transactions,
-          transaction_ids: [],
-        },
+        body: transactions,
       }).unwrap();
     } catch (error) {
-      logMutationError(error, createMovementsResult);
+      logMutationError(error, createTransactionsResult);
       return;
     }
     handleClose();
@@ -164,18 +161,18 @@ export default function Uploader(props: {
               <Loader active />
             </Dimmer>
           )}
-          {createMovementsResult.isLoading && (
+          {createTransactionsResult.isLoading && (
             <Dimmer active>
               <Loader active />
             </Dimmer>
           )}
           <QueryErrorMessage query={uploadResult} />
-          <QueryErrorMessage query={createMovementsResult} />
+          <QueryErrorMessage query={createTransactionsResult} />
           <FlexColumn.Auto>
             {transactionsIn && (
               <Card.Group style={{ margin: 0 }}>
                 {transactionsIn.map((t, i) => (
-                  <TransactionCard
+                  <TransactionCard.Preview
                     key={i}
                     transaction={t}
                     accountId={props.account.id}
@@ -183,7 +180,6 @@ export default function Uploader(props: {
                     onCheckedChange={(x) => {
                       checkboxes.onChange(i, x);
                     }}
-                    preview
                   />
                 ))}
               </Card.Group>

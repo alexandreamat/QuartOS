@@ -20,7 +20,7 @@ from decimal import Decimal
 import requests
 from fastapi import APIRouter, HTTPException, status
 
-from app.features.exchangerate import get_exchange_rate
+from app.utils.exchangerate import get_exchange_rate
 
 router = APIRouter()
 
