@@ -12,25 +12,21 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from collections import defaultdict
 from datetime import date, datetime
 from decimal import Decimal
 import logging
-from numbers import Number
 import re
 import types
 from typing import (
     Any,
+    Iterable,
     Literal,
     Never,
-    Optional,
     Type,
     TypeVar,
     Annotated,
-    Union,
     get_origin,
 )
-from annotated_types import SupportsLt
 
 import pycountry
 from pydantic import AfterValidator, BaseModel, ConfigDict, create_model
@@ -49,20 +45,14 @@ class QueryArgMeta(type(BaseModel)):
         kwargs["page"] = (int, 0)
 
         schema: BaseModel = dct["__schema__"]
+        kwargs["order_by"] = cls.assign_order_by(schema)
+
         for name, info in schema.model_fields.items():
             type_ = info.annotation
-            if not type_:
-                continue
 
-            if get_origin(type_) == Literal:
+            is_valid, type_ = cls.process_optional(type_)
+            if not is_valid:
                 continue
-
-            # Process Optional[T] or T | None
-            if issubclass(info.annotation.__class__, types.UnionType):
-                if len(type_.__args__) == 2 and type_.__args__[1] == type(None):
-                    type_ = type_.__args__[0]
-                else:
-                    continue
 
             # Assign possible operations
             if type_ in (int, float, Decimal, datetime, date):
@@ -72,26 +62,43 @@ class QueryArgMeta(type(BaseModel)):
             else:
                 continue
 
-            if type_ in (int, float, Decimal, datetime, date):
-                try:
-                    kwargs["order_by"][0].__args__ += (f"{name}__asc", f"{name}__desc")
-                except KeyError:
-                    kwargs["order_by"] = (
-                        Literal[f"{name}__asc", f"{name}__desc"],
-                        None,
-                    )
-
             for op in ops:
                 if hasattr(info, f"__{op}__"):
                     kwargs[f"{name}__{op}"] = (type_ | None, None)
                     if hasattr(info, f"__abs__"):
                         kwargs[f"{name}__{op}__abs"] = (type_ | None, None)
 
-        annotations: dict[str, Type[Any]] = dct.get("__annotations__", {})
-        for name, type_ in annotations.items():
-            kwargs[name] = (type_, dct.get(name))
+        for name, type_, default in cls.process_annotations(**dct):
+            kwargs[name] = (type_, default)
 
         return create_model(name, **kwargs)
+
+    @staticmethod
+    def process_optional(t: Any) -> tuple[bool, type | None]:
+        if not t:
+            return False, None
+        if issubclass(t.__class__, types.UnionType):
+            if len(t.__args__) == 2 and t.__args__[1] == type(None):
+                return True, t.__args__[0]
+            else:
+                return False, None
+        return True, t
+
+    @staticmethod
+    def process_annotations(**dct: Any) -> Iterable[tuple[str, type, Any]]:
+        annotations: dict[str, Type[Any]] = dct.get("__annotations__", {})
+        for name, type_ in annotations.items():
+            yield name, type_, dct.get(name)
+
+    @staticmethod
+    def assign_order_by(schema: BaseModel) -> tuple[Any, Any]:
+        args = [
+            f"{name}__{order}"
+            for name, info in schema.model_fields.items()
+            if info.annotation in (int, float, Decimal, datetime, date)
+            for order in [f"asc", f"desc"]
+        ]
+        return Literal[*args], None  # type: ignore
 
 
 class ApiInMixin(BaseModel):
