@@ -34,7 +34,6 @@ from app.models.account import (
     Property,
 )
 from app.models.transactiondeserialiser import TransactionDeserialiser
-from app.models.user import User
 from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.account import (
     AccountApiOut,

@@ -14,11 +14,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from datetime import date
-from decimal import Decimal
 import itertools
 import logging
 from typing import Any, Iterable
+
 import pydantic_core
 from sqlalchemy import (
     ColumnExpressionArgument,
@@ -32,14 +31,14 @@ from sqlalchemy import (
     case,
 )
 from sqlalchemy.orm import Session
+
 from app.models.account import Account, NonInstitutionalAccount
 from app.models.common import CalculatedColumnsMeta
-
-from app.models.transactiongroup import TransactionGroup
 from app.models.transaction import Transaction
+from app.models.transactiongroup import TransactionGroup
 from app.models.userinstitutionlink import UserInstitutionLink
-from app.schemas.transactiongroup import TransactionGroupApiOut
 from app.schemas.transaction import TransactionApiOut
+from app.schemas.transactiongroup import TransactionGroupApiOut
 from app.utils.common import get_search_expressions
 
 logger = logging.getLogger(__name__)

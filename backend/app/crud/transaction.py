@@ -27,18 +27,18 @@ from sqlalchemy.orm import Session
 from app.crud.common import CRUDBase, CRUDSyncedBase
 from app.exceptions.common import ObjectNotFoundError
 from app.models.account import Account, NonInstitutionalAccount
-from app.models.transactiongroup import TransactionGroup
 from app.models.transaction import Transaction
+from app.models.transactiongroup import TransactionGroup
 from app.models.user import User
 from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.file import FileApiOut
-from app.schemas.transactiongroup import DetailedPLStatementApiOut, PLStatement
 from app.schemas.transaction import (
     TransactionApiOut,
     TransactionApiIn,
     TransactionPlaidIn,
     TransactionPlaidOut,
 )
+from app.schemas.transactiongroup import DetailedPLStatementApiOut, PLStatement
 
 logger = logging.getLogger(__name__)
 

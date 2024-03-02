@@ -16,7 +16,7 @@
 import logging
 from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, asc, desc
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -27,7 +27,6 @@ from app.models.common import SyncableBase
 from app.models.file import File
 
 if TYPE_CHECKING:
-    from app.models.transactiongroup import TransactionGroup
     from app.models.account import Account
 
 logger = logging.getLogger(__name__)

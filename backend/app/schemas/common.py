@@ -12,11 +12,11 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from datetime import date, datetime
-from decimal import Decimal
 import logging
 import re
 import types
+from datetime import date, datetime
+from decimal import Decimal
 from typing import (
     Any,
     Iterable,
@@ -25,7 +25,6 @@ from typing import (
     Type,
     TypeVar,
     Annotated,
-    get_origin,
 )
 
 import pycountry

@@ -13,19 +13,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from decimal import Decimal
 import logging
+from decimal import Decimal
 from typing import Iterable
 
 from fastapi import APIRouter, Depends
-from app.crud.consolidatedtransaction import CRUDConsolidatedTransaction
 
-from app.crud.transactiongroup import CRUDTransactionGroup
+from app.crud.consolidatedtransaction import CRUDConsolidatedTransaction
 from app.crud.transaction import CRUDTransaction
+from app.crud.transactiongroup import CRUDTransactionGroup
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
-from app.schemas.transactiongroup import TransactionGroupApiIn, TransactionGroupApiOut
 from app.schemas.transaction import TransactionApiOut, TransactionQueryArg
+from app.schemas.transactiongroup import TransactionGroupApiIn, TransactionGroupApiOut
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

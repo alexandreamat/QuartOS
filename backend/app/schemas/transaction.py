@@ -18,8 +18,8 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
-from app.schemas.account import AnnotatedLiteral
 
+from app.schemas.account import AnnotatedLiteral
 from app.schemas.common import (
     PlaidInMixin,
     PlaidOutMixin,

@@ -21,10 +21,10 @@ from app.models.category import Category
 from app.models.common import Base
 from app.models.institution import Institution
 from app.models.merchant import Merchant
-from app.models.transactiongroup import TransactionGroup
 from app.models.replacementpattern import ReplacementPattern
 from app.models.transaction import Transaction
 from app.models.transactiondeserialiser import TransactionDeserialiser
+from app.models.transactiongroup import TransactionGroup
 from app.models.user import User
 from app.models.userinstitutionlink import UserInstitutionLink
 
