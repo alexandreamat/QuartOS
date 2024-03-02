@@ -81,7 +81,7 @@ export default [
     requires_superuser: false,
     routes: [
       {
-        path: "/:startDate",
+        path: "/:timestampGe/:timestampLt",
         label: "P&L Statement Detail",
         icon: "file alternate",
         component: PLStatement,

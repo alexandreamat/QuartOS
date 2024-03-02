@@ -39,7 +39,7 @@ Chart.register(Colors, ArcElement, Tooltip, Legend);
 
 export default function PLStatement() {
   const navigate = useNavigate();
-  const { startDate } = useParams();
+  const { timestampGe, timestampLt } = useParams();
 
   const [showIncome, setShowIncome] = useState(true);
   const [transactionGroup, setTransactionGroup] =
@@ -47,8 +47,8 @@ export default function PLStatement() {
   const [selectedCategoryIdx, setSelectedCategoryIdx] = useState<number>();
 
   const detailedStatementQuery =
-    api.endpoints.getDetailedPlStatementUsersMeAnalyticsDetailedMonthGet.useQuery(
-      startDate ? startDate : skipToken,
+    api.endpoints.getDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLtGet.useQuery(
+      timestampGe && timestampLt ? { timestampGe, timestampLt } : skipToken,
     );
 
   const categoriesQuery = api.endpoints.readManyCategoriesGet.useQuery();
