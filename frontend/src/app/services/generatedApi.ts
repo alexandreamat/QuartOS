@@ -564,15 +564,16 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["users", "accounts", "transactions", "files"],
         }),
-      getDetailedPlStatementUsersMeAnalyticsDetailedMonthGet: build.query<
-        GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiResponse,
-        GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/users/me/analytics/detailed/${queryArg}`,
+      getDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLtGet:
+        build.query<
+          GetDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLtGetApiResponse,
+          GetDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLtGetApiArg
+        >({
+          query: (queryArg) => ({
+            url: `/users/me/analytics/detailed/${queryArg.timestampGe}/${queryArg.timestampLt}`,
+          }),
+          providesTags: ["users", "analytics"],
         }),
-        providesTags: ["users", "analytics"],
-      }),
       getManyPlStatementsUsersMeAnalyticsGet: build.query<
         GetManyPlStatementsUsersMeAnalyticsGetApiResponse,
         GetManyPlStatementsUsersMeAnalyticsGetApiArg
@@ -1183,12 +1184,15 @@ export type DeleteUsersMeAccountsAccountIdTransactionsTransactionIdFilesFileIdDe
     transactionId: number;
     fileId: number;
   };
-export type GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiResponse =
+export type GetDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLtGetApiResponse =
   /** status 200 Successful Response */ DetailedPlStatementApiOut;
-export type GetDetailedPlStatementUsersMeAnalyticsDetailedMonthGetApiArg =
-  string;
+export type GetDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLtGetApiArg =
+  {
+    timestampGe: string;
+    timestampLt: string;
+  };
 export type GetManyPlStatementsUsersMeAnalyticsGetApiResponse =
-  /** status 200 Successful Response */ PlStatement[];
+  /** status 200 Successful Response */ PlStatementApiOut[];
 export type GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
   page?: number;
   perPage?: number;
@@ -1687,8 +1691,8 @@ export type BodyCreateUsersMeAccountsAccountIdTransactionsTransactionIdFilesPost
     file: Blob;
   };
 export type DetailedPlStatementApiOut = {
-  start_date: string;
-  end_date: string;
+  timestamp__ge: string;
+  timestamp__lt: string;
   income: string;
   expenses: string;
   income_by_category: {
@@ -1698,9 +1702,9 @@ export type DetailedPlStatementApiOut = {
     [key: string]: string;
   };
 };
-export type PlStatement = {
-  start_date: string;
-  end_date: string;
+export type PlStatementApiOut = {
+  timestamp__ge: string;
+  timestamp__lt: string;
   income: string;
   expenses: string;
 };

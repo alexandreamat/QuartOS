@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { PlStatement, api } from "app/services/api";
+import { PlStatementApiOut, api } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { InfiniteScroll } from "components/InfiniteScroll";
 import { useRef } from "react";
@@ -22,13 +22,15 @@ import { Card } from "semantic-ui-react";
 import { PaginatedItemProps } from "types";
 import PLCard from "./components/PLCard";
 
-function Row(props: { plStatement?: PlStatement; loading?: boolean }) {
+function Row(props: { plStatement?: PlStatementApiOut; loading?: boolean }) {
   const navigate = useNavigate();
 
   function handleGoToDetail() {
     if (!props.plStatement) return;
 
-    navigate(`/pl-statements/${props.plStatement.start_date}`);
+    navigate(
+      `/pl-statements/${props.plStatement.timestamp__ge}/${props.plStatement.timestamp__lt}`,
+    );
   }
   return (
     <PLCard
@@ -45,8 +47,8 @@ export default function IncomeStatement() {
   const CardRenderer = ({
     response: pl,
     loading,
-  }: PaginatedItemProps<PlStatement>) => (
-    <Row key={pl?.start_date} plStatement={pl} loading={loading} />
+  }: PaginatedItemProps<PlStatementApiOut>) => (
+    <Row key={pl?.timestamp__ge} plStatement={pl} loading={loading} />
   );
 
   return (

@@ -25,7 +25,7 @@ from sqlalchemy import ColumnElement, Select, Subquery, asc, desc, func, select,
 from sqlalchemy.orm import Session
 
 from app.crud.consolidatedtransaction import CRUDConsolidatedTransaction
-from app.schemas.transactiongroup import DetailedPLStatementApiOut, PLStatement
+from app.schemas.transactiongroup import DetailedPLStatementApiOut, PLStatementApiOut
 
 logger = logging.getLogger(__name__)
 
@@ -131,29 +131,20 @@ class CRUDPLStatement:
         return pl_statements_query
 
     @classmethod
-    def select_detailed_pl_statement(cls, user_id: int, year: int, month: int) -> Any:
+    def select_detailed_pl_statement(cls, **kwargs: Any) -> Any:
         transactions_query = CRUDConsolidatedTransaction.select(
-            user_id=user_id, consolidated=True
+            consolidated=True, **kwargs
         )
         transactions_subquery = TransactionsSubquery(transactions_query.subquery())
 
         detailed_pl_statement_query = (
             select(
-                transactions_subquery.year,
-                transactions_subquery.month,
                 transactions_subquery.sign,
                 transactions_subquery.category_id,
                 transactions_subquery.amount_default_currency,
             )
-            .group_by("year", "month", "sign", "category_id")
+            .group_by("sign", "category_id")
             .order_by(asc("category_id"), asc("sign"))
-        )
-
-        detailed_pl_statement_query = detailed_pl_statement_query.having(
-            transactions_subquery.year == year
-        )
-        detailed_pl_statement_query = detailed_pl_statement_query.having(
-            transactions_subquery.month == month
         )
 
         return detailed_pl_statement_query
@@ -161,29 +152,26 @@ class CRUDPLStatement:
     @classmethod
     def get_many_pl_statements(
         cls, db: Session, **kwargs: Any
-    ) -> Iterable[PLStatement]:
+    ) -> Iterable[PLStatementApiOut]:
         statement = cls.select_pl_statements(**kwargs)
         for result in db.execute(statement):
             year = int(result.year)
             month = int(result.month)
             expenses = result.expenses
             income = result.income
-            yield PLStatement(
-                start_date=date(year, month, 1),
-                end_date=date(year, month, 1) + relativedelta(months=1),
+            yield PLStatementApiOut(
+                timestamp__ge=date(year, month, 1),
+                timestamp__lt=date(year, month, 1) + relativedelta(months=1),
                 expenses=expenses,
                 income=income,
             )
 
     @classmethod
     def get_detailed_pl_statement(
-        cls,
-        db: Session,
-        user_id: int,
-        start_date: date,
+        cls, db: Session, timestamp__ge: date, timestamp__lt: date, **kwargs: Any
     ) -> DetailedPLStatementApiOut:
         statement = cls.select_detailed_pl_statement(
-            user_id, start_date.year, start_date.month
+            timestamp__ge=timestamp__ge, timestamp__lt=timestamp__lt, **kwargs
         )
         by_category: dict[int, dict[int, Decimal]] = defaultdict(
             lambda: defaultdict(Decimal)
@@ -197,9 +185,8 @@ class CRUDPLStatement:
             totals[transaction.sign] += transaction.amount_default_currency
 
         return DetailedPLStatementApiOut(
-            start_date=date(start_date.year, start_date.month, 1),
-            end_date=date(start_date.year, start_date.month, 1)
-            + relativedelta(months=1),
+            timestamp__ge=timestamp__ge,
+            timestamp__lt=timestamp__lt,
             income_by_category=by_category[1],
             expenses_by_category=by_category[-1],
             income=totals[1],
