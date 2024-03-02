@@ -18,7 +18,7 @@ import re
 from collections import defaultdict
 from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from sqlalchemy import ColumnElement, ForeignKey, distinct, func, case
 from sqlalchemy.ext.hybrid import hybrid_property

@@ -19,13 +19,11 @@ from sqlalchemy import Select, or_
 from sqlalchemy.orm import Session
 
 from app.crud.common import CRUDBase
-from app.crud.transaction import CRUDTransaction
 from app.models.account import Account, NonInstitutionalAccount
-from app.models.transactiongroup import TransactionGroup
 from app.models.transaction import Transaction
+from app.models.transactiongroup import TransactionGroup
 from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.transactiongroup import TransactionGroupApiIn, TransactionGroupApiOut
-from app.schemas.transaction import TransactionApiIn
 
 logger = logging.getLogger(__name__)
 
