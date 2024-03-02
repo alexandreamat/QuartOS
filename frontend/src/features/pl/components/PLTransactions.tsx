@@ -13,26 +13,35 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { TransactionGroupApiOut, PlStatement, api } from "app/services/api";
+import {
+  TransactionGroupApiOut,
+  PlStatementApiOut,
+  api,
+} from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
 import { Card, Loader } from "semantic-ui-react";
 
 export default function PLTransactions(props: {
-  plStatement: PlStatement;
+  plStatement: PlStatementApiOut;
   showIncome: boolean;
   onOpenEditForm: (x: TransactionGroupApiOut) => void;
   categoryId?: number;
 }) {
+  const amountKey = `amountDefaultCurrency${
+    props.showIncome ? "Gt" : "Lt"
+  }` as const;
+  const orderByVal = `amount_default_currency__${
+    props.showIncome ? "desc" : "asc"
+  }` as const;
+
   const transactionsQuery =
     api.endpoints.readManyUsersMeTransactionsGet.useQuery({
-      timestampGe: props.plStatement.start_date,
-      timestampLt: props.plStatement.end_date,
+      timestampGe: props.plStatement.timestamp__ge,
+      timestampLt: props.plStatement.timestamp__lt,
       categoryIdEq: props.categoryId,
-      [`amountDefaultCurrency${props.showIncome ? "Gt" : "Lt"}` as const]: 0,
-      orderBy: `amount_default_currency__${
-        props.showIncome ? "desc" : "asc"
-      }` as const,
+      [amountKey]: 0,
+      orderBy: orderByVal,
       consolidated: true,
     });
 

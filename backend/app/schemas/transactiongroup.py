@@ -14,23 +14,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from datetime import date
 from decimal import Decimal
-from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel
-from app.schemas.account import AnnotatedLiteral
 
+from app.schemas.account import AnnotatedLiteral
 from app.schemas.common import ApiInMixin, ApiOutMixin
 
 
-class PLStatement(BaseModel):
-    start_date: date
-    end_date: date
+class PLStatementApiOut(BaseModel):
+    timestamp__ge: date
+    timestamp__lt: date
     income: Decimal
     expenses: Decimal
 
 
-class DetailedPLStatementApiOut(PLStatement):
+class DetailedPLStatementApiOut(PLStatementApiOut):
     income_by_category: dict[int, Decimal]
     expenses_by_category: dict[int, Decimal]
 
@@ -38,11 +37,6 @@ class DetailedPLStatementApiOut(PLStatement):
 class __TransactionGroupBase(BaseModel):
     name: str
     category_id: int | None = None
-
-
-class TransactionGroupField(str, Enum):
-    TIMESTAMP = "timestamp"
-    AMOUNT = "amount"
 
 
 class TransactionGroupApiOut(__TransactionGroupBase, ApiOutMixin):

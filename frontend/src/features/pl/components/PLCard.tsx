@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { PlStatement, api } from "app/services/api";
+import { PlStatementApiOut, api } from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
@@ -22,22 +22,22 @@ import { Card, Header, Label, Placeholder, Step } from "semantic-ui-react";
 import { stringToDate } from "utils/time";
 
 export default function PLCard(props: {
-  detailedPlStatement?: PlStatement;
+  detailedPlStatement?: PlStatementApiOut;
   showIncome?: boolean;
   onGoToDetail?: () => void;
   onClickIncome?: () => void;
   onClickExpenses?: () => void;
   loading?: boolean;
 }) {
-  const startDate =
+  const timestampGe =
     props.detailedPlStatement &&
-    stringToDate(props.detailedPlStatement.start_date);
-  const endDate =
+    stringToDate(props.detailedPlStatement.timestamp__ge);
+  const timestampLt =
     props.detailedPlStatement &&
-    stringToDate(props.detailedPlStatement.end_date);
+    stringToDate(props.detailedPlStatement.timestamp__lt);
   const today = new Date();
   const isOngoing =
-    startDate && endDate && startDate <= today && today <= endDate;
+    timestampGe && timestampLt && timestampGe <= today && today < timestampLt;
   const me = api.endpoints.readMeUsersMeGet.useQuery();
 
   return (
@@ -50,7 +50,7 @@ export default function PLCard(props: {
                 <Placeholder.Line />
               </Placeholder>
             ) : (
-              startDate && format(startDate, "MMMM yyyy")
+              timestampGe && format(timestampGe, "MMMM yyyy")
             )}
             {props.onGoToDetail && (
               <ActionButton
@@ -68,10 +68,10 @@ export default function PLCard(props: {
               <Placeholder.Line />
             </Placeholder>
           ) : (
-            startDate &&
-            endDate &&
-            `From ${startDate.toLocaleDateString()} to ${addDays(
-              endDate,
+            timestampGe &&
+            timestampLt &&
+            `From ${timestampGe.toLocaleDateString()} to ${addDays(
+              timestampLt,
               -1,
             ).toLocaleDateString()}`
           )}
