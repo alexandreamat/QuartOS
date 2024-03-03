@@ -51,19 +51,19 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["admin"],
         }),
-      readTransactionAdminTransactionsTransactionsIdGet: build.query<
-        ReadTransactionAdminTransactionsTransactionsIdGetApiResponse,
-        ReadTransactionAdminTransactionsTransactionsIdGetApiArg
+      readTransactionAdminTransactionsTransactionIdGet: build.query<
+        ReadTransactionAdminTransactionsTransactionIdGetApiResponse,
+        ReadTransactionAdminTransactionsTransactionIdGetApiArg
       >({
         query: (queryArg) => ({ url: `/admin/transactions/${queryArg}` }),
         providesTags: ["admin"],
       }),
-      updateTransactionAdminTransactionsTransactionsIdPut: build.mutation<
-        UpdateTransactionAdminTransactionsTransactionsIdPutApiResponse,
-        UpdateTransactionAdminTransactionsTransactionsIdPutApiArg
+      updateTransactionAdminTransactionsTransactionIdPut: build.mutation<
+        UpdateTransactionAdminTransactionsTransactionIdPutApiResponse,
+        UpdateTransactionAdminTransactionsTransactionIdPutApiArg
       >({
         query: (queryArg) => ({
-          url: `/admin/transactions/${queryArg.transactionsId}`,
+          url: `/admin/transactions/${queryArg.transactionId}`,
           method: "PUT",
           body: queryArg.transactionPlaidInInput,
         }),
@@ -891,13 +891,13 @@ export type OrphanSingleTransactionsAdminTransactionsOrphanOnlyChildrenPutApiRes
   /** status 200 Successful Response */ any;
 export type OrphanSingleTransactionsAdminTransactionsOrphanOnlyChildrenPutApiArg =
   void;
-export type ReadTransactionAdminTransactionsTransactionsIdGetApiResponse =
+export type ReadTransactionAdminTransactionsTransactionIdGetApiResponse =
   /** status 200 Successful Response */ TransactionPlaidOut;
-export type ReadTransactionAdminTransactionsTransactionsIdGetApiArg = number;
-export type UpdateTransactionAdminTransactionsTransactionsIdPutApiResponse =
+export type ReadTransactionAdminTransactionsTransactionIdGetApiArg = number;
+export type UpdateTransactionAdminTransactionsTransactionIdPutApiResponse =
   /** status 200 Successful Response */ TransactionPlaidOut;
-export type UpdateTransactionAdminTransactionsTransactionsIdPutApiArg = {
-  transactionsId: number;
+export type UpdateTransactionAdminTransactionsTransactionIdPutApiArg = {
+  transactionId: number;
   transactionPlaidInInput: TransactionPlaidIn;
 };
 export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse =

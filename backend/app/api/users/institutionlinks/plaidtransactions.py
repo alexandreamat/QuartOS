@@ -34,7 +34,7 @@ router = APIRouter()
 def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
     institution_link_plaid_out = CRUDSyncableUserInstitutionLink.read(
         db,
-        userinstitutionlink_id,
+        id=userinstitutionlink_id,
         user_id=me.id,
     )
     replacement_pattern_out = CRUDUserInstitutionLink.read_replacement_pattern(

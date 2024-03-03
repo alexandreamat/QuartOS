@@ -19,6 +19,7 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from app.crud.account import CRUDAccount
 from app.crud.transaction import CRUDTransaction
+from app.crud.transactiondeserialiser import CRUDTransactionDeserialiser
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
 from app.exceptions.common import UnknownError
@@ -36,8 +37,9 @@ def preview(
     account_id: int,
     file: Annotated[UploadFile, File(...)],
 ) -> Iterable[TransactionApiIn]:
-    CRUDAccount.read(db, account_id, user_id=me.id)
-    deserialiser = CRUDAccount.read_transaction_deserialiser(db, account_id)
+    deserialiser = CRUDTransactionDeserialiser.read(
+        db, user_id=me.id, account_id=account_id
+    )
     try:
         return get_transactions_from_csv(deserialiser, file.file, account_id)
     except Exception as e:
@@ -51,7 +53,7 @@ def create_many(
     account_id: int,
     transactions: list[TransactionApiIn],
 ) -> Iterable[TransactionApiOut]:
-    CRUDAccount.read(db, account_id, user_id=me.id)
+    CRUDAccount.read(db, id=account_id, user_id=me.id)
     yield from CRUDAccount.create_many_transactions(
         db,
         account_id,
@@ -68,7 +70,7 @@ def create(
     transactions: TransactionApiIn,
     transaction_group_id: int | None = None,
 ) -> TransactionApiOut:
-    CRUDAccount.read(db, account_id, user_id=me.id)
+    CRUDAccount.read(db, id=account_id, user_id=me.id)
     return CRUDAccount.create_transaction(
         db,
         account_id,
@@ -86,7 +88,7 @@ def update(
     transaction_id: int,
     transaction_in: TransactionApiIn,
 ) -> TransactionApiOut:
-    CRUDTransaction.read(db, transaction_id, user_id=me.id, account_id=account_id)
+    CRUDTransaction.read(db, id=transaction_id, user_id=me.id, account_id=account_id)
     return CRUDAccount.update_transaction(
         db,
         account_id,
@@ -103,7 +105,7 @@ def delete(
     account_id: int,
     transaction_id: int,
 ) -> int:
-    CRUDTransaction.read(db, transaction_id, user_id=me.id, account_id=account_id)
+    CRUDTransaction.read(db, id=transaction_id, user_id=me.id, account_id=account_id)
     if CRUDTransaction.is_synced(db, transaction_id):
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 

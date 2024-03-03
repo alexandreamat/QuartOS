@@ -48,7 +48,7 @@ class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
         transaction_group_id: int,
         transaction_group_in: TransactionGroupApiIn,
     ) -> TransactionGroupApiOut:
-        user_out = cls.read(db, user_id)
+        user_out = cls.read(db, id=user_id)
         transaction_group = TransactionGroup.update(
             db, transaction_group_id, **transaction_group_in.model_dump()
         )

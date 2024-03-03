@@ -28,7 +28,7 @@ router = APIRouter()
 
 @router.get("/{category_id}")
 def read(db: DBSession, me: CurrentUser, category_id: int) -> CategoryApiOut:
-    return CRUDCategory.read(db, category_id)
+    return CRUDCategory.read(db, id=category_id)
 
 
 @router.get("/")

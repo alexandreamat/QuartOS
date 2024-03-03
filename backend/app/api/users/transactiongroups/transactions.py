@@ -43,9 +43,9 @@ def add(
     transaction_group_id: int,
     transaction_ids: list[int],
 ) -> TransactionGroupApiOut:
-    CRUDTransactionGroup.read(db, transaction_group_id, user_id=me.id)
+    CRUDTransactionGroup.read(db, id=transaction_group_id, user_id=me.id)
     for transaction_id in transaction_ids:
-        CRUDTransaction.read(db, transaction_id, user_id=me.id)
+        CRUDTransaction.read(db, id=transaction_id, user_id=me.id)
     return CRUDTransactionGroup.add_transactions(
         db, transaction_group_id, transaction_ids
     )
@@ -56,7 +56,7 @@ def remove(
     db: DBSession, me: CurrentUser, transaction_group_id: int, transaction_id: int
 ) -> TransactionGroupApiOut | None:
     CRUDTransaction.read(
-        db, transaction_id, user_id=me.id, transaction_group_id=transaction_group_id
+        db, id=transaction_id, user_id=me.id, transaction_group_id=transaction_group_id
     )
     return CRUDTransactionGroup.remove_transaction(
         db, transaction_group_id, transaction_id

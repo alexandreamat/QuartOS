@@ -42,7 +42,7 @@ def create(
 ) -> AccountApiOut:
     if account_in.type in ["depository", "loan", "brokerage", "investment"]:
         assert userinstitutionlink_id
-        CRUDUserInstitutionLink.read(db, userinstitutionlink_id, user_id=me.id)
+        CRUDUserInstitutionLink.read(db, id=userinstitutionlink_id, user_id=me.id)
     return CRUDAccount.create(
         db, account_in, userinstitutionlink_id=userinstitutionlink_id, user_id=me.id
     )
@@ -50,7 +50,7 @@ def create(
 
 @router.get("/{account_id}")
 def read(db: DBSession, me: CurrentUser, account_id: int) -> AccountApiOut:
-    return CRUDAccount.read(db, account_id, user_id=me.id)
+    return CRUDAccount.read(db, id=account_id, user_id=me.id)
 
 
 @router.put("/{account_id}")
@@ -63,7 +63,7 @@ def update(
 ) -> AccountApiOut:
     if CRUDAccount.is_synced(db, account_id):
         raise SyncedEntity()
-    CRUDAccount.read(db, account_id, user_id=me.id)
+    CRUDAccount.read(db, id=account_id, user_id=me.id)
     return CRUDAccount.update(
         db,
         account_id,
@@ -79,7 +79,7 @@ def delete(
     me: CurrentUser,
     account_id: int,
 ) -> int:
-    account_out = CRUDAccount.read(db, account_id, user_id=me.id)
+    account_out = CRUDAccount.read(db, id=account_id, user_id=me.id)
     if account_out.is_synced:
         raise SyncedEntity()
     return CRUDAccount.delete(db, account_id)

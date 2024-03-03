@@ -38,7 +38,7 @@ async def create(
 ) -> FileApiOut:
     CRUDTransaction.read(
         db,
-        transaction_id,
+        id=transaction_id,
         user_id=me.id,
         account_id=account_id,
     )
@@ -54,7 +54,7 @@ def read_many(
     account_id: int,
     transaction_id: int,
 ) -> Iterable[FileApiOut]:
-    CRUDTransaction.read(db, transaction_id, user_id=me.id, account_id=account_id)
+    CRUDTransaction.read(db, id=transaction_id, user_id=me.id, account_id=account_id)
     return CRUDTransaction.read_files(db, transaction_id)
 
 
@@ -72,8 +72,8 @@ def read(
     transaction_id: int,
     file_id: int,
 ) -> Response:
-    CRUDTransaction.read(db, transaction_id, user_id=me.id, account_id=account_id)
-    file_out = CRUDFile.read(db, file_id)
+    CRUDTransaction.read(db, id=transaction_id, user_id=me.id, account_id=account_id)
+    file_out = CRUDFile.read(db, id=file_id)
     headers = {"Content-Disposition": f"attachment; filename={file_out.name}"}
     mime_type, _ = mimetypes.guess_type(file_out.name)
     if mime_type:
@@ -90,5 +90,5 @@ def delete(
     transaction_id: int,
     file_id: int,
 ) -> int:
-    CRUDTransaction.read(db, transaction_id, user_id=me.id, account_id=account_id)
+    CRUDTransaction.read(db, id=transaction_id, user_id=me.id, account_id=account_id)
     return CRUDFile.delete(db, file_id)

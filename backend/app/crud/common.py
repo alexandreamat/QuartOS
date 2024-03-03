@@ -15,12 +15,12 @@
 
 import logging
 from typing import Generic, Type, TypeVar, Iterable, Any
+from fastapi import HTTPException, status
 
 from sqlalchemy import Select, select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from app.exceptions.common import ObjectNotFoundError
 from app.models.common import Base, SyncableBase
 from app.schemas.common import PlaidOutMixin, PlaidInMixin, ApiOutMixin, ApiInMixin
 
@@ -66,12 +66,15 @@ class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
         return obj_out
 
     @classmethod
-    def read(cls, db: Session, id: int, **kwargs: Any) -> OutModelType:
-        statement = cls.select(id=id, **kwargs)
+    def read(cls, db: Session, **kwargs: Any) -> OutModelType:
+        statement = cls.select(**kwargs)
         try:
             obj = db.scalars(statement).one()
         except NoResultFound:
-            raise ObjectNotFoundError(str(cls.db_model.__tablename__), id)
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail=f"{cls.db_model.__tablename__} not found for args {kwargs}",
+            )
         return cls.model_validate(obj)
 
     @classmethod

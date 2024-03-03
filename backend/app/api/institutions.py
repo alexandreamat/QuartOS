@@ -56,12 +56,12 @@ def read_many(db: DBSession) -> Iterable[InstitutionApiOut]:
 
 @router.put("/{institution_id}/sync")
 def sync(db: DBSession, me: CurrentSuperuser, institution_id: int) -> InstitutionApiOut:
-    institution_db = CRUDInstitution.read(db, id=institution_id)
+    institution_db = CRUDSyncableInstitution.read(db, id=institution_id)
     if not institution_db.plaid_id:
         raise HTTPException(status.HTTP_405_METHOD_NOT_ALLOWED)
     institution_in = fetch_institution(institution_db.plaid_id)
     CRUDSyncableInstitution.update(db, institution_id, institution_in)
-    institution_out = CRUDInstitution.read(db, institution_id)
+    institution_out = CRUDInstitution.read(db, id=institution_id)
     return institution_out
 
 

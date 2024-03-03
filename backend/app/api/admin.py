@@ -61,21 +61,21 @@ def orphan_single_transactions(db: DBSession, me: CurrentSuperuser) -> None:
     CRUDTransaction.orphan_only_children(db)
 
 
-@router.get("/transactions/{transactions_id}")
+@router.get("/transactions/{transaction_id}")
 def read_transaction(
-    db: DBSession, me: CurrentSuperuser, transactions_id: int
+    db: DBSession, me: CurrentSuperuser, transaction_id: int
 ) -> TransactionPlaidOut:
-    return CRUDSyncableTransaction.read(db, transactions_id)
+    return CRUDSyncableTransaction.read(db, id=transaction_id)
 
 
-@router.put("/transactions/{transactions_id}")
+@router.put("/transactions/{transaction_id}")
 def update_transaction(
     db: DBSession,
     me: CurrentSuperuser,
-    transactions_id: int,
+    transaction_id: int,
     transaction_in: TransactionPlaidIn,
 ) -> TransactionPlaidOut:
-    return CRUDSyncableTransaction.update(db, transactions_id, transaction_in)
+    return CRUDSyncableTransaction.update(db, transaction_id, transaction_in)
 
 
 @router.put("/transactions/update-amounts-default-currency")
@@ -94,10 +94,10 @@ def resync_user_institution_link(
     db: DBSession, me: CurrentSuperuser, userinstitutionlink_id: int
 ) -> UserInstitutionLinkPlaidOut:
     userinstitutionlink_out = CRUDSyncableUserInstitutionLink.read(
-        db, userinstitutionlink_id
+        db, id=userinstitutionlink_id
     )
     institution_out = CRUDSyncableInstitution.read(
-        db, userinstitutionlink_out.institution_id
+        db, id=userinstitutionlink_out.institution_id
     )
     userinstitutionlink_in = fetch_user_institution_link(
         userinstitutionlink_out.access_token
@@ -129,7 +129,7 @@ def resync_transactions(
     dry_run: bool = True,
 ) -> Iterable[TransactionPlaidOut]:
     user_institution_link = CRUDSyncableUserInstitutionLink.read(
-        db, userinstitutionlink_id
+        db, id=userinstitutionlink_id
     )
     replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
         db, userinstitutionlink_id
@@ -174,7 +174,7 @@ def read_many(
     end_date: date,
 ) -> Iterable[TransactionPlaidIn]:
     user_institution_link = CRUDSyncableUserInstitutionLink.read(
-        db, userinstitutionlink_id
+        db, id=userinstitutionlink_id
     )
     replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
         db, userinstitutionlink_id

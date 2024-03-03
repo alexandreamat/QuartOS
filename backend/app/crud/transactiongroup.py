@@ -118,7 +118,7 @@ class CRUDTransactionGroup(
             cls.__add_transaction(db, transaction_group.id, transaction_id)
         TransactionGroup.update(db, transaction_group_id)
         db.refresh(transaction_group)
-        return CRUDTransactionGroup.read(db, transaction_group_id)
+        return CRUDTransactionGroup.read(db, id=transaction_group_id)
 
     @classmethod
     def remove_transaction(
