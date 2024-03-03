@@ -48,7 +48,7 @@ def consolidate(
 ) -> TransactionGroupApiOut:
     max_amount = Decimal("0")
     for transaction_id in transaction_ids:
-        transaction_out = CRUDTransaction.read(db, transaction_id, user_id=me.id)
+        transaction_out = CRUDTransaction.read(db, id=transaction_id, user_id=me.id)
         amount = abs(transaction_out.amount)
         if amount > max_amount:
             max_amount = amount

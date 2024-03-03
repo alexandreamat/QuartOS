@@ -42,11 +42,11 @@ def read_many(db: DBSession, me: CurrentUser) -> Iterable[MerchantApiOut]:
 def update(
     db: DBSession, me: CurrentUser, merchant_id: int, merchant_in: MerchantApiIn
 ) -> MerchantApiOut:
-    CRUDMerchant.read(db, merchant_id, user_id=me.id)
+    CRUDMerchant.read(db, id=merchant_id, user_id=me.id)
     return CRUDMerchant.update(db, merchant_id, merchant_in)
 
 
 @router.delete("/{merchant_id}")
 def delete(db: DBSession, me: CurrentUser, merchant_id: int) -> int:
-    CRUDMerchant.read(db, merchant_id, user_id=me.id)
+    CRUDMerchant.read(db, id=merchant_id, user_id=me.id)
     return CRUDMerchant.delete(db, merchant_id)

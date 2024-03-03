@@ -62,7 +62,7 @@ def read(db: DBSession, me: CurrentSuperuser, user_id: int) -> UserApiOut:
     """
     Get a specific user by id.
     """
-    return CRUDUser.read(db, user_id)
+    return CRUDUser.read(db, id=user_id)
 
 
 @router.put("/{user_id}")

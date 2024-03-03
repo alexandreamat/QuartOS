@@ -47,10 +47,10 @@ def get_link_token(
 ) -> str:
     if userinstitutionlink_id:
         userinstitutionlink_out = CRUDUserInstitutionLink.read(
-            db, userinstitutionlink_id, user_id=me.id
+            db, id=userinstitutionlink_id, user_id=me.id
         )
         userinstitutionlink_plaid_out = CRUDSyncableUserInstitutionLink.read(
-            db, userinstitutionlink_out.id
+            db, id=userinstitutionlink_out.id
         )
         access_token = userinstitutionlink_plaid_out.access_token
     else:
@@ -105,7 +105,7 @@ def create(
 def read(
     db: DBSession, me: CurrentUser, userinstitutionlink_id: int
 ) -> UserInstitutionLinkApiOut:
-    return CRUDUserInstitutionLink.read(db, userinstitutionlink_id, user_id=me.id)
+    return CRUDUserInstitutionLink.read(db, id=userinstitutionlink_id, user_id=me.id)
 
 
 @router.get("/")
@@ -121,7 +121,7 @@ def update(
     user_institution_link_in: UserInstitutionLinkApiIn,
 ) -> UserInstitutionLinkApiOut:
     curr_institution_link = CRUDUserInstitutionLink.read(
-        db, userinstitutionlink_id, user_id=me.id
+        db, id=userinstitutionlink_id, user_id=me.id
     )
     if curr_institution_link.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
@@ -132,7 +132,7 @@ def update(
 
 @router.delete("/{userinstitutionlink_id}")
 def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> int:
-    CRUDUserInstitutionLink.read(db, userinstitutionlink_id, user_id=me.id)
+    CRUDUserInstitutionLink.read(db, id=userinstitutionlink_id, user_id=me.id)
     return CRUDUserInstitutionLink.delete(db, userinstitutionlink_id)
 
 

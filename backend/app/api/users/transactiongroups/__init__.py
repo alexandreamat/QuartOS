@@ -35,7 +35,7 @@ def merge(
     db: DBSession, me: CurrentUser, transaction_group_ids: list[int]
 ) -> TransactionGroupApiOut:
     for transaction_group_id in transaction_group_ids:
-        CRUDTransactionGroup.read(db, transaction_group_id, user_id=me.id)
+        CRUDTransactionGroup.read(db, id=transaction_group_id, user_id=me.id)
     return CRUDTransactionGroup.merge(db, transaction_group_ids)
 
 
@@ -54,7 +54,7 @@ def read(
     me: CurrentUser,
     transaction_group_id: int,
 ) -> TransactionGroupApiOut:
-    return CRUDTransactionGroup.read(db, transaction_group_id, user_id=me.id)
+    return CRUDTransactionGroup.read(db, id=transaction_group_id, user_id=me.id)
 
 
 @router.put("/")
@@ -69,7 +69,7 @@ def update(
     transaction_group_id: int,
     transaction_group_in: TransactionGroupApiIn,
 ) -> TransactionGroupApiOut:
-    CRUDTransactionGroup.read(db, transaction_group_id, user_id=me.id)
+    CRUDTransactionGroup.read(db, id=transaction_group_id, user_id=me.id)
     return CRUDUser.update_transaction_group(
         db, me.id, transaction_group_id, transaction_group_in
     )
@@ -81,7 +81,7 @@ def delete(
     me: CurrentUser,
     transaction_group_id: int,
 ) -> int:
-    CRUDTransactionGroup.read(db, transaction_group_id, user_id=me.id)
+    CRUDTransactionGroup.read(db, id=transaction_group_id, user_id=me.id)
     return CRUDTransactionGroup.delete(db, transaction_group_id)
 
 

@@ -39,7 +39,7 @@ def create(
 
 @router.get("/{id}")
 def read(db: DBSession, id: int) -> ReplacementPatternApiOut:
-    return CRUDReplacementPattern.read(db, id)
+    return CRUDReplacementPattern.read(db, id=id)
 
 
 @router.get("/")

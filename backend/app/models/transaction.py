@@ -28,6 +28,7 @@ from app.models.file import File
 
 if TYPE_CHECKING:
     from app.models.account import Account
+    from app.models.transactiongroup import TransactionGroup
 
 logger = logging.getLogger(__name__)
 

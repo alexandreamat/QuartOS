@@ -160,7 +160,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         default_currency_code: CurrencyCode,
     ) -> Iterable[TransactionApiOut]:
         min_timestamp = None
-        account_out = CRUDAccount.read(db, account_id)
+        account_out = CRUDAccount.read(db, id=account_id)
         for transaction_in in transactions:
             if min_timestamp:
                 min_timestamp = min(transaction_in.timestamp, min_timestamp)
@@ -187,7 +187,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         transaction_in: TransactionPlaidIn,
         default_currency_code: CurrencyCode,
     ) -> TransactionApiOut:
-        account_out = CRUDAccount.read(db, account_id)
+        account_out = CRUDAccount.read(db, id=account_id)
         transaction_out = CRUDSyncableTransaction.create(
             db,
             transaction_in,
@@ -211,7 +211,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         default_currency_code: CurrencyCode,
         transaction_group_id: int | None = None,
     ) -> TransactionApiOut:
-        account_out = CRUDAccount.read(db, account_id)
+        account_out = CRUDAccount.read(db, id=account_id)
         transaction_out = CRUDTransaction.create(
             db,
             transaction_in,
@@ -237,7 +237,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         default_currency_code: CurrencyCode,
         transaction_group_id: int | None = None,
     ) -> TransactionApiOut:
-        account_out = CRUDAccount.read(db, account_id)
+        account_out = CRUDAccount.read(db, id=account_id)
         transaction_out = CRUDTransaction.update(
             db,
             transaction_id,
@@ -268,7 +268,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
     def delete_transaction(
         cls, db: Session, account_id: int, transaction_id: int
     ) -> int:
-        transaction_out = CRUDTransaction.read(db, transaction_id)
+        transaction_out = CRUDTransaction.read(db, id=transaction_id)
         CRUDTransaction.delete(db, transaction_id)
         Account.update_balance(db, account_id, transaction_out.timestamp)
         return transaction_id
