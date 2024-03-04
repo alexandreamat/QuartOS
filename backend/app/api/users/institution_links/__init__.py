@@ -43,16 +43,16 @@ router = APIRouter()
 def get_link_token(
     db: DBSession,
     me: CurrentUser,
-    userinstitutionlink_id: int | None = None,
+    user_institution_link_id: int | None = None,
 ) -> str:
-    if userinstitutionlink_id:
-        userinstitutionlink_out = CRUDUserInstitutionLink.read(
-            db, id=userinstitutionlink_id, user_id=me.id
+    if user_institution_link_id:
+        user_institution_link_out = CRUDUserInstitutionLink.read(
+            db, id=user_institution_link_id, user_id=me.id
         )
-        userinstitutionlink_plaid_out = CRUDSyncableUserInstitutionLink.read(
-            db, id=userinstitutionlink_out.id
+        user_institution_link_plaid_out = CRUDSyncableUserInstitutionLink.read(
+            db, id=user_institution_link_out.id
         )
-        access_token = userinstitutionlink_plaid_out.access_token
+        access_token = user_institution_link_plaid_out.access_token
     else:
         access_token = None
     return create_link_token(me.id, access_token)
@@ -77,15 +77,15 @@ def set_public_token(
 
     # 2. Create user institution link
     access_token = exchange_public_token(public_token)
-    userinstitutionlink_in = fetch_user_institution_link(access_token)
-    userinstitutionlink_out = CRUDSyncableUserInstitutionLink.create(
-        db, userinstitutionlink_in, institution_id=institution_out.id, user_id=me.id
+    user_institution_link_in = fetch_user_institution_link(access_token)
+    user_institution_link_out = CRUDSyncableUserInstitutionLink.create(
+        db, user_institution_link_in, institution_id=institution_out.id, user_id=me.id
     )
 
     # 3. Create accounts
-    for account_in in fetch_accounts(userinstitutionlink_out):
+    for account_in in fetch_accounts(user_institution_link_out):
         CRUDSyncableAccount.create(
-            db, account_in, userinstitutionlink_id=userinstitutionlink_out.id
+            db, account_in, user_institution_link_id=user_institution_link_out.id
         )
 
 
@@ -101,11 +101,11 @@ def create(
     )
 
 
-@router.get("/{userinstitutionlink_id}")
+@router.get("/{user_institution_link_id}")
 def read(
-    db: DBSession, me: CurrentUser, userinstitutionlink_id: int
+    db: DBSession, me: CurrentUser, user_institution_link_id: int
 ) -> UserInstitutionLinkApiOut:
-    return CRUDUserInstitutionLink.read(db, id=userinstitutionlink_id, user_id=me.id)
+    return CRUDUserInstitutionLink.read(db, id=user_institution_link_id, user_id=me.id)
 
 
 @router.get("/")
@@ -113,27 +113,27 @@ def read_many(db: DBSession, me: CurrentUser) -> Iterable[UserInstitutionLinkApi
     return CRUDUserInstitutionLink.read_many(db, user_id=me.id)
 
 
-@router.put("/{userinstitutionlink_id}")
+@router.put("/{user_institution_link_id}")
 def update(
     db: DBSession,
     me: CurrentUser,
-    userinstitutionlink_id: int,
+    user_institution_link_id: int,
     user_institution_link_in: UserInstitutionLinkApiIn,
 ) -> UserInstitutionLinkApiOut:
     curr_institution_link = CRUDUserInstitutionLink.read(
-        db, id=userinstitutionlink_id, user_id=me.id
+        db, id=user_institution_link_id, user_id=me.id
     )
     if curr_institution_link.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
     return CRUDUserInstitutionLink.update(
-        db, userinstitutionlink_id, user_institution_link_in
+        db, user_institution_link_id, user_institution_link_in
     )
 
 
-@router.delete("/{userinstitutionlink_id}")
-def delete(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> int:
-    CRUDUserInstitutionLink.read(db, id=userinstitutionlink_id, user_id=me.id)
-    return CRUDUserInstitutionLink.delete(db, userinstitutionlink_id)
+@router.delete("/{user_institution_link_id}")
+def delete(db: DBSession, me: CurrentUser, user_institution_link_id: int) -> int:
+    CRUDUserInstitutionLink.read(db, id=user_institution_link_id, user_id=me.id)
+    return CRUDUserInstitutionLink.delete(db, user_institution_link_id)
 
 
-include_package_routes(router, __name__, __path__, "/{userinstitutionlink_id}")
+include_package_routes(router, __name__, __path__, "/{user_institution_link_id}")

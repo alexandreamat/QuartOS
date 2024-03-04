@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class TransactionDeserialiser(Base):
-    __tablename__ = "transactiondeserialiser"
+    __tablename__ = "transaction_deserialiser"
     module_name: Mapped[str]
     amount_deserialiser: Mapped[str]
     timestamp_deserialiser: Mapped[str]
@@ -36,5 +36,5 @@ class TransactionDeserialiser(Base):
     encoding: Mapped[str]
 
     institutions: Mapped[list["Institution"]] = relationship(
-        back_populates="transactiondeserialiser"
+        back_populates="transaction_deserialiser"
     )

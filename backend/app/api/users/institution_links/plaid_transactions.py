@@ -32,14 +32,14 @@ router = APIRouter()
 
 
 @router.post("/sync")
-def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
+def sync(db: DBSession, me: CurrentUser, user_institution_link_id: int) -> None:
     institution_link_plaid_out = CRUDSyncableUserInstitutionLink.read(
         db,
-        id=userinstitutionlink_id,
+        id=user_institution_link_id,
         user_id=me.id,
     )
     replacement_pattern_out = CRUDReplacementPattern.read(
-        db, userinstitutionlink_id=userinstitutionlink_id
+        db, user_institution_link_id=user_institution_link_id
     )
     try:
         sync_transactions(
