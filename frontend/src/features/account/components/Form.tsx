@@ -91,7 +91,7 @@ export default function AccountForm(props: {
     type.set(props.account.type);
     isInstitutional.set(props.account.is_institutional);
     if (props.account.is_institutional) {
-      institutionLinkId.set(props.account.userinstitutionlink_id);
+      institutionLinkId.set(props.account.user_institution_link_id);
       mask.set(props.account.mask);
     }
   }, [props.account]);
@@ -149,7 +149,7 @@ export default function AccountForm(props: {
         await updateAccount({
           accountId: props.account.id,
           body: account,
-          userinstitutionlinkId: institutionLinkId.value!,
+          userInstitutionLinkId: institutionLinkId.value!,
         }).unwrap();
       } catch (error) {
         logMutationError(error, updateAccountResult);
@@ -158,7 +158,7 @@ export default function AccountForm(props: {
     } else {
       try {
         await createAccount({
-          userinstitutionlinkId: institutionLinkId.value!,
+          userInstitutionLinkId: institutionLinkId.value!,
           body: account,
         }).unwrap();
       } catch (error) {

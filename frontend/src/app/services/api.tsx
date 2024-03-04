@@ -32,43 +32,43 @@ const enhancedApi = generatedApi.enhanceEndpoints({
     consolidateUsersMeTransactionsPost: {
       invalidatesTags: (result, error, arg) => [
         "users",
-        { type: "transactiongroups", id: "*" },
+        { type: "transaction_groups", id: "*" },
       ],
     },
-    mergeUsersMeTransactiongroupsMergePost: {
+    mergeUsersMeTransactionGroupsMergePost: {
       invalidatesTags: (result, error, arg) => [
         "users",
-        { type: "transactiongroups", id: "*" },
+        { type: "transaction_groups", id: "*" },
       ],
     },
-    readUsersMeTransactiongroupsTransactionGroupIdGet: {
+    readUsersMeTransactionGroupsTransactionGroupIdGet: {
       providesTags: (result, error, transactionGroupId) => [
         "users",
-        { type: "transactiongroups", id: transactionGroupId },
+        { type: "transaction_groups", id: transactionGroupId },
       ],
     },
-    readManyUsersMeTransactiongroupsGet: {
+    readManyUsersMeTransactionGroupsGet: {
       providesTags: (result, error, arg) => [
         "users",
-        ...cacheList("transactiongroups", result),
+        ...cacheList("transaction_groups", result),
       ],
     },
-    updateUsersMeTransactiongroupsTransactionGroupIdPut: {
+    updateUsersMeTransactionGroupsTransactionGroupIdPut: {
       invalidatesTags: (result, error, { transactionGroupId }) => [
         "users",
-        { type: "transactiongroups", id: transactionGroupId },
+        { type: "transaction_groups", id: transactionGroupId },
       ],
     },
-    addUsersMeTransactiongroupsTransactionGroupIdTransactionsPut: {
+    addUsersMeTransactionGroupsTransactionGroupIdTransactionsPut: {
       invalidatesTags: (result, error, { transactionGroupId }) => [
         "users",
-        { type: "transactiongroups", id: transactionGroupId },
+        { type: "transaction_groups", id: transactionGroupId },
       ],
     },
-    deleteUsersMeTransactiongroupsTransactionGroupIdDelete: {
+    deleteUsersMeTransactionGroupsTransactionGroupIdDelete: {
       invalidatesTags: (result, error, arg) => [
         "users",
-        { type: "transactiongroups", id: "*" },
+        { type: "transaction_groups", id: "*" },
       ],
     },
 
@@ -77,7 +77,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       invalidatesTags: (result, error, { accountId }) => [
         "users",
         { type: "accounts", id: accountId },
-        { type: "transactiongroups", id: "*" },
+        { type: "transaction_groups", id: "*" },
         { type: "transactions", id: "*" },
       ],
     },
@@ -91,7 +91,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       invalidatesTags: (result, error, { accountId, transactionId }) => [
         "users",
         { type: "accounts", id: accountId },
-        { type: "transactiongroups", id: "*" },
+        { type: "transaction_groups", id: "*" },
         { type: "transactions", id: transactionId },
       ],
     },
@@ -99,7 +99,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       invalidatesTags: (result, error, { accountId }) => [
         "users",
         { type: "accounts", id: accountId },
-        { type: "transactiongroups", id: "*" },
+        { type: "transaction_groups", id: "*" },
         { type: "transactions", id: "*" },
       ],
     },
@@ -121,7 +121,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       providesTags: (result, error, { accountId, transactionId, fileId }) => [
         "users",
         { type: "accounts", id: accountId },
-        // { type: "transactiongroups", id: transactionGroupId },
+        // { type: "transaction_groups", id: transactionGroupId },
         { type: "transactions", id: transactionId },
         { type: "files", id: fileId },
       ],
@@ -130,7 +130,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       providesTags: (result, error, { accountId, transactionId }) => [
         "users",
         { type: "accounts", id: accountId },
-        // { type: "transactiongroups", id: transactionGroupId },
+        // { type: "transaction_groups", id: transactionGroupId },
         { type: "transactions", id: transactionId },
         ...cacheList("files", result),
       ],
@@ -139,7 +139,7 @@ const enhancedApi = generatedApi.enhanceEndpoints({
       invalidatesTags: (result, error, { accountId, transactionId }) => [
         "users",
         { type: "accounts", id: accountId },
-        // { type: "transactiongroups", id: transactionGroupId },
+        // { type: "transaction_groups", id: transactionGroupId },
         { type: "transactions", id: transactionId },
         { type: "files", id: "*" },
       ],

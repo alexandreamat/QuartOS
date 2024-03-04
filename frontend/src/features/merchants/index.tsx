@@ -71,7 +71,7 @@ const MerchantsTable = (props: {
   data: MerchantApiOut[];
 }) => {
   const [updateAllTransactionGroups, updateAllTransactionGroupsResult] =
-    api.endpoints.updateAllUsersMeTransactiongroupsPut.useMutation();
+    api.endpoints.updateAllUsersMeTransactionGroupsPut.useMutation();
 
   async function handleUpdateAllTransactionGroups() {
     try {

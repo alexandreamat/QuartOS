@@ -27,7 +27,7 @@ export function useAccountQueries(accountId?: number) {
 
   const institutionLinkQueries = useInstitutionLinkQueries(
     accountQuery.data?.is_institutional
-      ? accountQuery.data.userinstitutionlink_id
+      ? accountQuery.data.user_institution_link_id
       : undefined,
   );
 

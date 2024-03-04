@@ -67,7 +67,7 @@ export default function InstitutionForm(props: {
     countryCode.set(props.institution.country_code);
     url.set(props.institution.url || "");
     transactionDeserialiserId.set(
-      props.institution.transactiondeserialiser_id || undefined,
+      props.institution.transaction_deserialiser_id || undefined,
     );
     logoBase64.set(props.institution.logo_base64 || "");
   }, [props.institution]);
@@ -89,7 +89,7 @@ export default function InstitutionForm(props: {
     if (props.institution) {
       try {
         await updateInstitution({
-          transactiondeserialiserId: transactionDeserialiserId.value!,
+          transactionDeserialiserId: transactionDeserialiserId.value!,
           institutionId: props.institution.id,
           institutionApiIn: institution,
         }).unwrap();
@@ -100,7 +100,7 @@ export default function InstitutionForm(props: {
     } else {
       try {
         await createInstitution({
-          transactiondeserialiserId: transactionDeserialiserId.value!,
+          transactionDeserialiserId: transactionDeserialiserId.value!,
           institutionApiIn: institution,
         }).unwrap();
       } catch (error) {
