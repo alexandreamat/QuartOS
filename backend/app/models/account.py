@@ -13,12 +13,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING, TypeVar
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, relationship, mapped_column, Session
+from sqlalchemy import ForeignKey, desc
+from sqlalchemy.orm import Mapped, relationship, mapped_column, WriteOnlyMapped
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from app.models.common import Base, SyncableBase
 from app.models.transaction import Transaction
@@ -38,14 +38,25 @@ class Account(SyncableBase):
     name: Mapped[str]
     type: Mapped[str]
 
-    transactions: Mapped[list[Transaction]] = relationship(
-        back_populates="account", cascade="all, delete", lazy="dynamic"
+    transactions: WriteOnlyMapped[Transaction] = relationship(
+        back_populates="account",
+        cascade="all, delete",
+        order_by=(desc(Transaction.timestamp), desc(Transaction.id)),
+    )
+    last_transaction: Mapped[Transaction] = relationship(
+        viewonly=True, order_by=(desc(Transaction.timestamp), desc(Transaction.id))
     )
 
     __mapper_args__ = {
         "polymorphic_on": "type",
         "polymorphic_identity": "account",
     }
+
+    @hybrid_property
+    def balance(self) -> Decimal:
+        if self.last_transaction:
+            return self.last_transaction.account_balance
+        return self.initial_balance
 
 
 class InstitutionalAccount(Account):
