@@ -58,8 +58,7 @@ class __InstitutionalAccount(__AccountBase):
     mask: str
 
 
-class __NonInstitutionalAccount(__AccountBase):
-    ...
+class __NonInstitutionalAccount(__AccountBase): ...
 
 
 class __Depository(__InstitutionalAccount):
@@ -109,7 +108,7 @@ class __AccountOut(BaseModel):
 
 
 class __InstitutionalAccountOut(__AccountOut):
-    userinstitutionlink_id: int
+    user_institution_link_id: int
     is_institutional: AnnotatedLiteral(True)
 
 

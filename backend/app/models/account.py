@@ -96,19 +96,19 @@ class Account(SyncableBase):
 class InstitutionalAccount(Account):
     is_institutional = True
     mask: Mapped[str | None]
-    userinstitutionlink_id: Mapped[int] = mapped_column(
-        ForeignKey("userinstitutionlink.id")
+    user_institution_link_id: Mapped[int] = mapped_column(
+        ForeignKey("user_institution_link.id")
     )
 
-    userinstitutionlink: Mapped["UserInstitutionLink"] = relationship(
+    user_institution_link: Mapped["UserInstitutionLink"] = relationship(
         back_populates="institutionalaccounts"
     )
 
     __mapper_args__ = {"polymorphic_abstract": True}
 
     @property
-    def transactiondeserialiser(self) -> TransactionDeserialiser | None:
-        return self.userinstitutionlink.institution.transactiondeserialiser
+    def transaction_deserialiser(self) -> TransactionDeserialiser | None:
+        return self.user_institution_link.institution.transaction_deserialiser
 
 
 class Investment(InstitutionalAccount):

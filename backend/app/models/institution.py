@@ -39,21 +39,21 @@ class Institution(SyncableBase):
     url: Mapped[HttpUrl | None] = mapped_column(type_=UrlType)
     colour: Mapped[Color | None] = mapped_column(type_=ColorType)
     logo: Mapped[bytes | None]
-    transactiondeserialiser_id: Mapped[int | None] = mapped_column(
-        ForeignKey("transactiondeserialiser.id")
+    transaction_deserialiser_id: Mapped[int | None] = mapped_column(
+        ForeignKey("transaction_deserialiser.id")
     )
-    replacementpattern_id: Mapped[int | None] = mapped_column(
-        ForeignKey("replacementpattern.id")
+    replacement_pattern_id: Mapped[int | None] = mapped_column(
+        ForeignKey("replacement_pattern.id")
     )
 
     user_links: Mapped[list["UserInstitutionLink"]] = relationship(
         back_populates="institution",
         cascade="all, delete",
     )
-    transactiondeserialiser: Mapped[TransactionDeserialiser | None] = relationship(
+    transaction_deserialiser: Mapped[TransactionDeserialiser | None] = relationship(
         back_populates="institutions"
     )
-    replacementpattern: Mapped[ReplacementPattern | None] = relationship()
+    replacement_pattern: Mapped[ReplacementPattern | None] = relationship()
 
     @property
     def logo_base64(self) -> str | None:

@@ -34,10 +34,10 @@ class CRUDReplacementPattern(
 
     @classmethod
     def select(
-        cls, userinstitutionlink_id: int | None = None, **kwargs: Any
+        cls, user_institution_link_id: int | None = None, **kwargs: Any
     ) -> Select[tuple[ReplacementPattern]]:
         statement = super().select(**kwargs)
-        if userinstitutionlink_id:
+        if user_institution_link_id:
             statement = statement.join(Institution).join(UserInstitutionLink)
             statement = statement.where(UserInstitutionLink.id == statement)
         return statement

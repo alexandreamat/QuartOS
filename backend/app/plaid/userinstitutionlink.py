@@ -54,11 +54,11 @@ class __TransactionsSyncResult(BaseModel):
     has_more: bool
 
 
-def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str, int]:
+def __get_account_ids_map(db: Session, user_institution_link_id: int) -> dict[str, int]:
     return {
         account.plaid_id: account.id
         for account in CRUDSyncableAccount.read_many(
-            db, userinstitutionlink_id=userinstitutionlink_id
+            db, user_institution_link_id=user_institution_link_id
         )
     }
 

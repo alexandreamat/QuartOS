@@ -19,6 +19,6 @@ from app.models.common import Base
 
 
 class ReplacementPattern(Base):
-    __tablename__ = "replacementpattern"
+    __tablename__ = "replacement_pattern"
     pattern: Mapped[str]
     replacement: Mapped[str]

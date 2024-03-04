@@ -88,7 +88,7 @@ class __CRUDAccountBase(
         cls,
         *,
         user_id: int | None = None,
-        userinstitutionlink_id: int | None = None,
+        user_institution_link_id: int | None = None,
         **kwargs: Any,
     ) -> Select[tuple[Account]]:
         statement = super().select(**kwargs)
@@ -98,9 +98,10 @@ class __CRUDAccountBase(
                 (NonInstitutionalAccount.user_id == user_id)
                 | (UserInstitutionLink.user_id == user_id)
             )
-        if userinstitutionlink_id:
+        if user_institution_link_id:
             statement = statement.where(
-                InstitutionalAccount.userinstitutionlink_id == userinstitutionlink_id
+                InstitutionalAccount.user_institution_link_id
+                == user_institution_link_id
             )
 
         return statement
