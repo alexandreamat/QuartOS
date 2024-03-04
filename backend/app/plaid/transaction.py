@@ -75,7 +75,7 @@ def create_transaction_plaid_in(
 def reset_transaction_to_metadata(
     db: Session, id: int, replacement_pattern: ReplacementPatternApiOut | None
 ) -> TransactionPlaidOut:
-    transaction_out = CRUDSyncableTransaction.read(db, id=id)
+    transaction_out = CRUDSyncableTransaction.read(db, id__eq=id)
     transaction_plaid = eval(transaction_out.plaid_metadata)
     try:
         for cp in transaction_plaid["counterparties"]:

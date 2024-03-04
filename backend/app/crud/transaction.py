@@ -98,11 +98,25 @@ class __CRUDTransactionBase(
 
     @classmethod
     def delete(cls, db: Session, id: int) -> int:
-        transaction_group = Transaction.read(db, id__eq=id).transaction_group
+        transaction = Transaction.read(db, id__eq=id)
+
+        # Store values from the transaction being deleted
+        timestamp = transaction.timestamp
+        account = transaction.account
+        transaction_group = transaction.transaction_group
+
+        # Delete group if it's going to have only 1 transaction left
         if transaction_group:
             if len(transaction_group.transactions) <= 2:
                 transaction_group.delete(db, transaction_group.id)
-        return super().delete(db, id)
+
+        # Delete transaction from DB
+        super().delete(db, id)
+
+        # Update account balances in account's transactions from that point
+        cls.update_account_balances(db, account.id, timestamp)
+
+        return id
 
 
 class CRUDTransaction(__CRUDTransactionBase[TransactionApiOut, TransactionApiIn]):

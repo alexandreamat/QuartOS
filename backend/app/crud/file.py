@@ -43,4 +43,4 @@ class CRUDFile(CRUDBase[File, FileApiOut, FileApiIn]):
 
     @classmethod
     def read_data(cls, db: Session, file_id: int) -> bytes:
-        return File.read(db, file_id).data
+        return File.read(db, id__eq=file_id).data

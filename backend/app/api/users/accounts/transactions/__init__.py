@@ -111,7 +111,7 @@ def delete(
     if transaction_out.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
-    return CRUDAccount.delete_transaction(db, account_id, transaction_id)
+    return CRUDTransaction.delete(db, transaction_id)
 
 
 include_package_routes(router, __name__, __path__, "/{transaction_id}")

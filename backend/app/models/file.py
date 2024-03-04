@@ -37,7 +37,3 @@ class File(Base):
     @classmethod
     def create(cls, db: Session, **kwargs: Any) -> "File":
         return super().create(db, uploaded=datetime.now(timezone.utc), **kwargs)
-
-    @property
-    def read_data(cls, db: Session, file_id: int) -> bytes:
-        return File.read(db, file_id).data

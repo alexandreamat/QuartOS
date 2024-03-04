@@ -183,7 +183,7 @@ def sync_transactions(
             )
         for plaid_id in sync_result.removed:
             transaction_out = CRUDSyncableTransaction.read(db, plaid_id=plaid_id)
-            CRUDAccount.delete_transaction(db, account_id, transaction_out.id)
+            CRUDSyncableTransaction.delete(db, transaction_out.id)
         user_institution_link_out.cursor = sync_result.new_cursor
         user_institution_link_new = UserInstitutionLinkPlaidIn(
             **user_institution_link_out.model_dump()
