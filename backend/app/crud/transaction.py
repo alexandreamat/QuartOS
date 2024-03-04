@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import date
 import logging
 from typing import Any, Generic
 
@@ -39,10 +40,6 @@ class __CRUDTransactionBase(
 ):
     __model__ = Transaction
 
-
-class CRUDTransaction(__CRUDTransactionBase[TransactionApiOut, TransactionApiIn]):
-    __out_schema__ = TransactionApiOut
-
     @classmethod
     def select(cls, user_id: int = 0, **kwargs: Any) -> Select[tuple[Transaction]]:
         statement = super().select(**kwargs)
@@ -66,20 +63,50 @@ class CRUDTransaction(__CRUDTransactionBase[TransactionApiOut, TransactionApiIn]
 
     @classmethod
     def update(
-        cls, db: Session, id: int, obj_in: TransactionApiIn, **kwargs: Any
-    ) -> TransactionApiOut:
+        cls, db: Session, id: int, obj_in: InSchemaT, **kwargs: Any
+    ) -> OutSchemaT:
         transaction = Transaction.update(db, id, **obj_in.model_dump(), **kwargs)
         if transaction_group := transaction.transaction_group:
             transaction_group.update(db, transaction_group.id)
-        return TransactionApiOut.model_validate(transaction)
+        return cls.__out_schema__.model_validate(transaction)
+
+    @classmethod
+    def update_account_balances(
+        cls, db: Session, id: int, timestamp: date | None = None
+    ) -> None:
+        account = Account.read(db, id__eq=id)
+
+        if timestamp:
+            statement = Transaction.select(
+                account_id__eq=id, timestamp__lt=timestamp, order_by="timestamp__desc"
+            )
+            prev_transaction = db.scalars(statement).first()
+            if prev_transaction:
+                prev_balance = prev_transaction.account_balance
+            else:
+                prev_balance = account.initial_balance
+            statement = Transaction.select(
+                account_id__eq=id, timestamp__ge=timestamp, order_by="timestamp__asc"
+            )
+        else:
+            prev_balance = account.initial_balance
+
+        for transaction in db.scalars(statement).yield_per(50):
+            account_balance = prev_balance + transaction.amount
+            Transaction.update(db, transaction.id, account_balance=account_balance)
+            prev_balance = transaction.account_balance
 
     @classmethod
     def delete(cls, db: Session, id: int) -> int:
-        transaction_group = Transaction.read(db, id).transaction_group
+        transaction_group = Transaction.read(db, id__eq=id).transaction_group
         if transaction_group:
             if len(transaction_group.transactions) <= 2:
                 transaction_group.delete(db, transaction_group.id)
         return super().delete(db, id)
+
+
+class CRUDTransaction(__CRUDTransactionBase[TransactionApiOut, TransactionApiIn]):
+    __out_schema__ = TransactionApiOut
 
 
 class CRUDSyncableTransaction(

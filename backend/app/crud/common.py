@@ -17,12 +17,12 @@ import logging
 from typing import Generic, Type, TypeVar, Iterable, Any
 from fastapi import HTTPException, status
 
-from sqlalchemy import Select, select
+from sqlalchemy import Select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from app.models.common import Base, SyncableBase
-from app.schemas.common import PlaidOutMixin, PlaidInMixin, ApiOutMixin, ApiInMixin
+from app.models.common import Base
+from app.schemas.common import ApiOutMixin, ApiInMixin
 
 ModelT = TypeVar("ModelT", bound=Base)
 InSchemaT = TypeVar("InSchemaT", bound=ApiInMixin)

@@ -14,15 +14,25 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from typing import Iterable, TypeVar, Type, Any
+from fastapi import HTTPException, status
 
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
-from sqlalchemy import ColumnElement, Select, types, select, String, case
+from sqlalchemy import (
+    ColumnElement,
+    ColumnExpressionArgument,
+    Select,
+    asc,
+    desc,
+    types,
+    select,
+    String,
+    case,
+)
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Session, mapped_column, Mapped
 
-from app.exceptions.common import ObjectNotFoundError
 
 BaseType = TypeVar("BaseType", bound="Base")
 SyncableBaseType = TypeVar("SyncableBaseType", bound="SyncableBase")
@@ -30,17 +40,58 @@ SyncableBaseType = TypeVar("SyncableBaseType", bound="SyncableBase")
 logger = logging.getLogger(__name__)
 
 
+def get_where_expressions(
+    model: Any, **kwargs: Any
+) -> Iterable[ColumnExpressionArgument[bool]]:
+    # Handle kwargs like amount__gt, amount__le__abs, timestamp__eq...
+    # to construct model.amount > arg, abs(model.amount) <= arg, ...
+    for kw, arg in kwargs.items():
+        if arg is None:
+            continue
+        attr_name, *ops = kw.split("__")
+        attr = getattr(model, attr_name)
+        if len(ops) == 2:
+            f = {"abs": abs}[ops[1]]
+            attr = f(attr)
+        yield getattr(attr, f"__{ops[0]}__")(arg)
+
+
+def get_order_by_expressions(
+    model: Any, order_by: str
+) -> tuple[ColumnExpressionArgument[Any], ColumnExpressionArgument[int]]:
+    attr, op = order_by.split("__")
+    f = {"asc": asc, "desc": desc}[op]
+    return f(getattr(model, attr)), f(model.id)
+
+
 class Base(DeclarativeBase):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     @classmethod
     def select(
-        cls: Type[BaseType], *, page: int = 0, per_page: int = 0, **kwargs: Any
+        cls: Type[BaseType],
+        *,
+        order_by: str | None = None,
+        page: int = 0,
+        per_page: int = 0,
+        **kwargs: Any,
     ) -> Select[tuple[BaseType]]:
+        # SELECT
         statement = select(cls)
-        for kw, arg in kwargs.items():
-            statement = statement.where(getattr(cls, kw) == arg)
+
+        # WHERE
+        for expr in get_where_expressions(cls, *kwargs):
+            statement = statement.where(expr)
+
+        # ORDER BY
+        if order_by:
+            order_exprs = get_order_by_expressions(cls, order_by)
+            statement = statement.order_by(*order_exprs)
+
+        # GROUP BY
         statement = statement.group_by(cls.id)
+
+        # OFFSET, LIMIT
         if per_page:
             offset = page * per_page
             statement = statement.offset(offset).limit(per_page)
@@ -56,21 +107,15 @@ class Base(DeclarativeBase):
         return obj
 
     @classmethod
-    def read(cls: Type[BaseType], db: Session, id: int) -> BaseType:
-        statement = select(cls).where(cls.id == id)
-        return cls.read_one_from_query(db, statement, id)
-
-    @classmethod
-    def read_one_from_query(
-        cls: Type[BaseType],
-        db: Session,
-        statement: Select[tuple[BaseType]],
-        id: int | None = None,
-    ) -> BaseType:
+    def read(cls: Type[BaseType], db: Session, **kwargs: Any) -> BaseType:
+        statement = cls.select(**kwargs)
         try:
             return db.scalars(statement).one()
         except NoResultFound:
-            raise ObjectNotFoundError(str(cls.__tablename__), id)
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail=f"{str(cls.__tablename__)} not found for args {kwargs}",
+            )
 
     @classmethod
     def read_many(
@@ -89,7 +134,7 @@ class Base(DeclarativeBase):
 
     @classmethod
     def update(cls: Type[BaseType], db: Session, id: int, **kwargs: Any) -> BaseType:
-        obj = cls.read(db, id)
+        obj = cls.read(db, id__eq=id)
         for key, value in kwargs.items():
             setattr(obj, key, value)
         db.flush()
@@ -97,7 +142,7 @@ class Base(DeclarativeBase):
 
     @classmethod
     def delete(cls: Type[BaseType], db: Session, id: int) -> None:
-        db.delete(cls.read(db, id))
+        db.delete(cls.read(db, id__eq=id))
 
 
 class SyncableBase(Base):
