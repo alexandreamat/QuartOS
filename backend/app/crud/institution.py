@@ -33,10 +33,10 @@ class __CRUDInstitutionBase(
 class CRUDInstitution(
     __CRUDInstitutionBase[InstitutionApiOut, InstitutionApiIn],
 ):
-    __out_model__ = InstitutionApiOut
+    __out_schema__ = InstitutionApiOut
 
 
 class CRUDSyncableInstitution(
     __CRUDInstitutionBase[InstitutionPlaidOut, InstitutionPlaidIn],
 ):
-    __out_model__ = InstitutionPlaidOut
+    __out_schema__ = InstitutionPlaidOut

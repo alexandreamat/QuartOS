@@ -50,10 +50,14 @@ def get_where_expressions(
             continue
         attr_name, *ops = kw.split("__")
         attr = getattr(model, attr_name)
-        if len(ops) == 2:
-            f = {"abs": abs}[ops[1]]
-            attr = f(attr)
-        yield getattr(attr, f"__{ops[0]}__")(arg)
+        if len(ops) == 0:
+            op = "__eq__"
+        else:
+            op = f"__{ops[0]}__"
+            if len(ops) == 2:
+                f = {"abs": abs}[ops[1]]
+                attr = f(attr)
+        yield getattr(attr, op)(arg)
 
 
 def get_order_by_expressions(
@@ -80,7 +84,7 @@ class Base(DeclarativeBase):
         statement = select(cls)
 
         # WHERE
-        for expr in get_where_expressions(cls, *kwargs):
+        for expr in get_where_expressions(cls, **kwargs):
             statement = statement.where(expr)
 
         # ORDER BY
