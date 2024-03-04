@@ -13,9 +13,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Any
+from sqlalchemy import Select
 from app.crud.common import CRUDBase
+from app.models.institution import Institution
 
 from app.models.replacementpattern import ReplacementPattern
+from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.replacementpattern import (
     ReplacementPatternApiIn,
     ReplacementPatternApiOut,
@@ -25,5 +29,15 @@ from app.schemas.replacementpattern import (
 class CRUDReplacementPattern(
     CRUDBase[ReplacementPattern, ReplacementPatternApiOut, ReplacementPatternApiIn]
 ):
-    db_model = ReplacementPattern
-    out_model = ReplacementPatternApiOut
+    __model__ = ReplacementPattern
+    __out_schema__ = ReplacementPatternApiOut
+
+    @classmethod
+    def select(
+        cls, userinstitutionlink_id: int | None = None, **kwargs: Any
+    ) -> Select[tuple[ReplacementPattern]]:
+        statement = super().select(**kwargs)
+        if userinstitutionlink_id:
+            statement = statement.join(Institution).join(UserInstitutionLink)
+            statement = statement.where(UserInstitutionLink.id == statement)
+        return statement

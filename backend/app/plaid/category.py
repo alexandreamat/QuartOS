@@ -74,8 +74,8 @@ def get_all_plaid_categories(db: Session) -> None:
                 plaid_metadata=plaid_id,
             )
             try:
-                category_out = CRUDSyncableCategory.read_by_plaid_id(
-                    db, category_in.plaid_id
+                category_out = CRUDSyncableCategory.read(
+                    db, plaid_id=category_in.plaid_id
                 )
                 CRUDSyncableCategory.update(db, category_out.id, category_in)
             except sqlalchemy.exc.NoResultFound:

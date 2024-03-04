@@ -31,7 +31,7 @@ from plaid.model.transactions_sync_response import TransactionsSyncResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.crud.account import CRUDAccount
+from app.crud.account import CRUDAccount, CRUDSyncableAccount
 from app.crud.transaction import CRUDSyncableTransaction
 from app.crud.userinstitutionlink import CRUDSyncableUserInstitutionLink
 from app.plaid.common import client
@@ -57,8 +57,8 @@ class __TransactionsSyncResult(BaseModel):
 def __get_account_ids_map(db: Session, userinstitutionlink_id: int) -> dict[str, int]:
     return {
         account.plaid_id: account.id
-        for account in CRUDSyncableUserInstitutionLink.read_syncable_accounts(
-            db, userinstitutionlink_id
+        for account in CRUDSyncableAccount.read_many(
+            db, userinstitutionlink_id=userinstitutionlink_id
         )
     }
 
@@ -171,8 +171,8 @@ def sync_transactions(
             except sqlalchemy.exc.IntegrityError:
                 logger.warning("Repeated transaction: %s", str(transaction_in))
         for account_id, transaction_in in sync_result.modified:
-            transaction_out = CRUDSyncableTransaction.read_by_plaid_id(
-                db, transaction_in.plaid_id
+            transaction_out = CRUDSyncableTransaction.read(
+                db, plaid_id=transaction_in.plaid_id
             )
             CRUDAccount.update_transaction(
                 db,
@@ -182,7 +182,7 @@ def sync_transactions(
                 default_currency_code=default_currency_code,
             )
         for plaid_id in sync_result.removed:
-            transaction_out = CRUDSyncableTransaction.read_by_plaid_id(db, plaid_id)
+            transaction_out = CRUDSyncableTransaction.read(db, plaid_id=plaid_id)
             CRUDAccount.delete_transaction(db, account_id, transaction_out.id)
         user_institution_link_out.cursor = sync_result.new_cursor
         user_institution_link_new = UserInstitutionLinkPlaidIn(

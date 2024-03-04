@@ -15,7 +15,7 @@
 import logging
 from typing import Any, Iterable
 
-from sqlalchemy import Select, or_
+from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
 from app.crud.common import CRUDBase
@@ -31,8 +31,8 @@ logger = logging.getLogger(__name__)
 class CRUDTransactionGroup(
     CRUDBase[TransactionGroup, TransactionGroupApiOut, TransactionGroupApiIn]
 ):
-    db_model = TransactionGroup
-    out_model = TransactionGroupApiOut
+    __model__ = TransactionGroup
+    __out_schema__ = TransactionGroupApiOut
 
     @classmethod
     def create(
@@ -77,12 +77,9 @@ class CRUDTransactionGroup(
             statement = statement.join(Account)
             statement = statement.outerjoin(UserInstitutionLink)
             statement = statement.where(
-                or_(
-                    NonInstitutionalAccount.user_id == user_id,
-                    UserInstitutionLink.user_id == user_id,
-                )
+                (NonInstitutionalAccount.user_id == user_id)
+                | (UserInstitutionLink.user_id == user_id)
             )
-        logger.error(statement.compile(compile_kwargs={"literal_binds": True}))
         return statement
 
     @classmethod

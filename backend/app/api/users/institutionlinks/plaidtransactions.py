@@ -18,6 +18,7 @@ import json
 import plaid
 import urllib3
 from fastapi import APIRouter, HTTPException, status
+from app.crud.replacementpattern import CRUDReplacementPattern
 
 from app.crud.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
@@ -37,8 +38,8 @@ def sync(db: DBSession, me: CurrentUser, userinstitutionlink_id: int) -> None:
         id=userinstitutionlink_id,
         user_id=me.id,
     )
-    replacement_pattern_out = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, userinstitutionlink_id
+    replacement_pattern_out = CRUDReplacementPattern.read(
+        db, userinstitutionlink_id=userinstitutionlink_id
     )
     try:
         sync_transactions(

@@ -48,8 +48,8 @@ def create_transaction_plaid_in(
     try:
         plaid_category: PersonalFinanceCategory = transaction.personal_finance_category
         try:
-            category_out = CRUDSyncableCategory.read_by_plaid_id(
-                db, plaid_category.primary
+            category_out = CRUDSyncableCategory.read(
+                db, plaid_id=plaid_category.primary
             )
         except NoResultFound:
             try:

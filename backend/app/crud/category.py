@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from app.crud.common import CRUDBase, CRUDSyncedBase
+from typing import Generic
+from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 
 from app.models.category import Category
 from app.schemas.category import (
@@ -24,13 +25,18 @@ from app.schemas.category import (
 )
 
 
-class CRUDCategory(
-    CRUDBase[Category, CategoryApiOut, CategoryApiIn],
+class __CRUDCategoryBase(
+    Generic[OutSchemaT, InSchemaT],
+    CRUDBase[Category, OutSchemaT, InSchemaT],
 ):
-    db_model = Category
-    out_model = CategoryApiOut
+    __model__ = Category
 
 
-class CRUDSyncableCategory(CRUDSyncedBase[Category, CategoryPlaidOut, CategoryPlaidIn]):
-    db_model = Category
-    out_model = CategoryPlaidOut
+class CRUDCategory(
+    __CRUDCategoryBase[CategoryApiOut, CategoryApiIn],
+):
+    __out_schema__ = CategoryApiOut
+
+
+class CRUDSyncableCategory(__CRUDCategoryBase[CategoryPlaidOut, CategoryPlaidIn]):
+    __out_schema__ = CategoryPlaidOut
