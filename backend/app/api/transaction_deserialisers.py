@@ -45,7 +45,7 @@ def read(db: DBSession, id: int) -> TransactionDeserialiserApiOut:
     """
     Get deserialiser by ID.
     """
-    return CRUDTransactionDeserialiser.read(db, id=id)
+    return CRUDTransactionDeserialiser.read(db, id__eq=id)
 
 
 @router.get("/")

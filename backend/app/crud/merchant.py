@@ -30,9 +30,9 @@ class CRUDMerchant(
 
     @classmethod
     def select(
-        cls, *, id: int | None = None, user_id: int | None = None, **kwargs: Any
+        cls, *, user_id: int | None = None, **kwargs: Any
     ) -> Select[tuple[Merchant]]:
-        statement = super().select(id=id, **kwargs)
+        statement = super().select(**kwargs)
         if user_id:
             statement = statement.where(Merchant.user_id == user_id)
         return statement

@@ -54,7 +54,7 @@ class CRUDTransactionGroup(
             transaction.id
             for transaction_group_id in transaction_group_ids
             for transaction in TransactionGroup.read(
-                db, transaction_group_id
+                db, id__eq=transaction_group_id
             ).transactions
         ]
         transaction_group_in = TransactionGroupApiIn(name="")
@@ -91,8 +91,8 @@ class CRUDTransactionGroup(
     def __add_transaction(
         cls, db: Session, id: int, transaction_id: int
     ) -> TransactionGroup:
-        transaction_group = TransactionGroup.read(db, id)
-        transaction = Transaction.read(db, transaction_id)
+        transaction_group = TransactionGroup.read(db, id__eq=id)
+        transaction = Transaction.read(db, id__eq=transaction_id)
         old_transaction_group_id = transaction.transaction_group_id
         if not transaction_group.name:
             transaction_group.name = transaction.name
@@ -100,7 +100,9 @@ class CRUDTransactionGroup(
             db, transaction_id, transaction_group_id=transaction_group.id
         )
         if old_transaction_group_id:
-            old_transaction_group = TransactionGroup.read(db, old_transaction_group_id)
+            old_transaction_group = TransactionGroup.read(
+                db, id__eq=old_transaction_group_id
+            )
             TransactionGroup.update(db, old_transaction_group.id)
             if not old_transaction_group.transactions:
                 cls.delete(db, old_transaction_group_id)
@@ -110,7 +112,7 @@ class CRUDTransactionGroup(
     def add_transactions(
         cls, db: Session, transaction_group_id: int, transaction_ids: list[int]
     ) -> TransactionGroupApiOut:
-        transaction_group = TransactionGroup.read(db, transaction_group_id)
+        transaction_group = TransactionGroup.read(db, id__eq=transaction_group_id)
         for transaction_id in transaction_ids:
             cls.__add_transaction(db, transaction_group.id, transaction_id)
         TransactionGroup.update(db, transaction_group_id)
@@ -121,7 +123,7 @@ class CRUDTransactionGroup(
     def remove_transaction(
         cls, db: Session, transaction_group_id: int, transaction_id: int
     ) -> TransactionGroupApiOut | None:
-        transaction_group = TransactionGroup.read(db, transaction_group_id)
+        transaction_group = TransactionGroup.read(db, id__eq=transaction_group_id)
         Transaction.update(db, transaction_id, transaction_group_id=None)
         if len(transaction_group.transactions) <= 1:
             TransactionGroup.delete(db, transaction_group_id)

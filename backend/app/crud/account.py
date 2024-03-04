@@ -132,8 +132,8 @@ class __CRUDAccountBase(
         id: int,
         timestamp: date | None = None,
     ) -> OutSchemaT:
-        account_out = Account.update_balance(db, id, timestamp)
-        return cls.model_validate(account_out)
+        CRUDTransaction.update_account_balances(db, id, timestamp)
+        return cls.read(db, id__eq=id)
 
     @classmethod
     def create_many_transactions(
@@ -242,20 +242,11 @@ class __CRUDAccountBase(
     def update_transactions_amount_default_currency(
         cls, db: Session, account_id: int, default_currency_code: CurrencyCode
     ) -> None:
-        account = Account.read(db, account_id)
+        account = Account.read(db, id__eq=account_id)
         for transaction in account.transactions:
             transaction.exchange_rate = get_exchange_rate(
                 account.currency_code, default_currency_code, transaction.timestamp
             )
-
-    @classmethod
-    def delete_transaction(
-        cls, db: Session, account_id: int, transaction_id: int
-    ) -> int:
-        transaction_out = CRUDTransaction.read(db, id=transaction_id)
-        CRUDTransaction.delete(db, transaction_id)
-        Account.update_balance(db, account_id, transaction_out.timestamp)
-        return transaction_id
 
 
 class CRUDAccount(__CRUDAccountBase[AccountApiOut, AccountApiIn]):
