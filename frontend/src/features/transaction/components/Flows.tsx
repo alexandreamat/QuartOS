@@ -179,7 +179,7 @@ export function Flows(props: {
   loading?: boolean;
 }) {
   const transactionsQuery =
-    api.endpoints.readManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGet.useQuery(
+    api.endpoints.readManyUsersMeTransactionGroupsTransactionGroupIdTransactionsGet.useQuery(
       props.transactionGroupId || skipToken,
     );
 

@@ -111,7 +111,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   );
 
   const transactionGroupQuery =
-    api.endpoints.readUsersMeTransactiongroupsTransactionGroupIdGet.useQuery(
+    api.endpoints.readUsersMeTransactionGroupsTransactionGroupIdGet.useQuery(
       hasTransactionGroup ? props.transactionGroupId : skipToken,
     );
 
@@ -347,7 +347,7 @@ function FormEdit(props: {
     api.endpoints.deleteUsersMeAccountsAccountIdTransactionsTransactionIdDelete.useMutation();
 
   const [ungroup, ungroupResult] =
-    api.endpoints.removeUsersMeTransactiongroupsTransactionGroupIdTransactionsTransactionIdDelete.useMutation();
+    api.endpoints.removeUsersMeTransactionGroupsTransactionGroupIdTransactionsTransactionIdDelete.useMutation();
 
   const uploadTransactionFile = useUploadTransactionFile(props.transaction);
 
@@ -418,10 +418,10 @@ function TransactionGroupForm(props: {
   onClose: (transaction?: TransactionGroupApiOut) => void;
 }) {
   const [update, updateResult] =
-    api.endpoints.updateUsersMeTransactiongroupsTransactionGroupIdPut.useMutation();
+    api.endpoints.updateUsersMeTransactionGroupsTransactionGroupIdPut.useMutation();
 
   const [ungroup, ungroupResult] =
-    api.endpoints.deleteUsersMeTransactiongroupsTransactionGroupIdDelete.useMutation();
+    api.endpoints.deleteUsersMeTransactionGroupsTransactionGroupIdDelete.useMutation();
 
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
     props.transaction.account_id || skipToken,

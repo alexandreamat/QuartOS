@@ -31,7 +31,7 @@ function CurrencyExchangeTip(props: {
   const toCurrency = props.currencyCode;
 
   const exchangeRateQuery =
-    api.endpoints.readExchangeRateExchangerateGet.useQuery(
+    api.endpoints.readExchangeRateExchangeRateGet.useQuery(
       fromCurrency !== toCurrency && fromCurrency !== undefined
         ? {
             fromCurrency,
@@ -64,7 +64,7 @@ export default function CurrencyExchangeTips(props: {
   currencyCode: string;
 }) {
   const query =
-    api.endpoints.readManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGet.useQuery(
+    api.endpoints.readManyUsersMeTransactionGroupsTransactionGroupIdTransactionsGet.useQuery(
       props.transactionGroupId,
     );
   return (

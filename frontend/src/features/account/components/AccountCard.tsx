@@ -32,7 +32,7 @@ export default function AccountCard(props: {
 
   const institutionLinkQueries = useInstitutionLinkQueries(
     props.account.is_institutional
-      ? props.account.userinstitutionlink_id
+      ? props.account.user_institution_link_id
       : undefined,
   );
 
