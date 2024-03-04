@@ -67,8 +67,8 @@ def set_public_token(
 ) -> None:
     # 1. Get or create institution
     try:
-        institution_out = CRUDSyncableInstitution.read_by_plaid_id(
-            db, institution_plaid_id
+        institution_out = CRUDSyncableInstitution.read(
+            db, plaid_id=institution_plaid_id
         )
     except NoResultFound:
         institution_out = CRUDSyncableInstitution.create(

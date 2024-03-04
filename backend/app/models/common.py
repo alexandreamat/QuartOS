@@ -34,8 +34,17 @@ class Base(DeclarativeBase):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     @classmethod
-    def select(cls: Type[BaseType]) -> Select[tuple[BaseType]]:
-        return select(cls)
+    def select(
+        cls: Type[BaseType], *, page: int = 0, per_page: int = 0, **kwargs: Any
+    ) -> Select[tuple[BaseType]]:
+        statement = select(cls)
+        for kw, arg in kwargs.items():
+            statement = statement.where(getattr(cls, kw) == arg)
+        statement = statement.group_by(cls.id)
+        if per_page:
+            offset = page * per_page
+            statement = statement.offset(offset).limit(per_page)
+        return statement
 
     @classmethod
     def create(cls: Type[BaseType], db: Session, **kwargs: Any) -> BaseType:
@@ -48,7 +57,7 @@ class Base(DeclarativeBase):
 
     @classmethod
     def read(cls: Type[BaseType], db: Session, id: int) -> BaseType:
-        statement = cls.select().where(cls.id == id)
+        statement = select(cls).where(cls.id == id)
         return cls.read_one_from_query(db, statement, id)
 
     @classmethod
@@ -70,7 +79,7 @@ class Base(DeclarativeBase):
         offset: int,
         limit: int,
     ) -> Iterable[BaseType]:
-        statement = cls.select()
+        statement = select(cls)
         if offset:
             statement = statement.offset(offset)
         if limit:
@@ -95,12 +104,6 @@ class SyncableBase(Base):
     __abstract__ = True
     plaid_id: Mapped[str | None] = mapped_column(unique=True)
     plaid_metadata: Mapped[str | None]
-
-    @classmethod
-    def read_by_plaid_id(
-        cls: Type[SyncableBaseType], db: Session, plaid_id: str
-    ) -> SyncableBaseType:
-        return db.scalars(select(cls).where(cls.plaid_id == plaid_id)).one()
 
     @hybrid_property
     def is_synced(self) -> bool:

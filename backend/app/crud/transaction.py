@@ -14,12 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from typing import Any, Iterable
+from typing import Any, Generic
 
-from sqlalchemy import Select, or_
+from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
-from app.crud.common import CRUDBase, CRUDSyncedBase
+from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 from app.models.account import Account, NonInstitutionalAccount
 from app.models.transaction import Transaction
 from app.models.userinstitutionlink import UserInstitutionLink
@@ -34,9 +34,14 @@ from app.schemas.transaction import (
 logger = logging.getLogger(__name__)
 
 
-class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]):
-    db_model = Transaction
-    out_model = TransactionApiOut
+class __CRUDTransactionBase(
+    Generic[OutSchemaT, InSchemaT], CRUDBase[Transaction, OutSchemaT, InSchemaT]
+):
+    __model__ = Transaction
+
+
+class CRUDTransaction(__CRUDTransactionBase[TransactionApiOut, TransactionApiIn]):
+    __out_schema__ = TransactionApiOut
 
     @classmethod
     def select(cls, user_id: int = 0, **kwargs: Any) -> Select[tuple[Transaction]]:
@@ -45,21 +50,10 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
             statement = statement.join(Account)
             statement = statement.outerjoin(UserInstitutionLink)
             statement = statement.where(
-                or_(
-                    NonInstitutionalAccount.user_id == user_id,
-                    UserInstitutionLink.user_id == user_id,
-                )
+                (NonInstitutionalAccount.user_id == user_id)
+                | (UserInstitutionLink.user_id == user_id)
             )
         return statement
-
-    @classmethod
-    def is_synced(cls, db: Session, transaction_id: int) -> bool:
-        return Transaction.read(db, transaction_id).is_synced
-
-    @classmethod
-    def read_files(cls, db: Session, transaction_id: int) -> Iterable[FileApiOut]:
-        for f in Transaction.read(db, transaction_id).files:
-            yield FileApiOut.model_validate(f)
 
     @classmethod
     def orphan_only_children(cls, db: Session) -> None:
@@ -89,7 +83,6 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
 
 
 class CRUDSyncableTransaction(
-    CRUDSyncedBase[Transaction, TransactionPlaidOut, TransactionPlaidIn],
+    __CRUDTransactionBase[TransactionPlaidOut, TransactionPlaidIn],
 ):
-    db_model = Transaction
-    out_model = TransactionPlaidOut
+    __out_schema__ = TransactionPlaidOut

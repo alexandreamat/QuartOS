@@ -15,19 +15,23 @@
 import logging
 from datetime import date
 from decimal import Decimal
-from typing import Any, Iterable, Type
+from typing import Any, Generic, Iterable, Type
 
-from sqlalchemy import Select, or_
+from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
-from app.crud.common import CRUDBase, CRUDSyncedBase
+from app.crud.common import (
+    CRUDBase,
+    InSchemaT,
+    OutSchemaT,
+)
 from app.crud.transaction import CRUDSyncableTransaction, CRUDTransaction
-from app.exceptions.common import ObjectNotFoundError
 from app.models.account import (
     Account,
     Cash,
     Credit,
     Depository,
+    InstitutionalAccount,
     Loan,
     NonInstitutionalAccount,
     PersonalLedger,
@@ -61,82 +65,61 @@ from app.schemas.account import (
     PersonalLedgerApiIn,
     PropertyApiIn,
 )
-from app.schemas.common import CurrencyCode
+from app.schemas.common import ApiInMixin, ApiOutMixin, CurrencyCode
 from app.schemas.transaction import (
     TransactionApiIn,
     TransactionApiOut,
     TransactionPlaidIn,
 )
-from app.schemas.transactiondeserialiser import TransactionDeserialiserApiOut
 from app.utils.exchangerate import get_exchange_rate
 
 logger = logging.getLogger(__name__)
 
 
-class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
-    db_model = Account
-
-    OUT_MODELS: dict[Type[Account], Type[AccountApiOut]] = {
-        Cash: CashApiOut,
-        Credit: CreditApiOut,
-        Depository: DepositoryApiOut,
-        Loan: LoanApiOut,
-        PersonalLedger: PersonalLedgerApiOut,
-        Property: PropertyApiOut,
-    }
-    IN_MODELS: dict[Type[AccountApiIn], Type[Account]] = {
-        CashApiIn: Cash,
-        CreditApiIn: Credit,
-        DepositoryApiIn: Depository,
-        LoanApiIn: Loan,
-        PersonalLedgerApiIn: PersonalLedger,
-        PropertyApiIn: Property,
-    }
+class __CRUDAccountBase(
+    Generic[OutSchemaT, InSchemaT], CRUDBase[Account, OutSchemaT, InSchemaT]
+):
+    __model__ = Account
+    __out_schemas__: dict[Type[Account], Type[OutSchemaT]]
+    __in_schemas__: dict[Type[InSchemaT], Type[Account]]
 
     @classmethod
     def select(
         cls,
         *,
         user_id: int | None = None,
+        userinstitutionlink_id: int | None = None,
         **kwargs: Any,
     ) -> Select[tuple[Account]]:
         statement = super().select(**kwargs)
         if user_id:
             statement = statement.outerjoin(UserInstitutionLink)
             statement = statement.where(
-                or_(
-                    NonInstitutionalAccount.user_id == user_id,
-                    UserInstitutionLink.user_id == user_id,
-                )
+                (NonInstitutionalAccount.user_id == user_id)
+                | (UserInstitutionLink.user_id == user_id)
             )
+        if userinstitutionlink_id:
+            statement = statement.where(
+                InstitutionalAccount.userinstitutionlink_id == userinstitutionlink_id
+            )
+
         return statement
 
     @classmethod
-    def model_validate(cls, account: Account) -> AccountApiOut:
-        return cls.OUT_MODELS[type(account)].model_validate(account)
+    def model_validate(cls, account: Account) -> OutSchemaT:
+        return cls.__out_schemas__[type(account)].model_validate(account)
 
     @classmethod
-    def create(cls, db: Session, obj_in: AccountApiIn, **kwargs: Any) -> AccountApiOut:
-        obj = cls.IN_MODELS[type(obj_in)].create(db, **obj_in.model_dump(), **kwargs)
+    def create(cls, db: Session, obj_in: InSchemaT, **kwargs: Any) -> OutSchemaT:
+        obj = cls.__in_schemas__[type(obj_in)].create(
+            db, **obj_in.model_dump(), **kwargs
+        )
         return cls.model_validate(obj)
 
     @classmethod
-    def read_transaction_deserialiser(
-        cls, db: Session, id: int
-    ) -> TransactionDeserialiserApiOut:
-        deserialiser = Account.read(db, id)
-        if not deserialiser:
-            raise ObjectNotFoundError(str(TransactionDeserialiser.__tablename__), 0)
-        return TransactionDeserialiserApiOut.model_validate(deserialiser)
-
-    @classmethod
-    def is_synced(cls, db: Session, id: int) -> bool:
-        return Account.read(db, id).is_synced
-
-    @classmethod
     def update(
-        cls, db: Session, id: int, obj_in: AccountApiIn, **kwargs: Any
-    ) -> AccountApiOut:
+        cls, db: Session, id: int, obj_in: InSchemaT, **kwargs: Any
+    ) -> OutSchemaT:
         account_out = super().update(db, id, obj_in, **kwargs)
         cls.update_balance(db, id)
         return account_out
@@ -147,7 +130,7 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         db: Session,
         id: int,
         timestamp: date | None = None,
-    ) -> AccountApiOut:
+    ) -> OutSchemaT:
         account_out = Account.update_balance(db, id, timestamp)
         return cls.model_validate(account_out)
 
@@ -274,35 +257,33 @@ class CRUDAccount(CRUDBase[Account, AccountApiOut, AccountApiIn]):
         return transaction_id
 
 
-class CRUDSyncableAccount(CRUDSyncedBase[Account, AccountPlaidOut, AccountPlaidIn]):
-    db_model = Account
+class CRUDAccount(__CRUDAccountBase[AccountApiOut, AccountApiIn]):
+    __out_schemas__: dict[Type[Account], Type[AccountApiOut]] = {
+        Cash: CashApiOut,
+        Credit: CreditApiOut,
+        Depository: DepositoryApiOut,
+        Loan: LoanApiOut,
+        PersonalLedger: PersonalLedgerApiOut,
+        Property: PropertyApiOut,
+    }
+    __in_schemas__: dict[Type[AccountApiIn], Type[Account]] = {
+        CashApiIn: Cash,
+        CreditApiIn: Credit,
+        DepositoryApiIn: Depository,
+        LoanApiIn: Loan,
+        PersonalLedgerApiIn: PersonalLedger,
+        PropertyApiIn: Property,
+    }
 
-    OUT_MODELS: dict[Type[Account], Type[AccountPlaidOut]] = {
+
+class CRUDSyncableAccount(__CRUDAccountBase[AccountPlaidOut, AccountPlaidIn]):
+    __out_schemas__: dict[Type[Account], Type[AccountPlaidOut]] = {
         Credit: CreditPlaidOut,
         Depository: DepositoryPlaidOut,
         Loan: LoanPlaidOut,
     }
-    IN_MODELS: dict[Type[AccountPlaidIn], Type[Account]] = {
+    __in_schemas__: dict[Type[AccountPlaidIn], Type[Account]] = {
         CreditPlaidIn: Credit,
         DepositoryPlaidIn: Depository,
         LoanPlaidIn: Loan,
     }
-
-    @classmethod
-    def model_validate(cls, account: Account) -> AccountPlaidOut:
-        return cls.OUT_MODELS[type(account)].model_validate(account)
-
-    @classmethod
-    def create(
-        cls, db: Session, obj_in: AccountPlaidIn, **kwargs: Any
-    ) -> AccountPlaidOut:
-        obj = cls.IN_MODELS[type(obj_in)].create(db, **obj_in.model_dump(), **kwargs)
-        return cls.model_validate(obj)
-
-    @classmethod
-    def update(
-        cls, db: Session, id: int, obj_in: AccountPlaidIn, **kwargs: Any
-    ) -> AccountPlaidOut:
-        super().update(db, id, obj_in, **kwargs)
-        account = Account.update_balance(db, id)
-        return cls.model_validate(account)

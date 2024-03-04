@@ -22,6 +22,7 @@ from sqlalchemy.exc import NoResultFound
 
 from app.crud.account import CRUDAccount, CRUDSyncableAccount
 from app.crud.institution import CRUDSyncableInstitution
+from app.crud.replacementpattern import CRUDReplacementPattern
 from app.crud.transaction import CRUDSyncableTransaction, CRUDTransaction
 from app.crud.user import CRUDUser
 from app.crud.userinstitutionlink import (
@@ -111,7 +112,7 @@ def resync_user_institution_link(
         institution_id=institution_out.id,
     )
     for account_in in fetch_accounts(userinstitutionlink_out):
-        account_out = CRUDSyncableAccount.read_by_plaid_id(db, account_in.plaid_id)
+        account_out = CRUDSyncableAccount.read(db, plaid_id=account_in.plaid_id)
         print(account_out)
         account_out = CRUDSyncableAccount.update(db, account_out.id, account_in)
     return userinstitutionlink_out
@@ -131,15 +132,15 @@ def resync_transactions(
     user_institution_link = CRUDSyncableUserInstitutionLink.read(
         db, id=userinstitutionlink_id
     )
-    replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, userinstitutionlink_id
+    replacement_pattern = CRUDReplacementPattern.read(
+        db, userinstitutionlink_id=userinstitutionlink_id
     )
     for transaction_in in fetch_transactions(
         db, user_institution_link, start_date, end_date, replacement_pattern
     ):
         try:
-            transaction_out = CRUDSyncableTransaction.read_by_plaid_id(
-                db, transaction_in.plaid_id
+            transaction_out = CRUDSyncableTransaction.read(
+                db, plaid_id=transaction_in.plaid_id
             )
         except NoResultFound:
             print(
@@ -176,8 +177,8 @@ def read_many(
     user_institution_link = CRUDSyncableUserInstitutionLink.read(
         db, id=userinstitutionlink_id
     )
-    replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, userinstitutionlink_id
+    replacement_pattern = CRUDReplacementPattern.read(
+        db, userinstitutionlink_id=userinstitutionlink_id
     )
     return fetch_transactions(
         db, user_institution_link, start_date, end_date, replacement_pattern
@@ -188,8 +189,8 @@ def read_many(
 def reset_many_transactions_to_metadata(
     db: DBSession, me: CurrentSuperuser, userinstitutionlink_id: int
 ) -> Iterable[TransactionPlaidOut]:
-    replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, userinstitutionlink_id
+    replacement_pattern = CRUDReplacementPattern.read(
+        db, userinstitutionlink_id=userinstitutionlink_id
     )
     for t in CRUDSyncableTransaction.read_many(
         db, userinstitutionlink_id=userinstitutionlink_id
@@ -210,5 +211,5 @@ def reset_transaction_to_metadata(
     userinstitutionlink_id: int,
     transaction_id: int,
 ) -> TransactionPlaidOut:
-    rp = CRUDUserInstitutionLink.read_replacement_pattern(db, userinstitutionlink_id)
+    rp = CRUDReplacementPattern.read(db, userinstitutionlink_id=userinstitutionlink_id)
     return _reset_transaction_to_metadata(db, transaction_id, rp)

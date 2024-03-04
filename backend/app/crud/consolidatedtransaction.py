@@ -26,7 +26,6 @@ from sqlalchemy import (
     asc,
     desc,
     func,
-    or_,
     select,
     case,
 )
@@ -118,10 +117,8 @@ class CRUDConsolidatedTransaction:
 
         # WHERE
         statement = statement.where(
-            or_(
-                NonInstitutionalAccount.user_id == user_id,
-                UserInstitutionLink.user_id == user_id,
-            )
+            (NonInstitutionalAccount.user_id == user_id)
+            | (UserInstitutionLink.user_id == user_id)
         )
 
         if not consolidated:

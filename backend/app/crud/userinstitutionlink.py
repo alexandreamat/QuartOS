@@ -13,19 +13,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Any, Iterable
+from typing import Any, Generic
 
 from sqlalchemy import Select
-from sqlalchemy.orm import Session
 
-from app.crud.account import CRUDSyncableAccount
-from app.crud.common import CRUDBase, CRUDSyncedBase
+from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 from app.models.user import User
 from app.models.userinstitutionlink import (
     UserInstitutionLink,
 )
-from app.schemas.account import AccountPlaidOut
-from app.schemas.replacementpattern import ReplacementPatternApiOut
 from app.schemas.userinstitutionlink import (
     UserInstitutionLinkApiOut,
     UserInstitutionLinkApiIn,
@@ -34,11 +30,10 @@ from app.schemas.userinstitutionlink import (
 )
 
 
-class CRUDUserInstitutionLink(
-    CRUDBase[UserInstitutionLink, UserInstitutionLinkApiOut, UserInstitutionLinkApiIn],
+class __CRUDUserInstitutionLinkBase(
+    Generic[OutSchemaT, InSchemaT], CRUDBase[UserInstitutionLink, OutSchemaT, InSchemaT]
 ):
-    db_model = UserInstitutionLink
-    out_model = UserInstitutionLinkApiOut
+    __model__ = UserInstitutionLink
 
     @classmethod
     def select(
@@ -50,26 +45,16 @@ class CRUDUserInstitutionLink(
             statement = statement.where(User.id == user_id)
         return statement
 
-    @classmethod
-    def read_replacement_pattern(
-        cls, db: Session, id: int
-    ) -> ReplacementPatternApiOut | None:
-        rp = UserInstitutionLink.read(db, id).institution.replacementpattern
-        return ReplacementPatternApiOut.model_validate(rp) if rp else None
+
+class CRUDUserInstitutionLink(
+    __CRUDUserInstitutionLinkBase[UserInstitutionLinkApiOut, UserInstitutionLinkApiIn],
+):
+    __out_schema__ = UserInstitutionLinkApiOut
 
 
 class CRUDSyncableUserInstitutionLink(
-    CRUDSyncedBase[
-        UserInstitutionLink, UserInstitutionLinkPlaidOut, UserInstitutionLinkPlaidIn
+    __CRUDUserInstitutionLinkBase[
+        UserInstitutionLinkPlaidOut, UserInstitutionLinkPlaidIn
     ]
 ):
-    db_model = UserInstitutionLink
-    out_model = UserInstitutionLinkPlaidOut
-
-    @classmethod
-    def read_syncable_accounts(cls, db: Session, id: int) -> Iterable[AccountPlaidOut]:
-        uil = UserInstitutionLink.read(db, id)
-        for ia in uil.institutionalaccounts:
-            if not ia.plaid_id:
-                continue
-            yield CRUDSyncableAccount.model_validate(ia)
+    __out_schema__ = UserInstitutionLinkPlaidOut

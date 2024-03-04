@@ -25,8 +25,8 @@ from app.schemas.merchant import MerchantApiOut, MerchantApiIn
 class CRUDMerchant(
     CRUDBase[Merchant, MerchantApiOut, MerchantApiIn],
 ):
-    db_model = Merchant
-    out_model = MerchantApiOut
+    __model__ = Merchant
+    __out_schema__ = MerchantApiOut
 
     @classmethod
     def select(

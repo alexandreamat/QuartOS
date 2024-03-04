@@ -38,8 +38,8 @@ class CRUDTransactionDeserialiser(
         TransactionDeserialiserApiIn,
     ],
 ):
-    db_model = TransactionDeserialiser
-    out_model = TransactionDeserialiserApiOut
+    __model__ = TransactionDeserialiser
+    __out_schema__ = TransactionDeserialiserApiOut
 
     @classmethod
     def select(

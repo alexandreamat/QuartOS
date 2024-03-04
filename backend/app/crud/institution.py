@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from app.crud.common import CRUDBase, CRUDSyncedBase
+from typing import Generic
+from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 from app.models.institution import Institution
 from app.schemas.institution import (
     InstitutionApiOut,
@@ -23,15 +24,19 @@ from app.schemas.institution import (
 )
 
 
-class CRUDInstitution(
-    CRUDBase[Institution, InstitutionApiOut, InstitutionApiIn],
+class __CRUDInstitutionBase(
+    Generic[OutSchemaT, InSchemaT], CRUDBase[Institution, OutSchemaT, InSchemaT]
 ):
-    db_model = Institution
-    out_model = InstitutionApiOut
+    __model__ = Institution
+
+
+class CRUDInstitution(
+    __CRUDInstitutionBase[InstitutionApiOut, InstitutionApiIn],
+):
+    __out_model__ = InstitutionApiOut
 
 
 class CRUDSyncableInstitution(
-    CRUDSyncedBase[Institution, InstitutionPlaidOut, InstitutionPlaidIn],
+    __CRUDInstitutionBase[InstitutionPlaidOut, InstitutionPlaidIn],
 ):
-    db_model = Institution
-    out_model = InstitutionPlaidOut
+    __out_model__ = InstitutionPlaidOut

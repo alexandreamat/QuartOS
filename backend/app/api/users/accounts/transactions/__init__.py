@@ -105,8 +105,10 @@ def delete(
     account_id: int,
     transaction_id: int,
 ) -> int:
-    CRUDTransaction.read(db, id=transaction_id, user_id=me.id, account_id=account_id)
-    if CRUDTransaction.is_synced(db, transaction_id):
+    transaction_out = CRUDTransaction.read(
+        db, id=transaction_id, user_id=me.id, account_id=account_id
+    )
+    if transaction_out.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
     return CRUDAccount.delete_transaction(db, account_id, transaction_id)
