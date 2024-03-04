@@ -20,11 +20,8 @@ from typing import Any, Iterable
 
 import pydantic_core
 from sqlalchemy import (
-    ColumnExpressionArgument,
     Row,
     Select,
-    asc,
-    desc,
     func,
     select,
     case,
@@ -32,7 +29,11 @@ from sqlalchemy import (
 from sqlalchemy.orm import Session
 
 from app.models.account import Account, NonInstitutionalAccount
-from app.models.common import CalculatedColumnsMeta
+from app.models.common import (
+    CalculatedColumnsMeta,
+    get_order_by_expressions,
+    get_where_expressions,
+)
 from app.models.transaction import Transaction
 from app.models.transactiongroup import TransactionGroup
 from app.models.userinstitutionlink import UserInstitutionLink
@@ -59,22 +60,6 @@ class ConsolidatedTransaction(metaclass=CalculatedColumnsMeta):
     is_synced = case((func.min(Transaction.plaid_id) != None, True), else_=False)
 
 
-def get_query_expressions(
-    model: Any, **kwargs: Any
-) -> Iterable[ColumnExpressionArgument[bool]]:
-    # Handle kwargs like amount__gt, amount__le__abs, timestamp__eq...
-    # to construct model.amount > arg, abs(model.amount) <= arg, ...
-    for kw, arg in kwargs.items():
-        if arg is None:
-            continue
-        attr_name, *ops = kw.split("__")
-        attr = getattr(model, attr_name)
-        if len(ops) == 2:
-            f = {"abs": abs}[ops[1]]
-            attr = f(attr)
-        yield getattr(attr, f"__{ops[0]}__")(arg)
-
-
 class CRUDConsolidatedTransaction:
     @classmethod
     def select(
@@ -90,7 +75,7 @@ class CRUDConsolidatedTransaction:
     ) -> Select[tuple[Any, ...]]:
         model = ConsolidatedTransaction if consolidated else Transaction
 
-        exprs = get_query_expressions(model, **kwargs)
+        exprs = get_where_expressions(model, **kwargs)
         if search:
             exprs = itertools.chain(get_search_expressions(search, model.name))
 
@@ -136,9 +121,8 @@ class CRUDConsolidatedTransaction:
 
         # ORDER BY
         if order_by:
-            attr, op = order_by.split("__")
-            f = {"asc": asc, "desc": desc}[op]
-            statement = statement.order_by(f(getattr(model, attr)), f(model.id))
+            order_exprs = get_order_by_expressions(model, order_by)
+            statement = statement.order_by(*order_exprs)
 
         # OFFSET and LIMIT
         if per_page:

@@ -42,7 +42,7 @@ class User(Base):
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> "User":
-        db_user = db.scalars(cls.select(email=email)).one()
+        db_user = db.scalars(cls.select(email__eq=email)).one()
         assert db_user.hashed_password
         verify_password(password, db_user.hashed_password)
         return db_user

@@ -47,51 +47,6 @@ class Account(SyncableBase):
         "polymorphic_identity": "account",
     }
 
-    @classmethod
-    def update_balance(
-        cls, db: Session, id: int, timestamp: date | None = None
-    ) -> "Account":
-        account = Account.read(db, id)
-        transactions_query: Query = account.transactions  # type: ignore
-
-        if timestamp:
-            prev_transaction: Transaction = (
-                transactions_query.where(Transaction.timestamp < timestamp)
-                .order_by(*Transaction.get_timestamp_desc_clauses())
-                .first()
-            )
-            if prev_transaction:
-                prev_balance = prev_transaction.account_balance
-            else:
-                prev_balance = account.initial_balance
-            transactions_query = transactions_query.where(
-                Transaction.timestamp >= timestamp
-            )
-        else:
-            prev_balance = account.initial_balance
-
-        transactions_query = transactions_query.order_by(
-            *Transaction.get_timestamp_asc_clauses()
-        ).yield_per(100)
-
-        for result in transactions_query:
-            transaction: Transaction = result
-            account_balance = prev_balance + transaction.amount
-            Transaction.update(db, transaction.id, account_balance=account_balance)
-            prev_balance = transaction.account_balance
-
-        return cls.read(db, id)
-
-    @property
-    def balance(self) -> Decimal:
-        query = self.transactions
-        first_transaction: Transaction | None = query.order_by(  # type: ignore
-            *Transaction.get_timestamp_desc_clauses()
-        ).first()
-        if not first_transaction:
-            return self.initial_balance
-        return first_transaction.account_balance
-
 
 class InstitutionalAccount(Account):
     is_institutional = True
