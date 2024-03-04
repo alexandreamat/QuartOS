@@ -17,7 +17,13 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, TypeVar
 
 from sqlalchemy import ForeignKey, desc
-from sqlalchemy.orm import Mapped, relationship, mapped_column, WriteOnlyMapped
+from sqlalchemy.orm import (
+    Mapped,
+    relationship,
+    mapped_column,
+    WriteOnlyMapped,
+    object_session,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from app.models.common import Base, SyncableBase
@@ -43,9 +49,6 @@ class Account(SyncableBase):
         cascade="all, delete",
         order_by=(desc(Transaction.timestamp), desc(Transaction.id)),
     )
-    last_transaction: Mapped[Transaction] = relationship(
-        viewonly=True, order_by=(desc(Transaction.timestamp), desc(Transaction.id))
-    )
 
     __mapper_args__ = {
         "polymorphic_on": "type",
@@ -54,8 +57,11 @@ class Account(SyncableBase):
 
     @hybrid_property
     def balance(self) -> Decimal:
-        if self.last_transaction:
-            return self.last_transaction.account_balance
+        session = object_session(self)
+        assert session
+        transaction = session.scalars(self.transactions.select()).first()
+        if transaction:
+            return transaction.account_balance
         return self.initial_balance
 
 
