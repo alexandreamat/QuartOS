@@ -243,7 +243,7 @@ class __CRUDAccountBase(
         cls, db: Session, account_id: int, default_currency_code: CurrencyCode
     ) -> None:
         account = Account.read(db, id__eq=account_id)
-        for transaction in account.transactions:
+        for transaction in db.scalars(account.transactions.select()).yield_per(50):
             transaction.exchange_rate = get_exchange_rate(
                 account.currency_code, default_currency_code, transaction.timestamp
             )
