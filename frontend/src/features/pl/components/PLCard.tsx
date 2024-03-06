@@ -19,7 +19,6 @@ import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
 import { addDays, format } from "date-fns";
 import { Card, Header, Label, Placeholder, Step } from "semantic-ui-react";
-import { stringToDate } from "utils/time";
 
 export default function PLCard(props: {
   detailedPlStatement?: PlStatementApiOut;
@@ -29,12 +28,8 @@ export default function PLCard(props: {
   onClickExpenses?: () => void;
   loading?: boolean;
 }) {
-  const timestampGe =
-    props.detailedPlStatement &&
-    stringToDate(props.detailedPlStatement.timestamp__ge);
-  const timestampLt =
-    props.detailedPlStatement &&
-    stringToDate(props.detailedPlStatement.timestamp__lt);
+  const timestampGe = props.detailedPlStatement?.timestamp__ge;
+  const timestampLt = props.detailedPlStatement?.timestamp__lt;
   const today = new Date();
   const isOngoing =
     timestampGe && timestampLt && timestampGe <= today && today < timestampLt;
@@ -92,7 +87,7 @@ export default function PLCard(props: {
             <Step.Title>Income</Step.Title>
             <Step.Content>
               <CurrencyLabel
-                amount={Number(props.detailedPlStatement?.income)}
+                amount={props.detailedPlStatement?.income}
                 currencyCode={me.data?.default_currency_code}
                 loading={props.loading}
               />
@@ -105,7 +100,7 @@ export default function PLCard(props: {
             <Step.Title>Expenses</Step.Title>
             <Step.Content>
               <CurrencyLabel
-                amount={Number(props.detailedPlStatement?.expenses)}
+                amount={props.detailedPlStatement?.expenses}
                 currencyCode={me.data?.default_currency_code}
                 loading={props.loading}
               />
@@ -120,8 +115,8 @@ export default function PLCard(props: {
             <CurrencyLabel
               amount={
                 props.detailedPlStatement &&
-                Number(props.detailedPlStatement.expenses) +
-                  Number(props.detailedPlStatement.income)
+                props.detailedPlStatement.expenses +
+                  props.detailedPlStatement.income
               }
               currencyCode={me.data?.default_currency_code}
               loading={props.loading}

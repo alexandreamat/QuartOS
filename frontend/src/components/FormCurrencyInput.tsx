@@ -22,7 +22,7 @@ import CurrencyLabel from "./CurrencyLabel";
 
 export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
   label?: string;
-  field: ReturnType<typeof useFormField<string>>;
+  field: ReturnType<typeof useFormField<number>>;
   currency?: string;
   query?: TypedUseQueryHookResult<R, A, Q>;
   readOnly?: boolean;
@@ -35,12 +35,14 @@ export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
         <label>{label && capitaliseFirstLetter(label)}</label>
         <CurrencyLabel
           currencyCode={props.currency}
-          amount={Number(props.field.value)}
+          amount={props.field.value}
           loading={props.query?.isLoading}
         />
       </Form.Field>
     );
   }
+
+  const valueStr = props.field.value?.toFixed(2);
 
   return (
     <Form.Input
@@ -50,10 +52,10 @@ export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
       type="number"
       placeholder={label && "Enter " + label}
       required
-      value={props.field.value}
-      onChange={(_, data) => {
+      value={valueStr}
+      onChange={(_, data: { value: string }) => {
         props.field.reset();
-        props.field.set(data.value as string);
+        props.field.set(Number(data.value));
       }}
       labelPosition="left"
       error={props.field.isError || props.query?.isError}

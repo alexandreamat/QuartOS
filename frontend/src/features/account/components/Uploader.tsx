@@ -34,6 +34,7 @@ import {
   Modal,
 } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
+import { dateToString } from "utils/time";
 
 export default function Uploader(props: {
   account: AccountApiOut;
@@ -118,7 +119,11 @@ export default function Uploader(props: {
     try {
       await createTransactions({
         accountId: props.account.id,
-        body: transactions,
+        body: transactions.map((t) => ({
+          ...t,
+          amount: t.amount.toFixed(2),
+          timestamp: dateToString(t.timestamp),
+        })),
       }).unwrap();
     } catch (error) {
       logMutationError(error, createTransactionsResult);

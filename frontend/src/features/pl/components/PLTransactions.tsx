@@ -21,6 +21,7 @@ import {
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
 import { Card, Loader } from "semantic-ui-react";
+import { dateToString } from "utils/time";
 
 export default function PLTransactions(props: {
   plStatement: PlStatementApiOut;
@@ -37,8 +38,8 @@ export default function PLTransactions(props: {
 
   const transactionsQuery =
     api.endpoints.readManyUsersMeTransactionsGet.useQuery({
-      timestampGe: props.plStatement.timestamp__ge,
-      timestampLt: props.plStatement.timestamp__lt,
+      timestampGe: dateToString(props.plStatement.timestamp__ge),
+      timestampLt: dateToString(props.plStatement.timestamp__lt),
       categoryIdEq: props.categoryId,
       [amountKey]: 0,
       orderBy: orderByVal,
@@ -53,16 +54,15 @@ export default function PLTransactions(props: {
 
   const transactions = transactionsQuery.data;
 
-  const totalAmount = props.showIncome
-    ? Number(props.plStatement.income)
-    : Number(props.plStatement.expenses);
+  const totalAmount =
+    props.plStatement[props.showIncome ? "income" : "expenses"];
 
   let cumulativeAmount = 0;
 
   return (
     <Card.Group style={{ margin: 0 }}>
       {transactions.map((t) => {
-        cumulativeAmount += Number(t.amount_default_currency);
+        cumulativeAmount += t.amount_default_currency;
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
         if (t.consolidated)
           return (

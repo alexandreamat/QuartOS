@@ -14,14 +14,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import useFormField from "hooks/useFormField";
-import { Form, InputOnChangeData } from "semantic-ui-react";
+import { Form } from "semantic-ui-react";
 import FormCurrencyCodeDropdown from "./FormCurrencyCodeDropdown";
 
 export default function FormCurrencyInputs(props: {
   label: string;
-  amount: ReturnType<typeof useFormField<string>>;
+  amount: ReturnType<typeof useFormField<number>>;
   currencyCode: ReturnType<typeof useFormField<string>>;
 }) {
+  const amountStr = props.amount.value?.toFixed(2) || "";
   return (
     <Form.Group widths="equal">
       <FormCurrencyCodeDropdown currencyCode={props.currencyCode} />
@@ -34,13 +35,13 @@ export default function FormCurrencyInputs(props: {
         label={props.label}
         placeholder={"Enter " + props.label}
         required
-        value={props.amount.value}
+        value={amountStr}
         onChange={(
           e: React.ChangeEvent<HTMLInputElement>,
-          data: InputOnChangeData,
+          { value }: { value: string },
         ) => {
           props.amount.reset();
-          props.amount.set(data.value as string);
+          props.amount.set(Number(value));
         }}
         error={props.amount.isError}
       />
