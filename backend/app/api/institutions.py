@@ -33,14 +33,14 @@ def create(
     db: DBSession,
     me: CurrentSuperuser,
     institution_in: InstitutionApiIn,
-    transactiondeserialiser_id: int | None = None,
-    replacementpattern_id: int | None = None,
+    transaction_deserialiser_id: int | None = None,
+    replacement_pattern_id: int | None = None,
 ) -> InstitutionApiOut:
     return CRUDInstitution.create(
         db,
         institution_in,
-        transactiondeserialiser_id=transactiondeserialiser_id,
-        replacementpattern_id=replacementpattern_id,
+        transaction_deserialiser_id=transaction_deserialiser_id,
+        replacement_pattern_id=replacement_pattern_id,
     )
 
 
@@ -71,15 +71,15 @@ def update(
     me: CurrentSuperuser,
     institution_id: int,
     institution_in: InstitutionApiIn,
-    transactiondeserialiser_id: int | None = None,
-    replacementpattern_id: int | None = None,
+    transaction_deserialiser_id: int | None = None,
+    replacement_pattern_id: int | None = None,
 ) -> InstitutionApiOut:
     return CRUDInstitution.update(
         db,
         institution_id,
         institution_in,
-        transactiondeserialiser_id=transactiondeserialiser_id,
-        replacementpattern_id=replacementpattern_id,
+        transaction_deserialiser_id=transaction_deserialiser_id,
+        replacement_pattern_id=replacement_pattern_id,
     )
 
 

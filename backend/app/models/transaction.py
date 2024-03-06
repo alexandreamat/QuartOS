@@ -68,15 +68,3 @@ class Transaction(SyncableBase):
         TWO_PACES = Decimal(10) ** -2
         amount_default_currency = self.amount * value
         self.amount_default_currency = amount_default_currency.quantize(TWO_PACES)
-
-    @property
-    def currency_code(self) -> str:
-        return self.account.currency_code
-
-    @classmethod
-    def get_timestamp_desc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
-        return desc(cls.timestamp), desc(cls.id)
-
-    @classmethod
-    def get_timestamp_asc_clauses(cls) -> tuple[ClauseElement, ClauseElement]:
-        return asc(cls.timestamp), asc(cls.id)

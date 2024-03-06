@@ -29,27 +29,9 @@ logger = logging.getLogger(__name__)
 
 
 class CRUDUser(CRUDBase[User, UserApiOut, UserApiIn]):
-    db_model = User
-    out_model = UserApiOut
-
-    @classmethod
-    def read_by_email(cls, db: Session, email: str) -> UserApiOut:
-        return UserApiOut.model_validate(User.read_by_email(db, email=email))
+    __model__ = User
+    __out_schema__ = UserApiOut
 
     @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> UserApiOut:
         return UserApiOut.model_validate(User.authenticate(db, email, password))
-
-    @classmethod
-    def update_transaction_group(
-        cls,
-        db: Session,
-        user_id: int,
-        transaction_group_id: int,
-        transaction_group_in: TransactionGroupApiIn,
-    ) -> TransactionGroupApiOut:
-        user_out = cls.read(db, id=user_id)
-        transaction_group = TransactionGroup.update(
-            db, transaction_group_id, **transaction_group_in.model_dump()
-        )
-        return TransactionGroupApiOut.model_validate(transaction_group)

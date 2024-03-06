@@ -35,7 +35,7 @@ import { Flows } from "features/transaction/components/Flows";
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 
 export function TransactionCard(props: {
-  timestamp?: string;
+  timestamp?: Date;
   categoryId?: number;
   name?: string;
   amount?: number;
@@ -162,8 +162,9 @@ function TransactionCardPreview(props: {
     <TransactionCard
       accountId={props.accountId}
       checked={props.checked}
-      amount={Number(props.transaction?.amount)}
-      categoryId={props.transaction?.category_id || undefined}
+      onCheckedChange={props.onCheckedChange}
+      amount={props.transaction?.amount}
+      categoryId={props.transaction?.category_id}
       name={props.transaction?.name}
       timestamp={props.transaction?.timestamp}
     />
@@ -200,14 +201,14 @@ function TransactionCardSimple(props: {
       checked={props.checked}
       onFileDrop={handleFileDrop}
       loading={props.loading}
-      accountBalance={Number(props.transaction?.account_balance)}
-      amount={Number(
+      accountBalance={props.transaction?.account_balance}
+      amount={
         props.currency === "account"
           ? props.transaction?.amount
-          : props.transaction?.amount_default_currency,
-      )}
+          : props.transaction?.amount_default_currency
+      }
       currency={props.currency}
-      categoryId={props.transaction?.category_id || undefined}
+      categoryId={props.transaction?.category_id}
       name={props.transaction?.name}
       timestamp={props.transaction?.timestamp}
       onCheckedChange={props.onCheckedChange}
@@ -280,15 +281,15 @@ function TransactionCardGroup(props: {
 
   return (
     <TransactionCard
-      accountId={props.transaction.account_id || undefined}
+      accountId={props.transaction.account_id}
       checkBoxDisabled={props.checkBoxDisabled}
       checked={props.checked}
       loading={props.loading}
       onCheckedChange={props.onCheckedChange}
-      amount={Number(props.transaction.amount_default_currency)}
+      amount={props.transaction.amount_default_currency}
       timestamp={props.transaction.timestamp}
       name={props.transaction.name}
-      categoryId={props.transaction.category_id || undefined}
+      categoryId={props.transaction.category_id}
       currency="default"
       buttons={
         <>

@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from sqlalchemy import select
 
 from sqlalchemy.orm import Mapped, Session
 
@@ -40,12 +41,8 @@ class User(Base):
         self.hashed_password = get_password_hash(value)
 
     @classmethod
-    def read_by_email(cls, db: Session, email: str) -> "User":
-        return db.scalars(cls.select().where(cls.email == email)).one()
-
-    @classmethod
     def authenticate(cls, db: Session, email: str, password: str) -> "User":
-        db_user = cls.read_by_email(db, email=email)
+        db_user = db.scalars(cls.select(email__eq=email)).one()
         assert db_user.hashed_password
         verify_password(password, db_user.hashed_password)
         return db_user

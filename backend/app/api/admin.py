@@ -22,6 +22,7 @@ from sqlalchemy.exc import NoResultFound
 
 from app.crud.account import CRUDAccount, CRUDSyncableAccount
 from app.crud.institution import CRUDSyncableInstitution
+from app.crud.replacementpattern import CRUDReplacementPattern
 from app.crud.transaction import CRUDSyncableTransaction, CRUDTransaction
 from app.crud.user import CRUDUser
 from app.crud.userinstitutionlink import (
@@ -89,57 +90,57 @@ def update_transactions_amount_default_currency(
             )
 
 
-@router.put("/userinstitutionlinks/{userinstitutionlink_id}/resync")
+@router.put("/user-institution-links/{user_institution_link_id}/resync")
 def resync_user_institution_link(
-    db: DBSession, me: CurrentSuperuser, userinstitutionlink_id: int
+    db: DBSession, me: CurrentSuperuser, user_institution_link_id: int
 ) -> UserInstitutionLinkPlaidOut:
-    userinstitutionlink_out = CRUDSyncableUserInstitutionLink.read(
-        db, id=userinstitutionlink_id
+    user_institution_link_out = CRUDSyncableUserInstitutionLink.read(
+        db, id=user_institution_link_id
     )
     institution_out = CRUDSyncableInstitution.read(
-        db, id=userinstitutionlink_out.institution_id
+        db, id=user_institution_link_out.institution_id
     )
-    userinstitutionlink_in = fetch_user_institution_link(
-        userinstitutionlink_out.access_token
+    user_institution_link_in = fetch_user_institution_link(
+        user_institution_link_out.access_token
     )
-    userinstitutionlink_in.cursor = userinstitutionlink_out.cursor
-    userinstitutionlink_out = CRUDSyncableUserInstitutionLink.update(
+    user_institution_link_in.cursor = user_institution_link_out.cursor
+    user_institution_link_out = CRUDSyncableUserInstitutionLink.update(
         db,
-        userinstitutionlink_out.id,
-        userinstitutionlink_in,
+        user_institution_link_out.id,
+        user_institution_link_in,
         user_id=me.id,
         institution_id=institution_out.id,
     )
-    for account_in in fetch_accounts(userinstitutionlink_out):
-        account_out = CRUDSyncableAccount.read_by_plaid_id(db, account_in.plaid_id)
+    for account_in in fetch_accounts(user_institution_link_out):
+        account_out = CRUDSyncableAccount.read(db, plaid_id=account_in.plaid_id)
         print(account_out)
         account_out = CRUDSyncableAccount.update(db, account_out.id, account_in)
-    return userinstitutionlink_out
+    return user_institution_link_out
 
 
 @router.put(
-    "/userinstitutionlinks/{userinstitutionlink_id}/resync/{start_date}/{end_date}"
+    "/user-institution-links/{user_institution_link_id}/resync/{start_date}/{end_date}"
 )
 def resync_transactions(
     db: DBSession,
     me: CurrentSuperuser,
-    userinstitutionlink_id: int,
+    user_institution_link_id: int,
     start_date: date,
     end_date: date,
     dry_run: bool = True,
 ) -> Iterable[TransactionPlaidOut]:
     user_institution_link = CRUDSyncableUserInstitutionLink.read(
-        db, id=userinstitutionlink_id
+        db, id=user_institution_link_id
     )
-    replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, userinstitutionlink_id
+    replacement_pattern = CRUDReplacementPattern.read(
+        db, user_institution_link_id=user_institution_link_id
     )
     for transaction_in in fetch_transactions(
         db, user_institution_link, start_date, end_date, replacement_pattern
     ):
         try:
-            transaction_out = CRUDSyncableTransaction.read_by_plaid_id(
-                db, transaction_in.plaid_id
+            transaction_out = CRUDSyncableTransaction.read(
+                db, plaid_id=transaction_in.plaid_id
             )
         except NoResultFound:
             print(
@@ -164,51 +165,53 @@ def resync_transactions(
 
 
 @router.get(
-    "/userinstitutionlinks/{userinstitutionlink_id}/transactions/{start_date}/{end_date}"
+    "/user-institution-links/{user_institution_link_id}/transactions/{start_date}/{end_date}"
 )
 def read_many(
     db: DBSession,
     me: CurrentSuperuser,
-    userinstitutionlink_id: int,
+    user_institution_link_id: int,
     start_date: date,
     end_date: date,
 ) -> Iterable[TransactionPlaidIn]:
     user_institution_link = CRUDSyncableUserInstitutionLink.read(
-        db, id=userinstitutionlink_id
+        db, id=user_institution_link_id
     )
-    replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, userinstitutionlink_id
+    replacement_pattern = CRUDReplacementPattern.read(
+        db, user_institution_link_id=user_institution_link_id
     )
     return fetch_transactions(
         db, user_institution_link, start_date, end_date, replacement_pattern
     )
 
 
-@router.put("/userinstitutionlinks/{userinstitutionlink_id}/reset-to-metadata")
+@router.put("/user-institution-links/{user_institution_link_id}/reset-to-metadata")
 def reset_many_transactions_to_metadata(
-    db: DBSession, me: CurrentSuperuser, userinstitutionlink_id: int
+    db: DBSession, me: CurrentSuperuser, user_institution_link_id: int
 ) -> Iterable[TransactionPlaidOut]:
-    replacement_pattern = CRUDUserInstitutionLink.read_replacement_pattern(
-        db, userinstitutionlink_id
+    replacement_pattern = CRUDReplacementPattern.read(
+        db, user_institution_link_id=user_institution_link_id
     )
     for t in CRUDSyncableTransaction.read_many(
-        db, userinstitutionlink_id=userinstitutionlink_id
+        db, user_institution_link_id=user_institution_link_id
     ):
         yield _reset_transaction_to_metadata(db, t.id, replacement_pattern)
     for a in CRUDSyncableAccount.read_many(
-        db, userinstitutionlink_id=userinstitutionlink_id
+        db, user_institution_link_id=user_institution_link_id
     ):
         CRUDAccount.update_balance(db, a.id)
 
 
 @router.put(
-    "/userinstitutionlinks/{userinstitutionlink_id}/transactions/{transaction_id}/reset-to-metadata"
+    "/user-institution-links/{user_institution_link_id}/transactions/{transaction_id}/reset-to-metadata"
 )
 def reset_transaction_to_metadata(
     db: DBSession,
     me: CurrentSuperuser,
-    userinstitutionlink_id: int,
+    user_institution_link_id: int,
     transaction_id: int,
 ) -> TransactionPlaidOut:
-    rp = CRUDUserInstitutionLink.read_replacement_pattern(db, userinstitutionlink_id)
+    rp = CRUDReplacementPattern.read(
+        db, user_institution_link_id=user_institution_link_id
+    )
     return _reset_transaction_to_metadata(db, transaction_id, rp)

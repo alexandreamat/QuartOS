@@ -55,9 +55,9 @@ export default function Transactions() {
   const [consolidateTransactions, consolidateTransactionsResult] =
     api.endpoints.consolidateUsersMeTransactionsPost.useMutation();
   const [mergeTransactionGroups, mergeTransactionGroupsResult] =
-    api.endpoints.mergeUsersMeTransactiongroupsMergePost.useMutation();
+    api.endpoints.mergeUsersMeTransactionGroupsMergePost.useMutation();
   const [addTransactions, addTransactionsResult] =
-    api.endpoints.addUsersMeTransactiongroupsTransactionGroupIdTransactionsPut.useMutation();
+    api.endpoints.addUsersMeTransactionGroupsTransactionGroupIdTransactionsPut.useMutation();
 
   async function handleConsolidateTransactions() {
     try {

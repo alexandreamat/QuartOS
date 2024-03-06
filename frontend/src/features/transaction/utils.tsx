@@ -14,17 +14,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import { TransactionApiIn, TransactionApiOut } from "app/services/api";
-import { formatDateParam, stringToDate } from "utils/time";
 import { TransactionApiInForm } from "./types";
 
 export function transactionApiOutToForm(
   transaction: TransactionApiOut,
   form: TransactionApiInForm,
 ) {
-  form.amountStr.set(transaction.amount);
-  form.timestamp.set(
-    transaction.timestamp ? stringToDate(transaction.timestamp) : new Date(),
-  );
+  form.amount.set(transaction.amount);
+  form.timestamp.set(transaction.timestamp || new Date());
   form.name.set(transaction.name);
   form.accountId.set(transaction.account_id);
 }
@@ -33,8 +30,8 @@ export function transactionFormToApiIn(
   form: TransactionApiInForm,
 ): TransactionApiIn {
   return {
-    amount: form.amountStr.value!,
-    timestamp: formatDateParam(form.timestamp.value!),
+    amount: form.amount.value!,
+    timestamp: form.timestamp.value!,
     name: form.name.value!,
     category_id: form.categoryId.value!,
   };
