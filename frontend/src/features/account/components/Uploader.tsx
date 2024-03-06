@@ -17,6 +17,7 @@ import {
   AccountApiOut,
   BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost,
   api,
+  transactionApiInToRaw,
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
@@ -34,7 +35,6 @@ import {
   Modal,
 } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
-import { dateToString } from "utils/time";
 
 export default function Uploader(props: {
   account: AccountApiOut;
@@ -118,11 +118,7 @@ export default function Uploader(props: {
     try {
       await createTransactions({
         accountId: props.account.id,
-        body: transactions.map((t) => ({
-          ...t,
-          amount: t.amount.toFixed(2),
-          timestamp: dateToString(t.timestamp),
-        })),
+        body: transactions.map(transactionApiInToRaw),
       }).unwrap();
     } catch (error) {
       logMutationError(error, createTransactionsResult);

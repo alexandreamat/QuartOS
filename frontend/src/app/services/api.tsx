@@ -176,7 +176,7 @@ type EnhancedDefs = Omit<
   > &
   EnhancedDefinition<
     "createManyUsersMeAccountsAccountIdTransactionsBatchPost",
-    TransactionApiOut
+    TransactionApiOut[]
   > &
   EnhancedDefinition<
     "createUsersMeAccountsAccountIdTransactionsPost",
@@ -320,7 +320,8 @@ const enhancedApi = generatedApi.enhanceEndpoints<TagTypes, EnhancedDefs>({
       ],
     },
     createManyUsersMeAccountsAccountIdTransactionsBatchPost: {
-      transformResponse: transactionApiOutFromRaw,
+      transformResponse: (r: TransactionApiOutRaw[]) =>
+        r.map(transactionApiOutFromRaw),
     },
     readManyUsersMeTransactionGroupsTransactionGroupIdTransactionsGet: {
       transformResponse: (r: TransactionApiOutRaw[]) =>
