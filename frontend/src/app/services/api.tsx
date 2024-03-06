@@ -156,6 +156,7 @@ type EnhancedDefs = Omit<
   | "readUsersMeAccountsAccountIdGet"
   | "getManyPlStatementsUsersMeAnalyticsGet"
   | "getDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLtGet"
+  | "readManyUsersMeAccountsAccountIdTransactionsGet"
 > &
   EnhancedDefinition<
     "readManyUsersMeTransactionsGet",
@@ -187,6 +188,10 @@ type EnhancedDefs = Omit<
   > &
   EnhancedDefinition<
     "readManyUsersMeTransactionGroupsTransactionGroupIdTransactionsGet",
+    TransactionApiOut[]
+  > &
+  EnhancedDefinition<
+    "readManyUsersMeAccountsAccountIdTransactionsGet",
     TransactionApiOut[]
   > &
   EnhancedDefinition<
@@ -320,6 +325,10 @@ const enhancedApi = generatedApi.enhanceEndpoints<TagTypes, EnhancedDefs>({
     readManyUsersMeTransactionGroupsTransactionGroupIdTransactionsGet: {
       transformResponse: (r: TransactionApiOutRaw[]) =>
         r.map(transactionApiOutFromRaw),
+    },
+    readManyUsersMeAccountsAccountIdTransactionsGet: {
+      transformResponse: (t: TransactionApiOutRaw[]) =>
+        t.map(transactionApiOutFromRaw),
     },
     previewUsersMeAccountsAccountIdTransactionsPreviewPost: {
       transformResponse: (t: TransactionApiInRaw[]) =>
