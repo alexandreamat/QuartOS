@@ -162,6 +162,7 @@ function TransactionCardPreview(props: {
     <TransactionCard
       accountId={props.accountId}
       checked={props.checked}
+      onCheckedChange={props.onCheckedChange}
       amount={props.transaction?.amount}
       categoryId={props.transaction?.category_id}
       name={props.transaction?.name}
