@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 class UserInstitutionLink(SyncableBase):
-    __tablename__ = "userinstitutionlink"
+    __tablename__ = "user_institution_link"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     institution_id: Mapped[int] = mapped_column(ForeignKey("institution.id"))
@@ -37,6 +37,6 @@ class UserInstitutionLink(SyncableBase):
     user: Mapped["User"] = relationship()
     institution: Mapped["Institution"] = relationship(back_populates="user_links")
     institutionalaccounts: Mapped[list[InstitutionalAccount]] = relationship(
-        back_populates="userinstitutionlink",
+        back_populates="user_institution_link",
         cascade="all, delete",
     )

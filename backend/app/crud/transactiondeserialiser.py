@@ -38,8 +38,8 @@ class CRUDTransactionDeserialiser(
         TransactionDeserialiserApiIn,
     ],
 ):
-    db_model = TransactionDeserialiser
-    out_model = TransactionDeserialiserApiOut
+    __model__ = TransactionDeserialiser
+    __out_schema__ = TransactionDeserialiserApiOut
 
     @classmethod
     def select(
@@ -54,5 +54,4 @@ class CRUDTransactionDeserialiser(
             statement = statement.where(UserInstitutionLink.user_id == user_id)
         if account_id:
             statement = statement.where(InstitutionalAccount.id == account_id)
-        logger.error(statement.compile(compile_kwargs={"literal_binds": True}))
         return statement

@@ -13,17 +13,34 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Any
+from sqlalchemy import Select, Transaction
 from sqlalchemy.orm import Session
 
 from app.crud.common import CRUDBase
+from app.models.account import Account, NonInstitutionalAccount
 from app.models.file import File
+from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.file import FileApiIn, FileApiOut
 
 
 class CRUDFile(CRUDBase[File, FileApiOut, FileApiIn]):
-    db_model = File
-    out_model = FileApiOut
+    __model__ = File
+    __out_schema__ = FileApiOut
+
+    @classmethod
+    def select(cls, user_id: int | None = None, **kwargs: Any) -> Select[tuple[File]]:
+        statement = super().select(**kwargs)
+        if user_id:
+            statement = statement.join(Transaction)
+            statement = statement.join(Account)
+            statement = statement.outerjoin(UserInstitutionLink)
+            statement = statement.where(
+                (NonInstitutionalAccount.user_id == user_id)
+                | (UserInstitutionLink.user_id == user_id)
+            )
+        return statement
 
     @classmethod
     def read_data(cls, db: Session, file_id: int) -> bytes:
-        return File.read(db, file_id).data
+        return File.read(db, id__eq=file_id).data

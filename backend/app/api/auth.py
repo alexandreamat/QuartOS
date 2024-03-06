@@ -69,7 +69,7 @@ def reset(
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     try:
-        curr_user = CRUDUser.read_by_email(db, email=email)
+        curr_user = CRUDUser.read(db, email__eq=email)
     except NoResultFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     user_in = UserApiIn(**curr_user.model_dump(), password=new_password)

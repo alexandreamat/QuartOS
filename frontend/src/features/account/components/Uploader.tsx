@@ -17,6 +17,7 @@ import {
   AccountApiOut,
   BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost,
   api,
+  transactionApiInToRaw,
 } from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
@@ -43,10 +44,11 @@ export default function Uploader(props: {
   const [showDupsWarn, setShowDupsWarn] = useState(false);
 
   const lastTransactionQuery =
-    api.endpoints.readManyUsersMeTransactionsGet.useQuery({
-      accountIdEq: props.account.id,
+    api.endpoints.readManyUsersMeAccountsAccountIdTransactionsGet.useQuery({
+      accountId: props.account.id,
       perPage: 1,
       page: 0,
+      orderBy: "timestamp__desc",
     });
 
   const [upload, uploadResult] =
@@ -95,9 +97,7 @@ export default function Uploader(props: {
     if (!transactionsIn || !lastTransaction) return;
 
     transactionsIn.forEach((transactionIn, i) => {
-      if (
-        new Date(transactionIn.timestamp) <= new Date(lastTransaction.timestamp)
-      ) {
+      if (transactionIn.timestamp <= lastTransaction.timestamp) {
         setShowDupsWarn(true);
         checkboxes.onChange(i, false);
       } else {
@@ -118,7 +118,7 @@ export default function Uploader(props: {
     try {
       await createTransactions({
         accountId: props.account.id,
-        body: transactions,
+        body: transactions.map(transactionApiInToRaw),
       }).unwrap();
     } catch (error) {
       logMutationError(error, createTransactionsResult);

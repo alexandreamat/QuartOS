@@ -13,9 +13,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 from typing import Annotated, Iterable
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.crud.account import CRUDAccount
 from app.crud.transaction import CRUDTransaction
@@ -23,11 +24,17 @@ from app.crud.transactiondeserialiser import CRUDTransactionDeserialiser
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
 from app.exceptions.common import UnknownError
-from app.schemas.transaction import TransactionApiIn, TransactionApiOut
+from app.schemas.transaction import (
+    TransactionApiIn,
+    TransactionApiOut,
+    TransactionQueryArg,
+)
 from app.utils import include_package_routes
 from app.utils.transaction import get_transactions_from_csv
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 
 @router.post("/preview")
@@ -80,6 +87,21 @@ def create(
     )
 
 
+@router.get("")
+def read_many(
+    db: DBSession,
+    me: CurrentUser,
+    account_id: int,
+    kwargs: TransactionQueryArg = Depends(),
+) -> Iterable[TransactionApiOut]:
+    return CRUDTransaction.read_many(
+        db,
+        user_id=me.id,
+        account_id=account_id,
+        **kwargs.model_dump(exclude={"account_id__eq"}, exclude_none=True)
+    )
+
+
 @router.put("/{transaction_id}")
 def update(
     db: DBSession,
@@ -105,11 +127,13 @@ def delete(
     account_id: int,
     transaction_id: int,
 ) -> int:
-    CRUDTransaction.read(db, id=transaction_id, user_id=me.id, account_id=account_id)
-    if CRUDTransaction.is_synced(db, transaction_id):
+    transaction_out = CRUDTransaction.read(
+        db, id=transaction_id, user_id=me.id, account_id=account_id
+    )
+    if transaction_out.is_synced:
         raise HTTPException(status.HTTP_403_FORBIDDEN)
 
-    return CRUDAccount.delete_transaction(db, account_id, transaction_id)
+    return CRUDTransaction.delete(db, transaction_id)
 
 
 include_package_routes(router, __name__, __path__, "/{transaction_id}")

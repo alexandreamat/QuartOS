@@ -17,12 +17,12 @@ from typing import Iterable
 
 from fastapi import APIRouter
 
-from app.crud.replacementpattern import CRUDReplacementPattern
+from app.crud.transactiondeserialiser import CRUDTransactionDeserialiser
 from app.database.deps import DBSession
 from app.deps.user import CurrentSuperuser
-from app.schemas.replacementpattern import (
-    ReplacementPatternApiIn,
-    ReplacementPatternApiOut,
+from app.schemas.transactiondeserialiser import (
+    TransactionDeserialiserApiIn,
+    TransactionDeserialiserApiOut,
 )
 
 router = APIRouter()
@@ -32,19 +32,28 @@ router = APIRouter()
 def create(
     db: DBSession,
     me: CurrentSuperuser,
-    replacement_pattern_in: ReplacementPatternApiIn,
-) -> ReplacementPatternApiOut:
-    return CRUDReplacementPattern.create(db, replacement_pattern_in)
+    transaction_deserialiser_in: TransactionDeserialiserApiIn,
+) -> TransactionDeserialiserApiOut:
+    """
+    Create new deserialiser.
+    """
+    return CRUDTransactionDeserialiser.create(db, transaction_deserialiser_in)
 
 
 @router.get("/{id}")
-def read(db: DBSession, id: int) -> ReplacementPatternApiOut:
-    return CRUDReplacementPattern.read(db, id=id)
+def read(db: DBSession, id: int) -> TransactionDeserialiserApiOut:
+    """
+    Get deserialiser by ID.
+    """
+    return CRUDTransactionDeserialiser.read(db, id__eq=id)
 
 
 @router.get("/")
-def read_many(db: DBSession) -> Iterable[ReplacementPatternApiOut]:
-    return CRUDReplacementPattern.read_many(db)
+def read_many(db: DBSession) -> Iterable[TransactionDeserialiserApiOut]:
+    """
+    Retrieve deserialisers.
+    """
+    return CRUDTransactionDeserialiser.read_many(db)
 
 
 @router.put("/{id}")
@@ -52,11 +61,17 @@ def update(
     db: DBSession,
     me: CurrentSuperuser,
     id: int,
-    institution_in: ReplacementPatternApiIn,
-) -> ReplacementPatternApiOut:
-    return CRUDReplacementPattern.update(db, id, institution_in)
+    institution_in: TransactionDeserialiserApiIn,
+) -> TransactionDeserialiserApiOut:
+    """
+    Update a deserialiser.
+    """
+    return CRUDTransactionDeserialiser.update(db, id, institution_in)
 
 
 @router.delete("/{id}")
 def delete(db: DBSession, me: CurrentSuperuser, id: int) -> int:
-    return CRUDReplacementPattern.delete(db, id)
+    """
+    Delete a deserialiser.
+    """
+    return CRUDTransactionDeserialiser.delete(db, id=id)

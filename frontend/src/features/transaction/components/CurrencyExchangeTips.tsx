@@ -17,6 +17,7 @@ import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { TransactionApiOut, api } from "app/services/api";
 import { Label } from "semantic-ui-react";
 import { renderCurrency } from "utils/currency";
+import { dateToString } from "utils/time";
 
 function CurrencyExchangeTip(props: {
   relatedTransaction: TransactionApiOut;
@@ -26,17 +27,17 @@ function CurrencyExchangeTip(props: {
     props.relatedTransaction.account_id,
   );
 
-  const amount = Number(props.relatedTransaction.amount);
+  const amount = props.relatedTransaction.amount;
   const fromCurrency = accountQuery.data?.currency_code;
   const toCurrency = props.currencyCode;
 
   const exchangeRateQuery =
-    api.endpoints.readExchangeRateExchangerateGet.useQuery(
+    api.endpoints.readExchangeRateExchangeRateGet.useQuery(
       fromCurrency !== toCurrency && fromCurrency !== undefined
         ? {
             fromCurrency,
             toCurrency,
-            date: props.relatedTransaction.timestamp.split("T")[0],
+            date: dateToString(props.relatedTransaction.timestamp),
           }
         : skipToken,
     );
@@ -64,7 +65,7 @@ export default function CurrencyExchangeTips(props: {
   currencyCode: string;
 }) {
   const query =
-    api.endpoints.readManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGet.useQuery(
+    api.endpoints.readManyUsersMeTransactionGroupsTransactionGroupIdTransactionsGet.useQuery(
       props.transactionGroupId,
     );
   return (

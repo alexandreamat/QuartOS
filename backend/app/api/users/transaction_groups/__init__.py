@@ -70,9 +70,7 @@ def update(
     transaction_group_in: TransactionGroupApiIn,
 ) -> TransactionGroupApiOut:
     CRUDTransactionGroup.read(db, id=transaction_group_id, user_id=me.id)
-    return CRUDUser.update_transaction_group(
-        db, me.id, transaction_group_id, transaction_group_in
-    )
+    return CRUDTransactionGroup.update(db, transaction_group_id, transaction_group_in)
 
 
 @router.delete("/{transaction_group_id}")

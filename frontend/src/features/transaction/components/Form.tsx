@@ -16,11 +16,11 @@
 import { BaseQueryFn, skipToken } from "@reduxjs/toolkit/dist/query";
 import { TypedUseMutationResult } from "@reduxjs/toolkit/dist/query/react";
 import {
-  TransactionGroupApiIn,
   TransactionGroupApiOut,
   TransactionApiIn,
   TransactionApiOut,
   api,
+  transactionApiInToRaw,
 } from "app/services/api";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import FormCurrencyInput from "components/FormCurrencyInput";
@@ -42,7 +42,6 @@ import {
   Placeholder,
 } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
-import { stringToDate } from "utils/time";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import { TransactionApiInForm } from "../types";
 import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
@@ -90,9 +89,9 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     );
 
   const form: TransactionApiInForm = {
-    amountStr: useFormField(isEdit ? props.transaction.amount : "", "amount"),
+    amount: useFormField(isEdit ? props.transaction.amount : 0, "amount"),
     timestamp: useFormField(
-      isEdit ? stringToDate(props.transaction.timestamp) : new Date(),
+      isEdit ? props.transaction.timestamp : new Date(),
       "date",
     ),
     name: useFormField(isEdit ? props.transaction.name : "", "name"),
@@ -111,7 +110,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   );
 
   const transactionGroupQuery =
-    api.endpoints.readUsersMeTransactiongroupsTransactionGroupIdGet.useQuery(
+    api.endpoints.readUsersMeTransactionGroupsTransactionGroupIdGet.useQuery(
       hasTransactionGroup ? props.transactionGroupId : skipToken,
     );
 
@@ -124,7 +123,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     if (!transactionGroupQuery.isSuccess) return;
     const transactionGroup = transactionGroupQuery.data;
     const timestamp = transactionGroup.timestamp;
-    form.timestamp.set(timestamp ? stringToDate(timestamp) : new Date());
+    form.timestamp.set(timestamp || new Date());
     form.name.set(transactionGroup.name);
   }, [transactionGroupQuery.isSuccess, transactionGroupQuery.data]);
 
@@ -165,8 +164,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   const hasChanged =
     isEdit &&
     (Object.values(comparableForm).some((v) => v.hasChanged) ||
-      timestamp.value?.getTime() !==
-        stringToDate(props.transaction.timestamp).getTime());
+      timestamp.value?.getTime() !== props.transaction.timestamp.getTime());
 
   return (
     <Modal open onClose={handleClose} size="small">
@@ -182,7 +180,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
           <CategoriesDropdown.Form categoryId={form.categoryId} />
           <FormCurrencyInput
             query={accountQuery}
-            field={form.amountStr}
+            field={form.amount}
             currency={accountQuery.data?.currency_code}
             readOnly={disableSynced}
           />
@@ -281,7 +279,7 @@ function FormCreate(props: { onClose: () => void }) {
     try {
       await createTransaction({
         accountId: accountId,
-        body: [transactionIn],
+        body: [transactionApiInToRaw(transactionIn)],
       }).unwrap();
     } catch (error) {
       logMutationError(error, createTransactionResult);
@@ -315,7 +313,7 @@ function FormAdd(props: {
       const transactionOut = await createTransaction({
         accountId: accountId,
         transactionGroupId: props.transactionGroupId,
-        transactionApiInInput: transactionIn,
+        transactionApiInInput: transactionApiInToRaw(transactionIn),
       }).unwrap();
       props.onAdded && props.onAdded(transactionOut);
     } catch (error) {
@@ -347,7 +345,7 @@ function FormEdit(props: {
     api.endpoints.deleteUsersMeAccountsAccountIdTransactionsTransactionIdDelete.useMutation();
 
   const [ungroup, ungroupResult] =
-    api.endpoints.removeUsersMeTransactiongroupsTransactionGroupIdTransactionsTransactionIdDelete.useMutation();
+    api.endpoints.removeUsersMeTransactionGroupsTransactionGroupIdTransactionsTransactionIdDelete.useMutation();
 
   const uploadTransactionFile = useUploadTransactionFile(props.transaction);
 
@@ -359,7 +357,7 @@ function FormEdit(props: {
       await updateTransaction({
         accountId: accountId,
         transactionId: props.transaction.id,
-        transactionApiInInput: transactionIn,
+        transactionApiInInput: transactionApiInToRaw(transactionIn),
       }).unwrap();
       props.onEdited && props.onEdited();
     } catch (error) {
@@ -418,10 +416,10 @@ function TransactionGroupForm(props: {
   onClose: (transaction?: TransactionGroupApiOut) => void;
 }) {
   const [update, updateResult] =
-    api.endpoints.updateUsersMeTransactiongroupsTransactionGroupIdPut.useMutation();
+    api.endpoints.updateUsersMeTransactionGroupsTransactionGroupIdPut.useMutation();
 
   const [ungroup, ungroupResult] =
-    api.endpoints.deleteUsersMeTransactiongroupsTransactionGroupIdDelete.useMutation();
+    api.endpoints.deleteUsersMeTransactionGroupsTransactionGroupIdDelete.useMutation();
 
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
     props.transaction.account_id || skipToken,
@@ -431,10 +429,7 @@ function TransactionGroupForm(props: {
 
   const form = {
     name: useFormField(props.transaction.name, "name"),
-    categoryId: useFormField(
-      props.transaction.category_id || undefined,
-      "category",
-    ),
+    categoryId: useFormField(props.transaction.category_id, "category"),
   };
 
   async function handleUpdate() {
@@ -479,17 +474,16 @@ function TransactionGroupForm(props: {
             <label>Amount</label>
             <CurrencyLabel
               currencyCode={me.data?.default_currency_code}
-              amount={Number(props.transaction.amount_default_currency)}
+              amount={props.transaction.amount_default_currency}
               loading={me.isLoading}
             />
           </Form.Field>
           <Form.Field>
             <label>Amount (original currency)</label>
-            {props.transaction.amount !== null &&
-            props.transaction.account_id ? (
+            {props.transaction.amount && props.transaction.account_id ? (
               <CurrencyLabel
                 currencyCode={accountQuery.data?.currency_code}
-                amount={Number(props.transaction.amount)}
+                amount={props.transaction.amount}
                 loading={accountQuery.isLoading}
               />
             ) : (
@@ -499,7 +493,7 @@ function TransactionGroupForm(props: {
           <FormTextInput field={form.name} />
           <Form.Field>
             <label>Date</label>
-            {stringToDate(props.transaction.timestamp).toLocaleDateString()}
+            {props.transaction.timestamp.toLocaleDateString()}
           </Form.Field>
           <FormValidationError fields={Object.values(form)} />
           <QueryErrorMessage query={updateResult} />

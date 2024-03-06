@@ -48,8 +48,8 @@ def create_transaction_plaid_in(
     try:
         plaid_category: PersonalFinanceCategory = transaction.personal_finance_category
         try:
-            category_out = CRUDSyncableCategory.read_by_plaid_id(
-                db, plaid_category.primary
+            category_out = CRUDSyncableCategory.read(
+                db, plaid_id=plaid_category.primary
             )
         except NoResultFound:
             try:
@@ -75,7 +75,7 @@ def create_transaction_plaid_in(
 def reset_transaction_to_metadata(
     db: Session, id: int, replacement_pattern: ReplacementPatternApiOut | None
 ) -> TransactionPlaidOut:
-    transaction_out = CRUDSyncableTransaction.read(db, id=id)
+    transaction_out = CRUDSyncableTransaction.read(db, id__eq=id)
     transaction_plaid = eval(transaction_out.plaid_metadata)
     try:
         for cp in transaction_plaid["counterparties"]:

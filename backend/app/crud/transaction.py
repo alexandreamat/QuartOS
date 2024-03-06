@@ -13,13 +13,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import date
 import logging
-from typing import Any, Iterable
+from typing import Any, Generic
 
-from sqlalchemy import Select, or_
+from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
-from app.crud.common import CRUDBase, CRUDSyncedBase
+from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 from app.models.account import Account, NonInstitutionalAccount
 from app.models.transaction import Transaction
 from app.models.userinstitutionlink import UserInstitutionLink
@@ -34,9 +35,10 @@ from app.schemas.transaction import (
 logger = logging.getLogger(__name__)
 
 
-class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]):
-    db_model = Transaction
-    out_model = TransactionApiOut
+class __CRUDTransactionBase(
+    Generic[OutSchemaT, InSchemaT], CRUDBase[Transaction, OutSchemaT, InSchemaT]
+):
+    __model__ = Transaction
 
     @classmethod
     def select(cls, user_id: int = 0, **kwargs: Any) -> Select[tuple[Transaction]]:
@@ -45,21 +47,10 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
             statement = statement.join(Account)
             statement = statement.outerjoin(UserInstitutionLink)
             statement = statement.where(
-                or_(
-                    NonInstitutionalAccount.user_id == user_id,
-                    UserInstitutionLink.user_id == user_id,
-                )
+                (NonInstitutionalAccount.user_id == user_id)
+                | (UserInstitutionLink.user_id == user_id)
             )
         return statement
-
-    @classmethod
-    def is_synced(cls, db: Session, transaction_id: int) -> bool:
-        return Transaction.read(db, transaction_id).is_synced
-
-    @classmethod
-    def read_files(cls, db: Session, transaction_id: int) -> Iterable[FileApiOut]:
-        for f in Transaction.read(db, transaction_id).files:
-            yield FileApiOut.model_validate(f)
 
     @classmethod
     def orphan_only_children(cls, db: Session) -> None:
@@ -72,24 +63,67 @@ class CRUDTransaction(CRUDBase[Transaction, TransactionApiOut, TransactionApiIn]
 
     @classmethod
     def update(
-        cls, db: Session, id: int, obj_in: TransactionApiIn, **kwargs: Any
-    ) -> TransactionApiOut:
+        cls, db: Session, id: int, obj_in: InSchemaT, **kwargs: Any
+    ) -> OutSchemaT:
         transaction = Transaction.update(db, id, **obj_in.model_dump(), **kwargs)
         if transaction_group := transaction.transaction_group:
             transaction_group.update(db, transaction_group.id)
-        return TransactionApiOut.model_validate(transaction)
+        return cls.__out_schema__.model_validate(transaction)
+
+    @classmethod
+    def update_account_balances(
+        cls, db: Session, id: int, timestamp: date | None = None
+    ) -> None:
+        account = Account.read(db, id__eq=id)
+
+        if timestamp:
+            statement = Transaction.select(
+                account_id__eq=id, timestamp__lt=timestamp, order_by="timestamp__desc"
+            )
+            prev_transaction = db.scalars(statement).first()
+            if prev_transaction:
+                prev_balance = prev_transaction.account_balance
+            else:
+                prev_balance = account.initial_balance
+            statement = Transaction.select(
+                account_id__eq=id, timestamp__ge=timestamp, order_by="timestamp__asc"
+            )
+        else:
+            prev_balance = account.initial_balance
+
+        for transaction in db.scalars(statement).yield_per(50):
+            account_balance = prev_balance + transaction.amount
+            Transaction.update(db, transaction.id, account_balance=account_balance)
+            prev_balance = transaction.account_balance
 
     @classmethod
     def delete(cls, db: Session, id: int) -> int:
-        transaction_group = Transaction.read(db, id).transaction_group
+        transaction = Transaction.read(db, id__eq=id)
+
+        # Store values from the transaction being deleted
+        timestamp = transaction.timestamp
+        account = transaction.account
+        transaction_group = transaction.transaction_group
+
+        # Delete group if it's going to have only 1 transaction left
         if transaction_group:
             if len(transaction_group.transactions) <= 2:
                 transaction_group.delete(db, transaction_group.id)
-        return super().delete(db, id)
+
+        # Delete transaction from DB
+        super().delete(db, id)
+
+        # Update account balances in account's transactions from that point
+        cls.update_account_balances(db, account.id, timestamp)
+
+        return id
+
+
+class CRUDTransaction(__CRUDTransactionBase[TransactionApiOut, TransactionApiIn]):
+    __out_schema__ = TransactionApiOut
 
 
 class CRUDSyncableTransaction(
-    CRUDSyncedBase[Transaction, TransactionPlaidOut, TransactionPlaidIn],
+    __CRUDTransactionBase[TransactionPlaidOut, TransactionPlaidIn],
 ):
-    db_model = Transaction
-    out_model = TransactionPlaidOut
+    __out_schema__ = TransactionPlaidOut

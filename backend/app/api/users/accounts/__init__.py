@@ -38,13 +38,13 @@ def create(
     db: DBSession,
     me: CurrentUser,
     account_in: AccountApiIn,
-    userinstitutionlink_id: int | None = None,
+    user_institution_link_id: int | None = None,
 ) -> AccountApiOut:
     if account_in.type in ["depository", "loan", "brokerage", "investment"]:
-        assert userinstitutionlink_id
-        CRUDUserInstitutionLink.read(db, id=userinstitutionlink_id, user_id=me.id)
+        assert user_institution_link_id
+        CRUDUserInstitutionLink.read(db, id=user_institution_link_id, user_id=me.id)
     return CRUDAccount.create(
-        db, account_in, userinstitutionlink_id=userinstitutionlink_id, user_id=me.id
+        db, account_in, user_institution_link_id=user_institution_link_id, user_id=me.id
     )
 
 
@@ -59,16 +59,16 @@ def update(
     me: CurrentUser,
     account_id: int,
     account_in: AccountApiIn,
-    userinstitutionlink_id: int | None,
+    user_institution_link_id: int | None,
 ) -> AccountApiOut:
-    if CRUDAccount.is_synced(db, account_id):
+    account_out = CRUDAccount.read(db, id=account_id, user_id=me.id)
+    if account_out.is_synced:
         raise SyncedEntity()
-    CRUDAccount.read(db, id=account_id, user_id=me.id)
     return CRUDAccount.update(
         db,
         account_id,
         account_in,
-        userinstitutionlink_id=userinstitutionlink_id,
+        user_institution_link_id=user_institution_link_id,
         user_id=me.id,
     )
 

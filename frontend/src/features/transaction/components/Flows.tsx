@@ -52,17 +52,18 @@ function Flow(props: {
       content={
         props.transaction &&
         currencyCode &&
-        `Account balance: ${Number(
-          props.transaction.account_balance,
-        ).toLocaleString(undefined, {
-          style: "currency",
-          currency: currencyCode,
-        })}`
+        `Account balance: ${props.transaction.account_balance.toLocaleString(
+          undefined,
+          {
+            style: "currency",
+            currency: currencyCode,
+          },
+        )}`
       }
       trigger={
         <div>
           <CurrencyLabel
-            amount={Number(props.transaction?.amount)}
+            amount={props.transaction?.amount}
             currencyCode={currencyCode}
             loading={props.loading || accountQueries.isLoading}
           />
@@ -179,7 +180,7 @@ export function Flows(props: {
   loading?: boolean;
 }) {
   const transactionsQuery =
-    api.endpoints.readManyUsersMeTransactiongroupsTransactionGroupIdTransactionsGet.useQuery(
+    api.endpoints.readManyUsersMeTransactionGroupsTransactionGroupIdTransactionsGet.useQuery(
       props.transactionGroupId || skipToken,
     );
 
@@ -189,14 +190,14 @@ export function Flows(props: {
         loading={props.loading}
         selectedAccountId={props.selectedAccountId}
         transactions={transactionsQuery.data}
-        filterPredicate={(t) => Number(t.amount) < 0}
+        filterPredicate={(t) => t.amount < 0}
         reverse
       />
       <StepFlows
         loading={props.loading}
         selectedAccountId={props.selectedAccountId}
         transactions={transactionsQuery.data}
-        filterPredicate={(t) => Number(t.amount) >= 0}
+        filterPredicate={(t) => t.amount >= 0}
       />
     </Step.Group>
   );

@@ -31,7 +31,7 @@ function TransactionDeserialiser(props: {
   onOpenEditForm: (x: TransactionDeserialiserApiOut) => void;
 }) {
   const [deleteTransactionDeserialiser, deleteTransactionDeserialiserResult] =
-    api.endpoints.deleteTransactiondeserialisersIdDelete.useMutation();
+    api.endpoints.deleteTransactionDeserialisersIdDelete.useMutation();
 
   const handleDelete = async (
     transactionDeserialiser: TransactionDeserialiserApiOut,
@@ -90,7 +90,7 @@ export default function TransactionDeserialisers() {
   const [selectedTransactionDeserialiser, setSelectedTransactionDeserialiser] =
     useState<TransactionDeserialiserApiOut | undefined>(undefined);
 
-  const query = api.endpoints.readManyTransactiondeserialisersGet.useQuery();
+  const query = api.endpoints.readManyTransactionDeserialisersGet.useQuery();
 
   function handleOpenEditForm(
     transactionDeserialiser: TransactionDeserialiserApiOut,

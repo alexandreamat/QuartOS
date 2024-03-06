@@ -17,98 +17,71 @@ import logging
 from typing import Generic, Type, TypeVar, Iterable, Any
 from fastapi import HTTPException, status
 
-from sqlalchemy import Select, select
+from sqlalchemy import Select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from app.models.common import Base, SyncableBase
-from app.schemas.common import PlaidOutMixin, PlaidInMixin, ApiOutMixin, ApiInMixin
+from app.models.common import Base
+from app.schemas.common import ApiOutMixin, ApiInMixin
 
-ModelType = TypeVar("ModelType", bound=Base)
-InModelType = TypeVar("InModelType", bound=ApiInMixin)
-OutModelType = TypeVar("OutModelType", bound=ApiOutMixin)
+ModelT = TypeVar("ModelT", bound=Base)
+InSchemaT = TypeVar("InSchemaT", bound=ApiInMixin)
+OutSchemaT = TypeVar("OutSchemaT", bound=ApiOutMixin)
+
 
 logger = logging.getLogger(__name__)
 
 
-class CRUDBase(Generic[ModelType, OutModelType, InModelType]):
-    db_model: Type[ModelType]
-    out_model: Type[OutModelType]
+class CRUDBase(Generic[ModelT, OutSchemaT, InSchemaT]):
+    __model__: Type[ModelT]
+    __out_schema__: Type[OutSchemaT]
 
     @classmethod
-    def select(
-        cls, *, id: int | None = None, page: int = 0, per_page: int = 0, **kwargs: Any
-    ) -> Select[tuple[ModelType]]:
-        statement = select(cls.db_model)
-        for kw, arg in kwargs.items():
-            statement = statement.where(getattr(cls.db_model, kw) == arg)
-        if id:
-            statement = statement.where(cls.db_model.id == id)
-        statement = statement.group_by(cls.db_model.id)
-        if per_page:
-            offset = page * per_page
-            statement = statement.offset(offset).limit(per_page)
-        return statement
+    def select(cls, **kwargs: Any) -> Select[tuple[ModelT]]:
+        return cls.__model__.select(**kwargs)
 
     @classmethod
-    def model_validate(cls, obj: ModelType) -> OutModelType:
-        return cls.out_model.model_validate(obj)
+    def model_validate(cls, obj: ModelT) -> OutSchemaT:
+        return cls.__out_schema__.model_validate(obj)
 
     @classmethod
     def create(
         cls,
         db: Session,
-        obj_in: InModelType,
+        obj_in: InSchemaT,
         **kwargs: Any,
-    ) -> OutModelType:
-        obj = cls.db_model.create(db, **obj_in.model_dump(), **kwargs)
-        obj_out: OutModelType = cls.model_validate(obj)
+    ) -> OutSchemaT:
+        obj = cls.__model__.create(db, **obj_in.model_dump(), **kwargs)
+        obj_out: OutSchemaT = cls.model_validate(obj)
         return obj_out
 
     @classmethod
-    def read(cls, db: Session, **kwargs: Any) -> OutModelType:
+    def read(cls, db: Session, **kwargs: Any) -> OutSchemaT:
         statement = cls.select(**kwargs)
         try:
             obj = db.scalars(statement).one()
         except NoResultFound:
             raise HTTPException(
                 status.HTTP_404_NOT_FOUND,
-                detail=f"{cls.db_model.__tablename__} not found for args {kwargs}",
+                detail=f"{cls.__model__.__tablename__} not found for args {kwargs}",
             )
         return cls.model_validate(obj)
 
     @classmethod
-    def read_many(cls, db: Session, **kwargs: Any) -> Iterable[OutModelType]:
+    def read_many(cls, db: Session, **kwargs: Any) -> Iterable[OutSchemaT]:
         statement = cls.select(**kwargs)
         for s in db.scalars(statement).all():
             yield cls.model_validate(s)
 
     @classmethod
     def update(
-        cls, db: Session, id: int, obj_in: InModelType, **kwargs: Any
-    ) -> OutModelType:
-        obj = cls.db_model.update(db, id, **obj_in.model_dump(), **kwargs)
-        obj_out: OutModelType = cls.model_validate(obj)
+        cls, db: Session, id: int, obj_in: InSchemaT, **kwargs: Any
+    ) -> OutSchemaT:
+        obj = cls.__model__.update(db, id, **obj_in.model_dump(), **kwargs)
+        obj_out: OutSchemaT = cls.model_validate(obj)
         return obj_out
 
     @classmethod
     def delete(cls, db: Session, id: int) -> int:
-        cls.db_model.delete(db, id)
+        cls.__model__.delete(db, id)
         return id
-
-
-SyncableModelType = TypeVar("SyncableModelType", bound=SyncableBase)
-PlaidInModelType = TypeVar("PlaidInModelType", bound=PlaidInMixin)
-PlaidOutModelType = TypeVar("PlaidOutModelType", bound=PlaidOutMixin)
-
-
-class CRUDSyncedBase(
-    Generic[SyncableModelType, PlaidOutModelType, PlaidInModelType],
-    CRUDBase[SyncableModelType, PlaidOutModelType, PlaidInModelType],
-):
-    db_model: Type[SyncableModelType]
-    out_model: Type[PlaidOutModelType]
-
-    @classmethod
-    def read_by_plaid_id(cls, db: Session, id: str) -> PlaidOutModelType:
-        return cls.model_validate(cls.db_model.read_by_plaid_id(db, id))

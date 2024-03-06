@@ -51,7 +51,7 @@ export default function AccountForm(props: {
   const currencyCode = useFormField("");
   const type = useFormField<AccountType>();
   const institutionLinkId = useFormField(0);
-  const initialBalanceStr = useFormField("");
+  const initialBalance = useFormField(0);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -71,12 +71,12 @@ export default function AccountForm(props: {
     name,
     currencyCode,
     type,
-    initialBalanceStr,
+    initialBalance,
     institutionLinkId,
     isInstitutional,
   ];
 
-  const requiredFields = [name, currencyCode, initialBalanceStr];
+  const requiredFields = [name, currencyCode, initialBalance];
 
   const [createAccount, createAccountResult] =
     api.endpoints.createUsersMeAccountsPost.useMutation();
@@ -87,11 +87,11 @@ export default function AccountForm(props: {
     if (!props.account) return;
     name.set(props.account.name);
     currencyCode.set(props.account.currency_code);
-    initialBalanceStr.set(props.account.initial_balance);
+    initialBalance.set(props.account.initial_balance);
     type.set(props.account.type);
     isInstitutional.set(props.account.is_institutional);
     if (props.account.is_institutional) {
-      institutionLinkId.set(props.account.userinstitutionlink_id);
+      institutionLinkId.set(props.account.user_institution_link_id);
       mask.set(props.account.mask);
     }
   }, [props.account]);
@@ -140,7 +140,7 @@ export default function AccountForm(props: {
     const account: AccountApiIn = {
       name: name.value!,
       currency_code: currencyCode.value!,
-      initial_balance: Number(initialBalanceStr.value!),
+      initial_balance: initialBalance.value!,
       mask: mask.value!,
       type: type.value!,
     };
@@ -149,7 +149,7 @@ export default function AccountForm(props: {
         await updateAccount({
           accountId: props.account.id,
           body: account,
-          userinstitutionlinkId: institutionLinkId.value!,
+          userInstitutionLinkId: institutionLinkId.value!,
         }).unwrap();
       } catch (error) {
         logMutationError(error, updateAccountResult);
@@ -158,7 +158,7 @@ export default function AccountForm(props: {
     } else {
       try {
         await createAccount({
-          userinstitutionlinkId: institutionLinkId.value!,
+          userInstitutionLinkId: institutionLinkId.value!,
           body: account,
         }).unwrap();
       } catch (error) {
@@ -234,7 +234,7 @@ export default function AccountForm(props: {
           )}
           <FormCurrencyInputs
             label="Initial Balance"
-            amount={initialBalanceStr}
+            amount={initialBalance}
             currencyCode={currencyCode}
           />
           <FormValidationError fields={requiredFields} />

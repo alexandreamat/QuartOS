@@ -43,8 +43,8 @@ class __InstitutionBase(BaseModel):
 class InstitutionApiOut(__InstitutionBase, SyncableApiOutMixin):
     logo_base64: str | None = None
     is_synced: bool
-    transactiondeserialiser_id: int | None
-    replacementpattern_id: int | None
+    transaction_deserialiser_id: int | None
+    replacement_pattern_id: int | None
 
 
 class InstitutionApiIn(__InstitutionBase, ApiInMixin):
