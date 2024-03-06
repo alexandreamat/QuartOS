@@ -88,9 +88,9 @@ export default function PLStatement() {
     : detailedStatementQuery.data.expenses_by_category;
 
   const doughnutEntries = Object.entries(amountByCategoryRaw)
-    .map(([categoryIdStr, amountStr]) => ({
+    .map(([categoryIdStr, amount]) => ({
       id: Number(categoryIdStr),
-      amount: Number(amountStr),
+      amount: amount,
     }))
     .map(({ id, amount }) => ({
       id,

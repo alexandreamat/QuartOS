@@ -48,7 +48,11 @@ export default function IncomeStatement() {
     response: pl,
     loading,
   }: PaginatedItemProps<PlStatementApiOut>) => (
-    <Row key={pl?.timestamp__ge} plStatement={pl} loading={loading} />
+    <Row
+      key={pl?.timestamp__ge.toDateString()}
+      plStatement={pl}
+      loading={loading}
+    />
   );
 
   return (
