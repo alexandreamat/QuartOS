@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { Card } from "semantic-ui-react";
 import { PaginatedItemProps } from "types";
 import PLCard from "./components/PLCard";
+import { dateToString } from "utils/time";
 
 function Row(props: { plStatement?: PlStatementApiOut; loading?: boolean }) {
   const navigate = useNavigate();
@@ -29,7 +30,9 @@ function Row(props: { plStatement?: PlStatementApiOut; loading?: boolean }) {
     if (!props.plStatement) return;
 
     navigate(
-      `/pl-statements/${props.plStatement.timestamp__ge}/${props.plStatement.timestamp__lt}`,
+      `/pl-statements/${dateToString(
+        props.plStatement.timestamp__ge,
+      )}/${dateToString(props.plStatement.timestamp__lt)}`,
     );
   }
   return (
