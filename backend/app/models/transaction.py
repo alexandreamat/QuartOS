@@ -18,9 +18,8 @@ from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, asc, desc
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.sql.expression import ClauseElement
 
 from app.models.category import Category
 from app.models.common import SyncableBase

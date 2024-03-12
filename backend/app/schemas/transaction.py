@@ -15,7 +15,7 @@
 
 from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import BaseModel
 
@@ -23,7 +23,6 @@ from app.schemas.account import AnnotatedLiteral
 from app.schemas.common import (
     PlaidInMixin,
     PlaidOutMixin,
-    QueryArgMeta,
     SyncableApiOutMixin,
     ApiInMixin,
 )
@@ -65,7 +64,64 @@ class TransactionPlaidIn(TransactionApiIn, PlaidInMixin): ...
 class TransactionPlaidOut(TransactionApiOut, PlaidOutMixin): ...
 
 
-class TransactionQueryArg(BaseModel, metaclass=QueryArgMeta):
+class TransactionQueryArg(BaseModel):
     __schema__ = TransactionApiOut
     search: str | None = None
     consolidated: bool = False
+    per_page: int = 0
+    page: int = 0
+    order_by: Literal[
+        "id__asc",
+        "id__desc",
+        "timestamp__asc",
+        "timestamp__desc",
+        "amount_default_currency__asc",
+        "amount_default_currency__desc",
+        "amount__asc",
+        "amount__desc",
+        "account_balance__asc",
+        "account_balance__desc",
+        "account_id__asc",
+        "account_id__desc",
+        None,
+    ] = None
+    id__eq: int | None = None
+    timestamp__eq: date | None = None
+    timestamp__gt: date | None = None
+    timestamp__ge: date | None = None
+    timestamp__le: date | None = None
+    timestamp__lt: date | None = None
+    name__eq: str | None = None
+    category_id__eq: int | None = None
+    transaction_group_id__eq: int | None = None
+    amount_default_currency__eq: Decimal | None = None
+    amount_default_currency__eq__abs: Decimal | None = None
+    amount_default_currency__gt: Decimal | None = None
+    amount_default_currency__gt__abs: Decimal | None = None
+    amount_default_currency__ge: Decimal | None = None
+    amount_default_currency__ge__abs: Decimal | None = None
+    amount_default_currency__le: Decimal | None = None
+    amount_default_currency__le__abs: Decimal | None = None
+    amount_default_currency__lt: Decimal | None = None
+    amount_default_currency__lt__abs: Decimal | None = None
+    amount__eq: Decimal | None = None
+    amount__eq__abs: Decimal | None = None
+    amount__gt: Decimal | None = None
+    amount__gt__abs: Decimal | None = None
+    amount__ge: Decimal | None = None
+    amount__ge__abs: Decimal | None = None
+    amount__le: Decimal | None = None
+    amount__le__abs: Decimal | None = None
+    amount__lt: Decimal | None = None
+    amount__lt__abs: Decimal | None = None
+    account_balance__eq: Decimal | None = None
+    account_balance__eq__abs: Decimal | None = None
+    account_balance__gt: Decimal | None = None
+    account_balance__gt__abs: Decimal | None = None
+    account_balance__ge: Decimal | None = None
+    account_balance__ge__abs: Decimal | None = None
+    account_balance__le: Decimal | None = None
+    account_balance__le__abs: Decimal | None = None
+    account_balance__lt: Decimal | None = None
+    account_balance__lt__abs: Decimal | None = None
+    account_id__eq: int | None = None

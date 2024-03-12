@@ -14,12 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Any
-from sqlalchemy import Select, Transaction
+from sqlalchemy import Select
 from sqlalchemy.orm import Session
 
 from app.crud.common import CRUDBase
 from app.models.account import Account, NonInstitutionalAccount
 from app.models.file import File
+from app.models.transaction import Transaction
 from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.file import FileApiIn, FileApiOut
 

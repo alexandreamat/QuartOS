@@ -45,14 +45,9 @@ export default function TransactionCards(props: {
   const [isAmountAbs] = props.barState.isAmountAbs;
   const [consolidated] = props.barState.consolidated;
 
-  let amountKey = "amount";
-  if (consolidated) amountKey = `${amountKey}DefaultCurrency`;
-  let amountGeKey = `${amountKey}Ge`;
-  let amountLeKey = `${amountKey}Le`;
-  if (isAmountAbs) {
-    amountGeKey = `${amountGeKey}Abs`;
-    amountLeKey = `${amountLeKey}Abs`;
-  }
+  const amountKey = `amount${consolidated ? "DefaultCurrency" : ""}` as const;
+  const amountGeKey = `${amountKey}Ge${isAmountAbs ? "Abs" : ""}` as const;
+  const amountLeKey = `${amountKey}Le${isAmountAbs ? "Abs" : ""}` as const;
 
   const params: ReadManyUsersMeTransactionsGetApiArg = {
     timestampGe: timestampGe && formatDateParam(timestampGe),
@@ -64,6 +59,8 @@ export default function TransactionCards(props: {
     consolidated,
     orderBy: isDescending ? "timestamp__desc" : "timestamp__asc",
   };
+
+  console.log(params);
 
   const CardRenderer = ({
     response: t,
