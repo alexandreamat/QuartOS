@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from sqlalchemy import select
 
 from sqlalchemy.orm import Mapped, Session
 

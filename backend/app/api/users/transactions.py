@@ -38,7 +38,7 @@ def read_many(
     return CRUDConsolidatedTransaction.read_many(
         db,
         user_id=me.id,
-        **arg.model_dump(),
+        **arg.model_dump(exclude_none=True),
     )
 
 

@@ -24,6 +24,7 @@ from sqlalchemy import (
     Select,
     asc,
     desc,
+    func,
     types,
     select,
     String,
@@ -55,7 +56,7 @@ def get_where_expressions(
         else:
             op = f"__{ops[0]}__"
             if len(ops) == 2:
-                f = {"abs": abs}[ops[1]]
+                f = {"abs": func.abs}[ops[1]]
                 attr = f(attr)
         yield getattr(attr, op)(arg)
 
