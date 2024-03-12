@@ -60,8 +60,6 @@ export default function TransactionCards(props: {
     orderBy: isDescending ? "timestamp__desc" : "timestamp__asc",
   };
 
-  console.log(params);
-
   const CardRenderer = ({
     response: t,
     loading,
