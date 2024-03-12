@@ -58,7 +58,6 @@ class TransactionPlaidOut(TransactionApiOut, PlaidOutMixin): ...
 
 
 class TransactionQueryArg(BaseModel):
-    __schema__ = TransactionApiOut
     search: str | None = None
     per_page: int = 0
     page: int = 0
