@@ -37,7 +37,6 @@ from app.models.account import (
     PersonalLedger,
     Property,
 )
-from app.models.transactiondeserialiser import TransactionDeserialiser
 from app.models.userinstitutionlink import UserInstitutionLink
 from app.schemas.account import (
     AccountApiOut,
@@ -65,7 +64,7 @@ from app.schemas.account import (
     PersonalLedgerApiIn,
     PropertyApiIn,
 )
-from app.schemas.common import ApiInMixin, ApiOutMixin, CurrencyCode
+from app.schemas.common import CurrencyCode
 from app.schemas.transaction import (
     TransactionApiIn,
     TransactionApiOut,

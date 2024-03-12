@@ -63,7 +63,7 @@ class CRUDTransactionGroup(
     @classmethod
     def update_categories(cls, db: Session) -> Iterable[TransactionGroupApiOut]:
         for m in cls.read_many(db):
-            yield TransactionGroupApiOut.model_validate(
+            yield cls.model_validate(
                 TransactionGroup.update(db, m.id, category_id=m.category_id)
             )
 
@@ -128,4 +128,4 @@ class CRUDTransactionGroup(
         if len(transaction_group.transactions) <= 1:
             TransactionGroup.delete(db, transaction_group_id)
             return None
-        return TransactionGroupApiOut.model_validate(transaction_group)
+        return cls.model_validate(transaction_group)

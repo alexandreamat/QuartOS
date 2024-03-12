@@ -18,7 +18,6 @@ import itertools
 import logging
 from typing import Any, Iterable
 
-import pydantic_core
 from sqlalchemy import (
     Row,
     Select,
@@ -67,13 +66,13 @@ class CRUDConsolidatedTransaction:
         *,
         user_id: int | None = None,
         search: str | None = None,
-        consolidated: bool = False,
+        consolidate: bool = False,
         per_page: int = 0,
         page: int = 0,
         order_by: str | None = None,
         **kwargs: Any,
     ) -> Select[tuple[Any, ...]]:
-        model = ConsolidatedTransaction if consolidated else Transaction
+        model = ConsolidatedTransaction if consolidate else Transaction
 
         exprs = get_where_expressions(model, **kwargs)
         if search:
@@ -89,13 +88,16 @@ class CRUDConsolidatedTransaction:
             model.timestamp,
             model.amount,
             model.account_id,
-            model.transactions_count,
             model.account_balance,
             model.is_synced,
         )
+        if consolidate:
+            statement = statement.add_columns(
+                ConsolidatedTransaction.transactions_count
+            )
 
         # JOIN
-        if consolidated:
+        if consolidate:
             statement = statement.outerjoin(TransactionGroup)
         statement = statement.join(Account)
         statement = statement.outerjoin(UserInstitutionLink)
@@ -106,16 +108,16 @@ class CRUDConsolidatedTransaction:
             | (UserInstitutionLink.user_id == user_id)
         )
 
-        if not consolidated:
+        if not consolidate:
             for exp in exprs:
                 statement = statement.where(exp)
 
         # GROUP BY
-        if consolidated:
+        if consolidate:
             statement = statement.group_by(ConsolidatedTransaction.id)
 
         # HAVING
-        if consolidated:
+        if consolidate:
             for exp in exprs:
                 statement = statement.having(exp)
 
@@ -135,7 +137,7 @@ class CRUDConsolidatedTransaction:
     def model_validate(
         cls, transaction: Row[tuple[Any, ...]]
     ) -> TransactionApiOut | TransactionGroupApiOut:
-        try:
+        if getattr(transaction, "transactions_count", 1) == 1:
             return TransactionApiOut(
                 id=transaction.id,
                 name=transaction.name,
@@ -147,9 +149,9 @@ class CRUDConsolidatedTransaction:
                 account_id=transaction.account_id,
                 account_balance=transaction.account_balance,
                 is_synced=transaction.is_synced,
-                consolidated=False,
+                is_group=False,
             )
-        except pydantic_core.ValidationError as e:
+        else:
             return TransactionGroupApiOut(
                 id=-transaction.id,
                 name=transaction.name,
@@ -159,7 +161,7 @@ class CRUDConsolidatedTransaction:
                 amount=transaction.amount,
                 account_id=transaction.account_id,
                 transactions_count=transaction.transactions_count,
-                consolidated=True,
+                is_group=True,
             )
 
     @classmethod

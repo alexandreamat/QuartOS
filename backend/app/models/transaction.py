@@ -55,8 +55,7 @@ class Transaction(SyncableBase):
     )
     category: Mapped[Category | None] = relationship()
 
-    consolidated = False
-    transactions_count = 1
+    is_group = False
 
     @property
     def exchange_rate(self) -> Decimal:

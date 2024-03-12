@@ -180,7 +180,7 @@ function TransactionCardSimple(props: {
   currency?: "default" | "account";
 }) {
   const uploadTransactionFile = useUploadTransactionFile(
-    (!props.transaction?.consolidated && props.transaction) || undefined,
+    (!props.transaction?.is_group && props.transaction) || undefined,
   );
 
   async function handleFileDrop(event: React.DragEvent<HTMLDivElement>) {

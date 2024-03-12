@@ -14,21 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import re
-import types
-from datetime import date, datetime
-from decimal import Decimal
 from typing import (
-    Any,
-    Iterable,
-    Literal,
-    Never,
-    Type,
     TypeVar,
     Annotated,
 )
 
 import pycountry
-from pydantic import AfterValidator, BaseModel, ConfigDict, create_model
+from pydantic import AfterValidator, BaseModel, ConfigDict
 
 SchemaType = TypeVar("SchemaType", bound=BaseModel)
 

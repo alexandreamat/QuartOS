@@ -17,6 +17,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, TypeVar
 
 from sqlalchemy import ForeignKey, desc
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     Mapped,
     relationship,
@@ -24,7 +25,6 @@ from sqlalchemy.orm import (
     WriteOnlyMapped,
     object_session,
 )
-from sqlalchemy.ext.hybrid import hybrid_property
 
 from app.models.common import Base, SyncableBase
 from app.models.transaction import Transaction

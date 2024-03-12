@@ -22,6 +22,7 @@ import { logMutationError } from "utils/error";
 import Bar, { useTransactionBarState } from "./components/Bar";
 import SpanButton from "./components/SpanButton";
 import TransactionCards from "./components/TransactionCards";
+import { QueryErrorMessage } from "components/QueryErrorMessage";
 
 export const PER_PAGE = 20;
 
@@ -36,7 +37,7 @@ export default function Transactions() {
   const [accountId, setAccountId] = accountIdState;
 
   const barState = useTransactionBarState();
-  const [consolidated, setConsolidated] = barState.consolidated;
+  const [consolidate, setConsolidate] = barState.consolidate;
 
   const transactionCheckboxes = useCheckboxes();
   const transactionGroupCheckboxes = useCheckboxes();
@@ -48,9 +49,9 @@ export default function Transactions() {
   }, [location, setAccountId]);
 
   useEffect(() => {
-    if (consolidated) setAccountId(undefined);
+    if (consolidate) setAccountId(undefined);
     else setIsMultipleChoice(false);
-  }, [consolidated, setAccountId]);
+  }, [consolidate, setAccountId]);
 
   const [consolidateTransactions, consolidateTransactionsResult] =
     api.endpoints.consolidateUsersMeTransactionsPost.useMutation();
@@ -73,8 +74,13 @@ export default function Transactions() {
             await mergeTransactionGroups(transactionGroupIds).unwrap()
           ).id;
         if (transactionIds.length)
-          await addTransactions({ transactionGroupId, body: transactionIds });
-      } else await consolidateTransactions(transactionIds).unwrap();
+          await addTransactions({
+            transactionGroupId,
+            body: transactionIds,
+          }).unwrap();
+      } else {
+        await consolidateTransactions(transactionIds).unwrap();
+      }
     } catch (error) {
       logMutationError(error, consolidateTransactionsResult);
       return;
@@ -88,8 +94,8 @@ export default function Transactions() {
     <FlexColumn style={{ height: "100%" }}>
       <Bar
         barState={barState}
-        isMultipleChoiceState={consolidated ? isMultipleChoiceState : undefined}
-        accountIdState={consolidated ? undefined : accountIdState}
+        isMultipleChoiceState={consolidate ? isMultipleChoiceState : undefined}
+        accountIdState={consolidate ? undefined : accountIdState}
       />
       <FlexColumn.Auto reference={reference}>
         <TransactionCards
@@ -102,21 +108,26 @@ export default function Transactions() {
         />
       </FlexColumn.Auto>
       {isMultipleChoice && (
-        <SpanButton
-          disabled={
-            transactionCheckboxes.checked.size +
-              transactionGroupCheckboxes.checked.size <=
-            1
-          }
-          onClick={handleConsolidateTransactions}
-          loading={consolidateTransactionsResult.isLoading}
-          negative={consolidateTransactionsResult.isError}
-        >
-          {`Consolidate ${
-            transactionCheckboxes.checked.size +
-            transactionGroupCheckboxes.checked.size
-          } transactions into one group`}
-        </SpanButton>
+        <>
+          <SpanButton
+            disabled={
+              transactionCheckboxes.checked.size +
+                transactionGroupCheckboxes.checked.size <=
+              1
+            }
+            onClick={handleConsolidateTransactions}
+            loading={consolidateTransactionsResult.isLoading}
+            negative={consolidateTransactionsResult.isError}
+          >
+            {`Consolidate ${
+              transactionCheckboxes.checked.size +
+              transactionGroupCheckboxes.checked.size
+            } transactions into one group`}
+          </SpanButton>
+          <QueryErrorMessage query={consolidateTransactionsResult} />
+          <QueryErrorMessage query={mergeTransactionGroupsResult} />
+          <QueryErrorMessage query={addTransactionsResult} />
+        </>
       )}
     </FlexColumn>
   );

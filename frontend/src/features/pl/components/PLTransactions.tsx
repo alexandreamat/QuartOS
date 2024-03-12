@@ -43,7 +43,7 @@ export default function PLTransactions(props: {
       categoryIdEq: props.categoryId,
       [amountKey]: 0,
       orderBy: orderByVal,
-      consolidated: true,
+      consolidate: true,
     });
 
   if (transactionsQuery.isLoading || transactionsQuery.isUninitialized)
@@ -64,7 +64,7 @@ export default function PLTransactions(props: {
       {transactions.map((t) => {
         cumulativeAmount += t.amount_default_currency;
         const explanationRate = (cumulativeAmount / totalAmount) * 100;
-        if (t.consolidated)
+        if (t.is_group)
           return (
             <TransactionCard.Group
               key={t.id}
