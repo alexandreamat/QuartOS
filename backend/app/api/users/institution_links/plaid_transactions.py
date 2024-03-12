@@ -37,9 +37,12 @@ def sync(db: DBSession, me: CurrentUser, user_institution_link_id: int) -> None:
         id=user_institution_link_id,
         user_id=me.id,
     )
-    replacement_pattern_out = CRUDReplacementPattern.read(
-        db, user_institution_link_id=user_institution_link_id
-    )
+    try:
+        replacement_pattern_out = CRUDReplacementPattern.read(
+            db, user_institution_link_id=user_institution_link_id
+        )
+    except HTTPException:
+        replacement_pattern_out = None
     try:
         sync_transactions(
             db,
