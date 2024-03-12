@@ -25,10 +25,7 @@ from app.crud.institution import CRUDSyncableInstitution
 from app.crud.replacementpattern import CRUDReplacementPattern
 from app.crud.transaction import CRUDSyncableTransaction, CRUDTransaction
 from app.crud.user import CRUDUser
-from app.crud.userinstitutionlink import (
-    CRUDSyncableUserInstitutionLink,
-    CRUDUserInstitutionLink,
-)
+from app.crud.userinstitutionlink import CRUDSyncableUserInstitutionLink
 from app.database.deps import DBSession
 from app.deps.user import CurrentSuperuser
 from app.plaid.account import fetch_accounts

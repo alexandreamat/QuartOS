@@ -44,7 +44,7 @@ class TransactionGroup(Base):
     category: Mapped[Category | None] = relationship(lazy="selectin")
     merchant: Mapped[Merchant | None] = relationship(lazy="selectin")
 
-    consolidated = True
+    is_group = True
 
     @hybrid_property
     def timestamp(self) -> date:

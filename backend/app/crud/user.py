@@ -17,12 +17,7 @@ import logging
 from sqlalchemy.orm import Session
 
 from app.crud.common import CRUDBase
-from app.models.transactiongroup import TransactionGroup
 from app.models.user import User
-from app.schemas.transactiongroup import (
-    TransactionGroupApiIn,
-    TransactionGroupApiOut,
-)
 from app.schemas.user import UserApiOut, UserApiIn
 
 logger = logging.getLogger(__name__)

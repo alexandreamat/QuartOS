@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from datetime import date
 from decimal import Decimal
-from typing import Any
 
 from pydantic import BaseModel
 
@@ -47,14 +46,7 @@ class TransactionGroupApiOut(__TransactionGroupBase, ApiOutMixin):
     amount: Decimal | None
     # account_balance: Decimal | None
     account_id: int | None
-    consolidated: AnnotatedLiteral(True)
-
-    @classmethod
-    def model_validate(cls, obj: Any, **kwargs: Any) -> "TransactionGroupApiOut":
-        if hasattr(obj, "_asdict"):
-            transaction_dict: dict[str, Any] = obj._asdict()
-            return cls(**transaction_dict, consolidated=True)
-        return super().model_validate(obj, **kwargs)
+    is_group: AnnotatedLiteral(True)  # type: ignore
 
 
 class TransactionGroupApiIn(__TransactionGroupBase, ApiInMixin): ...

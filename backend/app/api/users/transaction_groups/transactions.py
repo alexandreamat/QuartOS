@@ -32,7 +32,7 @@ def read_many(
     db: DBSession, me: CurrentUser, transaction_group_id: int
 ) -> Iterable[TransactionApiOut]:
     return CRUDTransaction.read_many(
-        db, user_id=me.id, consolidated=False, transaction_group_id=transaction_group_id
+        db, user_id=me.id, transaction_group_id=transaction_group_id
     )
 
 

@@ -43,9 +43,9 @@ export default function TransactionCards(props: {
   const [amountGe] = props.barState.amountGe;
   const [amountLe] = props.barState.amountLe;
   const [isAmountAbs] = props.barState.isAmountAbs;
-  const [consolidated] = props.barState.consolidated;
+  const [consolidate] = props.barState.consolidate;
 
-  const amountKey = `amount${consolidated ? "DefaultCurrency" : ""}` as const;
+  const amountKey = `amount${consolidate ? "DefaultCurrency" : ""}` as const;
   const amountGeKey = `${amountKey}Ge${isAmountAbs ? "Abs" : ""}` as const;
   const amountLeKey = `${amountKey}Le${isAmountAbs ? "Abs" : ""}` as const;
 
@@ -56,7 +56,7 @@ export default function TransactionCards(props: {
     [amountGeKey]: amountGe,
     [amountLeKey]: amountLe,
     accountIdEq: props.accountId,
-    consolidated,
+    consolidate,
     orderBy: isDescending ? "timestamp__desc" : "timestamp__asc",
   };
 
@@ -64,7 +64,7 @@ export default function TransactionCards(props: {
     response: t,
     loading,
   }: PaginatedItemProps<TransactionApiOut | TransactionGroupApiOut>) =>
-    t?.consolidated ? (
+    t?.is_group ? (
       <TransactionCard.Group
         transaction={t}
         checked={t && props.transactionGroupCheckboxes.checked.has(t.id)}
@@ -89,7 +89,7 @@ export default function TransactionCards(props: {
             : undefined
         }
         loading={loading}
-        currency={consolidated ? "default" : "account"}
+        currency={consolidate ? "default" : "account"}
       />
     );
 

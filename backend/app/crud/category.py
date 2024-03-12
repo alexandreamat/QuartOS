@@ -14,8 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Generic
-from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 
+from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 from app.models.category import Category
 from app.schemas.category import (
     CategoryApiOut,

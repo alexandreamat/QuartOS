@@ -108,7 +108,7 @@ class CRUDPLStatement:
         per_page: int = 12,
     ) -> Select[tuple[int, int, Decimal, Decimal]]:
         transactions_query = CRUDConsolidatedTransaction.select(
-            user_id=user_id, consolidated=True
+            user_id=user_id, consolidate=True
         )
 
         transactions_subquery = TransactionsSubquery(transactions_query.subquery())
@@ -133,7 +133,7 @@ class CRUDPLStatement:
     @classmethod
     def select_detailed_pl_statement(cls, **kwargs: Any) -> Any:
         transactions_query = CRUDConsolidatedTransaction.select(
-            consolidated=True, **kwargs
+            consolidate=True, **kwargs
         )
         transactions_subquery = TransactionsSubquery(transactions_query.subquery())
 

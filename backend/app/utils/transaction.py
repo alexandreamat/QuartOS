@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import csv
-
 # imports for exec
 import datetime  # noqa
 import decimal  # noqa

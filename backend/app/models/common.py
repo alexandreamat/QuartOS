@@ -14,8 +14,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 from typing import Iterable, TypeVar, Type, Any
-from fastapi import HTTPException, status
 
+from fastapi import HTTPException, status
 from pydantic import HttpUrl
 from pydantic_extra_types.color import Color
 from sqlalchemy import (
@@ -33,7 +33,6 @@ from sqlalchemy import (
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Session, mapped_column, Mapped
-
 
 BaseType = TypeVar("BaseType", bound="Base")
 SyncableBaseType = TypeVar("SyncableBaseType", bound="SyncableBase")

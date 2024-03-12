@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import date
 import logging
+from datetime import date
 from typing import Any, Generic
 
 from sqlalchemy import Select
@@ -24,7 +24,6 @@ from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 from app.models.account import Account, NonInstitutionalAccount
 from app.models.transaction import Transaction
 from app.models.userinstitutionlink import UserInstitutionLink
-from app.schemas.file import FileApiOut
 from app.schemas.transaction import (
     TransactionApiOut,
     TransactionApiIn,

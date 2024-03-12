@@ -33,11 +33,15 @@ router = APIRouter()
 
 @router.get("/")
 def read_many(
-    db: DBSession, me: CurrentUser, arg: TransactionQueryArg = Depends()
+    db: DBSession,
+    me: CurrentUser,
+    consolidate: bool = False,
+    arg: TransactionQueryArg = Depends(),
 ) -> Iterable[TransactionApiOut | TransactionGroupApiOut]:
     return CRUDConsolidatedTransaction.read_many(
         db,
         user_id=me.id,
+        consolidate=consolidate,
         **arg.model_dump(exclude_none=True),
     )
 

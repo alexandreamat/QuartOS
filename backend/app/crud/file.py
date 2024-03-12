@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Any
+
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
 

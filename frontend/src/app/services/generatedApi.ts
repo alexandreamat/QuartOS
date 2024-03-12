@@ -508,7 +508,6 @@ const injectedRtkApi = api
           url: `/users/me/accounts/${queryArg.accountId}/transactions`,
           params: {
             search: queryArg.search,
-            consolidated: queryArg.consolidated,
             per_page: queryArg.perPage,
             page: queryArg.page,
             order_by: queryArg.orderBy,
@@ -868,8 +867,8 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/users/me/transactions/`,
           params: {
+            consolidate: queryArg.consolidate,
             search: queryArg.search,
-            consolidated: queryArg.consolidated,
             per_page: queryArg.perPage,
             page: queryArg.page,
             order_by: queryArg.orderBy,
@@ -1200,7 +1199,6 @@ export type ReadManyUsersMeAccountsAccountIdTransactionsGetApiResponse =
 export type ReadManyUsersMeAccountsAccountIdTransactionsGetApiArg = {
   accountId: number;
   search?: string | null;
-  consolidated?: boolean;
   perPage?: number;
   page?: number;
   orderBy?:
@@ -1417,8 +1415,8 @@ export type ReadManyUsersMeTransactionsGetApiResponse =
     | TransactionGroupApiOut
   )[];
 export type ReadManyUsersMeTransactionsGetApiArg = {
+  consolidate?: boolean;
   search?: string | null;
-  consolidated?: boolean;
   perPage?: number;
   page?: number;
   orderBy?:
@@ -1492,7 +1490,7 @@ export type TransactionPlaidOut = {
   amount: string;
   account_balance: string;
   account_id: number;
-  consolidated: false;
+  is_group: false;
 };
 export type ValidationError = {
   loc: (string | number)[];
@@ -1779,7 +1777,7 @@ export type TransactionApiOut = {
   amount: string;
   account_balance: string;
   account_id: number;
-  consolidated: false;
+  is_group: false;
 };
 export type TransactionApiIn2 = {
   timestamp: string;
@@ -1843,7 +1841,7 @@ export type TransactionGroupApiOut = {
   amount_default_currency: string;
   amount: string | null;
   account_id: number | null;
-  consolidated: true;
+  is_group: true;
 };
 export type TransactionGroupApiIn = {
   name: string;

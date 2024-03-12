@@ -15,8 +15,8 @@
 
 import logging
 from typing import Generic, Type, TypeVar, Iterable, Any
-from fastapi import HTTPException, status
 
+from fastapi import HTTPException, status
 from sqlalchemy import Select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session

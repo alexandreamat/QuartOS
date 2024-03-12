@@ -15,7 +15,7 @@
 
 from datetime import date
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel
 
@@ -44,14 +44,7 @@ class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):
     account_balance: Decimal
     account_id: int
     is_synced: bool
-    consolidated: AnnotatedLiteral(False)
-
-    @classmethod
-    def model_validate(cls, obj: Any, **kwargs: Any) -> "TransactionApiOut":
-        if hasattr(obj, "_asdict"):
-            transaction_dict: dict[str, Any] = obj._asdict()
-            return cls(**transaction_dict, consolidated=False)
-        return super().model_validate(obj, **kwargs)
+    is_group: AnnotatedLiteral(False)  # type: ignore
 
 
 class TransactionApiIn(__TransactionBase, ApiInMixin):
@@ -67,7 +60,6 @@ class TransactionPlaidOut(TransactionApiOut, PlaidOutMixin): ...
 class TransactionQueryArg(BaseModel):
     __schema__ = TransactionApiOut
     search: str | None = None
-    consolidated: bool = False
     per_page: int = 0
     page: int = 0
     order_by: Literal[

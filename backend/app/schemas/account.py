@@ -27,7 +27,7 @@ from app.schemas.common import (
 )
 
 
-def AnnotatedLiteral(value: str) -> Any:
+def AnnotatedLiteral(value: Any) -> Any:
     return Annotated[
         Literal[value],
         WithJsonSchema(

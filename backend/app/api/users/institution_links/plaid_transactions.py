@@ -18,11 +18,10 @@ import json
 import plaid
 import urllib3
 from fastapi import APIRouter, HTTPException, status
-from app.crud.replacementpattern import CRUDReplacementPattern
 
+from app.crud.replacementpattern import CRUDReplacementPattern
 from app.crud.userinstitutionlink import (
     CRUDSyncableUserInstitutionLink,
-    CRUDUserInstitutionLink,
 )
 from app.database.deps import DBSession
 from app.deps.user import CurrentUser
