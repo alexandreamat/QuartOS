@@ -82,6 +82,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           script: |
             cd quartos
-            docker compose pull
             docker compose down --remove-orphans
+            docker system prune --force
+            docker compose pull
             docker compose up -d
