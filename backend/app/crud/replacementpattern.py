@@ -39,6 +39,9 @@ class CRUDReplacementPattern(
     ) -> Select[tuple[ReplacementPattern]]:
         statement = super().select(**kwargs)
         if user_institution_link_id:
-            statement = statement.join(Institution).join(UserInstitutionLink)
-            statement = statement.where(UserInstitutionLink.id == statement)
+            statement = (
+                statement.join(Institution)
+                .join(UserInstitutionLink)
+                .where(UserInstitutionLink.id == user_institution_link_id)
+            )
         return statement
