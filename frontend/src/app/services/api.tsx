@@ -87,9 +87,7 @@ const consolidatedTransactionOutFromRaw = (
   r: ConsolidatedTransactionApiOutRaw[],
 ) =>
   r.map((t) =>
-    t.consolidated
-      ? transactionGroupApiOutFromRaw(t)
-      : transactionApiOutFromRaw(t),
+    t.is_group ? transactionGroupApiOutFromRaw(t) : transactionApiOutFromRaw(t),
   );
 
 const plStatementApiOutFromRaw = (t: PlStatementApiOutRaw) => ({
