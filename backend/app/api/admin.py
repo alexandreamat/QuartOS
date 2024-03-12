@@ -17,7 +17,7 @@
 from datetime import date
 from typing import Iterable
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import NoResultFound
 
 from app.crud.account import CRUDAccount, CRUDSyncableAccount
@@ -129,9 +129,12 @@ def resync_transactions(
     user_institution_link = CRUDSyncableUserInstitutionLink.read(
         db, id=user_institution_link_id
     )
-    replacement_pattern = CRUDReplacementPattern.read(
-        db, user_institution_link_id=user_institution_link_id
-    )
+    try:
+        replacement_pattern = CRUDReplacementPattern.read(
+            db, user_institution_link_id=user_institution_link_id
+        )
+    except HTTPException:
+        replacement_pattern = None
     for transaction_in in fetch_transactions(
         db, user_institution_link, start_date, end_date, replacement_pattern
     ):
@@ -174,9 +177,12 @@ def read_many(
     user_institution_link = CRUDSyncableUserInstitutionLink.read(
         db, id=user_institution_link_id
     )
-    replacement_pattern = CRUDReplacementPattern.read(
-        db, user_institution_link_id=user_institution_link_id
-    )
+    try:
+        replacement_pattern = CRUDReplacementPattern.read(
+            db, user_institution_link_id=user_institution_link_id
+        )
+    except HTTPException:
+        replacement_pattern = None
     return fetch_transactions(
         db, user_institution_link, start_date, end_date, replacement_pattern
     )
@@ -186,9 +192,12 @@ def read_many(
 def reset_many_transactions_to_metadata(
     db: DBSession, me: CurrentSuperuser, user_institution_link_id: int
 ) -> Iterable[TransactionPlaidOut]:
-    replacement_pattern = CRUDReplacementPattern.read(
-        db, user_institution_link_id=user_institution_link_id
-    )
+    try:
+        replacement_pattern = CRUDReplacementPattern.read(
+            db, user_institution_link_id=user_institution_link_id
+        )
+    except HTTPException:
+        replacement_pattern = None
     for t in CRUDSyncableTransaction.read_many(
         db, user_institution_link_id=user_institution_link_id
     ):
@@ -208,7 +217,10 @@ def reset_transaction_to_metadata(
     user_institution_link_id: int,
     transaction_id: int,
 ) -> TransactionPlaidOut:
-    rp = CRUDReplacementPattern.read(
-        db, user_institution_link_id=user_institution_link_id
-    )
-    return _reset_transaction_to_metadata(db, transaction_id, rp)
+    try:
+        replacement_pattern = CRUDReplacementPattern.read(
+            db, user_institution_link_id=user_institution_link_id
+        )
+    except HTTPException:
+        replacement_pattern = None
+    return _reset_transaction_to_metadata(db, transaction_id, replacement_pattern)
