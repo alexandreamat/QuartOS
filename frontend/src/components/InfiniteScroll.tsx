@@ -17,7 +17,11 @@ import { BaseQueryFn } from "@reduxjs/toolkit/dist/query";
 import ExhaustedDataCard from "components/ExhaustedDataCard";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { MutableRefObject, useEffect, useMemo, useState } from "react";
-import { PaginatedItemProps, PaginatedQueryArg, PaginatedQueryEndpoint } from "types";
+import {
+  PaginatedItemProps,
+  PaginatedQueryArg,
+  PaginatedQueryEndpoint,
+} from "types";
 
 const PER_PAGE = 20;
 const RATE = 1;
@@ -98,7 +102,7 @@ export function InfiniteScroll<
   useEffect(() => {
     setLoadMore(true);
     setPages(1);
-  }, [props.params]);
+  }, [JSON.stringify(props.params)]);
 
   function handleSuccess(page: number, loadMore: boolean) {
     if (page !== pages - 1) return;
