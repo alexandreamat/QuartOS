@@ -88,6 +88,7 @@ class __CRUDTransactionBase(
                 account_id__eq=id, timestamp__ge=timestamp, order_by="timestamp__asc"
             )
         else:
+            statement = Transaction.select(account_id__eq=id, order_by="timestamp__asc")
             prev_balance = account.initial_balance
 
         for transaction in db.scalars(statement).yield_per(50):
