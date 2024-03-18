@@ -234,7 +234,7 @@ export default function AccountForm(props: {
           )}
           <FormCurrencyInputs
             label="Initial Balance"
-            amount={initialBalance}
+            field={initialBalance}
             currencyCode={currencyCode}
           />
           <FormValidationError fields={requiredFields} />

@@ -34,7 +34,7 @@ const useFormField = <T,>(
         isValid = value.length !== 0;
         break;
       case "number":
-        isValid = value !== 0;
+        isValid = true;
         break;
       default:
         isValid = Boolean(value) && value !== undefined;

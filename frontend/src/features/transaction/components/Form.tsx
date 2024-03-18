@@ -96,12 +96,13 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     ),
     name: useFormField(isEdit ? props.transaction.name : "", "name"),
     accountId: useFormField(
-      isEdit ? props.transaction.account_id : 0,
+      isEdit ? props.transaction.account_id : undefined,
       "account",
     ),
     categoryId: useFormField(
-      isEdit ? props.transaction.category_id || 0 : 0,
+      isEdit ? props.transaction.category_id : undefined,
       "category",
+      true,
     ),
   };
 
@@ -132,9 +133,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   }, [isEdit]);
 
   const handleSubmit = async () => {
-    const invalidFields = Object.values(form).filter(
-      (field) => !field.validate(),
-    );
+    const invalidFields = Object.values(form).filter((f) => !f.validate());
     if (invalidFields.length > 0) return;
     const transactionIn = transactionFormToApiIn(form);
     try {
@@ -165,7 +164,6 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
     isEdit &&
     (Object.values(comparableForm).some((v) => v.hasChanged) ||
       timestamp.value?.getTime() !== props.transaction.timestamp.getTime());
-
   return (
     <Modal open onClose={handleClose} size="small">
       <Modal.Header>{props.title}</Modal.Header>

@@ -19,6 +19,7 @@ import useFormField from "hooks/useFormField";
 import { Form, Label } from "semantic-ui-react";
 import { capitaliseFirstLetter } from "utils/string";
 import CurrencyLabel from "./CurrencyLabel";
+import { useEffect, useState } from "react";
 
 export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
   label?: string;
@@ -28,6 +29,10 @@ export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
   readOnly?: boolean;
 }) {
   const label = props.label || props.field.label;
+
+  const [valueStr, setValueStr] = useState(props.field.value?.toFixed(2) || "");
+
+  useEffect(() => props.field.set(Number(valueStr)), [valueStr]);
 
   if (props.readOnly) {
     return (
@@ -42,8 +47,6 @@ export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
     );
   }
 
-  const valueStr = props.field.value?.toFixed(2);
-
   return (
     <Form.Input
       readOnly={props.readOnly}
@@ -53,10 +56,7 @@ export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
       placeholder={label && "Enter " + label}
       required
       value={valueStr}
-      onChange={(_, data: { value: string }) => {
-        props.field.reset();
-        props.field.set(Number(data.value));
-      }}
+      onChange={(e, { value }) => setValueStr(value)}
       labelPosition="left"
       error={props.field.isError || props.query?.isError}
     >
