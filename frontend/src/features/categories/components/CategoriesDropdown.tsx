@@ -10,7 +10,10 @@ export default function CategoriesDropdown(props: {
 
   return (
     <Dropdown
-      options={options.options}
+      options={[
+        { key: 0, value: undefined, text: "Select category" },
+        ...options.options,
+      ]}
       loading={options.query.isLoading}
       disabled={!options.query.isSuccess}
       error={options.query.isError}
@@ -18,6 +21,7 @@ export default function CategoriesDropdown(props: {
       onChange={(e, data) => props.categoryId.set(data.value as number)}
       selection
       search
+      placeholder="Select category"
     />
   );
 }
@@ -26,7 +30,7 @@ function CategoriesDropdownForm(props: {
   categoryId: ReturnType<typeof useFormField<number | undefined>>;
 }) {
   return (
-    <Form.Field required>
+    <Form.Field required error={props.categoryId.isError}>
       <label>
         {props.categoryId.label &&
           capitaliseFirstLetter(props.categoryId.label)}

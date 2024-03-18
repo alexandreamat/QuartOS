@@ -70,7 +70,7 @@ export function InfiniteScroll<
   B extends BaseQueryFn,
   T extends string,
   R,
-  P,
+  P extends {},
 >(props: {
   params: P;
   endpoint: PaginatedQueryEndpoint<B, T, R, P>;

@@ -16,13 +16,17 @@
 import useFormField from "hooks/useFormField";
 import { Form } from "semantic-ui-react";
 import FormCurrencyCodeDropdown from "./FormCurrencyCodeDropdown";
+import { useEffect, useState } from "react";
 
 export default function FormCurrencyInputs(props: {
   label: string;
-  amount: ReturnType<typeof useFormField<number>>;
+  field: ReturnType<typeof useFormField<number>>;
   currencyCode: ReturnType<typeof useFormField<string>>;
 }) {
-  const amountStr = props.amount.value?.toFixed(2) || "";
+  const [valueStr, setValueStr] = useState(props.field.value?.toFixed(2) || "");
+
+  useEffect(() => props.field.set(Number(valueStr)), [valueStr]);
+
   return (
     <Form.Group widths="equal">
       <FormCurrencyCodeDropdown currencyCode={props.currencyCode} />
@@ -35,15 +39,9 @@ export default function FormCurrencyInputs(props: {
         label={props.label}
         placeholder={"Enter " + props.label}
         required
-        value={amountStr}
-        onChange={(
-          e: React.ChangeEvent<HTMLInputElement>,
-          { value }: { value: string },
-        ) => {
-          props.amount.reset();
-          props.amount.set(Number(value));
-        }}
-        error={props.amount.isError}
+        value={valueStr}
+        onChange={(e, { value }) => setValueStr(value)}
+        error={props.field.isError}
       />
     </Form.Group>
   );
