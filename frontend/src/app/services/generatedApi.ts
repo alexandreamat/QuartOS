@@ -518,6 +518,7 @@ const injectedRtkApi = api
             timestamp__le: queryArg.timestampLe,
             timestamp__lt: queryArg.timestampLt,
             name__eq: queryArg.nameEq,
+            category_id__is_null: queryArg.categoryIdIsNull,
             category_id__eq: queryArg.categoryIdEq,
             transaction_group_id__eq: queryArg.transactionGroupIdEq,
             amount_default_currency__eq: queryArg.amountDefaultCurrencyEq,
@@ -879,6 +880,7 @@ const injectedRtkApi = api
             timestamp__le: queryArg.timestampLe,
             timestamp__lt: queryArg.timestampLt,
             name__eq: queryArg.nameEq,
+            category_id__is_null: queryArg.categoryIdIsNull,
             category_id__eq: queryArg.categoryIdEq,
             transaction_group_id__eq: queryArg.transactionGroupIdEq,
             amount_default_currency__eq: queryArg.amountDefaultCurrencyEq,
@@ -1222,6 +1224,7 @@ export type ReadManyUsersMeAccountsAccountIdTransactionsGetApiArg = {
   timestampLe?: string | null;
   timestampLt?: string | null;
   nameEq?: string | null;
+  categoryIdIsNull?: boolean | null;
   categoryIdEq?: number | null;
   transactionGroupIdEq?: number | null;
   amountDefaultCurrencyEq?: number | string | null;
@@ -1440,6 +1443,7 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   timestampLe?: string | null;
   timestampLt?: string | null;
   nameEq?: string | null;
+  categoryIdIsNull?: boolean | null;
   categoryIdEq?: number | null;
   transactionGroupIdEq?: number | null;
   amountDefaultCurrencyEq?: number | string | null;

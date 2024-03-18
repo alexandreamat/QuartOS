@@ -58,7 +58,8 @@ class __InstitutionalAccount(__AccountBase):
     mask: str
 
 
-class __NonInstitutionalAccount(__AccountBase): ...
+class __NonInstitutionalAccount(__AccountBase):
+    ...
 
 
 class __Depository(__InstitutionalAccount):

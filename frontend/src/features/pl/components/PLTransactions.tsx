@@ -40,7 +40,9 @@ export default function PLTransactions(props: {
     api.endpoints.readManyUsersMeTransactionsGet.useQuery({
       timestampGe: dateToString(props.plStatement.timestamp__ge),
       timestampLt: dateToString(props.plStatement.timestamp__lt),
-      categoryIdEq: props.categoryId,
+      ...(props.categoryId
+        ? { categoryIdEq: props.categoryId }
+        : { categoryIdIsNull: true }),
       [amountKey]: 0,
       orderBy: orderByVal,
       consolidate: true,
