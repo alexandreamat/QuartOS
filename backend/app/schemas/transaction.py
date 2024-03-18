@@ -83,6 +83,7 @@ class TransactionQueryArg(BaseModel):
     timestamp__le: date | None = None
     timestamp__lt: date | None = None
     name__eq: str | None = None
+    category_id__is_null: bool | None = None
     category_id__eq: int | None = None
     transaction_group_id__eq: int | None = None
     amount_default_currency__eq: Decimal | None = None

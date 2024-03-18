@@ -41,7 +41,8 @@ class PlaidInMixin(ApiInMixin):
     plaid_metadata: str
 
 
-class PlaidOutMixin(PlaidInMixin, ApiOutMixin): ...
+class PlaidOutMixin(PlaidInMixin, ApiOutMixin):
+    ...
 
 
 class SyncableApiOutMixin(ApiOutMixin):

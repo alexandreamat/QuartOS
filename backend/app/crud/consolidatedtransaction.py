@@ -18,13 +18,7 @@ import itertools
 import logging
 from typing import Any, Iterable
 
-from sqlalchemy import (
-    Row,
-    Select,
-    func,
-    select,
-    case,
-)
+from sqlalchemy import Row, Select, func, select, case
 from sqlalchemy.orm import Session
 
 from app.models.account import Account, NonInstitutionalAccount

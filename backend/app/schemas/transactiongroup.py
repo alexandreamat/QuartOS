@@ -49,4 +49,5 @@ class TransactionGroupApiOut(__TransactionGroupBase, ApiOutMixin):
     is_group: AnnotatedLiteral(True)  # type: ignore
 
 
-class TransactionGroupApiIn(__TransactionGroupBase, ApiInMixin): ...
+class TransactionGroupApiIn(__TransactionGroupBase, ApiInMixin):
+    ...

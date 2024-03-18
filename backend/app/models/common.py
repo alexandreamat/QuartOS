@@ -53,6 +53,9 @@ def get_where_expressions(
         if len(ops) == 0:
             op = "__eq__"
         else:
+            if ops[0] == "is_null":
+                ops[0] = "eq" if arg else "ne"
+                arg = None
             op = f"__{ops[0]}__"
             if len(ops) == 2:
                 f = {"abs": func.abs}[ops[1]]
