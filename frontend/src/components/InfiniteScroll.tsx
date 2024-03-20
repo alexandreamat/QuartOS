@@ -31,7 +31,8 @@ function Page<B extends BaseQueryFn, T extends string, R, P>(props: {
   params: P;
   endpoint: PaginatedQueryEndpoint<B, T, R, P>;
   onSuccess: (loadMore: boolean) => void;
-  item: (props: PaginatedItemProps<R>) => JSX.Element;
+  itemComponent: (props: PaginatedItemProps<R>) => JSX.Element;
+  prevTimestamp?: Date;
 }) {
   const memoizedParams = useMemo(
     () => props.params,
@@ -53,13 +54,18 @@ function Page<B extends BaseQueryFn, T extends string, R, P>(props: {
     if (query.isSuccess) onLoadMore(query.data.length >= PER_PAGE);
   }, [query, onLoadMore]);
 
-  if (query.isLoading || query.isUninitialized) return <props.item loading />;
+  if (query.isLoading || query.isUninitialized)
+    return <props.itemComponent loading />;
   if (query.isError) return <QueryErrorMessage query={query} />;
 
   return (
     <>
       {query.data.map((response, i) => (
-        <props.item key={i} response={response} loading={query.isFetching} />
+        <props.itemComponent
+          key={i}
+          response={response}
+          loading={query.isFetching}
+        />
       ))}
       {query.data.length < PER_PAGE && <ExhaustedDataCard />}
     </>
@@ -74,7 +80,7 @@ export function InfiniteScroll<
 >(props: {
   params: P;
   endpoint: PaginatedQueryEndpoint<B, T, R, P>;
-  itemRenderer: (props: PaginatedItemProps<R>) => JSX.Element;
+  itemComponent: (props: PaginatedItemProps<R>) => JSX.Element;
   reference: MutableRefObject<HTMLDivElement | null>;
 }) {
   const [pages, setPages] = useState(1);
@@ -118,7 +124,7 @@ export function InfiniteScroll<
           endpoint={props.endpoint}
           params={props.params}
           onSuccess={(loadMore) => handleSuccess(page, loadMore)}
-          item={props.itemRenderer}
+          itemComponent={props.itemComponent}
         />
       ))}
     </>

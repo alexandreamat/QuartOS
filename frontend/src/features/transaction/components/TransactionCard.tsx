@@ -79,13 +79,13 @@ export function TransactionCard(props: {
               }
             />
           )}
-          <Card.Meta>
+          {/* <Card.Meta>
             <FormattedTimestamp
               timestamp={props.timestamp}
               loading={props.loading}
               style={{ width: "9em" }}
             />
-          </Card.Meta>
+          </Card.Meta> */}
           {props.accountId && (
             <AccountIcon
               account={accountQuery.data}
