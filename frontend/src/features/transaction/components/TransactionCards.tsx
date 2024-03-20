@@ -24,7 +24,7 @@ import { MutableRefObject } from "react";
 import { Card } from "semantic-ui-react";
 import { PaginatedItemProps } from "types";
 import { formatDateParam } from "utils/time";
-import { InfiniteScroll } from "../../../components/InfiniteScroll";
+import { GroupedInfiniteScroll } from "components/GroupedInfiniteScroll";
 import { TransactionsBarState } from "./Bar";
 import { TransactionCard } from "./TransactionCard";
 
@@ -94,12 +94,12 @@ export default function TransactionCards(props: {
     );
 
   return (
-    <Card.Group style={{ margin: 1, overflow: "hidden" }}>
-      <InfiniteScroll
+    <Card.Group style={{ margin: 0, overflow: "hidden" }}>
+      <GroupedInfiniteScroll
         reference={props.reference}
         endpoint={api.endpoints.readManyUsersMeTransactionsGet}
         params={params}
-        itemRenderer={CardRenderer}
+        itemComponent={CardRenderer}
       />
     </Card.Group>
   );

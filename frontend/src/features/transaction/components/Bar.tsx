@@ -53,12 +53,7 @@ export default function Bar(props: {
         {/* Correct negative margins that would add unnecessary scroll bar */}
         <Menu secondary style={{ margin: 0 }}>
           <Menu.Item fitted>
-            <Button
-              icon="plus"
-              circular
-              primary
-              onClick={() => setIsFormOpen(true)}
-            />
+            <Button icon="plus" primary onClick={() => setIsFormOpen(true)} />
             {isFormOpen && (
               <TransactionForm.Create onClose={() => setIsFormOpen(false)} />
             )}
