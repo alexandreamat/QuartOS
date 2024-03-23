@@ -62,7 +62,7 @@ export default function IncomeStatement() {
     <FlexColumn>
       <FlexColumn.Auto reference={reference}>
         <Card.Group style={{ margin: 0 }}>
-          <InfiniteScroll
+          <InfiniteScroll.Simple
             itemComponent={CardComponent}
             reference={reference}
             endpoint={api.endpoints.getManyPlStatementsUsersMeAnalyticsGet}
