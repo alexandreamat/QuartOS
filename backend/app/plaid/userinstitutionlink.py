@@ -18,16 +18,19 @@ from datetime import date
 from typing import Iterable
 
 import sqlalchemy
-from plaid.model.item import Item
-from plaid.model.item_get_request import ItemGetRequest
-from plaid.model.item_get_response import ItemGetResponse
-from plaid.model.transaction import Transaction
-from plaid.model.transactions_get_request import TransactionsGetRequest
-from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
-from plaid.model.transactions_get_response import TransactionsGetResponse
-from plaid.model.transactions_sync_request import TransactionsSyncRequest
-from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
-from plaid.model.transactions_sync_response import TransactionsSyncResponse
+from plaid.models import (
+    ItemWebhookUpdateRequest,
+    Item,
+    ItemGetRequest,
+    ItemGetResponse,
+    Transaction,
+    TransactionsGetRequest,
+    TransactionsGetRequestOptions,
+    TransactionsGetResponse,
+    TransactionsSyncRequest,
+    TransactionsSyncRequestOptions,
+    TransactionsSyncResponse,
+)
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -119,6 +122,11 @@ def fetch_user_institution_link(access_token: str) -> UserInstitutionLinkPlaidIn
         plaid_metadata=item.to_str(),
     )
     return user_institution_link_in
+
+
+def update_item_webhook(access_token: str, webhook_url: str) -> None:
+    request = ItemWebhookUpdateRequest(access_token=access_token, webhook=webhook_url)
+    client.item_webhook_update(request)
 
 
 def fetch_transactions(
