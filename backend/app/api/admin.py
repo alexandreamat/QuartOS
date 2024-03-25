@@ -91,7 +91,7 @@ def update_transactions_amount_default_currency(
 
 @router.put("/user-institution-links/update-webhook")
 def update_webhook(db: DBSession, me: CurrentSuperuser, webhook_url: HttpUrl) -> None:
-    for uil in CRUDSyncableUserInstitutionLink.read_many(db):
+    for uil in CRUDSyncableUserInstitutionLink.read_many(db, plaid_id__ne=None):
         if not uil.plaid_id:
             continue
         update_item_webhook(uil.access_token, str(webhook_url))
