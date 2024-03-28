@@ -62,7 +62,7 @@ def handle_transactions_sync_updates_available(
     user_out = CRUDUser.read(db, id=user_institution_link_out.user_id)
     try:
         replacement_pattern_out = CRUDReplacementPattern.read(
-            db, institution_id=user_institution_link_out.institution_id
+            db, user_institution_link_id=user_institution_link_out.id
         )
     except NoResultFound:
         replacement_pattern_out = None
@@ -84,3 +84,6 @@ def handle_item_webhook_update_acknowledged(
 @handle_exceptions
 def handle_item_error(req: ItemErrorWebhookReq, db: Session) -> None:
     logger.error("Plaid reported error %s", req.error)
+
+
+def handle_transactions_default_update(req: Any, db: Session) -> None: ...
