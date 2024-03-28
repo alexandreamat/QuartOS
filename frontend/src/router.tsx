@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Accounts from "features/account";
+import Buckets from "features/buckets";
 import Dashboard from "features/dashboard";
 import Institutions from "features/institution";
 import InstitutionLinks from "features/institutionlink";
@@ -56,6 +57,13 @@ export default [
     label: "Merchants",
     icon: "shop",
     component: Merchants,
+    requires_superuser: false,
+  },
+  {
+    path: "/buckets",
+    label: "Buckets",
+    icon: "bitbucket",
+    component: Buckets,
     requires_superuser: false,
   },
   {

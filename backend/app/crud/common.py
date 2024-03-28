@@ -18,7 +18,7 @@ from typing import Generic, Type, TypeVar, Iterable, Any
 
 from fastapi import HTTPException, status
 from sqlalchemy import Select
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.common import Base
@@ -77,7 +77,13 @@ class CRUDBase(Generic[ModelT, OutSchemaT, InSchemaT]):
     def update(
         cls, db: Session, id: int, obj_in: InSchemaT, **kwargs: Any
     ) -> OutSchemaT:
-        obj = cls.__model__.update(db, id, **obj_in.model_dump(), **kwargs)
+        try:
+            obj = cls.__model__.update(db, id, **obj_in.model_dump(), **kwargs)
+        except IntegrityError:
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                detail=f"{cls.__model__.__tablename__} foreign key(s) {kwargs} not found",
+            )
         obj_out: OutSchemaT = cls.model_validate(obj)
         return obj_out
 

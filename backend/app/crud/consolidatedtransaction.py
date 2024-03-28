@@ -48,6 +48,7 @@ class ConsolidatedTransaction(metaclass=CalculatedColumnsMeta):
     timestamp = TransactionGroup.timestamp.expression
     amount = TransactionGroup.amount.expression
     account_id = TransactionGroup.account_id.expression
+    bucket_id = TransactionGroup.bucket_id.expression
     transactions_count = TransactionGroup.transactions_count.expression
     account_balance = func.min(Transaction.account_balance)
     is_synced = case((func.min(Transaction.plaid_id) != None, True), else_=False)
@@ -82,6 +83,7 @@ class CRUDConsolidatedTransaction:
             model.timestamp,
             model.amount,
             model.account_id,
+            model.bucket_id,
             model.account_balance,
             model.is_synced,
         )
@@ -141,6 +143,7 @@ class CRUDConsolidatedTransaction:
                 timestamp=transaction.timestamp,
                 amount=transaction.amount,
                 account_id=transaction.account_id,
+                bucket_id=transaction.bucket_id,
                 account_balance=transaction.account_balance,
                 is_synced=transaction.is_synced,
                 is_group=False,
@@ -154,6 +157,7 @@ class CRUDConsolidatedTransaction:
                 timestamp=transaction.timestamp,
                 amount=transaction.amount,
                 account_id=transaction.account_id,
+                bucket_id=transaction.bucket_id,
                 transactions_count=transaction.transactions_count,
                 is_group=True,
             )

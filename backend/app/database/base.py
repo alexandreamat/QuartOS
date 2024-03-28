@@ -13,12 +13,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# 1. Import base model
+from app.models.common import Base  # noqa
+
 # 2. Import inheritors of the base model
 from app.models.account import Account
+from app.models.bucket import Bucket
 from app.models.category import Category
-
-# 1. Import base model
-from app.models.common import Base
 from app.models.institution import Institution
 from app.models.merchant import Merchant
 from app.models.replacementpattern import ReplacementPattern
@@ -31,6 +32,7 @@ from app.models.userinstitutionlink import UserInstitutionLink
 # 3. Import this file from Alembic
 __all__ = [
     "Base",
+    "Bucket",
     "ReplacementPattern",
     "TransactionDeserialiser",
     "User",

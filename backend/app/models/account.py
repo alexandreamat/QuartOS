@@ -31,6 +31,7 @@ from app.models.transaction import Transaction
 from app.models.transactiondeserialiser import TransactionDeserialiser
 
 if TYPE_CHECKING:
+    # from app.models.bucket import Bucket
     from app.models.userinstitutionlink import UserInstitutionLink
 
 ModelType = TypeVar("ModelType", bound=Base)
@@ -49,6 +50,9 @@ class Account(SyncableBase):
         cascade="all, delete",
         order_by=(desc(Transaction.timestamp), desc(Transaction.id)),
     )
+    default_bucket_id: Mapped[int | None] = mapped_column(ForeignKey("bucket.id"))
+
+    # default_bucket: Mapped["Bucket | None"] = relationship()
 
     __mapper_args__ = {
         "polymorphic_on": "type",
