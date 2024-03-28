@@ -25,7 +25,6 @@ import { InstitutionLogo } from "features/institution/components/InstitutionLogo
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Label, Loader, Table } from "semantic-ui-react";
-import { logMutationError } from "utils/error";
 import Form from "./components/Form";
 
 function InstitutionLinkRow(props: {
@@ -33,30 +32,6 @@ function InstitutionLinkRow(props: {
   onOpenEditForm: () => void;
 }) {
   const navigate = useNavigate();
-
-  const [syncLink, syncLinkResult] =
-    api.endpoints.syncUsersMeInstitutionLinksUserInstitutionLinkIdPlaidTransactionsSyncPost.useMutation();
-
-  const handleSync = async (userInstitutionLink: UserInstitutionLinkApiOut) => {
-    try {
-      await syncLink(userInstitutionLink.id).unwrap();
-    } catch (error) {
-      if (typeof error === "object" && error) {
-        if ("data" in error && typeof error.data === "object" && error.data) {
-          const data = error.data;
-          if ("detail" in data && typeof data.detail === "string") {
-            const detail = data.detail;
-            if (detail === "ITEM_LOGIN_REQUIRED") {
-              props.onOpenEditForm();
-              return;
-            }
-          }
-        }
-      }
-      logMutationError(error, syncLinkResult);
-      return;
-    }
-  };
 
   const institutionQuery =
     api.endpoints.readInstitutionsInstitutionIdGet.useQuery(
@@ -96,16 +71,6 @@ function InstitutionLinkRow(props: {
       </Table.Cell>
       <Table.Cell collapsing>
         <ActionButton
-          tooltip="Sync"
-          disabled={!props.institutionLink.is_synced}
-          loading={syncLinkResult.isLoading}
-          negative={syncLinkResult.isError}
-          icon="sync"
-          onClick={async () => await handleSync(props.institutionLink)}
-        />
-      </Table.Cell>
-      <Table.Cell collapsing>
-        <ActionButton
           tooltip="Add account"
           disabled={props.institutionLink.is_synced}
           icon="credit card"
@@ -134,7 +99,7 @@ const InstitutionLinksTable = (props: {
 
   return (
     <Table>
-      <TableHeader headers={["", "Institution", "Website"]} actions={3} />
+      <TableHeader headers={["", "Institution", "Website"]} actions={2} />
       <Table.Body>
         {props.institutionLinks.map((institutionLink) => (
           <InstitutionLinkRow
@@ -144,7 +109,7 @@ const InstitutionLinksTable = (props: {
           />
         ))}
       </Table.Body>
-      <TableFooter columns={7} onCreate={props.onOpenCreateForm} />
+      <TableFooter columns={6} onCreate={props.onOpenCreateForm} />
     </Table>
   );
 };
