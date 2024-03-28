@@ -23,6 +23,16 @@ const injectedRtkApi = api
   })
   .injectEndpoints({
     endpoints: (build) => ({
+      webhookWebhookPost: build.mutation<
+        WebhookWebhookPostApiResponse,
+        WebhookWebhookPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/webhook`,
+          method: "POST",
+          body: queryArg,
+        }),
+      }),
       accountsUpdateBalancesAdminAccountsUpdateBalancesPut: build.mutation<
         AccountsUpdateBalancesAdminAccountsUpdateBalancesPutApiResponse,
         AccountsUpdateBalancesAdminAccountsUpdateBalancesPutApiArg
@@ -80,6 +90,17 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["admin"],
         }),
+      updateWebhookAdminUserInstitutionLinksUpdateWebhookPut: build.mutation<
+        UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiResponse,
+        UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/admin/user-institution-links/update-webhook`,
+          method: "PUT",
+          params: { webhook_url: queryArg },
+        }),
+        invalidatesTags: ["admin"],
+      }),
       resyncUserInstitutionLinkAdminUserInstitutionLinksUserInstitutionLinkIdResyncPut:
         build.mutation<
           ResyncUserInstitutionLinkAdminUserInstitutionLinksUserInstitutionLinkIdResyncPutApiResponse,
@@ -938,6 +959,13 @@ const injectedRtkApi = api
     overrideExisting: false,
   });
 export { injectedRtkApi as generatedApi };
+export type WebhookWebhookPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type WebhookWebhookPostApiArg =
+  | WebhookUpdateAcknowledgedWebhookReq
+  | ItemErrorWebhookReq
+  | SyncUpdatesAvailableWebhookReq
+  | OtherWebhookRew;
 export type AccountsUpdateBalancesAdminAccountsUpdateBalancesPutApiResponse =
   /** status 200 Successful Response */ any;
 export type AccountsUpdateBalancesAdminAccountsUpdateBalancesPutApiArg = void;
@@ -961,6 +989,10 @@ export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmount
   /** status 200 Successful Response */ any;
 export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg =
   void;
+export type UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiArg =
+  string;
 export type ResyncUserInstitutionLinkAdminUserInstitutionLinksUserInstitutionLinkIdResyncPutApiResponse =
   /** status 200 Successful Response */ UserInstitutionLinkPlaidOut;
 export type ResyncUserInstitutionLinkAdminUserInstitutionLinksUserInstitutionLinkIdResyncPutApiArg =
@@ -1481,6 +1513,55 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
 export type ConsolidateUsersMeTransactionsPostApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut;
 export type ConsolidateUsersMeTransactionsPostApiArg = number[];
+export type ValidationError = {
+  loc: (string | number)[];
+  msg: string;
+  type: string;
+};
+export type HttpValidationError = {
+  detail?: ValidationError[];
+};
+export type Error = {
+  error_type: string;
+  error_code: string;
+  error_message: string;
+  display_message: string | null;
+  request_id: string;
+  causes: any;
+  status: number | null;
+  documentation_url: string;
+  suggested_action: string | null;
+};
+export type WebhookUpdateAcknowledgedWebhookReq = {
+  webhook_type: any;
+  webhook_code: any;
+  item_id: string;
+  environment: any;
+  new_webhook_url: string;
+  error: Error;
+};
+export type ItemErrorWebhookReq = {
+  webhook_type: any;
+  webhook_code: any;
+  item_id: string;
+  environment: any;
+  error: Error;
+};
+export type SyncUpdatesAvailableWebhookReq = {
+  webhook_type: any;
+  webhook_code: any;
+  item_id: string;
+  environment: any;
+  initial_update_complete: boolean;
+  historical_update_complete: boolean;
+};
+export type OtherWebhookRew = {
+  webhook_type: string;
+  webhook_code: string;
+  item_id: string;
+  environment: any;
+  [key: string]: any;
+};
 export type TransactionPlaidOut = {
   id: number;
   plaid_id: string;
@@ -1495,14 +1576,6 @@ export type TransactionPlaidOut = {
   account_balance: string;
   account_id: number;
   is_group: false;
-};
-export type ValidationError = {
-  loc: (string | number)[];
-  msg: string;
-  type: string;
-};
-export type HttpValidationError = {
-  detail?: ValidationError[];
 };
 export type TransactionPlaidIn = {
   plaid_id: string;

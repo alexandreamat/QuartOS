@@ -18,6 +18,7 @@ from datetime import date
 from typing import Iterable
 
 from fastapi import APIRouter, HTTPException
+from pydantic import HttpUrl
 from sqlalchemy.exc import NoResultFound
 
 from app.crud.account import CRUDAccount, CRUDSyncableAccount
@@ -36,6 +37,7 @@ from app.plaid.transaction import (
 from app.plaid.userinstitutionlink import (
     fetch_transactions,
     fetch_user_institution_link,
+    update_item_webhook,
 )
 from app.schemas.transaction import TransactionPlaidIn, TransactionPlaidOut
 from app.schemas.userinstitutionlink import UserInstitutionLinkPlaidOut
@@ -85,6 +87,14 @@ def update_transactions_amount_default_currency(
             CRUDAccount.update_transactions_amount_default_currency(
                 db, a.id, u.default_currency_code
             )
+
+
+@router.put("/user-institution-links/update-webhook")
+def update_webhook(db: DBSession, me: CurrentSuperuser, webhook_url: HttpUrl) -> None:
+    for uil in CRUDSyncableUserInstitutionLink.read_many(db, plaid_id__is_null=False):
+        if not uil.plaid_id:
+            continue
+        update_item_webhook(uil.access_token, str(webhook_url))
 
 
 @router.put("/user-institution-links/{user_institution_link_id}/resync")

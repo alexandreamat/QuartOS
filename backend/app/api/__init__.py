@@ -13,10 +13,30 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from logging import getLogger
 from fastapi import APIRouter
-
+from fastapi import BackgroundTasks
+from app.database.deps import DBSession
+from app import handlers
+from app.schemas.webhook import WebhookReq
 from app.utils import include_package_routes
 
 router = APIRouter()
+
+logger = getLogger(__name__)
+
+
+@router.post("/webhook")
+def webhook(req: WebhookReq, background_tasks: BackgroundTasks, db: DBSession) -> None:
+    name = f"handle_{req.webhook_type.lower()}_{req.webhook_code.lower()}"
+    try:
+        handler = getattr(handlers, name)
+    except AttributeError:
+        logger.error(
+            "%s/%s currently not supported", req.webhook_type, req.webhook_code
+        )
+        return
+    background_tasks.add_task(handler, req, db)
+
 
 include_package_routes(router, __name__, __path__)
