@@ -106,6 +106,41 @@ class TransactionGroup(Base):
         return case((cls.account_id_min == cls.account_id_max, cls.account_id_min))
 
     @hybrid_property
+    def bucket_id_max(self) -> int | None:
+        return (
+            max((t.bucket_id for t in self.transactions if t.bucket_id), default=0)
+            or None
+        )
+
+    @bucket_id_max.inplace.expression
+    @classmethod
+    def _bucket_id_max_expression(cls) -> ColumnElement[int]:
+        return func.max(Transaction.bucket_id)
+
+    @hybrid_property
+    def bucket_id_min(self) -> int | None:
+        return (
+            min((t.bucket_id for t in self.transactions if t.bucket_id), default=0)
+            or None
+        )
+
+    @bucket_id_min.inplace.expression
+    @classmethod
+    def _bucket_id_min_expression(cls) -> ColumnElement[int]:
+        return func.min(Transaction.bucket_id)
+
+    @hybrid_property
+    def bucket_id(self) -> int | None:
+        if self.bucket_id_max == self.bucket_id_min:
+            return self.bucket_id_max
+        return None
+
+    @bucket_id.inplace.expression
+    @classmethod
+    def _bucket_id_expression(cls) -> ColumnElement[int | None]:
+        return case((cls.bucket_id_min == cls.bucket_id_max, cls.bucket_id_min))
+
+    @hybrid_property
     def currency_codes(self) -> int:
         return len({t.account.currency_code for t in self.transactions})
 

@@ -20,6 +20,8 @@ from typing import Any, Callable
 import uvicorn
 from fastapi import FastAPI, Request
 
+# let SQLAlchemy see the base first, so all the models are loaded
+from app.database.base import Base  # noqa
 from app import initial_data
 from app.api import router
 from app.settings import settings

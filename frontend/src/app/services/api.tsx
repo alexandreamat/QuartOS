@@ -56,6 +56,7 @@ const transactionApiOutFromRaw = (t: TransactionApiOutRaw) => ({
   category_id: t.category_id || undefined,
   amount: Number(t.amount),
   transaction_group_id: t.transaction_group_id || undefined,
+  bucket_id: t.bucket_id || undefined,
   account_balance: Number(t.account_balance),
 });
 

@@ -53,6 +53,4 @@ export default function AccountIcon(props: {
       />
     );
   }
-
-  return <Icon name="warning" />;
 }

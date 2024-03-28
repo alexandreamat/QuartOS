@@ -22,7 +22,6 @@ import {
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
-import FormattedTimestamp from "components/FormattedTimestamp";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import AccountIcon from "features/account/components/Icon";
 import { ReactNode, useState } from "react";
@@ -45,6 +44,7 @@ export function TransactionCard(props: {
   checkBoxDisabled?: boolean;
   loading?: boolean;
   accountId?: number;
+  bucketId?: number;
   onFileDrop?: (event: React.DragEvent<HTMLDivElement>) => void;
   buttons?: ReactNode;
   children?: ReactNode;
@@ -52,6 +52,9 @@ export function TransactionCard(props: {
 }) {
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
     props.accountId || skipToken,
+  );
+  const bucketQuery = api.endpoints.readUsersMeBucketsBucketIdGet.useQuery(
+    props.bucketId || skipToken,
   );
   const me = api.endpoints.readMeUsersMeGet.useQuery();
 
@@ -79,32 +82,7 @@ export function TransactionCard(props: {
               }
             />
           )}
-          {/* <Card.Meta>
-            <FormattedTimestamp
-              timestamp={props.timestamp}
-              loading={props.loading}
-              style={{ width: "9em" }}
-            />
-          </Card.Meta> */}
-          {props.accountId && (
-            <AccountIcon
-              account={accountQuery.data}
-              loading={props.loading || accountQuery.isLoading}
-              style={{
-                height: "90%",
-                width: "2.2em",
-                alignSelf: "center",
-              }}
-            />
-          )}
-          {props.accountId && (
-            <LineWithHiddenOverflow
-              content={accountQuery.data?.name}
-              style={{ width: "8em" }}
-              loading={props.loading || accountQuery.isLoading}
-            />
-          )}
-          {props.categoryId && <CategoryIcon categoryId={props.categoryId} />}
+
           <FlexRow.Auto>
             <Header as="h5">
               <LineWithHiddenOverflow
@@ -113,12 +91,31 @@ export function TransactionCard(props: {
               />
             </Header>
           </FlexRow.Auto>
+          {props.categoryId && <CategoryIcon categoryId={props.categoryId} />}
           {props.buttons}
         </FlexRow>
         {props.children}
       </Card.Content>
       <Card.Content extra>
-        <FlexRow justifyContent="right" gap="1ch" alignItems="baseline">
+        <FlexRow gap="0.5ch" alignItems="center" style={{ height: "2.2em" }}>
+          {props.accountId && (
+            <AccountIcon
+              account={accountQuery.data}
+              loading={props.loading || accountQuery.isLoading}
+              style={{ height: "2em" }}
+            />
+          )}
+          {accountQuery.data && (
+            <div>
+              <LineWithHiddenOverflow content={accountQuery.data.name} />
+            </div>
+          )}
+          {bucketQuery.data && <div>/</div>}
+          <FlexRow.Auto>
+            {bucketQuery.data && (
+              <LineWithHiddenOverflow content={bucketQuery.data.name} />
+            )}
+          </FlexRow.Auto>
           <div style={{ color: "black", fontWeight: "bold" }}>Total:</div>
           <Popup
             disabled={!props.accountBalance || !accountQuery.data}
@@ -197,6 +194,7 @@ function TransactionCardSimple(props: {
   return (
     <TransactionCard
       accountId={props.transaction?.account_id}
+      bucketId={props.transaction?.bucket_id}
       checkBoxDisabled={props.checkBoxDisabled}
       checked={props.checked}
       onFileDrop={handleFileDrop}

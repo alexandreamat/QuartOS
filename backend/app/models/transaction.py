@@ -28,6 +28,7 @@ from app.models.file import File
 if TYPE_CHECKING:
     from app.models.account import Account
     from app.models.transactiongroup import TransactionGroup
+    from app.models.bucket import Bucket
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ class Transaction(SyncableBase):
     timestamp: Mapped[date]
     name: Mapped[str]
     account_id: Mapped[int] = mapped_column(ForeignKey("account.id"))
+    bucket_id: Mapped[int | None] = mapped_column(ForeignKey("bucket.id"))
     transaction_group_id: Mapped[int | None] = mapped_column(
         ForeignKey("transaction_group.id"), nullable=True
     )
@@ -50,6 +52,7 @@ class Transaction(SyncableBase):
     )
 
     account: Mapped["Account"] = relationship(back_populates="transactions")
+    bucket: Mapped["Bucket | None"] = relationship(back_populates="transactions")
     transaction_group: Mapped["TransactionGroup | None"] = relationship(
         back_populates="transactions"
     )

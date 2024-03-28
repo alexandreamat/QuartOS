@@ -12,6 +12,7 @@ export const addTagTypes = [
   "transactions",
   "files",
   "analytics",
+  "buckets",
   "institution_links",
   "plaid_transactions",
   "merchants",
@@ -667,6 +668,52 @@ const injectedRtkApi = api
           params: { page: queryArg.page, per_page: queryArg.perPage },
         }),
         providesTags: ["users", "analytics"],
+      }),
+      readManyUsersMeBucketsGet: build.query<
+        ReadManyUsersMeBucketsGetApiResponse,
+        ReadManyUsersMeBucketsGetApiArg
+      >({
+        query: () => ({ url: `/users/me/buckets/` }),
+        providesTags: ["users", "buckets"],
+      }),
+      createUsersMeBucketsPost: build.mutation<
+        CreateUsersMeBucketsPostApiResponse,
+        CreateUsersMeBucketsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/buckets/`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["users", "buckets"],
+      }),
+      readUsersMeBucketsBucketIdGet: build.query<
+        ReadUsersMeBucketsBucketIdGetApiResponse,
+        ReadUsersMeBucketsBucketIdGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/users/me/buckets/${queryArg}` }),
+        providesTags: ["users", "buckets"],
+      }),
+      updateUsersMeBucketsBucketIdPut: build.mutation<
+        UpdateUsersMeBucketsBucketIdPutApiResponse,
+        UpdateUsersMeBucketsBucketIdPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/buckets/${queryArg.bucketId}`,
+          method: "PUT",
+          body: queryArg.bucketApiIn,
+        }),
+        invalidatesTags: ["users", "buckets"],
+      }),
+      deleteUsersMeBucketsBucketIdDelete: build.mutation<
+        DeleteUsersMeBucketsBucketIdDeleteApiResponse,
+        DeleteUsersMeBucketsBucketIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/buckets/${queryArg}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["users", "buckets"],
       }),
       getLinkTokenUsersMeInstitutionLinksLinkTokenGet: build.query<
         GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiResponse,
@@ -1349,6 +1396,24 @@ export type GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
   page?: number;
   perPage?: number;
 };
+export type ReadManyUsersMeBucketsGetApiResponse =
+  /** status 200 Successful Response */ BucketApiOut[];
+export type ReadManyUsersMeBucketsGetApiArg = void;
+export type CreateUsersMeBucketsPostApiResponse =
+  /** status 200 Successful Response */ BucketApiOut;
+export type CreateUsersMeBucketsPostApiArg = BucketApiIn;
+export type ReadUsersMeBucketsBucketIdGetApiResponse =
+  /** status 200 Successful Response */ BucketApiOut;
+export type ReadUsersMeBucketsBucketIdGetApiArg = number;
+export type UpdateUsersMeBucketsBucketIdPutApiResponse =
+  /** status 200 Successful Response */ BucketApiOut;
+export type UpdateUsersMeBucketsBucketIdPutApiArg = {
+  bucketId: number;
+  bucketApiIn: BucketApiIn;
+};
+export type DeleteUsersMeBucketsBucketIdDeleteApiResponse =
+  /** status 200 Successful Response */ number;
+export type DeleteUsersMeBucketsBucketIdDeleteApiArg = number;
 export type GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiResponse =
   /** status 200 Successful Response */ string;
 export type GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiArg =
@@ -1570,6 +1635,7 @@ export type TransactionPlaidOut = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   transaction_group_id: number | null;
   amount_default_currency: string;
   amount: string;
@@ -1583,6 +1649,7 @@ export type TransactionPlaidIn = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   amount: number | string;
 };
 export type UserInstitutionLinkPlaidOut = {
@@ -1600,6 +1667,7 @@ export type TransactionPlaidIn2 = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   amount: string;
 };
 export type Token = {
@@ -1838,6 +1906,7 @@ export type TransactionApiIn = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   amount: string;
 };
 export type BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost = {
@@ -1849,6 +1918,7 @@ export type TransactionApiOut = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   transaction_group_id: number | null;
   amount_default_currency: string;
   amount: string;
@@ -1860,6 +1930,7 @@ export type TransactionApiIn2 = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   amount: number | string;
 };
 export type FileApiOut = {
@@ -1889,6 +1960,13 @@ export type PlStatementApiOut = {
   timestamp__lt: string;
   income: string;
   expenses: string;
+};
+export type BucketApiOut = {
+  id: number;
+  name: string;
+};
+export type BucketApiIn = {
+  name: string;
 };
 export type UserInstitutionLinkApiOut = {
   id: number;
