@@ -94,6 +94,5 @@ def exchange_public_token(public_token: str) -> str:
     response: ItemPublicTokenExchangeResponse = client.item_public_token_exchange(
         request
     )
-    logger.info(response.to_str())  # FIXME: remove this, contains sensitive info
     access_token: str = response.access_token
     return access_token
