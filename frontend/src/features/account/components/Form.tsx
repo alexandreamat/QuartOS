@@ -93,7 +93,7 @@ export default function AccountForm(props: {
     initialBalance.set(props.account.initial_balance);
     type.set(props.account.type);
     isInstitutional.set(props.account.is_institutional);
-    defaultBucketId.set(props.account.default_bucket_id);
+    defaultBucketId.set(props.account.default_bucket_id || undefined);
     if (props.account.is_institutional) {
       institutionLinkId.set(props.account.user_institution_link_id);
       mask.set(props.account.mask);
