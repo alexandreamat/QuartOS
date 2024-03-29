@@ -61,6 +61,22 @@ def orphan_single_transactions(db: DBSession, me: CurrentSuperuser) -> None:
     CRUDTransaction.orphan_only_children(db)
 
 
+@router.put("/transactions/set-default-buckets")
+def set_default_buckets(db: DBSession, me: CurrentSuperuser) -> None:
+    CRUDTransaction.set_default_buckets(db)
+
+
+@router.put("/transactions/update-amounts-default-currency")
+def update_transactions_amount_default_currency(
+    db: DBSession, me: CurrentSuperuser
+) -> None:
+    for u in CRUDUser.read_many(db):
+        for a in CRUDAccount.read_many(db, user_id=u.id):
+            CRUDAccount.update_transactions_amount_default_currency(
+                db, a.id, u.default_currency_code
+            )
+
+
 @router.get("/transactions/{transaction_id}")
 def read_transaction(
     db: DBSession, me: CurrentSuperuser, transaction_id: int
@@ -76,17 +92,6 @@ def update_transaction(
     transaction_in: TransactionPlaidIn,
 ) -> TransactionPlaidOut:
     return CRUDSyncableTransaction.update(db, transaction_id, transaction_in)
-
-
-@router.put("/transactions/update-amounts-default-currency")
-def update_transactions_amount_default_currency(
-    db: DBSession, me: CurrentSuperuser
-) -> None:
-    for u in CRUDUser.read_many(db):
-        for a in CRUDAccount.read_many(db, user_id=u.id):
-            CRUDAccount.update_transactions_amount_default_currency(
-                db, a.id, u.default_currency_code
-            )
 
 
 @router.put("/user-institution-links/update-webhook")

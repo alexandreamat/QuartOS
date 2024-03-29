@@ -22,14 +22,10 @@ import { useLocation } from "react-router-dom";
 import { Card, Divider, Header, Icon, Loader, Menu } from "semantic-ui-react";
 import { capitaliseFirstLetter } from "utils/string";
 import AccountCard from "./components/AccountCard";
-import Form from "./components/Form";
+import AccountForm from "./components/Form";
 import { accountTypeToIconName } from "./utils";
 
 export default function Accounts() {
-  const [selectedAccount, setSelectedAccount] = useState<
-    AccountApiOut | undefined
-  >(undefined);
-
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const isFormOpenParam = params.get("isFormOpen") === "true";
@@ -37,21 +33,6 @@ export default function Accounts() {
   const [isFormOpen, setIsFormOpen] = useState(isFormOpenParam);
 
   const accountsQuery = api.endpoints.readManyUsersMeAccountsGet.useQuery();
-
-  const handleCreate = () => {
-    setSelectedAccount(undefined);
-    setIsFormOpen(true);
-  };
-
-  const handleEdit = (account: AccountApiOut) => {
-    setSelectedAccount(account);
-    setIsFormOpen(true);
-  };
-
-  const handleClose = () => {
-    setSelectedAccount(undefined);
-    setIsFormOpen(false);
-  };
 
   if (accountsQuery.isLoading || accountsQuery.isUninitialized)
     return <Loader active size="huge" />;
@@ -72,10 +53,10 @@ export default function Accounts() {
 
   return (
     <FlexColumn>
-      <Form account={selectedAccount} open={isFormOpen} onClose={handleClose} />
+      {isFormOpen && <AccountForm onClose={() => setIsFormOpen(false)} />}
       <Menu secondary>
         <Menu.Item>
-          <CreateNewButton onCreate={handleCreate} />
+          <CreateNewButton onCreate={() => setIsFormOpen(true)} />
         </Menu.Item>
       </Menu>
       <FlexColumn.Auto>
@@ -89,11 +70,7 @@ export default function Accounts() {
             </Divider>
             <Card.Group style={{ margin: 0 }}>
               {groupedAccounts[type as AccountType].map((account) => (
-                <AccountCard
-                  key={account.id}
-                  account={account}
-                  onEdit={() => handleEdit(account)}
-                />
+                <AccountCard key={account.id} account={account} />
               ))}
             </Card.Group>
           </div>

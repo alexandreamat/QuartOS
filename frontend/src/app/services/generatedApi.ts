@@ -62,6 +62,27 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["admin"],
         }),
+      setDefaultBucketsAdminTransactionsSetDefaultBucketsPut: build.mutation<
+        SetDefaultBucketsAdminTransactionsSetDefaultBucketsPutApiResponse,
+        SetDefaultBucketsAdminTransactionsSetDefaultBucketsPutApiArg
+      >({
+        query: () => ({
+          url: `/admin/transactions/set-default-buckets`,
+          method: "PUT",
+        }),
+        invalidatesTags: ["admin"],
+      }),
+      updateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPut:
+        build.mutation<
+          UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse,
+          UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg
+        >({
+          query: () => ({
+            url: `/admin/transactions/update-amounts-default-currency`,
+            method: "PUT",
+          }),
+          invalidatesTags: ["admin"],
+        }),
       readTransactionAdminTransactionsTransactionIdGet: build.query<
         ReadTransactionAdminTransactionsTransactionIdGetApiResponse,
         ReadTransactionAdminTransactionsTransactionIdGetApiArg
@@ -80,17 +101,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["admin"],
       }),
-      updateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPut:
-        build.mutation<
-          UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse,
-          UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg
-        >({
-          query: () => ({
-            url: `/admin/transactions/update-amounts-default-currency`,
-            method: "PUT",
-          }),
-          invalidatesTags: ["admin"],
-        }),
       updateWebhookAdminUserInstitutionLinksUpdateWebhookPut: build.mutation<
         UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiResponse,
         UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiArg
@@ -1023,6 +1033,13 @@ export type OrphanSingleTransactionsAdminTransactionsOrphanOnlyChildrenPutApiRes
   /** status 200 Successful Response */ any;
 export type OrphanSingleTransactionsAdminTransactionsOrphanOnlyChildrenPutApiArg =
   void;
+export type SetDefaultBucketsAdminTransactionsSetDefaultBucketsPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type SetDefaultBucketsAdminTransactionsSetDefaultBucketsPutApiArg = void;
+export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg =
+  void;
 export type ReadTransactionAdminTransactionsTransactionIdGetApiResponse =
   /** status 200 Successful Response */ TransactionPlaidOut;
 export type ReadTransactionAdminTransactionsTransactionIdGetApiArg = number;
@@ -1032,10 +1049,6 @@ export type UpdateTransactionAdminTransactionsTransactionIdPutApiArg = {
   transactionId: number;
   transactionPlaidInInput: TransactionPlaidIn;
 };
-export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse =
-  /** status 200 Successful Response */ any;
-export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg =
-  void;
 export type UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiArg =
@@ -1766,6 +1779,7 @@ export type DepositoryApiOut = {
   initial_balance: string;
   name: string;
   type: "depository";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type LoanApiOut = {
@@ -1778,6 +1792,7 @@ export type LoanApiOut = {
   initial_balance: string;
   name: string;
   type: "loan";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type CreditApiOut = {
@@ -1790,6 +1805,7 @@ export type CreditApiOut = {
   initial_balance: string;
   name: string;
   type: "credit";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type BrokerageApiOut = {
@@ -1802,6 +1818,7 @@ export type BrokerageApiOut = {
   initial_balance: string;
   name: string;
   type: "brokerage";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type InvestmentApiOut = {
@@ -1814,6 +1831,7 @@ export type InvestmentApiOut = {
   initial_balance: string;
   name: string;
   type: "investment";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type CashApiOut = {
@@ -1826,6 +1844,7 @@ export type CashApiOut = {
   initial_balance: string;
   name: string;
   type: "cash";
+  default_bucket_id: number | null;
 };
 export type PersonalLedgerApiOut = {
   id: number;
@@ -1837,6 +1856,7 @@ export type PersonalLedgerApiOut = {
   initial_balance: string;
   name: string;
   type: "personal ledger";
+  default_bucket_id: number | null;
 };
 export type PropertyApiOut = {
   id: number;
@@ -1848,12 +1868,14 @@ export type PropertyApiOut = {
   initial_balance: string;
   name: string;
   type: "property";
+  default_bucket_id: number | null;
 };
 export type DepositoryApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "depository";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type LoanApiIn = {
@@ -1861,6 +1883,7 @@ export type LoanApiIn = {
   initial_balance: number | string;
   name: string;
   type: "loan";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type CreditApiIn = {
@@ -1868,6 +1891,7 @@ export type CreditApiIn = {
   initial_balance: number | string;
   name: string;
   type: "credit";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type BrokerageApiIn = {
@@ -1875,6 +1899,7 @@ export type BrokerageApiIn = {
   initial_balance: number | string;
   name: string;
   type: "brokerage";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type InvestmentApiIn = {
@@ -1882,6 +1907,7 @@ export type InvestmentApiIn = {
   initial_balance: number | string;
   name: string;
   type: "investment";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type CashApiIn = {
@@ -1889,18 +1915,21 @@ export type CashApiIn = {
   initial_balance: number | string;
   name: string;
   type: "cash";
+  default_bucket_id: number | null;
 };
 export type PersonalLedgerApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "personal ledger";
+  default_bucket_id: number | null;
 };
 export type PropertyApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "property";
+  default_bucket_id: number | null;
 };
 export type TransactionApiIn = {
   timestamp: string;

@@ -61,9 +61,8 @@ def update(
     account_in: AccountApiIn,
     user_institution_link_id: int | None,
 ) -> AccountApiOut:
-    account_out = CRUDAccount.read(db, id=account_id, user_id=me.id)
-    if account_out.is_synced:
-        raise SyncedEntity()
+    # TODO editing of synced accounts should be restricted, although not prevented
+    CRUDAccount.read(db, id=account_id, user_id=me.id)
     return CRUDAccount.update(
         db,
         account_id,

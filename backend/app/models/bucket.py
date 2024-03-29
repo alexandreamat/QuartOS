@@ -13,15 +13,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from app.models.common import Base
 from app.models.transaction import Transaction
-
-if TYPE_CHECKING:
-    from app.models.user import User
 
 
 class Bucket(Base):
@@ -31,5 +27,4 @@ class Bucket(Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
-    # user: Mapped["User"] = relationship()
     transactions: Mapped[list[Transaction]] = relationship(back_populates="bucket")
