@@ -63,6 +63,12 @@ class __CRUDTransactionBase(
             t.transaction_group.delete(db, t.transaction_group_id)
 
     @classmethod
+    def set_default_buckets(cls, db: Session) -> None:
+        for t in Transaction.read_many(db, 0, 0):
+            t.bucket_id = t.account.default_bucket_id
+        db.flush()
+
+    @classmethod
     def update(
         cls, db: Session, id: int, obj_in: InSchemaT, **kwargs: Any
     ) -> OutSchemaT:

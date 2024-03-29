@@ -23,12 +23,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "semantic-ui-react";
 import Uploader from "./Uploader";
+import AccountForm from "./Form";
 
-export default function AccountCard(props: {
-  account: AccountApiOut;
-  onEdit: () => void;
-}) {
+export default function AccountCard(props: { account: AccountApiOut }) {
   const navigate = useNavigate();
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const institutionLinkQueries = useInstitutionLinkQueries(
     props.account.is_institutional
@@ -50,14 +50,16 @@ export default function AccountCard(props: {
     navigate(`/transactions/?accountId=${props.account.id}`);
   }
 
-  function handleGoToTransactionGroups() {
-    navigate(`/transactionGroups/?accountId=${props.account.id}`);
-  }
-
   return (
     <Card color="teal">
       {isUploaderOpen && (
         <Uploader account={props.account} onClose={handleCloseUploader} />
+      )}
+      {isFormOpen && (
+        <AccountForm
+          account={props.account}
+          onClose={() => setIsFormOpen(false)}
+        />
       )}
       <Card.Content>
         <InstitutionLogo
@@ -75,8 +77,7 @@ export default function AccountCard(props: {
       <Card.Content extra textAlign="right">
         <EditActionButton
           floated="left"
-          disabled={props.account.is_synced !== false}
-          onOpenEditForm={props.onEdit}
+          onOpenEditForm={() => setIsFormOpen(true)}
         />
         <ActionButton
           icon="exchange"
