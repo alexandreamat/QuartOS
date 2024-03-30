@@ -20,11 +20,13 @@ import {
   api,
 } from "app/services/api";
 import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
+import FormCurrencyInput from "components/FormCurrencyInput";
 import FormCurrencyInputs from "components/FormCurrencyInputs";
 import FormDropdownInput from "components/FormDropdownInput";
 import FormTextInput from "components/FormTextInput";
 import { FormValidationError } from "components/FormValidationError";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
+import { useBucketOptions } from "features/buckets/hooks";
 import { useInstitutionLinkOptions } from "features/institutionlink/hooks";
 import useFormField from "hooks/useFormField";
 import { useEffect } from "react";
@@ -42,7 +44,6 @@ import { capitaliseFirstLetter } from "utils/string";
 
 export default function AccountForm(props: {
   account?: AccountApiOut;
-  open: boolean;
   onClose: () => void;
 }) {
   const isInstitutional = useFormField(true);
@@ -52,6 +53,7 @@ export default function AccountForm(props: {
   const type = useFormField<AccountType>();
   const institutionLinkId = useFormField(0);
   const initialBalance = useFormField(0);
+  const defaultBucketId = useFormField<number>(undefined, "Default Bucket");
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -74,9 +76,10 @@ export default function AccountForm(props: {
     initialBalance,
     institutionLinkId,
     isInstitutional,
+    defaultBucketId,
   ];
 
-  const requiredFields = [name, currencyCode, initialBalance];
+  const requiredFields = [name, currencyCode, initialBalance, defaultBucketId];
 
   const [createAccount, createAccountResult] =
     api.endpoints.createUsersMeAccountsPost.useMutation();
@@ -90,11 +93,14 @@ export default function AccountForm(props: {
     initialBalance.set(props.account.initial_balance);
     type.set(props.account.type);
     isInstitutional.set(props.account.is_institutional);
+    defaultBucketId.set(props.account.default_bucket_id || undefined);
     if (props.account.is_institutional) {
       institutionLinkId.set(props.account.user_institution_link_id);
       mask.set(props.account.mask);
     }
   }, [props.account]);
+
+  const bucketOptions = useBucketOptions();
 
   const handleClose = () => {
     fields.forEach((field) => field.reset());
@@ -143,6 +149,7 @@ export default function AccountForm(props: {
       initial_balance: initialBalance.value!,
       mask: mask.value!,
       type: type.value!,
+      default_bucket_id: defaultBucketId.value!,
     };
     if (props.account) {
       try {
@@ -181,7 +188,7 @@ export default function AccountForm(props: {
   }
 
   return (
-    <Modal open={props.open} onClose={handleClose} size="small">
+    <Modal open onClose={handleClose} size="small">
       <Modal.Header>
         {(props.account ? "Edit" : "Add") + " an Account"}
       </Modal.Header>
@@ -204,11 +211,13 @@ export default function AccountForm(props: {
                 field={institutionLinkId}
                 options={institutionLinkOptions.data || []}
                 query={institutionLinkOptions.query}
+                disabled={props.account?.is_synced}
               />
               <FormDropdownInput
                 label="Type"
                 field={type}
                 options={institutionalTypeOptions}
+                disabled={props.account?.is_synced}
               />
               <Form.Field required>
                 <label>Account Number Mask</label>
@@ -220,6 +229,7 @@ export default function AccountForm(props: {
                     mask.reset();
                     mask.set(data.value);
                   }}
+                  disabled={props.account?.is_synced}
                 />
               </Form.Field>
             </>
@@ -232,11 +242,24 @@ export default function AccountForm(props: {
               />
             </>
           )}
-          <FormCurrencyInputs
-            label="Initial Balance"
-            field={initialBalance}
-            currencyCode={currencyCode}
+          <FormDropdownInput
+            options={bucketOptions.options}
+            query={bucketOptions.query}
+            field={defaultBucketId}
           />
+          {props.account?.is_synced ? (
+            <FormCurrencyInput
+              label="Initial Balance"
+              field={initialBalance}
+              currency={currencyCode.value}
+            />
+          ) : (
+            <FormCurrencyInputs
+              label="Initial Balance"
+              field={initialBalance}
+              currencyCode={currencyCode}
+            />
+          )}
           <FormValidationError fields={requiredFields} />
           <QueryErrorMessage query={createAccountResult} />
           <QueryErrorMessage query={updateAccountResult} />

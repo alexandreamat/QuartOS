@@ -50,7 +50,7 @@ export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
   return (
     <Form.Input
       readOnly={props.readOnly}
-      disabled={!props.query?.isSuccess}
+      disabled={props.query ? !props.query.isSuccess : false}
       loading={props.query?.isLoading}
       type="number"
       placeholder={label && "Enter " + label}
@@ -59,6 +59,7 @@ export default function FormCurrencyInput<R, A, Q extends BaseQueryFn>(props: {
       onChange={(e, { value }) => setValueStr(value)}
       labelPosition="left"
       error={props.field.isError || props.query?.isError}
+      label={label && capitaliseFirstLetter(label)}
     >
       <Label>{props.currency}</Label>
       <input inputMode="decimal" step="0.01" />

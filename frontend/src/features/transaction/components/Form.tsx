@@ -48,6 +48,7 @@ import { transactionApiOutToForm, transactionFormToApiIn } from "../utils";
 import CurrencyExchangeTips from "./CurrencyExchangeTips";
 import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
 import CurrencyLabel from "components/CurrencyLabel";
+import { useBucketOptions } from "features/buckets/hooks";
 
 export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   props: {
@@ -104,6 +105,10 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
       "category",
       true,
     ),
+    bucketId: useFormField(
+      isEdit ? props.transaction.bucket_id : undefined,
+      "bucket",
+    ),
   };
 
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
@@ -118,6 +123,7 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
   const disableSynced = isEdit && props.transaction.is_synced;
 
   const accountOptions = useAccountOptions();
+  const bucketOptions = useBucketOptions();
 
   useEffect(() => {
     if (isEdit) return;
@@ -174,6 +180,11 @@ export default function TransactionForm<R, A, Q extends BaseQueryFn>(
             options={accountOptions.options}
             query={accountOptions.query}
             readOnly={disableSynced}
+          />
+          <FormDropdownInput
+            field={form.bucketId}
+            options={bucketOptions.options}
+            query={bucketOptions.query}
           />
           <CategoriesDropdown.Form categoryId={form.categoryId} />
           <FormCurrencyInput
