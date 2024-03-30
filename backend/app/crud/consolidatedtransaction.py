@@ -65,6 +65,7 @@ class CRUDConsolidatedTransaction:
         per_page: int = 0,
         page: int = 0,
         order_by: str | None = None,
+        bucket_id: int | None = None,
         **kwargs: Any,
     ) -> Select[tuple[Any, ...]]:
         model = ConsolidatedTransaction if consolidate else Transaction
@@ -103,6 +104,10 @@ class CRUDConsolidatedTransaction:
             (NonInstitutionalAccount.user_id == user_id)
             | (UserInstitutionLink.user_id == user_id)
         )
+
+        if bucket_id:
+            # the bucket id is used to "slice" transaction groups
+            statement = statement.where(Transaction.bucket_id == bucket_id)
 
         if not consolidate:
             for exp in exprs:

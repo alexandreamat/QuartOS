@@ -13,15 +13,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { PlStatementApiOut, api } from "app/services/api";
+import {
+  GetManyPlStatementsUsersMeAnalyticsGetApiArg,
+  PlStatementApiOut,
+  api,
+} from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { InfiniteScroll } from "components/InfiniteScroll";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "semantic-ui-react";
 import { PaginatedItemProps } from "types";
 import PLCard from "./components/PLCard";
 import { dateToString } from "utils/time";
+import PlBar from "./components/Bar";
 
 function Row(props: { plStatement?: PlStatementApiOut; loading?: boolean }) {
   const navigate = useNavigate();
@@ -47,6 +52,10 @@ function Row(props: { plStatement?: PlStatementApiOut; loading?: boolean }) {
 export default function IncomeStatement() {
   const reference = useRef<HTMLDivElement | null>(null);
 
+  const bucketIdState = useState<number>();
+
+  const [bucketId, setBucketId] = bucketIdState;
+
   const CardComponent = ({
     response: pl,
     loading,
@@ -58,15 +67,20 @@ export default function IncomeStatement() {
     />
   );
 
+  const arg: GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
+    bucketId: bucketId,
+  };
+
   return (
     <FlexColumn>
+      <PlBar bucketIdState={bucketIdState} />
       <FlexColumn.Auto reference={reference}>
         <Card.Group style={{ margin: 0 }}>
           <InfiniteScroll.Simple
             itemComponent={CardComponent}
             reference={reference}
             endpoint={api.endpoints.getManyPlStatementsUsersMeAnalyticsGet}
-            params={{}}
+            params={arg}
           />
         </Card.Group>
       </FlexColumn.Auto>

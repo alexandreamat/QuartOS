@@ -42,9 +42,10 @@ def get_detailed_pl_statement(
 def get_many_pl_statements(
     db: DBSession,
     me: CurrentUser,
+    bucket_id: int | None = None,
     page: int = 0,
     per_page: int = 12,
 ) -> Iterable[PLStatementApiOut]:
     return CRUDPLStatement.get_many_pl_statements(
-        db, user_id=me.id, page=page, per_page=per_page
+        db, user_id=me.id, page=page, per_page=per_page, bucket_id=bucket_id
     )

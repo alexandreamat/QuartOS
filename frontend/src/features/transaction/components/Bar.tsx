@@ -16,13 +16,14 @@
 import FlexRow from "components/FlexRow";
 import MenuCheckbox from "components/MenuCheckbox";
 import MenuDateRange from "components/MenuDateInput";
-import MenuDropdownAccount from "features/account/components/MenuDropdownAccount";
 import MenuInputSearch from "components/MenuInputSearch";
 import MenuNumericRange from "components/MenuNumericRange";
 import { useState } from "react";
 import { Button, Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
 import TransactionForm from "./Form";
+import MenuDropdown from "components/MenuDropdown";
+import { useAccountOptions } from "features/account/hooks";
 
 export type TransactionsBarState = ReturnType<typeof useTransactionBarState>;
 
@@ -46,6 +47,7 @@ export default function Bar(props: {
   consolidateState?: UseStateType<number | undefined>;
 }) {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const accountOptions = useAccountOptions();
 
   return (
     <FlexRow>
@@ -80,7 +82,13 @@ export default function Bar(props: {
             decimal
           />
           {props.accountIdState && (
-            <MenuDropdownAccount accountIdState={props.accountIdState} />
+            <MenuDropdown
+              state={props.accountIdState}
+              error={accountOptions.query.isError}
+              loading={accountOptions.query.isLoading}
+              options={accountOptions.options}
+              placeholder="Filter by account"
+            />
           )}
           {props.isMultipleChoiceState && (
             <MenuCheckbox state={props.isMultipleChoiceState} />

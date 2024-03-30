@@ -675,7 +675,11 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/me/analytics/`,
-          params: { page: queryArg.page, per_page: queryArg.perPage },
+          params: {
+            bucket_id: queryArg.bucketId,
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+          },
         }),
         providesTags: ["users", "analytics"],
       }),
@@ -1406,6 +1410,7 @@ export type GetDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLt
 export type GetManyPlStatementsUsersMeAnalyticsGetApiResponse =
   /** status 200 Successful Response */ PlStatementApiOut[];
 export type GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
+  bucketId?: number | null;
   page?: number;
   perPage?: number;
 };
