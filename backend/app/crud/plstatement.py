@@ -18,7 +18,7 @@ from collections import defaultdict
 from datetime import date
 from decimal import Decimal
 from functools import wraps
-from typing import Any, Callable, Iterable, TypeVar, cast
+from typing import Any, Callable, Iterable, Literal, TypeVar, cast
 
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import ColumnElement, Select, Subquery, asc, desc, func, select, case
@@ -51,15 +51,8 @@ class TransactionsSubquery:
             sq = super().__getattribute__("subquery")
             return getattr(sq.c, __name)
 
-    @property
-    @labeled
-    def year(self) -> ColumnElement[int]:
-        return func.extract("year", self.timestamp)
-
-    @property
-    @labeled
-    def month(self) -> ColumnElement[int]:
-        return func.extract("month", self.timestamp)
+    def datefield(self, field: str) -> ColumnElement[int]:
+        return func.extract(field, self.timestamp).label(field)
 
     @property
     @labeled
@@ -104,8 +97,10 @@ class CRUDPLStatement:
         cls,
         *,
         user_id: int,
-        page: int = 0,
-        per_page: int = 12,
+        group_by: list[str],
+        order_by: list[str],
+        page: int,
+        per_page: int,
         **kwargs: Any,
     ) -> Select[tuple[int, int, Decimal, Decimal]]:
         transactions_query = CRUDConsolidatedTransaction.select(
@@ -114,15 +109,19 @@ class CRUDPLStatement:
 
         transactions_subquery = TransactionsSubquery(transactions_query.subquery())
 
+        order_by_clauses = []
+        for clause in order_by:
+            attr, op = clause.split("__")
+            order_by_clauses.append({"asc": asc, "desc": desc}[op](attr))
+
         pl_statements_query = (
             select(
-                transactions_subquery.year,
-                transactions_subquery.month,
+                *(transactions_subquery.datefield(f) for f in group_by),
                 transactions_subquery.expenses,
                 transactions_subquery.income,
             )
-            .group_by("year", "month")
-            .order_by(desc("year"), desc("month"))
+            .group_by(*group_by)
+            .order_by(*order_by_clauses)
         )
 
         if per_page:
@@ -152,17 +151,59 @@ class CRUDPLStatement:
 
     @classmethod
     def get_many_pl_statements(
-        cls, db: Session, **kwargs: Any
+        cls,
+        db: Session,
+        aggregate_by: Literal["yearly", "quarterly", "monthly", "weekly", "daily"],
+        **kwargs: Any,
     ) -> Iterable[PLStatementApiOut]:
-        statement = cls.select_pl_statements(**kwargs)
+
+        group_by = ["year"]
+        match aggregate_by:
+            case "quarterly":
+                group_by += ["quarter"]
+            case "monthly":
+                group_by += ["month"]
+            case "weekly":
+                group_by += ["week"]
+            case "daily":
+                group_by += ["week", "day"]
+        order_by = [f"{c}__desc" for c in group_by]
+
+        statement = cls.select_pl_statements(
+            group_by=group_by, order_by=order_by, **kwargs
+        )
+
         for result in db.execute(statement):
-            year = int(result.year)
-            month = int(result.month)
             expenses = result.expenses
             income = result.income
+
+            year = int(result.year)
+
+            match aggregate_by:
+                case "quarterly":
+                    quarter = int(result.quarter)
+                    timestamp__ge = date(year, 1 + 3 * (quarter - 1), 1)
+                    timestamp__lt = timestamp__ge + relativedelta(months=3)
+                case "monthly":
+                    month = int(result.month)
+                    timestamp__ge = date(year, month, 1)
+                    timestamp__lt = timestamp__ge + relativedelta(months=1)
+                case "weekly":
+                    week = int(result.week)
+                    timestamp__ge = date.fromisocalendar(year, week, 1)
+                    timestamp__lt = timestamp__ge + relativedelta(weeks=1)
+                case "daily":
+                    month = int(result.month)
+                    day = int(result.day)
+                    timestamp__ge = date(year, month, day)
+                    timestamp__lt = timestamp__ge + relativedelta(days=1)
+                case _:
+                    timestamp__ge = date(year, 1, 1)
+                    timestamp__lt = timestamp__ge + relativedelta(years=1)
+
             yield PLStatementApiOut(
-                timestamp__ge=date(year, month, 1),
-                timestamp__lt=date(year, month, 1) + relativedelta(months=1),
+                timestamp__ge=timestamp__ge,
+                timestamp__lt=timestamp__lt,
                 expenses=expenses,
                 income=income,
             )

@@ -14,6 +14,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import {
+  AggregateBy,
   GetManyPlStatementsUsersMeAnalyticsGetApiArg,
   PlStatementApiOut,
   api,
@@ -53,8 +54,10 @@ export default function IncomeStatement() {
   const reference = useRef<HTMLDivElement | null>(null);
 
   const bucketIdState = useState<number>();
+  const aggregateByState = useState<AggregateBy>("monthly");
 
   const [bucketId, setBucketId] = bucketIdState;
+  const [aggregateBy, setAggregateBy] = aggregateByState;
 
   const CardComponent = ({
     response: pl,
@@ -68,12 +71,16 @@ export default function IncomeStatement() {
   );
 
   const arg: GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
-    bucketId: bucketId,
+    bucketId,
+    aggregateBy,
   };
 
   return (
     <FlexColumn>
-      <PlBar bucketIdState={bucketIdState} />
+      <PlBar
+        bucketIdState={bucketIdState}
+        aggregateByState={aggregateByState}
+      />
       <FlexColumn.Auto reference={reference}>
         <Card.Group style={{ margin: 0 }}>
           <InfiniteScroll.Simple

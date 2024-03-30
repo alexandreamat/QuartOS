@@ -13,14 +13,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import { AggregateBy } from "app/services/api";
 import FlexRow from "components/FlexRow";
 import MenuDropdown from "components/MenuDropdown";
 import { useBucketOptions } from "features/buckets/hooks";
 import { Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
+import { capitaliseFirstLetter } from "utils/string";
 
 export default function PlBar(props: {
   bucketIdState: UseStateType<number | undefined>;
+  aggregateByState: UseStateType<AggregateBy>;
 }) {
   const bucketOptions = useBucketOptions();
   return (
@@ -35,6 +38,18 @@ export default function PlBar(props: {
             options={bucketOptions.options}
             placeholder="Filter by bucket"
             icon="bitbucket"
+          />
+          <MenuDropdown
+            state={props.aggregateByState}
+            required
+            options={["yearly", "quarterly", "monthly", "weekly", "daily"].map(
+              (o) => ({
+                text: capitaliseFirstLetter(o),
+                value: o,
+              }),
+            )}
+            placeholder="Aggregate by period"
+            icon="calendar plus"
           />
         </Menu>
       </FlexRow.Auto>

@@ -676,6 +676,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/users/me/analytics/`,
           params: {
+            aggregate_by: queryArg.aggregateBy,
             bucket_id: queryArg.bucketId,
             page: queryArg.page,
             per_page: queryArg.perPage,
@@ -1410,6 +1411,7 @@ export type GetDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLt
 export type GetManyPlStatementsUsersMeAnalyticsGetApiResponse =
   /** status 200 Successful Response */ PlStatementApiOut[];
 export type GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
+  aggregateBy: "yearly" | "quarterly" | "monthly" | "weekly" | "daily";
   bucketId?: number | null;
   page?: number;
   perPage?: number;
