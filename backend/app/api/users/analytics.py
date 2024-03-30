@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import date
-from typing import Iterable
+from typing import Iterable, Literal
 
 from fastapi import APIRouter
 
@@ -42,10 +42,16 @@ def get_detailed_pl_statement(
 def get_many_pl_statements(
     db: DBSession,
     me: CurrentUser,
+    aggregate_by: Literal["yearly", "quarterly", "monthly", "weekly", "daily"],
     bucket_id: int | None = None,
     page: int = 0,
     per_page: int = 12,
 ) -> Iterable[PLStatementApiOut]:
     return CRUDPLStatement.get_many_pl_statements(
-        db, user_id=me.id, page=page, per_page=per_page, bucket_id=bucket_id
+        db,
+        user_id=me.id,
+        bucket_id=bucket_id,
+        aggregate_by=aggregate_by,
+        page=page,
+        per_page=per_page,
     )

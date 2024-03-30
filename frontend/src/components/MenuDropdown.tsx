@@ -9,15 +9,24 @@ import {
 } from "semantic-ui-react";
 import { UseStateType } from "types";
 
-export default function MenuDropdown<T extends number | string>(props: {
-  state: UseStateType<T | undefined>;
-  options?: DropdownItemProps[];
-  loading?: boolean;
-  error?: boolean;
-  placeholder?: string;
-  icon?: SemanticICONS;
-}) {
-  const [value, setValue] = props.state;
+export default function MenuDropdown<T extends number | string>(
+  props: {
+    options?: DropdownItemProps[];
+    loading?: boolean;
+    error?: boolean;
+    placeholder?: string;
+    icon?: SemanticICONS;
+  } & (
+    | {
+        state: UseStateType<T>;
+        required: true;
+      }
+    | {
+        state: UseStateType<T | undefined>;
+        required?: false;
+      }
+  ),
+) {
   return (
     <Menu.Item fitted>
       <Popup
@@ -31,18 +40,18 @@ export default function MenuDropdown<T extends number | string>(props: {
           placeholder={props.placeholder}
           search
           selection
-          value={value}
+          value={props.state[0]}
           options={props.options}
-          onChange={(_, data) => setValue(data.value as T)}
+          onChange={(_, data) => props.state[1](data.value as T)}
           loading={props.loading}
           error={props.error}
         />
       </Popup>
-      {value !== undefined && (
+      {!props.required && props.state[0] !== undefined && (
         <Menu.Item fitted>
           <ClickableIcon
             name="remove circle"
-            onClick={() => setValue(undefined)}
+            onClick={() => props.state[1](undefined)}
           />
         </Menu.Item>
       )}

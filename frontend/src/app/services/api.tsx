@@ -29,6 +29,7 @@ import {
   ReadUsersMeAccountsAccountIdGetApiResponse as AccountApiOutRaw,
   PlStatementApiOut as PlStatementApiOutRaw,
   DetailedPlStatementApiOut as DetailedPlStatementApiOutRaw,
+  GetManyPlStatementsUsersMeAnalyticsGetApiArg,
 } from "./generatedApi";
 import { dateToString, stringToDate } from "utils/time";
 
@@ -388,4 +389,6 @@ export * from "./generatedApi";
 
 export type AccountApiIn = CreateUsersMeAccountsPostApiArg["body"];
 export type AccountType = CreateUsersMeAccountsPostApiResponse["type"];
+export type AggregateBy =
+  GetManyPlStatementsUsersMeAnalyticsGetApiArg["aggregateBy"];
 export { enhancedApi as api };
