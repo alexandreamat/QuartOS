@@ -11,15 +11,18 @@
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from app.crud.common import CRUDBase
-from app.models.merchant import Merchant
-from app.schemas.merchant import MerchantApiOut, MerchantApiIn
+from pydantic import BaseModel
+
+from app.schemas.common import ApiInMixin, ApiOutMixin
 
 
-class CRUDMerchant(
-    CRUDBase[Merchant, MerchantApiOut, MerchantApiIn],
-):
-    __model__ = Merchant
-    __out_schema__ = MerchantApiOut
+class __BucketBase(BaseModel):
+    name: str
+
+
+class BucketApiOut(__BucketBase, ApiOutMixin): ...
+
+
+class BucketApiIn(__BucketBase, ApiInMixin): ...

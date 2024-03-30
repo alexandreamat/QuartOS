@@ -49,6 +49,7 @@ class Account(SyncableBase):
         cascade="all, delete",
         order_by=(desc(Transaction.timestamp), desc(Transaction.id)),
     )
+    default_bucket_id: Mapped[int] = mapped_column(ForeignKey("bucket.id"))
 
     __mapper_args__ = {
         "polymorphic_on": "type",

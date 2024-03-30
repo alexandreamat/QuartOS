@@ -29,6 +29,7 @@ import {
   ReadUsersMeAccountsAccountIdGetApiResponse as AccountApiOutRaw,
   PlStatementApiOut as PlStatementApiOutRaw,
   DetailedPlStatementApiOut as DetailedPlStatementApiOutRaw,
+  GetManyPlStatementsUsersMeAnalyticsGetApiArg,
 } from "./generatedApi";
 import { dateToString, stringToDate } from "utils/time";
 
@@ -56,6 +57,7 @@ const transactionApiOutFromRaw = (t: TransactionApiOutRaw) => ({
   category_id: t.category_id || undefined,
   amount: Number(t.amount),
   transaction_group_id: t.transaction_group_id || undefined,
+  bucket_id: t.bucket_id || undefined,
   account_balance: Number(t.account_balance),
 });
 
@@ -387,4 +389,6 @@ export * from "./generatedApi";
 
 export type AccountApiIn = CreateUsersMeAccountsPostApiArg["body"];
 export type AccountType = CreateUsersMeAccountsPostApiResponse["type"];
+export type AggregateBy =
+  GetManyPlStatementsUsersMeAnalyticsGetApiArg["aggregateBy"];
 export { enhancedApi as api };

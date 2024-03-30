@@ -11,15 +11,20 @@
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from app.crud.common import CRUDBase
-from app.models.merchant import Merchant
-from app.schemas.merchant import MerchantApiOut, MerchantApiIn
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, relationship, mapped_column
+
+from app.models.common import Base
+from app.models.transaction import Transaction
 
 
-class CRUDMerchant(
-    CRUDBase[Merchant, MerchantApiOut, MerchantApiIn],
-):
-    __model__ = Merchant
-    __out_schema__ = MerchantApiOut
+class Bucket(Base):
+    __tablename__ = "bucket"
+
+    name: Mapped[str]
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+    transactions: Mapped[list[Transaction]] = relationship(back_populates="bucket")

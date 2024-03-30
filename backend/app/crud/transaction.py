@@ -17,8 +17,10 @@ import logging
 from datetime import date
 from typing import Any, Generic
 
+from fastapi import HTTPException, status
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.crud.common import CRUDBase, InSchemaT, OutSchemaT
 from app.models.account import Account, NonInstitutionalAccount
@@ -61,10 +63,19 @@ class __CRUDTransactionBase(
             t.transaction_group.delete(db, t.transaction_group_id)
 
     @classmethod
+    def set_default_buckets(cls, db: Session) -> None:
+        for t in Transaction.read_many(db, 0, 0):
+            t.bucket_id = t.account.default_bucket_id
+        db.flush()
+
+    @classmethod
     def update(
         cls, db: Session, id: int, obj_in: InSchemaT, **kwargs: Any
     ) -> OutSchemaT:
-        transaction = Transaction.update(db, id, **obj_in.model_dump(), **kwargs)
+        try:
+            transaction = Transaction.update(db, id, **obj_in.model_dump(), **kwargs)
+        except IntegrityError:
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
         if transaction_group := transaction.transaction_group:
             transaction_group.update(db, transaction_group.id)
         return cls.__out_schema__.model_validate(transaction)

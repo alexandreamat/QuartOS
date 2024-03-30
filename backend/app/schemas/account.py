@@ -52,14 +52,14 @@ class __AccountBase(BaseModel):
     initial_balance: Decimal
     name: str
     type: str
+    default_bucket_id: int | None
 
 
 class __InstitutionalAccount(__AccountBase):
     mask: str
 
 
-class __NonInstitutionalAccount(__AccountBase):
-    ...
+class __NonInstitutionalAccount(__AccountBase): ...
 
 
 class __Depository(__InstitutionalAccount):

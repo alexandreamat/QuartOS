@@ -34,5 +34,6 @@ export function transactionFormToApiIn(
     timestamp: form.timestamp.value!,
     name: form.name.value!,
     category_id: form.categoryId.value!,
+    bucket_id: form.bucketId.value!,
   };
 }

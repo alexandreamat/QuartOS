@@ -12,6 +12,7 @@ export const addTagTypes = [
   "transactions",
   "files",
   "analytics",
+  "buckets",
   "institution_links",
   "plaid_transactions",
   "merchants",
@@ -61,6 +62,27 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["admin"],
         }),
+      setDefaultBucketsAdminTransactionsSetDefaultBucketsPut: build.mutation<
+        SetDefaultBucketsAdminTransactionsSetDefaultBucketsPutApiResponse,
+        SetDefaultBucketsAdminTransactionsSetDefaultBucketsPutApiArg
+      >({
+        query: () => ({
+          url: `/admin/transactions/set-default-buckets`,
+          method: "PUT",
+        }),
+        invalidatesTags: ["admin"],
+      }),
+      updateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPut:
+        build.mutation<
+          UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse,
+          UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg
+        >({
+          query: () => ({
+            url: `/admin/transactions/update-amounts-default-currency`,
+            method: "PUT",
+          }),
+          invalidatesTags: ["admin"],
+        }),
       readTransactionAdminTransactionsTransactionIdGet: build.query<
         ReadTransactionAdminTransactionsTransactionIdGetApiResponse,
         ReadTransactionAdminTransactionsTransactionIdGetApiArg
@@ -79,17 +101,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ["admin"],
       }),
-      updateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPut:
-        build.mutation<
-          UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse,
-          UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg
-        >({
-          query: () => ({
-            url: `/admin/transactions/update-amounts-default-currency`,
-            method: "PUT",
-          }),
-          invalidatesTags: ["admin"],
-        }),
       updateWebhookAdminUserInstitutionLinksUpdateWebhookPut: build.mutation<
         UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiResponse,
         UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiArg
@@ -664,9 +675,60 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/users/me/analytics/`,
-          params: { page: queryArg.page, per_page: queryArg.perPage },
+          params: {
+            aggregate_by: queryArg.aggregateBy,
+            bucket_id: queryArg.bucketId,
+            page: queryArg.page,
+            per_page: queryArg.perPage,
+          },
         }),
         providesTags: ["users", "analytics"],
+      }),
+      readManyUsersMeBucketsGet: build.query<
+        ReadManyUsersMeBucketsGetApiResponse,
+        ReadManyUsersMeBucketsGetApiArg
+      >({
+        query: () => ({ url: `/users/me/buckets/` }),
+        providesTags: ["users", "buckets"],
+      }),
+      createUsersMeBucketsPost: build.mutation<
+        CreateUsersMeBucketsPostApiResponse,
+        CreateUsersMeBucketsPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/buckets/`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["users", "buckets"],
+      }),
+      readUsersMeBucketsBucketIdGet: build.query<
+        ReadUsersMeBucketsBucketIdGetApiResponse,
+        ReadUsersMeBucketsBucketIdGetApiArg
+      >({
+        query: (queryArg) => ({ url: `/users/me/buckets/${queryArg}` }),
+        providesTags: ["users", "buckets"],
+      }),
+      updateUsersMeBucketsBucketIdPut: build.mutation<
+        UpdateUsersMeBucketsBucketIdPutApiResponse,
+        UpdateUsersMeBucketsBucketIdPutApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/buckets/${queryArg.bucketId}`,
+          method: "PUT",
+          body: queryArg.bucketApiIn,
+        }),
+        invalidatesTags: ["users", "buckets"],
+      }),
+      deleteUsersMeBucketsBucketIdDelete: build.mutation<
+        DeleteUsersMeBucketsBucketIdDeleteApiResponse,
+        DeleteUsersMeBucketsBucketIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/users/me/buckets/${queryArg}`,
+          method: "DELETE",
+        }),
+        invalidatesTags: ["users", "buckets"],
       }),
       getLinkTokenUsersMeInstitutionLinksLinkTokenGet: build.query<
         GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiResponse,
@@ -976,6 +1038,13 @@ export type OrphanSingleTransactionsAdminTransactionsOrphanOnlyChildrenPutApiRes
   /** status 200 Successful Response */ any;
 export type OrphanSingleTransactionsAdminTransactionsOrphanOnlyChildrenPutApiArg =
   void;
+export type SetDefaultBucketsAdminTransactionsSetDefaultBucketsPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type SetDefaultBucketsAdminTransactionsSetDefaultBucketsPutApiArg = void;
+export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg =
+  void;
 export type ReadTransactionAdminTransactionsTransactionIdGetApiResponse =
   /** status 200 Successful Response */ TransactionPlaidOut;
 export type ReadTransactionAdminTransactionsTransactionIdGetApiArg = number;
@@ -985,10 +1054,6 @@ export type UpdateTransactionAdminTransactionsTransactionIdPutApiArg = {
   transactionId: number;
   transactionPlaidInInput: TransactionPlaidIn;
 };
-export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiResponse =
-  /** status 200 Successful Response */ any;
-export type UpdateTransactionsAmountDefaultCurrencyAdminTransactionsUpdateAmountsDefaultCurrencyPutApiArg =
-  void;
 export type UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateWebhookAdminUserInstitutionLinksUpdateWebhookPutApiArg =
@@ -1346,9 +1411,29 @@ export type GetDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLt
 export type GetManyPlStatementsUsersMeAnalyticsGetApiResponse =
   /** status 200 Successful Response */ PlStatementApiOut[];
 export type GetManyPlStatementsUsersMeAnalyticsGetApiArg = {
+  aggregateBy: "yearly" | "quarterly" | "monthly" | "weekly" | "daily";
+  bucketId?: number | null;
   page?: number;
   perPage?: number;
 };
+export type ReadManyUsersMeBucketsGetApiResponse =
+  /** status 200 Successful Response */ BucketApiOut[];
+export type ReadManyUsersMeBucketsGetApiArg = void;
+export type CreateUsersMeBucketsPostApiResponse =
+  /** status 200 Successful Response */ BucketApiOut;
+export type CreateUsersMeBucketsPostApiArg = BucketApiIn;
+export type ReadUsersMeBucketsBucketIdGetApiResponse =
+  /** status 200 Successful Response */ BucketApiOut;
+export type ReadUsersMeBucketsBucketIdGetApiArg = number;
+export type UpdateUsersMeBucketsBucketIdPutApiResponse =
+  /** status 200 Successful Response */ BucketApiOut;
+export type UpdateUsersMeBucketsBucketIdPutApiArg = {
+  bucketId: number;
+  bucketApiIn: BucketApiIn;
+};
+export type DeleteUsersMeBucketsBucketIdDeleteApiResponse =
+  /** status 200 Successful Response */ number;
+export type DeleteUsersMeBucketsBucketIdDeleteApiArg = number;
 export type GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiResponse =
   /** status 200 Successful Response */ string;
 export type GetLinkTokenUsersMeInstitutionLinksLinkTokenGetApiArg =
@@ -1570,6 +1655,7 @@ export type TransactionPlaidOut = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   transaction_group_id: number | null;
   amount_default_currency: string;
   amount: string;
@@ -1583,6 +1669,7 @@ export type TransactionPlaidIn = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   amount: number | string;
 };
 export type UserInstitutionLinkPlaidOut = {
@@ -1600,6 +1687,7 @@ export type TransactionPlaidIn2 = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   amount: string;
 };
 export type Token = {
@@ -1698,6 +1786,7 @@ export type DepositoryApiOut = {
   initial_balance: string;
   name: string;
   type: "depository";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type LoanApiOut = {
@@ -1710,6 +1799,7 @@ export type LoanApiOut = {
   initial_balance: string;
   name: string;
   type: "loan";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type CreditApiOut = {
@@ -1722,6 +1812,7 @@ export type CreditApiOut = {
   initial_balance: string;
   name: string;
   type: "credit";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type BrokerageApiOut = {
@@ -1734,6 +1825,7 @@ export type BrokerageApiOut = {
   initial_balance: string;
   name: string;
   type: "brokerage";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type InvestmentApiOut = {
@@ -1746,6 +1838,7 @@ export type InvestmentApiOut = {
   initial_balance: string;
   name: string;
   type: "investment";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type CashApiOut = {
@@ -1758,6 +1851,7 @@ export type CashApiOut = {
   initial_balance: string;
   name: string;
   type: "cash";
+  default_bucket_id: number | null;
 };
 export type PersonalLedgerApiOut = {
   id: number;
@@ -1769,6 +1863,7 @@ export type PersonalLedgerApiOut = {
   initial_balance: string;
   name: string;
   type: "personal ledger";
+  default_bucket_id: number | null;
 };
 export type PropertyApiOut = {
   id: number;
@@ -1780,12 +1875,14 @@ export type PropertyApiOut = {
   initial_balance: string;
   name: string;
   type: "property";
+  default_bucket_id: number | null;
 };
 export type DepositoryApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "depository";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type LoanApiIn = {
@@ -1793,6 +1890,7 @@ export type LoanApiIn = {
   initial_balance: number | string;
   name: string;
   type: "loan";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type CreditApiIn = {
@@ -1800,6 +1898,7 @@ export type CreditApiIn = {
   initial_balance: number | string;
   name: string;
   type: "credit";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type BrokerageApiIn = {
@@ -1807,6 +1906,7 @@ export type BrokerageApiIn = {
   initial_balance: number | string;
   name: string;
   type: "brokerage";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type InvestmentApiIn = {
@@ -1814,6 +1914,7 @@ export type InvestmentApiIn = {
   initial_balance: number | string;
   name: string;
   type: "investment";
+  default_bucket_id: number | null;
   mask: string;
 };
 export type CashApiIn = {
@@ -1821,23 +1922,27 @@ export type CashApiIn = {
   initial_balance: number | string;
   name: string;
   type: "cash";
+  default_bucket_id: number | null;
 };
 export type PersonalLedgerApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "personal ledger";
+  default_bucket_id: number | null;
 };
 export type PropertyApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "property";
+  default_bucket_id: number | null;
 };
 export type TransactionApiIn = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   amount: string;
 };
 export type BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost = {
@@ -1849,6 +1954,7 @@ export type TransactionApiOut = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   transaction_group_id: number | null;
   amount_default_currency: string;
   amount: string;
@@ -1860,6 +1966,7 @@ export type TransactionApiIn2 = {
   timestamp: string;
   name: string;
   category_id?: number | null;
+  bucket_id?: number | null;
   amount: number | string;
 };
 export type FileApiOut = {
@@ -1889,6 +1996,13 @@ export type PlStatementApiOut = {
   timestamp__lt: string;
   income: string;
   expenses: string;
+};
+export type BucketApiOut = {
+  id: number;
+  name: string;
+};
+export type BucketApiIn = {
+  name: string;
 };
 export type UserInstitutionLinkApiOut = {
   id: number;

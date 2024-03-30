@@ -11,42 +11,38 @@
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { MerchantApiIn, MerchantApiOut, api } from "app/services/api";
+import { BucketApiIn, BucketApiOut, api } from "app/services/api";
+import ConfirmDeleteButtonModal from "components/ConfirmDeleteButtonModal";
 import FormTextInput from "components/FormTextInput";
 import { FormValidationError } from "components/FormValidationError";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
-import CategoriesDropdown from "features/categories/components/CategoriesDropdown";
 import useFormField from "hooks/useFormField";
-import { registerLocale } from "i18n-iso-countries";
 import { useEffect } from "react";
 import { Button, Form, Modal } from "semantic-ui-react";
 import { logMutationError } from "utils/error";
 
-registerLocale(require("i18n-iso-countries/langs/en.json"));
-
-export default function MerchantForm(props: {
-  merchant?: MerchantApiOut;
+export default function BucketForm(props: {
+  bucket?: BucketApiOut;
   onClose: () => void;
 }) {
   const name = useFormField("");
-  const pattern = useFormField("");
-  const defaultCategoryId = useFormField<number>(undefined, "Default Category");
 
-  const fields = [name, pattern, defaultCategoryId];
+  const fields = [name];
 
-  const [createMerchant, createMerchantResult] =
-    api.endpoints.createUsersMeMerchantsPost.useMutation();
-  const [updateMerchant, updateMerchantResult] =
-    api.endpoints.updateUsersMeMerchantsMerchantIdPut.useMutation();
+  const [createBucket, createBucketResult] =
+    api.endpoints.createUsersMeBucketsPost.useMutation();
+  const [updateBucket, updateBucketResult] =
+    api.endpoints.updateUsersMeBucketsBucketIdPut.useMutation();
+
+  const [deleteBucket, deleteBucketResult] =
+    api.endpoints.deleteUsersMeBucketsBucketIdDelete.useMutation();
 
   useEffect(() => {
-    if (!props.merchant) return;
-    name.set(props.merchant.name);
-    pattern.set(props.merchant.pattern);
-    defaultCategoryId.set(props.merchant.default_category_id);
-  }, [props.merchant]);
+    if (!props.bucket) return;
+    name.set(props.bucket.name);
+  }, [props.bucket]);
 
   const handleClose = () => {
     fields.forEach((field) => field.reset());
@@ -56,52 +52,62 @@ export default function MerchantForm(props: {
   const handleSubmit = async () => {
     const invalidFields = fields.filter((field) => !field.validate());
     if (invalidFields.length > 0) return;
-    const merchant: MerchantApiIn = {
-      name: name.value!,
-      pattern: pattern.value!,
-      default_category_id: defaultCategoryId.value!,
-    };
-    if (props.merchant) {
+    const bucket: BucketApiIn = { name: name.value! };
+    if (props.bucket) {
       try {
-        await updateMerchant({
-          merchantId: props.merchant.id,
-          merchantApiIn: merchant,
+        await updateBucket({
+          bucketId: props.bucket.id,
+          bucketApiIn: bucket,
         }).unwrap();
       } catch (error) {
-        logMutationError(error, updateMerchantResult);
+        logMutationError(error, updateBucketResult);
         return;
       }
     } else {
       try {
-        await createMerchant(merchant).unwrap();
+        await createBucket(bucket).unwrap();
       } catch (error) {
-        logMutationError(error, createMerchantResult);
+        logMutationError(error, createBucketResult);
         return;
       }
     }
     handleClose();
   };
 
+  async function handleDelete() {
+    if (!props.bucket) return;
+    try {
+      await deleteBucket(props.bucket.id).unwrap();
+    } catch (error) {
+      logMutationError(error, deleteBucketResult);
+      return;
+    }
+  }
+
   return (
-    <Modal open onClose={handleClose} size="mini">
+    <Modal open onClose={handleClose} size="small">
       <Modal.Header>
-        {(props.merchant ? "Edit" : "Add") + " a merchant"}
+        {(props.bucket ? "Edit" : "Add") + " a bucket"}
       </Modal.Header>
       <Modal.Content>
         <Form>
           <FormTextInput label="Name" field={name} />
-          <FormTextInput label="Pattern" field={pattern} />
-          <CategoriesDropdown.Form categoryId={defaultCategoryId} />
           <FormValidationError fields={fields} />
-          {createMerchantResult.isError && (
-            <QueryErrorMessage query={createMerchantResult} />
+          {createBucketResult.isError && (
+            <QueryErrorMessage query={createBucketResult} />
           )}
-          {updateMerchantResult.isError && (
-            <QueryErrorMessage query={updateMerchantResult} />
+          {updateBucketResult.isError && (
+            <QueryErrorMessage query={updateBucketResult} />
           )}
         </Form>
       </Modal.Content>
       <Modal.Actions>
+        {props.bucket && (
+          <ConfirmDeleteButtonModal
+            onSubmit={handleDelete}
+            query={deleteBucketResult}
+          />
+        )}
         <Button onClick={handleClose}>Cancel</Button>
         <Button
           content="Save"
@@ -110,9 +116,7 @@ export default function MerchantForm(props: {
           icon="checkmark"
           onClick={handleSubmit}
           positive
-          loading={
-            createMerchantResult.isLoading || updateMerchantResult.isLoading
-          }
+          loading={createBucketResult.isLoading || updateBucketResult.isLoading}
         />
       </Modal.Actions>
     </Modal>

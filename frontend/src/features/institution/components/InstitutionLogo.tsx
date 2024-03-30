@@ -35,7 +35,7 @@ export function InstitutionLogo(props: {
       <Image
         centered
         floated={props.floated}
-        style={{ ...props.style, height: "auto" }}
+        style={{ height: "auto", ...props.style }}
         src={`data:image/png;base64,${props.institution.logo_base64}`}
       />
     );

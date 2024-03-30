@@ -11,15 +11,24 @@
 // GNU Affero General Public License for more details.
 //
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import useFormField from "hooks/useFormField";
+import { api } from "app/services/api";
+import { DropdownItemProps } from "semantic-ui-react";
 
-export type TransactionApiInForm = {
-  amount: ReturnType<typeof useFormField<number>>;
-  timestamp: ReturnType<typeof useFormField<Date>>;
-  name: ReturnType<typeof useFormField<string>>;
-  accountId: ReturnType<typeof useFormField<number>>;
-  categoryId: ReturnType<typeof useFormField<number>>;
-  bucketId: ReturnType<typeof useFormField<number>>;
-};
+export function useBucketOptions() {
+  const query = api.endpoints.readManyUsersMeBucketsGet.useQuery();
+
+  const options: DropdownItemProps[] =
+    query.data?.map((a) => ({
+      key: a.id,
+      value: a.id,
+      content: a.name,
+      text: a.name,
+    })) || [];
+
+  return {
+    options,
+    query,
+  };
+}
