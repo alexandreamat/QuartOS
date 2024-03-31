@@ -33,45 +33,28 @@ export interface RouteI {
   label: string;
   icon: SemanticICONS;
   component: React.FC;
-  requires_superuser: boolean;
+  requires_superuser?: boolean;
   routes?: RouteI[];
 }
 
 export default [
   {
-    path: "/",
-    label: "Account",
-    icon: "home",
-    component: Dashboard,
-    requires_superuser: false,
-  },
-  {
     path: "/institution-links",
     label: "My Institutions",
     icon: "university",
     component: InstitutionLinks,
-    requires_superuser: false,
-  },
-  {
-    path: "/merchants",
-    label: "Merchants",
-    icon: "shop",
-    component: Merchants,
-    requires_superuser: false,
-  },
-  {
-    path: "/buckets",
-    label: "Buckets",
-    icon: "bitbucket",
-    component: Buckets,
-    requires_superuser: false,
   },
   {
     path: "/accounts",
     label: "Accounts",
     icon: "credit card",
     component: Accounts,
-    requires_superuser: false,
+  },
+  {
+    path: "/buckets",
+    label: "Buckets",
+    icon: "bitbucket",
+    component: Buckets,
   },
   {
     path: "/transactions/:accountId?",
@@ -79,23 +62,26 @@ export default [
     label: "Transactions",
     icon: "exchange",
     component: Transactions,
-    requires_superuser: false,
   },
   {
     path: "/pl-statements",
     label: "P&L Statements",
     icon: "dollar",
     component: PL,
-    requires_superuser: false,
     routes: [
       {
         path: "/:timestampGe/:timestampLt",
         label: "P&L Statement Detail",
         icon: "file alternate",
         component: PLStatement,
-        requires_superuser: false,
       },
     ],
+  },
+  {
+    path: "/merchants",
+    label: "Merchants",
+    icon: "shop",
+    component: Merchants,
   },
   {
     path: "/institutions",
