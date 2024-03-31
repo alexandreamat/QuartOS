@@ -91,6 +91,7 @@ const Content = () => (
       }
     />
     <Route key="default" path="/*" element={<Navigate to="/" />} />
+    <Route key="base" path="/" element={<Navigate to="/transactions" />} />
   </Routes>
 );
 
