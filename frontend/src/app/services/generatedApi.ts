@@ -666,6 +666,7 @@ const injectedRtkApi = api
         >({
           query: (queryArg) => ({
             url: `/users/me/analytics/detailed/${queryArg.timestampGe}/${queryArg.timestampLt}`,
+            params: { bucket_id: queryArg.bucketId },
           }),
           providesTags: ["users", "analytics"],
         }),
@@ -1407,6 +1408,7 @@ export type GetDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLt
   {
     timestampGe: string;
     timestampLt: string;
+    bucketId?: number | null;
   };
 export type GetManyPlStatementsUsersMeAnalyticsGetApiResponse =
   /** status 200 Successful Response */ PlStatementApiOut[];
@@ -1655,7 +1657,7 @@ export type TransactionPlaidOut = {
   timestamp: string;
   name: string;
   category_id?: number | null;
-  bucket_id?: number | null;
+  bucket_id: number;
   transaction_group_id: number | null;
   amount_default_currency: string;
   amount: string;
@@ -1669,7 +1671,7 @@ export type TransactionPlaidIn = {
   timestamp: string;
   name: string;
   category_id?: number | null;
-  bucket_id?: number | null;
+  bucket_id: number;
   amount: number | string;
 };
 export type UserInstitutionLinkPlaidOut = {
@@ -1687,7 +1689,7 @@ export type TransactionPlaidIn2 = {
   timestamp: string;
   name: string;
   category_id?: number | null;
-  bucket_id?: number | null;
+  bucket_id: number;
   amount: string;
 };
 export type Token = {
@@ -1786,7 +1788,7 @@ export type DepositoryApiOut = {
   initial_balance: string;
   name: string;
   type: "depository";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type LoanApiOut = {
@@ -1799,7 +1801,7 @@ export type LoanApiOut = {
   initial_balance: string;
   name: string;
   type: "loan";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type CreditApiOut = {
@@ -1812,7 +1814,7 @@ export type CreditApiOut = {
   initial_balance: string;
   name: string;
   type: "credit";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type BrokerageApiOut = {
@@ -1825,7 +1827,7 @@ export type BrokerageApiOut = {
   initial_balance: string;
   name: string;
   type: "brokerage";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type InvestmentApiOut = {
@@ -1838,7 +1840,7 @@ export type InvestmentApiOut = {
   initial_balance: string;
   name: string;
   type: "investment";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type CashApiOut = {
@@ -1851,7 +1853,7 @@ export type CashApiOut = {
   initial_balance: string;
   name: string;
   type: "cash";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
 };
 export type PersonalLedgerApiOut = {
   id: number;
@@ -1863,7 +1865,7 @@ export type PersonalLedgerApiOut = {
   initial_balance: string;
   name: string;
   type: "personal ledger";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
 };
 export type PropertyApiOut = {
   id: number;
@@ -1875,14 +1877,14 @@ export type PropertyApiOut = {
   initial_balance: string;
   name: string;
   type: "property";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
 };
 export type DepositoryApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "depository";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type LoanApiIn = {
@@ -1890,7 +1892,7 @@ export type LoanApiIn = {
   initial_balance: number | string;
   name: string;
   type: "loan";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type CreditApiIn = {
@@ -1898,7 +1900,7 @@ export type CreditApiIn = {
   initial_balance: number | string;
   name: string;
   type: "credit";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type BrokerageApiIn = {
@@ -1906,7 +1908,7 @@ export type BrokerageApiIn = {
   initial_balance: number | string;
   name: string;
   type: "brokerage";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type InvestmentApiIn = {
@@ -1914,7 +1916,7 @@ export type InvestmentApiIn = {
   initial_balance: number | string;
   name: string;
   type: "investment";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
   mask: string;
 };
 export type CashApiIn = {
@@ -1922,27 +1924,27 @@ export type CashApiIn = {
   initial_balance: number | string;
   name: string;
   type: "cash";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
 };
 export type PersonalLedgerApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "personal ledger";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
 };
 export type PropertyApiIn = {
   currency_code: string;
   initial_balance: number | string;
   name: string;
   type: "property";
-  default_bucket_id: number | null;
+  default_bucket_id: number;
 };
 export type TransactionApiIn = {
   timestamp: string;
   name: string;
   category_id?: number | null;
-  bucket_id?: number | null;
+  bucket_id: number;
   amount: string;
 };
 export type BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost = {
@@ -1954,7 +1956,7 @@ export type TransactionApiOut = {
   timestamp: string;
   name: string;
   category_id?: number | null;
-  bucket_id?: number | null;
+  bucket_id: number;
   transaction_group_id: number | null;
   amount_default_currency: string;
   amount: string;
@@ -1966,7 +1968,7 @@ export type TransactionApiIn2 = {
   timestamp: string;
   name: string;
   category_id?: number | null;
-  bucket_id?: number | null;
+  bucket_id: number;
   amount: number | string;
 };
 export type FileApiOut = {

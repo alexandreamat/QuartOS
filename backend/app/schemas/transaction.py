@@ -35,7 +35,7 @@ class __TransactionBase(BaseModel):
     timestamp: date
     name: str
     category_id: int | None = None
-    bucket_id: int | None = None
+    bucket_id: int
 
 
 class TransactionApiOut(__TransactionBase, SyncableApiOutMixin):

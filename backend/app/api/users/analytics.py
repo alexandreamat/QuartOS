@@ -32,9 +32,14 @@ def get_detailed_pl_statement(
     me: CurrentUser,
     timestamp__ge: date,
     timestamp__lt: date,
+    bucket_id: int | None = None,
 ) -> DetailedPLStatementApiOut:
     return CRUDPLStatement.get_detailed_pl_statement(
-        db, user_id=me.id, timestamp__ge=timestamp__ge, timestamp__lt=timestamp__lt
+        db,
+        user_id=me.id,
+        timestamp__ge=timestamp__ge,
+        timestamp__lt=timestamp__lt,
+        bucket_id=bucket_id,
     )
 
 
