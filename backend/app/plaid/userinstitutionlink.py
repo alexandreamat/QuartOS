@@ -39,6 +39,7 @@ from app.crud.transaction import CRUDSyncableTransaction
 from app.crud.userinstitutionlink import CRUDSyncableUserInstitutionLink
 from app.plaid.common import client
 from app.plaid.transaction import create_transaction_plaid_in
+from app.schemas.account import AccountPlaidOut
 from app.schemas.replacementpattern import ReplacementPatternApiOut
 from app.schemas.transaction import TransactionPlaidIn
 from app.schemas.userinstitutionlink import (
@@ -57,9 +58,11 @@ class __TransactionsSyncResult(BaseModel):
     has_more: bool
 
 
-def __get_account_ids_map(db: Session, user_institution_link_id: int) -> dict[str, int]:
+def __get_accounts_map(
+    db: Session, user_institution_link_id: int
+) -> dict[str, AccountPlaidOut]:
     return {
-        account.plaid_id: account.id
+        account.plaid_id: account
         for account in CRUDSyncableAccount.read_many(
             db, user_institution_link_id=user_institution_link_id
         )
@@ -87,19 +90,29 @@ def __fetch_transaction_changes(
             options=options,
         )
     response: TransactionsSyncResponse = client.transactions_sync(request)
-    accounts = __get_account_ids_map(db, user_institution_link.id)
+    accounts = __get_accounts_map(db, user_institution_link.id)
     return __TransactionsSyncResult(
         added=[
             (
-                accounts[transaction.account_id],
-                create_transaction_plaid_in(db, transaction, replacement_pattern),
+                accounts[transaction.account_id].id,
+                create_transaction_plaid_in(
+                    db,
+                    transaction,
+                    replacement_pattern,
+                    accounts[transaction.account_id].default_bucket_id,
+                ),
             )
             for transaction in response.added
         ],
         modified=[
             (
-                accounts[transaction.account_id],
-                create_transaction_plaid_in(db, transaction, replacement_pattern),
+                accounts[transaction.account_id].id,
+                create_transaction_plaid_in(
+                    db,
+                    transaction,
+                    replacement_pattern,
+                    accounts[transaction.account_id].default_bucket_id,
+                ),
             )
             for transaction in response.modified
         ],
