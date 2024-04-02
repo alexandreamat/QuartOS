@@ -35,6 +35,7 @@ def create_transaction_plaid_in(
     db: Session,
     transaction: Transaction,
     replacement_pattern: ReplacementPatternApiOut | None,
+    bucket_id: int,
 ) -> TransactionPlaidIn:
     if replacement_pattern:
         name = re.sub(
@@ -69,6 +70,7 @@ def create_transaction_plaid_in(
         timestamp=getattr(transaction, "authorized_date") or transaction.date,
         plaid_metadata=transaction.to_str(),
         category_id=category_out.id if category_out else None,
+        bucket_id=bucket_id,
     )
 
 
@@ -83,7 +85,10 @@ def reset_transaction_to_metadata(
     except KeyError:
         pass
     transaction_in = create_transaction_plaid_in(
-        db, Transaction(**transaction_plaid), replacement_pattern
+        db,
+        Transaction(**transaction_plaid),
+        replacement_pattern,
+        transaction_out.bucket_id,
     )
     return CRUDSyncableTransaction.update(
         db, id, transaction_in, account_balance=Decimal(0)
