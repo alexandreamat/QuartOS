@@ -51,10 +51,10 @@ export default function Uploader(props: {
       orderBy: "timestamp__desc",
     });
 
-  const [upload, uploadResult] =
+  const [preview, previewResult] =
     api.endpoints.previewUsersMeAccountsAccountIdTransactionsPreviewPost.useMutation();
 
-  const transactionsIn = uploadResult.data || [];
+  const transactionsIn = previewResult.data || [];
 
   const lastTransaction = useMemo(
     () =>
@@ -74,7 +74,7 @@ export default function Uploader(props: {
 
   const handleClose = () => {
     setShowDupsWarn(false);
-    uploadResult.reset();
+    previewResult.reset();
     props.onClose();
   };
 
@@ -82,13 +82,13 @@ export default function Uploader(props: {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      await upload({
+      await preview({
         accountId: props.account.id,
         bodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost:
           formData as unknown as BodyPreviewUsersMeAccountsAccountIdTransactionsPreviewPost,
       }).unwrap();
     } catch (error) {
-      logMutationError(error, uploadResult);
+      logMutationError(error, previewResult);
       return;
     }
   };
@@ -153,10 +153,10 @@ export default function Uploader(props: {
               </Message.Content>
             </Message>
           )}
-          {uploadResult.isUninitialized && (
+          {previewResult.isUninitialized && (
             <UploadSegment onUpload={handleFileUpload} />
           )}
-          {uploadResult.isLoading && (
+          {previewResult.isLoading && (
             <Dimmer active>
               <Loader active />
             </Dimmer>
@@ -166,7 +166,7 @@ export default function Uploader(props: {
               <Loader active />
             </Dimmer>
           )}
-          <QueryErrorMessage query={uploadResult} />
+          <QueryErrorMessage query={previewResult} />
           <QueryErrorMessage query={createTransactionsResult} />
           <FlexColumn.Auto>
             {transactionsIn && (
@@ -210,7 +210,7 @@ export default function Uploader(props: {
         </Button>
         <Button onClick={handleClose}>Cancel</Button>
         <Button
-          disabled={!uploadResult.isSuccess || checkboxes.checked.size === 0}
+          disabled={!previewResult.isSuccess || checkboxes.checked.size === 0}
           content={`Upload ${checkboxes.checked.size} ${
             checkboxes.checked.size === 1 ? "transaction" : "transactions"
           }`}

@@ -17,9 +17,30 @@ import { AggregateBy } from "app/services/api";
 import FlexRow from "components/FlexRow";
 import MenuDropdown from "components/MenuDropdown";
 import { useBucketOptions } from "features/buckets/hooks";
-import { Menu } from "semantic-ui-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button, Menu } from "semantic-ui-react";
 import { UseStateType } from "types";
 import { capitaliseFirstLetter } from "utils/string";
+
+function BackButton() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  function handleBack() {
+    navigate("/pl-statements");
+  }
+
+  return (
+    <Menu.Item fitted>
+      <Button
+        icon="arrow left"
+        primary
+        onClick={handleBack}
+        disabled={location.pathname === "/pl-statements"}
+      />
+    </Menu.Item>
+  );
+}
 
 export default function PlBar(props: {
   bucketIdState: UseStateType<number | undefined>;
@@ -31,6 +52,7 @@ export default function PlBar(props: {
       <FlexRow.Auto>
         {/* Correct negative margins that would add unnecessary scroll bar */}
         <Menu secondary style={{ margin: 0 }}>
+          <BackButton />
           <MenuDropdown
             state={props.bucketIdState}
             error={bucketOptions.query.isError}

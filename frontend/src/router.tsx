@@ -15,12 +15,10 @@
 
 import Accounts from "features/account";
 import Buckets from "features/buckets";
-import Dashboard from "features/dashboard";
 import Institutions from "features/institution";
 import InstitutionLinks from "features/institutionlink";
 import Merchants from "features/merchants";
 import PL from "features/pl";
-import PLStatement from "features/pl/components/PLStatement";
 import Transactions from "features/transaction";
 import TransactionDeserialisers from "features/transactiondeserialiser";
 import Users from "features/user";
@@ -64,18 +62,10 @@ export default [
     component: Transactions,
   },
   {
-    path: "/pl-statements",
+    path: "/pl-statements/*",
     label: "P&L Statements",
     icon: "dollar",
     component: PL,
-    routes: [
-      {
-        path: "/:timestampGe/:timestampLt",
-        label: "P&L Statement Detail",
-        icon: "file alternate",
-        component: PLStatement,
-      },
-    ],
   },
   {
     path: "/merchants",
