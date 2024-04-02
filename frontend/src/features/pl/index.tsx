@@ -22,17 +22,22 @@ import {
 import FlexColumn from "components/FlexColumn";
 import { InfiniteScroll } from "components/InfiniteScroll";
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import { Card } from "semantic-ui-react";
 import { PaginatedItemProps } from "types";
 import PLCard from "./components/PLCard";
 import { dateToString } from "utils/time";
 import PlBar from "./components/Bar";
+import PLStatement from "./components/PLStatement";
 
-function Row(props: { plStatement?: PlStatementApiOut; loading?: boolean }) {
+function Row(props: {
+  plStatement?: PlStatementApiOut;
+  loading?: boolean;
+  aggregateBy: AggregateBy;
+}) {
   const navigate = useNavigate();
 
-  function handleGoToDetail() {
+  function handleGoToStatement() {
     if (!props.plStatement) return;
 
     navigate(
@@ -44,7 +49,8 @@ function Row(props: { plStatement?: PlStatementApiOut; loading?: boolean }) {
   return (
     <PLCard
       detailedPlStatement={props.plStatement}
-      onGoToDetail={handleGoToDetail}
+      aggregateBy={props.aggregateBy}
+      onGoToDetail={handleGoToStatement}
       loading={props.loading}
     />
   );
@@ -67,6 +73,7 @@ export default function IncomeStatement() {
       key={pl?.timestamp__ge.toDateString()}
       plStatement={pl}
       loading={loading}
+      aggregateBy={aggregateBy}
     />
   );
 
@@ -82,14 +89,29 @@ export default function IncomeStatement() {
         aggregateByState={aggregateByState}
       />
       <FlexColumn.Auto reference={reference}>
-        <Card.Group style={{ margin: 0 }}>
-          <InfiniteScroll.Simple
-            itemComponent={CardComponent}
-            reference={reference}
-            endpoint={api.endpoints.getManyPlStatementsUsersMeAnalyticsGet}
-            params={arg}
+        <Routes>
+          <Route
+            path="*"
+            element={
+              <Card.Group style={{ margin: 0 }}>
+                <InfiniteScroll.Simple
+                  itemComponent={CardComponent}
+                  reference={reference}
+                  endpoint={
+                    api.endpoints.getManyPlStatementsUsersMeAnalyticsGet
+                  }
+                  params={arg}
+                />
+              </Card.Group>
+            }
           />
-        </Card.Group>
+          <Route
+            path=":timestampGe/:timestampLt"
+            element={
+              <PLStatement aggregateBy={aggregateBy} bucketId={bucketId} />
+            }
+          />
+        </Routes>
       </FlexColumn.Auto>
     </FlexColumn>
   );

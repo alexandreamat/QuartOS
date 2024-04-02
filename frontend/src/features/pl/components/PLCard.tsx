@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import { PlStatementApiOut, api } from "app/services/api";
+import { AggregateBy, PlStatementApiOut, api } from "app/services/api";
 import ActionButton from "components/ActionButton";
 import CurrencyLabel from "components/CurrencyLabel";
 import FlexRow from "components/FlexRow";
@@ -27,6 +27,7 @@ export default function PLCard(props: {
   onClickIncome?: () => void;
   onClickExpenses?: () => void;
   loading?: boolean;
+  aggregateBy: AggregateBy;
 }) {
   const timestampGe = props.detailedPlStatement?.timestamp__ge;
   const timestampLt = props.detailedPlStatement?.timestamp__lt;
@@ -34,6 +35,14 @@ export default function PLCard(props: {
   const isOngoing =
     timestampGe && timestampLt && timestampGe <= today && today < timestampLt;
   const me = api.endpoints.readMeUsersMeGet.useQuery();
+
+  const timeFormat = {
+    daily: "MMMM yyyy DD",
+    monthly: "MMMM yyyy",
+    quarterly: "'Q'Q yyyy",
+    weekly: "'Week' w yyyy",
+    yearly: "yyyy",
+  }[props.aggregateBy];
 
   return (
     <Card fluid color="teal">
@@ -45,7 +54,7 @@ export default function PLCard(props: {
                 <Placeholder.Line />
               </Placeholder>
             ) : (
-              timestampGe && format(timestampGe, "MMMM yyyy")
+              timestampGe && format(timestampGe, timeFormat)
             )}
             {props.onGoToDetail && (
               <ActionButton

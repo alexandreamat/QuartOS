@@ -15,12 +15,17 @@
 
 import { skipToken } from "@reduxjs/toolkit/dist/query";
 import { Doughnut } from "react-chartjs-2";
-import { CategoryApiOut, TransactionGroupApiOut, api } from "app/services/api";
+import {
+  AggregateBy,
+  CategoryApiOut,
+  TransactionGroupApiOut,
+  api,
+} from "app/services/api";
 import FlexColumn from "components/FlexColumn";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Button, Grid, Header, Icon, Loader } from "semantic-ui-react";
+import { useParams } from "react-router-dom";
+import { Grid, Header, Loader } from "semantic-ui-react";
 import PLCard from "./PLCard";
 import PLTransactions from "./PLTransactions";
 import {
@@ -37,9 +42,12 @@ import TransactionForm from "features/transaction/components/Form";
 
 Chart.register(Colors, ArcElement, Tooltip, Legend);
 
-export default function PLStatement() {
-  const navigate = useNavigate();
+export default function PLStatement(props: {
+  aggregateBy: AggregateBy;
+  bucketId?: number;
+}) {
   const { timestampGe, timestampLt } = useParams();
+  const { aggregateBy, bucketId } = props;
 
   const [showIncome, setShowIncome] = useState(true);
   const [transactionGroup, setTransactionGroup] =
@@ -48,7 +56,9 @@ export default function PLStatement() {
 
   const detailedStatementQuery =
     api.endpoints.getDetailedPlStatementUsersMeAnalyticsDetailedTimestampGeTimestampLtGet.useQuery(
-      timestampGe && timestampLt ? { timestampGe, timestampLt } : skipToken,
+      timestampGe && timestampLt
+        ? { timestampGe, timestampLt, bucketId }
+        : skipToken,
     );
 
   const categoriesQuery = api.endpoints.readManyCategoriesGet.useQuery();
@@ -127,23 +137,13 @@ export default function PLStatement() {
           transaction={transactionGroup}
         />
       )}
-      <div>
-        <Button
-          icon
-          labelPosition="left"
-          color="blue"
-          onClick={() => navigate(-1)}
-        >
-          <Icon name="arrow left" />
-          Go back
-        </Button>
-      </div>
       <FlexColumn.Auto>
         <PLCard
           detailedPlStatement={detailedStatementQuery.data}
           showIncome={showIncome}
           onClickIncome={handleClickIncome}
           onClickExpenses={handleClickExpenses}
+          aggregateBy={aggregateBy}
         />
         <Grid columns={2} stackable>
           <Grid.Column>
@@ -151,7 +151,7 @@ export default function PLStatement() {
               data={doughnutData}
               options={{
                 onClick: (e, elements, c) =>
-                  setSelectedCategoryIdx(elements[0].index),
+                  setSelectedCategoryIdx(elements[0]?.index),
                 plugins: {
                   colors: {
                     forceOverride: true,
