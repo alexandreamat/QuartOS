@@ -34,6 +34,7 @@ def __get_transactions_from_csv(
     deserialiser_out: TransactionDeserialiserApiOut,
     file: BinaryIO,
     account_id: int,
+    bucket_id: int,
 ) -> Iterable[TransactionApiIn]:
     deserializers = {}
     for field, value in vars(deserialiser_out).items():
@@ -56,14 +57,23 @@ def __get_transactions_from_csv(
             field: deserializer(row) for field, deserializer in deserializers.items()
         }
         deserialized_row["account_id"] = account_id
+        deserialized_row["bucket_id"] = bucket_id
         instance = TransactionApiIn(**deserialized_row)
         yield instance
 
 
 def get_transactions_from_csv(
-    deserialiser_out: TransactionDeserialiserApiOut, file: BinaryIO, account_id: int
+    deserialiser_out: TransactionDeserialiserApiOut,
+    file: BinaryIO,
+    account_id: int,
+    bucket_id: int,
 ) -> Iterable[TransactionApiIn]:
-    ts = [t for t in __get_transactions_from_csv(deserialiser_out, file, account_id)]
+    ts = [
+        t
+        for t in __get_transactions_from_csv(
+            deserialiser_out, file, account_id, bucket_id
+        )
+    ]
     # Return first old and then recent
     if deserialiser_out.ascending_timestamp:
         # transactions in the CSV are sorted from old to recent (ascending), no need to reverse

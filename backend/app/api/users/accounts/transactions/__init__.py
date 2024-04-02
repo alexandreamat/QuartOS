@@ -47,8 +47,11 @@ def preview(
     deserialiser = CRUDTransactionDeserialiser.read(
         db, user_id=me.id, account_id=account_id
     )
+    account_out = CRUDAccount.read(db, user_id=me.id, id=account_id)
     try:
-        return get_transactions_from_csv(deserialiser, file.file, account_id)
+        return get_transactions_from_csv(
+            deserialiser, file.file, account_out.id, account_out.default_bucket_id
+        )
     except Exception as e:
         raise UnknownError(e)
 
