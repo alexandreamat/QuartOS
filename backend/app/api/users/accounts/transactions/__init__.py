@@ -49,7 +49,7 @@ def preview(
     )
     account_out = CRUDAccount.read(db, user_id=me.id, id=account_id)
     try:
-        return get_transactions_from_csv(
+        yield from get_transactions_from_csv(
             deserialiser, file.file, account_out.id, account_out.default_bucket_id
         )
     except Exception as e:
