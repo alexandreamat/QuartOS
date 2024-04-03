@@ -18,6 +18,7 @@ from functools import wraps
 from logging import getLogger
 from typing import Any, Callable, TypeVar
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import NoResultFound
 
@@ -64,7 +65,7 @@ def handle_transactions_sync_updates_available(
         replacement_pattern_out = CRUDReplacementPattern.read(
             db, user_institution_link_id=user_institution_link_out.id
         )
-    except NoResultFound:
+    except HTTPException:  # FIXME: should not throw http exceptions
         replacement_pattern_out = None
     sync_transactions(
         db,
