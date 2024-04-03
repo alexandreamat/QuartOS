@@ -15,8 +15,8 @@
 
 import {
   TransactionGroupApiOut,
-  PlStatementApiOut,
   api,
+  DetailedPlStatementApiOut,
 } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
@@ -24,7 +24,7 @@ import { Card, Loader } from "semantic-ui-react";
 import { dateToString } from "utils/time";
 
 export default function PLTransactions(props: {
-  plStatement: PlStatementApiOut;
+  plStatement: DetailedPlStatementApiOut;
   showIncome: boolean;
   onOpenEditForm: (x: TransactionGroupApiOut) => void;
   categoryId?: number;
@@ -40,9 +40,8 @@ export default function PLTransactions(props: {
     api.endpoints.readManyUsersMeTransactionsGet.useQuery({
       timestampGe: dateToString(props.plStatement.timestamp__ge),
       timestampLt: dateToString(props.plStatement.timestamp__lt),
-      ...(props.categoryId
-        ? { categoryIdEq: props.categoryId }
-        : { categoryIdIsNull: true }),
+      categoryIdEq: props.categoryId ? props.categoryId : undefined,
+      categoryIdIsNull: props.categoryId === 0 ? true : undefined,
       [amountKey]: 0,
       orderBy: orderByVal,
       consolidate: true,
@@ -57,7 +56,11 @@ export default function PLTransactions(props: {
   const transactions = transactionsQuery.data;
 
   const totalAmount =
-    props.plStatement[props.showIncome ? "income" : "expenses"];
+    props.categoryId === undefined
+      ? props.plStatement[props.showIncome ? "income" : "expenses"]
+      : props.plStatement[
+          props.showIncome ? "income_by_category" : "expenses_by_category"
+        ][props.categoryId];
 
   let cumulativeAmount = 0;
 
@@ -65,22 +68,21 @@ export default function PLTransactions(props: {
     <Card.Group style={{ margin: 0 }}>
       {transactions.map((t) => {
         cumulativeAmount += t.amount_default_currency;
-        const explanationRate = (cumulativeAmount / totalAmount) * 100;
+        const explanationRate = cumulativeAmount / totalAmount;
         if (t.is_group)
           return (
             <TransactionCard.Group
               key={t.id}
               transaction={t}
-              // explanationRate={explanationRate}
-              // hideCategory={props.categoryId !== undefined}
+              explanationRate={explanationRate}
             />
           );
         return (
           <TransactionCard.Simple
             key={t.id}
             transaction={t}
-            // explanationRate={explanationRate}
-            // hideCategory={props.categoryId !== undefined}
+            explanationRate={explanationRate}
+            currency="default"
           />
         );
       })}
