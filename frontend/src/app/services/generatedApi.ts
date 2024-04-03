@@ -589,6 +589,7 @@ const injectedRtkApi = api
             account_balance__lt: queryArg.accountBalanceLt,
             account_balance__lt__abs: queryArg.accountBalanceLtAbs,
             account_id__eq: queryArg.accountIdEq,
+            bucket_id__eq: queryArg.bucketIdEq,
           },
         }),
         providesTags: ["users", "accounts", "transactions"],
@@ -1003,6 +1004,7 @@ const injectedRtkApi = api
             account_balance__lt: queryArg.accountBalanceLt,
             account_balance__lt__abs: queryArg.accountBalanceLtAbs,
             account_id__eq: queryArg.accountIdEq,
+            bucket_id__eq: queryArg.bucketIdEq,
           },
         }),
         providesTags: ["users", "transactions"],
@@ -1356,6 +1358,7 @@ export type ReadManyUsersMeAccountsAccountIdTransactionsGetApiArg = {
   accountBalanceLt?: number | string | null;
   accountBalanceLtAbs?: number | string | null;
   accountIdEq?: number | null;
+  bucketIdEq?: number | null;
 };
 export type UpdateUsersMeAccountsAccountIdTransactionsTransactionIdPutApiResponse =
   /** status 200 Successful Response */ TransactionApiOut;
@@ -1596,6 +1599,7 @@ export type ReadManyUsersMeTransactionsGetApiArg = {
   accountBalanceLt?: number | string | null;
   accountBalanceLtAbs?: number | string | null;
   accountIdEq?: number | null;
+  bucketIdEq?: number | null;
 };
 export type ConsolidateUsersMeTransactionsPostApiResponse =
   /** status 200 Successful Response */ TransactionGroupApiOut;

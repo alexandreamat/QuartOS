@@ -182,6 +182,7 @@ export default function PLStatement(props: {
               showIncome={showIncome}
               onOpenEditForm={setTransactionGroup}
               categoryId={selectedCategoryId}
+              bucketId={props.bucketId}
             />
           </Grid.Column>
         </Grid>
