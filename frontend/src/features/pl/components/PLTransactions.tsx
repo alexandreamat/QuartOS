@@ -47,7 +47,7 @@ export default function PLTransactions(props: {
       [amountKey]: 0,
       orderBy: orderByVal,
       consolidate: true,
-      bucketIdEq: props.bucketId,
+      bucketId: props.bucketId,
     });
 
   if (transactionsQuery.isLoading || transactionsQuery.isUninitialized)
