@@ -118,3 +118,4 @@ class TransactionQueryArg(BaseModel):
     account_balance__lt: Decimal | None = None
     account_balance__lt__abs: Decimal | None = None
     account_id__eq: int | None = None
+    bucket_id__eq: int | None = None

@@ -17,6 +17,7 @@ import {
   TransactionGroupApiOut,
   api,
   DetailedPlStatementApiOut,
+  ConsolidatedTransaction,
 } from "app/services/api";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import { TransactionCard } from "features/transaction/components/TransactionCard";
@@ -28,6 +29,7 @@ export default function PLTransactions(props: {
   showIncome: boolean;
   onOpenEditForm: (x: TransactionGroupApiOut) => void;
   categoryId?: number;
+  bucketId?: number;
 }) {
   const amountKey = `amountDefaultCurrency${
     props.showIncome ? "Gt" : "Lt"
@@ -45,6 +47,7 @@ export default function PLTransactions(props: {
       [amountKey]: 0,
       orderBy: orderByVal,
       consolidate: true,
+      bucketIdEq: props.bucketId,
     });
 
   if (transactionsQuery.isLoading || transactionsQuery.isUninitialized)
@@ -61,31 +64,38 @@ export default function PLTransactions(props: {
       : props.plStatement[
           props.showIncome ? "income_by_category" : "expenses_by_category"
         ][props.categoryId];
-
-  let cumulativeAmount = 0;
-
+  console.log(totalAmount);
   return (
     <Card.Group style={{ margin: 0 }}>
-      {transactions.map((t) => {
-        cumulativeAmount += t.amount_default_currency;
-        const explanationRate = cumulativeAmount / totalAmount;
-        if (t.is_group)
-          return (
+      {transactions
+        .reduce(
+          (
+            acc: { amount: number; transaction: ConsolidatedTransaction }[],
+            transaction,
+          ) => {
+            const amount =
+              (acc.length && acc[acc.length - 1].amount) +
+              transaction.amount_default_currency;
+            return [...acc, { amount, transaction }];
+          },
+          [],
+        )
+        .map((acc) =>
+          acc.transaction.is_group ? (
             <TransactionCard.Group
-              key={t.id}
-              transaction={t}
-              explanationRate={explanationRate}
+              key={acc.transaction.id}
+              transaction={acc.transaction}
+              explanationRate={acc.amount / totalAmount}
             />
-          );
-        return (
-          <TransactionCard.Simple
-            key={t.id}
-            transaction={t}
-            explanationRate={explanationRate}
-            currency="default"
-          />
-        );
-      })}
+          ) : (
+            <TransactionCard.Simple
+              key={acc.transaction.id}
+              transaction={acc.transaction}
+              explanationRate={acc.amount / totalAmount}
+              currency="default"
+            />
+          ),
+        )}
     </Card.Group>
   );
 }
