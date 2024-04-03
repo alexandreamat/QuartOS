@@ -25,7 +25,7 @@ import FlexRow from "components/FlexRow";
 import LineWithHiddenOverflow from "components/LineWithHiddenOverflow";
 import AccountIcon from "features/account/components/Icon";
 import { ReactNode, useState } from "react";
-import { Card, Checkbox, Header, Popup } from "semantic-ui-react";
+import { Card, Checkbox, Header, Label, Popup } from "semantic-ui-react";
 import { useUploadTransactionFile } from "../hooks/useUploadTransactionFile";
 import TransactionForm from "./Form";
 import ModalFileViewer from "./ModalFileViewer";
@@ -49,6 +49,7 @@ export function TransactionCard(props: {
   buttons?: ReactNode;
   children?: ReactNode;
   currency?: "default" | "account";
+  explanationRate?: number;
 }) {
   const accountQuery = api.endpoints.readUsersMeAccountsAccountIdGet.useQuery(
     props.accountId || skipToken,
@@ -94,6 +95,11 @@ export function TransactionCard(props: {
           {props.categoryId && <CategoryIcon categoryId={props.categoryId} />}
           {props.buttons}
         </FlexRow>
+        {props.explanationRate !== undefined && (
+          <Card.Meta>
+            Cumulative: {`${Math.round(props.explanationRate * 100)}%`}
+          </Card.Meta>
+        )}
         {props.children}
       </Card.Content>
       <Card.Content extra>
@@ -175,6 +181,7 @@ function TransactionCardSimple(props: {
   checkBoxDisabled?: boolean;
   loading?: boolean;
   currency?: "default" | "account";
+  explanationRate?: number;
 }) {
   const uploadTransactionFile = useUploadTransactionFile(
     (!props.transaction?.is_group && props.transaction) || undefined,
@@ -210,6 +217,7 @@ function TransactionCardSimple(props: {
       name={props.transaction?.name}
       timestamp={props.transaction?.timestamp}
       onCheckedChange={props.onCheckedChange}
+      explanationRate={props.explanationRate}
       buttons={
         props.transaction && (
           <>
@@ -274,6 +282,7 @@ function TransactionCardGroup(props: {
   onCheckedChange?: (x: boolean) => void;
   checkBoxDisabled?: boolean;
   loading?: boolean;
+  explanationRate?: number;
 }) {
   const [formOpen, setFormOpen] = useState(false);
 
@@ -289,6 +298,7 @@ function TransactionCardGroup(props: {
       name={props.transaction.name}
       categoryId={props.transaction.category_id}
       currency="default"
+      explanationRate={props.explanationRate}
       buttons={
         <>
           {formOpen && (
