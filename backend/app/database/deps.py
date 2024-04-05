@@ -32,6 +32,7 @@ engine = create_engine(
 
 # Avoid double echo
 logging.getLogger("sqlalchemy.engine").propagate = False
+logger = logging.getLogger(__name__)
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -39,7 +40,8 @@ def get_db() -> Generator[Session, None, None]:
         try:
             yield session
             session.commit()
-        except Exception:
+        except Exception as e:
+            logger.error("An error occurred: %s, rolling back...", str(e))
             session.rollback()
             raise
 

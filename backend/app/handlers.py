@@ -25,6 +25,7 @@ from sqlalchemy.exc import NoResultFound
 from app.crud.replacementpattern import CRUDReplacementPattern
 from app.crud.user import CRUDUser
 from app.crud.userinstitutionlink import CRUDSyncableUserInstitutionLink
+from app.database.deps import get_db
 from app.plaid.userinstitutionlink import sync_transactions
 from app.schemas.webhook import (
     ItemErrorWebhookReq,
@@ -43,7 +44,8 @@ def handle_exceptions(handler: F) -> F:
     def wrapper(*args, **kwargs):
         try:
             logger.info("Doing job %s, %s.", args, kwargs)
-            return handler(*args, **kwargs)
+            for db in get_db():
+                return handler(*args, db=db, **kwargs)
         except NoResultFound as e:
             logger.error("An error occurred while processing webhook: %s", e)
         except Exception as e:
@@ -87,4 +89,5 @@ def handle_item_error(req: ItemErrorWebhookReq, db: Session) -> None:
     logger.error("Plaid reported error %s", req.error)
 
 
+@handle_exceptions
 def handle_transactions_default_update(req: Any, db: Session) -> None: ...
