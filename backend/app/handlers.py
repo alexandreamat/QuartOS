@@ -45,7 +45,7 @@ def handle_exceptions(handler: F) -> F:
         try:
             logger.info("Doing job %s, %s.", args, kwargs)
             for db in get_db():
-                return handler(*args, db=db, **kwargs)
+                handler(*args, db=db, **kwargs)
             logger.info("Done job %s, %s.", args, kwargs)
         except NoResultFound as e:
             logger.error("An error occurred while processing webhook: %s", e)
@@ -76,6 +76,7 @@ def handle_transactions_sync_updates_available(
         replacement_pattern_out=replacement_pattern_out,
         default_currency_code=user_out.default_currency_code,
     )
+    logger.info("Finished syncing %s.", req.item_id)
 
 
 @handle_exceptions
