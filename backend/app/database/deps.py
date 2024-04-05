@@ -26,7 +26,7 @@ engine = create_engine(
     str(settings.DATABASE_URL),
     pool_pre_ping=True,
     # echo="debug",
-    echo=True,
+    # echo=True,
     # query_cache_size=0,
 )
 
@@ -41,7 +41,7 @@ def get_db() -> Generator[Session, None, None]:
             yield session
             session.commit()
         except Exception as e:
-            logger.error("An error occurred: %s, rolling back...", str(e))
+            logger.error("An error occurred: %s, rolling back...", e)
             session.rollback()
             raise
 

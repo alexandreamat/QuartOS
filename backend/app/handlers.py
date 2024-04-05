@@ -46,6 +46,7 @@ def handle_exceptions(handler: F) -> F:
             logger.info("Doing job %s, %s.", args, kwargs)
             for db in get_db():
                 return handler(*args, db=db, **kwargs)
+            logger.info("Done job %s, %s.", args, kwargs)
         except NoResultFound as e:
             logger.error("An error occurred while processing webhook: %s", e)
         except Exception as e:
