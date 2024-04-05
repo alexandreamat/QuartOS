@@ -36,7 +36,7 @@ def webhook(req: WebhookReq, background_tasks: BackgroundTasks, db: DBSession) -
             "%s/%s currently not supported", req.webhook_type, req.webhook_code
         )
         return
-    background_tasks.add_task(handler, req, db)
+    background_tasks.add_task(handler, req)
 
 
 include_package_routes(router, __name__, __path__)
