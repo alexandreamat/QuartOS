@@ -23,9 +23,11 @@ import FormTextInput from "components/FormTextInput";
 import { QueryErrorMessage } from "components/QueryErrorMessage";
 import useFormField from "hooks/useFormField";
 import { logMutationError } from "utils/error";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 export function SignUp() {
   const navigate = useNavigate();
+  const googleReCaptcha = useGoogleReCaptcha();
 
   const fields = {
     email: useFormField(""),
@@ -39,16 +41,20 @@ export function SignUp() {
     api.endpoints.signupUsersSignupPost.useMutation();
 
   const handleSubmit = async (_: React.MouseEvent) => {
+    if (!googleReCaptcha.executeRecaptcha) return;
+    const recaptchaToken = await googleReCaptcha.executeRecaptcha("SIGNUP");
     const invalidFields = Object.values(fields).filter((f) => !f.validate());
     if (invalidFields.length > 0) return;
-
     try {
       await signUp({
-        email: fields.email.value!,
-        password: fields.password.value!,
-        full_name: fields.fullName.value!,
-        is_superuser: false,
-        default_currency_code: fields.defaultCurrencyCode.value!,
+        user_in: {
+          email: fields.email.value!,
+          password: fields.password.value!,
+          full_name: fields.fullName.value!,
+          is_superuser: false,
+          default_currency_code: fields.defaultCurrencyCode.value!,
+        },
+        recaptcha_token: recaptchaToken,
       }).unwrap();
     } catch (error) {
       logMutationError(error, signUpResult);
@@ -56,7 +62,6 @@ export function SignUp() {
     }
     navigate("/");
   };
-
   return (
     <Grid textAlign="center" style={{ height: "100vh" }} verticalAlign="middle">
       <Grid.Column style={{ maxWidth: 450 }}>
@@ -99,6 +104,7 @@ export function SignUp() {
               size="large"
               onClick={handleSubmit}
               loading={signUpResult.isLoading}
+              disabled={!googleReCaptcha.executeRecaptcha}
             >
               Sign Up!
             </Button>

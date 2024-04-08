@@ -27,6 +27,7 @@ psycopg2-binary = "~=2.9"
 pydantic = {extras = ["email"], version = "*"}
 pydantic-extra-types = "~=2.4"
 pydantic-settings = "~=2.1"
+google-cloud-recaptcha-enterprise = "*"
 
 [dev-packages]
 httpx = "~=0.26"
