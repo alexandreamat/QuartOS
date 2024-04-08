@@ -19,6 +19,7 @@ import { Provider } from "react-redux";
 import ErrorBoundary from "components/ErrorBoundary";
 import App from "./App";
 import { store } from "./app/store";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 import "semantic-ui-css/semantic.min.css";
 
@@ -26,11 +27,14 @@ const container = document.getElementById("root")!;
 const root = createRoot(container);
 
 root.render(
-  // <React.StrictMode>
-  <ErrorBoundary fallback={<p>Something went wrong</p>}>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </ErrorBoundary>,
-  // </React.StrictMode>
+  <GoogleReCaptchaProvider
+    reCaptchaKey={process.env.REACT_APP_GOOGLE_SITE_KEY!}
+    useEnterprise
+  >
+    <ErrorBoundary fallback={<p>Something went wrong</p>}>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </ErrorBoundary>
+  </GoogleReCaptchaProvider>,
 );

@@ -26,7 +26,7 @@ services:
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db
     volumes:
       - ./backend/http_cache.sqlite:/app/http_cache.sqlite
-    
+
   nginx:
     build: ./nginx
     image: alexandreamat/quartos-nginx:latest

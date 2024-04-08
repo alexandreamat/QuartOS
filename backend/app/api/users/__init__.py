@@ -13,14 +13,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Iterable
+from typing import Annotated, Iterable
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 
 from app.crud.user import CRUDUser
 from app.database.deps import DBSession
 from app.deps.user import CurrentSuperuser, CurrentUser
+from app.recaptcha import ReCaptchaException, create_recaptcha_assessment
 from app.schemas.user import UserApiIn, UserApiOut
 from app.utils import include_package_routes
 
@@ -28,12 +29,17 @@ router = APIRouter()
 
 
 @router.post("/signup")
-def signup(db: DBSession, user_in: UserApiIn) -> UserApiOut:
+def signup(
+    db: DBSession, user_in: UserApiIn, recaptcha_token: Annotated[str, Body()]
+) -> UserApiOut:
     """
     Create new user without the need to be logged in.
     """
     user_in.is_superuser = False
-    raise HTTPException(status.HTTP_418_IM_A_TEAPOT)
+    try:
+        create_recaptcha_assessment(recaptcha_token, "SIGNUP")
+    except ReCaptchaException as e:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=str(e))
     try:
         user_out = CRUDUser.create(db, obj_in=user_in)
     except IntegrityError:

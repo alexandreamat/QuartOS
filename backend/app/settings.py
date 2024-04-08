@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER_PASSWORD: str = Field(default=...)
     FIRST_SUPERUSER_FULL_NAME: str = Field(default=...)
 
+    GOOGLE_PROJECT_ID: str = "my-project-75571-1712598496308"
+    GOOGLE_API_KEY: str = Field(default=...)
+    GOOGLE_SITE_KEY: str = Field(default=...)
+
     class Config:
         case_sensitive = True
 

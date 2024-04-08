@@ -1178,7 +1178,7 @@ export type DeleteTransactionDeserialisersIdDeleteApiResponse =
 export type DeleteTransactionDeserialisersIdDeleteApiArg = number;
 export type SignupUsersSignupPostApiResponse =
   /** status 200 Successful Response */ UserApiOut;
-export type SignupUsersSignupPostApiArg = UserApiIn;
+export type SignupUsersSignupPostApiArg = BodySignupUsersSignupPost;
 export type ReadMeUsersMeGetApiResponse =
   /** status 200 Successful Response */ UserApiOut;
 export type ReadMeUsersMeGetApiArg = void;
@@ -1781,6 +1781,10 @@ export type UserApiIn = {
   is_superuser: boolean;
   default_currency_code: string;
   password: string;
+};
+export type BodySignupUsersSignupPost = {
+  user_in: UserApiIn;
+  recaptcha_token: string;
 };
 export type DepositoryApiOut = {
   id: number;
