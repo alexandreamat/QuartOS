@@ -35,6 +35,7 @@ mypy = "~=1.8"
 mypy-extensions = "*"
 pylint = "*"
 black = "~=23.12"
+mkdocs-material = "~=9.5"
 
 [requires]
 python_version = "3.11"
