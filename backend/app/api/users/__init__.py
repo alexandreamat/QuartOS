@@ -40,6 +40,10 @@ def signup(
         create_recaptcha_assessment(recaptcha_token, "SIGNUP")
     except ReCaptchaException as e:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=str(e))
+    raise HTTPException(
+        status.HTTP_401_UNAUTHORIZED,
+        detail="Sign up is temporarily disabled. Please contact the administrator for more details.",
+    )
     try:
         user_out = CRUDUser.create(db, obj_in=user_in)
     except IntegrityError:
