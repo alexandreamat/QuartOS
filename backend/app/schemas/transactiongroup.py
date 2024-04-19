@@ -17,7 +17,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
-from app.schemas.account import AnnotatedLiteral
+from app.utils.common import AnnotatedLiteral
 from app.schemas.common import ApiInMixin, ApiOutMixin
 
 
@@ -49,5 +49,4 @@ class TransactionGroupApiOut(__TransactionGroupBase, ApiOutMixin):
     is_group: AnnotatedLiteral(True)  # type: ignore
 
 
-class TransactionGroupApiIn(__TransactionGroupBase, ApiInMixin):
-    ...
+class TransactionGroupApiIn(__TransactionGroupBase, ApiInMixin): ...

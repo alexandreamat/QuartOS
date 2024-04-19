@@ -38,4 +38,4 @@ black = "~=23.12"
 mkdocs-material = "~=9.5"
 
 [requires]
-python_version = "3.11"
+python_version = "3.12"

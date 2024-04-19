@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel
 
-from app.schemas.account import AnnotatedLiteral
+from app.utils.common import AnnotatedLiteral
 from app.schemas.common import (
     PlaidInMixin,
     PlaidOutMixin,

@@ -53,8 +53,8 @@ export default function Profile() {
         full_name: fullName.value!,
         email: email.value!,
         password: password.value!,
-        is_superuser: false,
         default_currency_code: defaultCurrencyCode.value!,
+        type: "defaultuser",
       }).unwrap();
     } catch (error) {
       logMutationError(error, updateMeResult);
@@ -120,6 +120,7 @@ export default function Profile() {
         </>
       ) : (
         <Button
+          disabled={me.data ? me.data.type === "demouser" : true}
           content="Edit"
           labelPosition="left"
           icon="edit"

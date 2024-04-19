@@ -17,18 +17,47 @@ from pydantic import BaseModel
 from pydantic import EmailStr
 
 from app.schemas.common import ApiInMixin, ApiOutMixin, CurrencyCode
+from app.utils.common import AnnotatedLiteral
 
 
 class __UserBase(BaseModel):
     email: EmailStr
     full_name: str
-    is_superuser: bool
     default_currency_code: CurrencyCode
+    type: str
 
 
-class UserApiOut(__UserBase, ApiOutMixin):
-    ...
+class __DefaultUser(__UserBase):
+    type: AnnotatedLiteral("defaultuser")
 
 
-class UserApiIn(__UserBase, ApiInMixin):
+class __SuperUser(__UserBase):
+    type: AnnotatedLiteral("superuser")
+
+
+class __DemoUser(__UserBase):
+    client_host: str
+    type: AnnotatedLiteral("demouser")
+
+
+class DefaultUserApiIn(__DefaultUser, ApiInMixin):
     password: str
+
+
+class SuperUserApiIn(__SuperUser, ApiInMixin): ...
+
+
+class DemoUserApiIn(__DemoUser, ApiInMixin): ...
+
+
+class DefaultUserApiOut(__DefaultUser, ApiOutMixin): ...
+
+
+class SuperUserApiOut(__SuperUser, ApiOutMixin): ...
+
+
+class DemoUserApiOut(__DemoUser, ApiOutMixin): ...
+
+
+UserApiOut = DefaultUserApiOut | SuperUserApiOut | DemoUserApiOut
+UserApiIn = DefaultUserApiIn | SuperUserApiIn | DemoUserApiIn

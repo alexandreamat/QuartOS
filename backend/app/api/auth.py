@@ -14,24 +14,47 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import timedelta
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from jose.exceptions import JWTError
 from sqlalchemy.exc import NoResultFound
 
 from app import utils
 from app.crud.user import CRUDUser
 from app.database.deps import DBSession
+from app.recaptcha import ReCaptchaException, create_recaptcha_assessment
 from app.schemas.auth import Token
-from app.schemas.user import UserApiIn
+from app.schemas.user import DemoUserApiIn, DemoUserApiOut
 from app.settings import settings
-from app.utils import (
-    verify_password_reset_token,
-)
 
 router = APIRouter()
+
+
+@router.post("/demo")
+def demo(
+    db: DBSession, recaptcha_token: Annotated[str, Body()], request: Request
+) -> DemoUserApiOut:
+    try:
+        create_recaptcha_assessment(recaptcha_token, "DEMO")
+    except ReCaptchaException as e:
+        pass
+        # raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail=str(e))
+    assert request.client
+    user_out = cast(
+        DemoUserApiOut,
+        CRUDUser.create(
+            db,
+            DemoUserApiIn(
+                full_name="John Doe",
+                email="john.doe@quartos.com",
+                default_currency_code="USD",
+                client_host=request.client.host,
+                type="demouser",
+            ),
+        ),
+    )
+    return user_out
 
 
 @router.post("/login")
@@ -54,23 +77,23 @@ def login(db: DBSession, form_data: OAuth2PasswordRequestForm = Depends()) -> To
     )
 
 
-# TODO: use this in the front end
-@router.post("/reset-password/")
-def reset(
-    db: DBSession,
-    token: Annotated[str, Body(...)],
-    new_password: Annotated[str, Body(...)],
-) -> None:
-    """
-    Reset password
-    """
-    try:
-        email = verify_password_reset_token(token)
-    except JWTError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    try:
-        curr_user = CRUDUser.read(db, email__eq=email)
-    except NoResultFound:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    user_in = UserApiIn(**curr_user.model_dump(), password=new_password)
-    CRUDUser.update(db, curr_user.id, user_in)
+# # TODO: use this in the front end
+# @router.post("/reset-password/")
+# def reset(
+#     db: DBSession,
+#     token: Annotated[str, Body(...)],
+#     new_password: Annotated[str, Body(...)],
+# ) -> None:
+#     """
+#     Reset password
+#     """
+#     try:
+#         email = verify_password_reset_token(token)
+#     except JWTError:
+#         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+#     try:
+#         curr_user = CRUDUser.read(db, email__eq=email)
+#     except NoResultFound:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+#     user_in = UserApiIn(**curr_user.model_dump(), password=new_password)
+#     CRUDUser.update(db, curr_user.id, user_in)

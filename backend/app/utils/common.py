@@ -14,8 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
-from typing import Iterable
+from typing import Annotated, Any, Iterable, Literal
 
+from pydantic import WithJsonSchema
 from sqlalchemy import ColumnExpressionArgument, and_, or_
 from sqlalchemy.orm import Mapped
 
@@ -40,3 +41,20 @@ def get_search_expressions(
         yield or_(*positive_clauses)
     if negative_clauses:
         yield and_(*negative_clauses)
+
+
+def AnnotatedLiteral(value: Any) -> Any:
+    return Annotated[
+        Literal[value],
+        WithJsonSchema(
+            {
+                "enum": [value],
+                "type": {
+                    str: "string",
+                    bool: "boolean",
+                    float: "number",
+                    int: "number",
+                }[type(value)],
+            }
+        ),
+    ]

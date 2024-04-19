@@ -13,9 +13,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from decimal import Decimal
-from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, WithJsonSchema
+from pydantic import BaseModel
 
 from app.schemas.common import (
     PlaidInMixin,
@@ -25,23 +24,7 @@ from app.schemas.common import (
     ApiOutMixin,
     CurrencyCode,
 )
-
-
-def AnnotatedLiteral(value: Any) -> Any:
-    return Annotated[
-        Literal[value],
-        WithJsonSchema(
-            {
-                "enum": [value],
-                "type": {
-                    str: "string",
-                    bool: "boolean",
-                    float: "number",
-                    int: "number",
-                }[type(value)],
-            }
-        ),
-    ]
+from app.utils.common import AnnotatedLiteral
 
 
 # Bases

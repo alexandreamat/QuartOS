@@ -167,23 +167,23 @@ const injectedRtkApi = api
           }),
           invalidatesTags: ["admin"],
         }),
+      demoAuthDemoPost: build.mutation<
+        DemoAuthDemoPostApiResponse,
+        DemoAuthDemoPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/auth/demo`,
+          method: "POST",
+          body: queryArg,
+        }),
+        invalidatesTags: ["auth"],
+      }),
       loginAuthLoginPost: build.mutation<
         LoginAuthLoginPostApiResponse,
         LoginAuthLoginPostApiArg
       >({
         query: (queryArg) => ({
           url: `/auth/login`,
-          method: "POST",
-          body: queryArg,
-        }),
-        invalidatesTags: ["auth"],
-      }),
-      resetAuthResetPasswordPost: build.mutation<
-        ResetAuthResetPasswordPostApiResponse,
-        ResetAuthResetPasswordPostApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/auth/reset-password/`,
           method: "POST",
           body: queryArg,
         }),
@@ -418,7 +418,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/users/${queryArg.userId}`,
           method: "PUT",
-          body: queryArg.userApiIn,
+          body: queryArg.body,
         }),
         invalidatesTags: ["users"],
       }),
@@ -1093,12 +1093,12 @@ export type ResetTransactionToMetadataAdminUserInstitutionLinksUserInstitutionLi
     userInstitutionLinkId: number;
     transactionId: number;
   };
+export type DemoAuthDemoPostApiResponse =
+  /** status 200 Successful Response */ DemoUserApiOut;
+export type DemoAuthDemoPostApiArg = string;
 export type LoginAuthLoginPostApiResponse =
   /** status 200 Successful Response */ Token;
 export type LoginAuthLoginPostApiArg = BodyLoginAuthLoginPost;
-export type ResetAuthResetPasswordPostApiResponse =
-  /** status 200 Successful Response */ any;
-export type ResetAuthResetPasswordPostApiArg = BodyResetAuthResetPasswordPost;
 export type ReadCategoriesCategoryIdGetApiResponse =
   /** status 200 Successful Response */ CategoryApiOut;
 export type ReadCategoriesCategoryIdGetApiArg = number;
@@ -1177,31 +1177,48 @@ export type DeleteTransactionDeserialisersIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
 export type DeleteTransactionDeserialisersIdDeleteApiArg = number;
 export type SignupUsersSignupPostApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
+  /** status 200 Successful Response */ DefaultUserApiOut;
 export type SignupUsersSignupPostApiArg = BodySignupUsersSignupPost;
-export type ReadMeUsersMeGetApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
+export type ReadMeUsersMeGetApiResponse = /** status 200 Successful Response */
+  | DefaultUserApiOut
+  | SuperUserApiOut
+  | DemoUserApiOut;
 export type ReadMeUsersMeGetApiArg = void;
 export type UpdateMeUsersMePutApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type UpdateMeUsersMePutApiArg = UserApiIn;
+  /** status 200 Successful Response */ DefaultUserApiOut;
+export type UpdateMeUsersMePutApiArg = DefaultUserApiIn;
 export type ReadUsersUserIdGetApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
+  /** status 200 Successful Response */
+    | DefaultUserApiOut
+    | SuperUserApiOut
+    | DemoUserApiOut;
 export type ReadUsersUserIdGetApiArg = number;
 export type UpdateUsersUserIdPutApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
+  /** status 200 Successful Response */
+    | DefaultUserApiOut
+    | SuperUserApiOut
+    | DemoUserApiOut;
 export type UpdateUsersUserIdPutApiArg = {
   userId: number;
-  userApiIn: UserApiIn;
+  body: DefaultUserApiIn | SuperUserApiIn | DemoUserApiIn;
 };
 export type DeleteUsersUserIdDeleteApiResponse =
   /** status 200 Successful Response */ number;
 export type DeleteUsersUserIdDeleteApiArg = number;
-export type CreateUsersPostApiResponse =
-  /** status 200 Successful Response */ UserApiOut;
-export type CreateUsersPostApiArg = UserApiIn;
+export type CreateUsersPostApiResponse = /** status 200 Successful Response */
+  | DefaultUserApiOut
+  | SuperUserApiOut
+  | DemoUserApiOut;
+export type CreateUsersPostApiArg =
+  | DefaultUserApiIn
+  | SuperUserApiIn
+  | DemoUserApiIn;
 export type ReadManyUsersGetApiResponse =
-  /** status 200 Successful Response */ UserApiOut[];
+  /** status 200 Successful Response */ (
+    | DefaultUserApiOut
+    | SuperUserApiOut
+    | DemoUserApiOut
+  )[];
 export type ReadManyUsersGetApiArg = {
   page?: number;
   perPage?: number;
@@ -1696,6 +1713,14 @@ export type TransactionPlaidIn2 = {
   bucket_id: number;
   amount: string;
 };
+export type DemoUserApiOut = {
+  id: number;
+  email: string;
+  full_name: string;
+  default_currency_code: string;
+  type: "demouser";
+  client_host: string;
+};
 export type Token = {
   access_token: string;
   token_type: string;
@@ -1707,10 +1732,6 @@ export type BodyLoginAuthLoginPost = {
   scope?: string;
   client_id?: string | null;
   client_secret?: string | null;
-};
-export type BodyResetAuthResetPasswordPost = {
-  token: string;
-  new_password: string;
 };
 export type CategoryApiOut = {
   id: number;
@@ -1768,23 +1789,43 @@ export type TransactionDeserialiserApiIn = {
   delimiter: string;
   encoding: string;
 };
-export type UserApiOut = {
+export type DefaultUserApiOut = {
   id: number;
   email: string;
   full_name: string;
-  is_superuser: boolean;
   default_currency_code: string;
+  type: "defaultuser";
 };
-export type UserApiIn = {
+export type DefaultUserApiIn = {
   email: string;
   full_name: string;
-  is_superuser: boolean;
   default_currency_code: string;
+  type: "defaultuser";
   password: string;
 };
 export type BodySignupUsersSignupPost = {
-  user_in: UserApiIn;
+  user_in: DefaultUserApiIn;
   recaptcha_token: string;
+};
+export type SuperUserApiOut = {
+  id: number;
+  email: string;
+  full_name: string;
+  default_currency_code: string;
+  type: "superuser";
+};
+export type SuperUserApiIn = {
+  email: string;
+  full_name: string;
+  default_currency_code: string;
+  type: "superuser";
+};
+export type DemoUserApiIn = {
+  email: string;
+  full_name: string;
+  default_currency_code: string;
+  type: "demouser";
+  client_host: string;
 };
 export type DepositoryApiOut = {
   id: number;

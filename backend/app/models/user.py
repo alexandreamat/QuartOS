@@ -25,11 +25,19 @@ logger = logging.getLogger(__name__)
 
 class User(Base):
     __tablename__ = "user"
-    hashed_password: Mapped[str]
     email: Mapped[str]
     full_name: Mapped[str]
-    is_superuser: Mapped[bool]
     default_currency_code: Mapped[str]
+    type: Mapped[str]
+
+    __mapper_args__ = {
+        "polymorphic_on": "type",
+        "polymorphic_identity": "user",
+    }
+
+
+class ProtectedUser(User):
+    hashed_password: Mapped[str]
 
     @property
     def password(self) -> str:
@@ -45,3 +53,19 @@ class User(Base):
         assert db_user.hashed_password
         verify_password(password, db_user.hashed_password)
         return db_user
+
+    __mapper_args__ = {"polymorphic_abstract": True}
+
+
+class DefaultUser(ProtectedUser):
+    __mapper_args__ = {"polymorphic_identity": "defaultuser"}
+
+
+class SuperUser(ProtectedUser):
+    __mapper_args__ = {"polymorphic_identity": "superuser"}
+
+
+class DemoUser(User):
+    client_host: Mapped[str]
+
+    __mapper_args__ = {"polymorphic_identity": "demouser"}

@@ -33,7 +33,9 @@ export default function SidebarMenu(props: { fluid?: boolean }) {
         <Logo height="100px" width="100%" />
       </Menu.Item>
       {routes
-        .filter((r) => current_user?.is_superuser || !r.requires_superuser)
+        .filter(
+          (r) => current_user?.type === "superuser" || !r.requires_superuser,
+        )
         .map((route) => (
           <Menu.Item
             as={Link}

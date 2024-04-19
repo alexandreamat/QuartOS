@@ -51,8 +51,8 @@ export function SignUp() {
           email: fields.email.value!,
           password: fields.password.value!,
           full_name: fields.fullName.value!,
-          is_superuser: false,
           default_currency_code: fields.defaultCurrencyCode.value!,
+          type: "defaultuser",
         },
         recaptcha_token: recaptchaToken,
       }).unwrap();
